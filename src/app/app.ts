@@ -1,9 +1,43 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { LocaleService } from './core/locale';
+import { ProgressService } from './core/progress';
+import { Icon } from './shared/icon';
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  template: '<router-outlet />',
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, Icon],
+  template: ` <header class="site-header">
+      <a class="wordmark" routerLink="/">Feenland <span>Mathezauber</span></a>
+      <nav [attr.aria-label]="i.t('home')">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{
+          i.t('home')
+        }}</a
+        ><a routerLink="/worlds" routerLinkActive="active"
+          ><app-icon kind="book" />{{ i.t('worlds') }}</a
+        ><a
+          class="settings-link"
+          routerLink="/settings"
+          routerLinkActive="active"
+          [attr.aria-label]="i.t('settings')"
+          ><app-icon kind="gear"
+        /></a>
+      </nav>
+    </header>
+    <main #main tabindex="-1">
+      <router-outlet (activate)="focusMain()" />
+      @if (p.saveFailed()) {
+        <p class="save-warning" role="status">{{ i.t('saved') }}</p>
+      }
+    </main>
+    <footer>
+      Feenland Mathezauber<span>{{ i.t('subtitle') }}</span>
+    </footer>`,
 })
-export class App {}
+export class App {
+  protected readonly i = inject(LocaleService);
+  protected readonly p = inject(ProgressService);
+  private readonly main = viewChild<ElementRef<HTMLElement>>('main');
+  protected focusMain() {
+    this.main()?.nativeElement.focus({ preventScroll: true });
+  }
+}

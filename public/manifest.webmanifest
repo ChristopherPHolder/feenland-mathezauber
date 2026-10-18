@@ -1,6 +1,6 @@
 {
-  "name": "Fun Math",
-  "short_name": "Fun Math",
+  "name": "Feenland Mathezauber",
+  "short_name": "Feenland",
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
@@ -57,6 +57,6 @@
   "id": "/",
   "description": "A happy place for children to explore numbers and learn math through play.",
   "lang": "en",
-  "theme_color": "#eee5fa",
-  "background_color": "#eee5fa"
+  "theme_color": "#edf7fb",
+  "background_color": "#edf7fb"
 }

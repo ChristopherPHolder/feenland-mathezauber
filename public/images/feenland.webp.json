@@ -1,0 +1,7 @@
+{
+  "tool": "built-in image_gen",
+  "use_case": "illustration-story",
+  "prompt": "Simple cheerful children's storybook landscape: friendly red-haired fairy in green leaf dress, translucent wings and gold star wand on the left; pink-roof castle, turquoise stream, green meadow, flowers, blue sky and clouds. Bright painted cartoon, restrained detail, open upper sky. No text, UI, border or watermark.",
+  "source": "generated October 18, 2026",
+  "conversion": "cwebp quality 82; 1536x1024"
+}

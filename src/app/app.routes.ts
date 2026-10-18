@@ -1,28 +1,33 @@
-import { Routes } from '@angular/router';
-
+import { inject } from '@angular/core';
+import { worlds, levelState } from './core/catalog';
+import { ProgressService } from './core/progress';
+import { Router, Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    title: 'Choose your adventure · Fun Math',
-    loadComponent: () => import('./pages/playground/playground').then((m) => m.Playground),
+    loadComponent: () => import('./pages/welcome/welcome').then((m) => m.Welcome),
   },
   {
-    path: 'games/garden/little',
-    title: 'Level 1 · Little berry bites · Fun Math',
-    data: { level: 'little' },
-    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+    path: 'settings',
+    loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
   },
+  { path: 'worlds', loadComponent: () => import('./pages/worlds/worlds').then((m) => m.Worlds) },
   {
-    path: 'games/garden/big',
-    title: 'Level 2 · Big berry bites · Fun Math',
-    data: { level: 'big' },
-    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
-  },
-  {
-    path: 'games/number-bridge',
-    title: 'Die Zehnerbrücke · Fun Math',
-    loadComponent: () => import('./games/number-bridge/number-bridge').then((m) => m.NumberBridge),
+    path: 'adventure/:id',
+    canActivate: [
+      (route) => {
+        const level = worlds
+          .flatMap((world) => world.chapters)
+          .flatMap((chapter) => chapter.levels)
+          .find((level) => level.id === route.paramMap.get('id'));
+        const progress = inject(ProgressService).progress();
+        return level && ['available', 'completed'].includes(levelState(level, progress))
+          ? true
+          : inject(Router).createUrlTree(['/']);
+      },
+    ],
+    loadComponent: () => import('./pages/challenge/challenge').then((m) => m.Challenge),
   },
   { path: '**', redirectTo: '' },
 ];
