@@ -23,7 +23,7 @@ describe('Feenland navigation', () => {
       '0',
     ]);
     expect(
-      h.routeNativeElement?.querySelector('a[href="/adventure/missing-number-add-to-30"]'),
+      h.routeNativeElement?.querySelector('a[href="/adventure/defend-fairy-castle"]'),
     ).toBeTruthy();
     await h.navigateByUrl('/adventure/missing-number-add-to-30');
     expect(h.routeNativeElement?.textContent).toContain(
@@ -57,7 +57,11 @@ describe('Feenland navigation', () => {
       'feenland.progress',
       JSON.stringify({
         version: 1,
-        mastered: ['missing-number-add-to-30', 'missing-number-subtract-to-30'],
+        mastered: [
+          'missing-number-add-to-30',
+          'missing-number-subtract-to-30',
+          'defend-fairy-castle',
+        ],
         chapters: ['earned-chapter'],
         explored: ['missing-number'],
       }),
@@ -65,7 +69,7 @@ describe('Feenland navigation', () => {
     const h = await RouterTestingHarness.create('/');
     expect(h.routeNativeElement?.textContent).toContain(TestBed.inject(LocaleService).t('caught'));
     expect([...h.routeNativeElement!.querySelectorAll('dd')].map((e) => e.textContent)).toEqual([
-      '2',
+      '3',
       '1',
       '1',
     ]);

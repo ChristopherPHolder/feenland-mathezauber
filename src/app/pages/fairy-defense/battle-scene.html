@@ -1,0 +1,137 @@
+<div
+  class="battlefield"
+  [class.paused]="paused()"
+  [class.intro]="!started()"
+  [class.has-overlay]="!started() || battle().phase === 'lost' || battle().phase === 'complete'"
+>
+  <img class="forest" ngSrc="/images/fairy-defense/forest.webp" fill priority alt="" />
+  <div class="scene-shade" aria-hidden="true"></div>
+  <div class="battle-hud">
+    <div class="wave">
+      <span>{{ stageLabel() || t('wave', { n: battle().wave.number }) }}</span>
+      <div
+        class="encounter-track"
+        [attr.aria-label]="
+          t(battle().wave.boss ? 'shield' : 'encounter', {
+            n: battle().encounter + 1,
+            total: battle().wave.encounters.length,
+          })
+        "
+        role="img"
+      >
+        @for (step of shieldLayers(); track step) {
+          <span [class.done]="battle().encounter > step || battle().phase === 'complete'"></span>
+        }
+      </div>
+    </div>
+    <div class="battle-actions">
+      <div class="hearts" role="img" [attr.aria-label]="t('health', { n: battle().hearts })">
+        @for (heart of hearts; track heart) {
+          <svg viewBox="0 0 32 30" [class.empty]="heart > battle().hearts" aria-hidden="true">
+            <path d="M16 27S2 19 2 10a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 9-14 17-14 17Z" />
+          </svg>
+        }
+      </div>
+      <button class="pause-button" (click)="pauseRequested.emit()" [attr.aria-label]="t('pause')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+      </button>
+    </div>
+  </div>
+  <img
+    class="fairy character"
+    ngSrc="/images/fairy-defense/fairy.webp"
+    width="1536"
+    height="1024"
+    alt=""
+  />
+  @if (
+    !battle().wave.boss &&
+    battle().encounter < battle().wave.encounters.length - 1 &&
+    battle().phase !== 'complete'
+  ) {
+    <img
+      class="waiting-monster"
+      ngSrc="/images/fairy-defense/monster-blue.webp"
+      width="1146"
+      height="1372"
+      alt=""
+    />
+  }
+  @if (battle().phase !== 'complete') {
+    <div
+      class="monster-position"
+      [style.--approach]="battle().mistakes"
+      [class.transforming]="battle().phase === 'transforming'"
+      [class.boss]="battle().wave.boss"
+      [class.wobble]="battle().phase === 'wrong'"
+    >
+      @if (battle().phase !== 'transforming' || shieldBreaking()) {
+        <span class="number-badge">{{
+          encounter().question ? '?' : i.format(encounter().energy)
+        }}</span>
+        @for (active of [encounter()]; track active.appearance) {
+          <img
+            class="monster character"
+            [ngSrc]="'/images/fairy-defense/' + active.appearance + '.webp'"
+            [width]="sprite().width"
+            [height]="sprite().height"
+            alt=""
+          />
+        }
+        @if (battle().wave.boss) {
+          <div
+            class="shield-layers"
+            role="img"
+            [attr.aria-label]="
+              t('shield', { n: battle().encounter + 1, total: battle().wave.encounters.length })
+            "
+          >
+            @for (layer of shieldLayers(); track layer) {
+              <app-icon
+                [kind]="layer < battle().encounter ? 'check' : 'gem'"
+                [class.broken]="layer < battle().encounter"
+              />
+            }
+          </div>
+          @if (shieldBreaking()) {
+            <span class="equation">{{
+              encounter().question?.text?.replace('□', '' + battle().spell) ??
+                encounter().energy + ' + ' + battle().spell + ' = 10'
+            }}</span>
+          }
+        }
+        <div class="steps" role="img" [attr.aria-label]="t('steps', { n: 3 - battle().mistakes })">
+          @for (step of hearts; track step) {
+            <span [class.passed]="step <= battle().mistakes"></span>
+          }
+        </div>
+      } @else {
+        <span class="equation">{{
+          encounter().question?.text?.replace('□', '' + battle().spell) ??
+            encounter().energy + ' + ' + battle().spell + ' = 10'
+        }}</span>
+        <img
+          class="butterfly"
+          ngSrc="/images/fairy-defense/butterfly.webp"
+          width="1374"
+          height="1145"
+          alt=""
+        />
+        <div class="sparkles" aria-hidden="true">
+          <app-icon kind="star" /><app-icon kind="star" /><app-icon kind="star" />
+        </div>
+      }
+    </div>
+  }
+  @if (battle().phase === 'casting') {
+    <div class="projectile" aria-hidden="true">
+      @for (spark of heartsAndSpells.slice(0, battle().spell ?? 0); track spark) {
+        <app-icon kind="star" />
+      }
+    </div>
+  }
+  @if (battle().damaged) {
+    <div class="damage-ripple" aria-hidden="true"></div>
+  }
+  <ng-content />
+</div>

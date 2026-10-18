@@ -3,12 +3,16 @@ import { emptyProgress, levelState, nextLevel, parseProgress, World } from './ca
 import { detectLocale } from './locale';
 describe('expanding-world foundations', () => {
   it('recommends the first available level for a new player', () => {
-    expect(nextLevel(worlds, emptyProgress)?.id).toBe('missing-number-add-to-30');
+    expect(nextLevel(worlds, emptyProgress)?.id).toBe('defend-fairy-castle');
   });
   it('keeps achievements when a caught-up catalog grows', () => {
     const progress = {
       version: 1 as const,
-      mastered: ['missing-number-add-to-30', 'missing-number-subtract-to-30'],
+      mastered: [
+        'missing-number-add-to-30',
+        'missing-number-subtract-to-30',
+        'defend-fairy-castle',
+      ],
       chapters: ['missing-number-first-steps'],
       explored: ['missing-number'],
     };

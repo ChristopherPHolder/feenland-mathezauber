@@ -63,7 +63,14 @@
                 [class.secondary]="entry.level.id !== next()"
                 [routerLink]="['/adventure', entry.level.id]"
                 [attr.aria-describedby]="'level-' + entry.level.id"
-                >{{ i.t(entry.level.practice ? 'practiceLevel' : 'openLevel')
+                >{{
+                  i.t(
+                    entry.level.practice
+                      ? 'practiceLevel'
+                      : entry.level.format === 'fairy-defense'
+                        ? 'fairyPlay'
+                        : 'openLevel'
+                  )
                 }}<app-icon kind="arrow"
               /></a>
             } @else {

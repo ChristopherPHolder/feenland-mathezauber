@@ -1,0 +1,311 @@
+:host {
+  display: block;
+  background: #183b38;
+  min-height: 100dvh;
+  padding: 16px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left));
+  color: #172555;
+}
+.game {
+  max-width: 1280px;
+  margin: auto;
+  background: #fff9e9;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 50px #041b3355;
+}
+
+.start-curtain,
+.outcome-curtain {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #112d3855;
+  padding: 24px;
+  z-index: 5;
+}
+.story-panel {
+  max-width: 530px;
+  text-align: center;
+  background: #fff9e9;
+  padding: 28px 36px;
+  border-radius: 22px;
+  box-shadow: 0 12px 36px #08272b55;
+}
+.story-panel h2 {
+  font-size: clamp(26px, 3vw, 37px);
+  line-height: 1.15;
+  margin: 0 0 14px;
+}
+.story-panel p {
+  line-height: 1.5;
+  margin: 12px 0;
+}
+.story-panel .rule-copy {
+  font-size: 14px;
+  color: #4d573f;
+}
+.story-panel .button {
+  margin-top: 10px;
+  min-height: 56px;
+}
+.playtest-note {
+  font-size: 13px;
+  color: #4d573f;
+}
+.outcome > app-icon {
+  color: #916619;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+}
+.outcome:focus {
+  outline: none;
+}
+.exit-link {
+  display: block;
+  margin-top: 16px;
+  min-height: 44px;
+  padding: 10px;
+}
+.learning-dock {
+  padding: 14px 20px;
+  background: #fffdf5;
+}
+.ten-frame-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  min-height: 44px;
+}
+.hint-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0eddb;
+  color: #172555;
+}
+.hint-button svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.math-prompt {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+.math-prompt span {
+  color: #ae1652;
+}
+.ten-frame {
+  display: grid;
+  grid-template-columns: repeat(5, 24px);
+  gap: 7px;
+  padding: 10px 12px;
+  background: #f0eddb;
+  border-radius: 12px;
+}
+.dot {
+  width: 24px;
+  height: 24px;
+  border: 2px dashed #79673e;
+  border-radius: 50%;
+  background: #fffdf5;
+}
+.dot.filled {
+  border: 2px solid #80551f;
+  background: #e8b54d;
+  box-shadow: inset 0 2px 3px #fff5b7;
+}
+.game-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 28px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.game-foot span {
+  max-width: 65ch;
+  color: #4d573f;
+}
+.game-foot a {
+  flex: none;
+  padding: 10px 0;
+  min-height: 44px;
+}
+.audio-notice {
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 10px 28px;
+  margin: 0;
+  background: #f0e5c9;
+}
+.is-paused * {
+  animation-play-state: paused !important;
+}
+@media (min-width: 1000px) {
+  .game {
+    max-width: 1180px;
+  }
+}
+@media (max-width: 600px) {
+  :host {
+    padding: 0;
+    background: #fff9e9;
+  }
+  .game {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .learning-dock {
+    padding: 16px;
+  }
+
+  .ten-frame-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .math-prompt {
+    font-size: 22px;
+    margin: 0;
+  }
+  .ten-frame {
+    grid-template-columns: repeat(5, 21px);
+    gap: 6px;
+    padding: 8px;
+  }
+  .dot {
+    width: 21px;
+    height: 21px;
+  }
+
+  .story-panel {
+    padding: 22px;
+    max-width: 440px;
+  }
+  .story-panel h2 {
+    font-size: 25px;
+  }
+  .story-panel p {
+    font-size: 15px;
+  }
+  .story-panel .rule-copy {
+    font-size: 12px;
+  }
+  .start-curtain,
+  .outcome-curtain {
+    padding: 16px;
+  }
+  .game-foot {
+    padding: 16px;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+  .audio-notice {
+    padding: 10px 16px;
+  }
+}
+@media (max-height: 450px) and (min-width: 601px) {
+  .learning-dock {
+    padding: 12px 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (min-width: 600px) and (min-height: 500px) {
+  :host.playing {
+    height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    min-height: 0;
+  }
+  :host.playing .game {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  :host.playing app-battle-scene {
+    flex: 1 1 0%;
+    min-height: 0;
+  }
+  :host.playing .learning-dock,
+  :host.playing app-spell-bar,
+  :host.playing .audio-notice {
+    flex: none;
+  }
+}
+
+.practice-settings {
+  background: #fffdf5;
+  color: #172555;
+  padding: 24px;
+}
+.practice-settings select {
+  display: block;
+  width: 100%;
+  max-width: 700px;
+  min-height: 48px;
+  font: inherit;
+  padding: 8px;
+  margin: 12px 0;
+  color: #172555;
+  background: white;
+}
+.practice-options {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.practice-options fieldset {
+  border: 1px solid #4c6079;
+  border-radius: 12px;
+  padding: 12px 20px;
+}
+.practice-options label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+}
+.practice-options input {
+  width: 22px;
+  height: 22px;
+  accent-color: #c91860;
+}
+.training-position {
+  margin: 0;
+  text-align: center;
+  font-size: 16px;
+  color: #172555;
+}

@@ -48,6 +48,29 @@ export const routes: Routes = [
   },
   { path: 'worlds', loadComponent: () => import('./pages/worlds/worlds').then((m) => m.Worlds) },
   {
+    path: 'adventure/defend-fairy-castle',
+    data: { focusedGame: true },
+    canActivate: [
+      (route) =>
+        route.queryParamMap.get('mode') === 'demo'
+          ? inject(Router).createUrlTree(['/worlds', 'numbers', 'chapters', 'friends-of-ten'])
+          : true,
+    ],
+    loadComponent: () =>
+      import('./pages/fairy-defense/fairy-defense.component').then((m) => m.FairyDefenseComponent),
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^practice-30-[1-9]$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    loadComponent: () =>
+      import('./pages/fairy-defense/practice-defense').then((m) => m.PracticeDefense),
+  },
+  {
     path: 'adventure/:id',
     canActivate: [
       (route) => {

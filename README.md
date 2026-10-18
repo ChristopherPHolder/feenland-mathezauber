@@ -1,5 +1,7 @@
 # Feenland Mathezauber
 
+[Play Feenland Mathezauber](https://fun-math.toholderandrews-4c2.workers.dev)
+
 A responsive, multilingual fairyland math adventure built with Angular 22. The navigation includes Home, a six-world map, world/chapter paths, level selection, challenge previews, result-driven completion and language Settings. All old games and unicorn content have been removed.
 
 ## Development

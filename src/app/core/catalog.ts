@@ -10,6 +10,7 @@ export interface Level {
   readonly prerequisites: readonly string[];
   readonly skills: readonly string[];
   readonly format: string;
+  readonly playtest?: boolean;
 }
 export interface Chapter {
   readonly title?: MessageKey;
@@ -104,14 +105,34 @@ const catalog: readonly World[] = [
       ['shapes', 'shapesPreview', '🔷', '#315d84', '#dfeefa'],
       ['master', 'masterPreview', '🧠', '#50467b', '#e9e4f6'],
     ] as const
-  ).map(([title, description, emblem, color, ground]) => ({
+  ).map(([title, description, emblem, color, ground]): World => ({
     id: title,
     title,
     description,
     emblem,
     color,
     ground,
-    chapters: [],
+    chapters:
+      title === 'numbers'
+        ? [
+            {
+              id: 'friends-of-ten',
+              title: 'friendsOfTen',
+              description: 'friendsOfTenDescription',
+              levels: [
+                {
+                  id: 'defend-fairy-castle',
+                  title: 'fairyCastle',
+                  description: 'fairyBattleDescription',
+                  implemented: true,
+                  prerequisites: [],
+                  skills: ['make-ten'],
+                  format: 'fairy-defense',
+                },
+              ],
+            },
+          ]
+        : [],
   })),
 ];
 // Keep existing world IDs so bookmarks and saved progress remain valid.
@@ -150,7 +171,10 @@ export function levelState(
   return level.prerequisites.every((id) => progress.mastered.includes(id)) ? 'available' : 'locked';
 }
 export function nextLevel(catalog: readonly World[], progress: Progress): Level | undefined {
-  const levels = catalog.flatMap((world) => world.chapters).flatMap((chapter) => chapter.levels);
+  const levels = catalog
+    .flatMap((world) => world.chapters)
+    .flatMap((chapter) => chapter.levels)
+    .filter((level) => !level.playtest);
   return (
     levels.find((level) => levelState(level, progress) === 'available') ??
     levels.find(

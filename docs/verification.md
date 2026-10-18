@@ -76,3 +76,12 @@
 - Headless Chromium checked nine selectable levels at desktop and 375px phone width; no horizontal overflow.
 - Browser flow verified hard difficulty, quick pace, pause/resume, rejected wrong answers, an eight-question completion, saved practice receipt, and restored preferences. No browser runtime errors.
 - Axe reported zero violations on the level selector and practice setup. These checks do not assert full manual WCAG coverage.
+
+
+## Integrated tower-defense stages (2026-10-18)
+
+After fetching the newer main branch, connected the nine-stage progression to the actual Fairy Tower Defense engine. Stages use missing-number equations and five answer spells, independent of the existing making-ten campaign. The game lobby offers stage selection, difficulty, and pace. Stage routes retain the focused game layout and show stage, skill, and range during play. Stage completion saves a practice receipt and offers a later unfinished stage.
+
+- Production build and all 67 tests pass, including all original campaign tests and new exhaustive stage battle checks and a real component completion test.
+- Chromium completed an eight-question subtraction battle, pause/resume, remembered hard/quick preferences, and real result navigation. No runtime errors or phone-width horizontal overflow.
+- Axe reported zero violations on stage setup and active battle.

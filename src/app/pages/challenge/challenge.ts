@@ -1,4 +1,3 @@
-import { MathPractice } from './math-practice';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -8,18 +7,14 @@ import { CompletionService } from '../../core/completion';
 import { WORLD_CATALOG, findLevel } from '../../core/catalog';
 @Component({
   selector: 'app-challenge',
-  imports: [RouterLink, MathPractice],
+  imports: [RouterLink],
   template: `<section class="page narrow">
-    <h1>{{ i.t(context()?.level?.practice ? 'practicePath' : 'placeholder') }}</h1>
+    <h1>{{ i.t('placeholder') }}</h1>
     <div class="panel">
       <h2>{{ i.t(context()?.level?.title ?? 'level') }}</h2>
-      @if (context()?.level?.practice; as config) {
-        <app-math-practice [config]="config" (completed)="finishPractice()" />
-      } @else {
-        <p class="lead">{{ i.t('placeholderText') }}</p>
-        <p class="demo-note">{{ i.t('demoHelp') }}</p>
-        <button class="button primary" (click)="finishDemo()">{{ i.t('demoComplete') }}</button>
-      }
+      <p class="lead">{{ i.t('placeholderText') }}</p>
+      <p class="demo-note">{{ i.t('demoHelp') }}</p>
+      <button class="button primary" (click)="finishDemo()">{{ i.t('demoComplete') }}</button>
       @if (failed()) {
         <p role="alert">{{ i.t('saveReceiptFailed') }}</p>
       }
@@ -68,20 +63,6 @@ export class Challenge {
       const context = this.context();
       if (context && this.query()?.get('mode') !== 'demo') this.p.explore(context.world.id);
     });
-  }
-  protected finishPractice() {
-    const context = this.context();
-    if (!context?.level.practice) return;
-    if (
-      this.completion.finish({
-        levelId: context.level.id,
-        source: 'practice',
-        completed: true,
-        mastered: true,
-      })
-    ) {
-      void this.router.navigate(['/complete', context.level.id]);
-    } else this.failed.set(true);
   }
   protected finishDemo() {
     const context = this.context();

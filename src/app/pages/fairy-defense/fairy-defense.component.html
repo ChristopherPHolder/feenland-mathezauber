@@ -1,0 +1,234 @@
+<section
+  class="game"
+  [class.is-paused]="paused()"
+  [class.is-complete]="battle().phase === 'complete'"
+  aria-labelledby="game-title"
+>
+  <h1 class="sr-only" id="game-title">{{ t('title') }}</h1>
+  <app-battle-scene
+    [battle]="battle()"
+    [stageLabel]="training() ? i.t('stage') + ' ' + training()!.stage + ' / 9' : ''"
+    [paused]="paused()"
+    [started]="started()"
+    [fit]="playing()"
+    (pauseRequested)="openPause()"
+  >
+    @if (!started()) {
+      <div class="start-curtain">
+        <div class="story-panel">
+          <h2>{{ training() ? i.t(training()!.skill) : t('intro') }}</h2>
+          @if (!training()) {
+            <p>{{ t('briefing') }}</p>
+          }
+          @if (training(); as config) {
+            <p>
+              {{ i.t('stage') }} {{ config.stage }} / 9 · {{ i.t(config.skill) }} ·
+              {{ i.t('upTo') }} {{ config.max }}
+            </p>
+            <p>{{ config.example }}</p>
+          } @else {
+            <p class="rule-copy">{{ t('rules') }}</p>
+          }
+          <button
+            class="button primary"
+            (click)="play(campaign.finished() ? 1 : campaign.unlocked())"
+          >
+            {{
+              t(
+                campaign.finished()
+                  ? 'again'
+                  : campaign.state().results.length
+                    ? 'continueWave'
+                    : 'play',
+                {
+                  n: campaign.unlocked(),
+                }
+              )
+            }}<app-icon kind="arrow" />
+          </button>
+          @if (!training()) {
+            <p class="playtest-note">{{ t('playtest') }}</p>
+          }
+        </div>
+      </div>
+    }
+    @if (battle().phase === 'lost' || battle().phase === 'complete') {
+      <div class="outcome-curtain">
+        <section
+          #outcome
+          class="story-panel outcome"
+          tabindex="-1"
+          [attr.aria-label]="
+            t(battle().phase === 'lost' ? 'retryTitle' : 'complete', { n: battle().wave.number })
+          "
+        >
+          <app-icon [kind]="battle().phase === 'lost' ? 'gem' : 'star'" />
+          <h2>
+            {{
+              t(battle().phase === 'lost' ? 'retryTitle' : 'complete', { n: battle().wave.number })
+            }}
+          </h2>
+          <p>
+            {{
+              training() && battle().phase === 'complete'
+                ? i.t('roundDone')
+                : t(battle().phase === 'lost' ? 'retryText' : 'completeText')
+            }}
+          </p>
+          @if (battle().phase === 'complete') {
+            <p>{{ training() ? i.t('roundDone') : t('restored') }}</p>
+            <p class="rule-copy">{{ t('waveSaved') }}</p>
+          }
+          @if (battle().phase === 'lost') {
+            <button class="button primary" (click)="play(battle().wave.number)">
+              {{ t('retry') }}
+            </button>
+          } @else if (!training() && battle().wave.number < 20) {
+            <button class="button primary" (click)="play(battle().wave.number + 1)">
+              {{ t('nextWave') }}
+            </button>
+            <button class="button secondary" (click)="play(battle().wave.number)">
+              {{ t('again') }}
+            </button>
+          } @else {
+            <button class="button primary" (click)="celebrate()">{{ t('celebrate') }}</button>
+          }
+          <a class="exit-link" [routerLink]="chapterLink()">{{ t('back') }}</a>
+        </section>
+      </div>
+    }
+  </app-battle-scene>
+  @if (started() && battle().phase !== 'lost' && battle().phase !== 'complete') {
+    <div class="learning-dock">
+      @if (training(); as config) {
+        <p class="training-position">
+          {{ i.t('stage') }} {{ config.stage }} / 9 · {{ i.t(config.skill) }} · {{ i.t('upTo') }}
+          {{ config.max }}
+        </p>
+      }
+      @if (settingsModel().pace !== 'relaxed') {
+        <p role="timer" class="training-position">{{ thinkingTime() }} s</p>
+        @if (thinkingTime() === 0) {
+          <p role="status">{{ i.t('timeHelp') }}</p>
+        }
+      }
+      <p class="instruction sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {{ message() }}
+      </p>
+      <div class="ten-frame-wrap">
+        <p class="math-prompt" aria-hidden="true">{{ equation() }}</p>
+        @if (!battle().hintVisible && !training()) {
+          <button
+            class="hint-button"
+            [disabled]="battle().phase !== 'ready'"
+            (click)="help()"
+            [attr.aria-label]="t('hint')"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9.5 8a2.5 2.5 0 1 1 4 2c-1 .7-1.5 1.2-1.5 3M12 16v.5" />
+            </svg>
+          </button>
+        }
+        @if (battle().hintVisible && !training()) {
+          <div
+            class="ten-frame"
+            role="img"
+            [attr.aria-label]="t('filled', { n: encounter().energy })"
+          >
+            @for (dot of dots; track dot) {
+              <span class="dot" [class.filled]="dot < encounter().energy"></span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <app-spell-bar
+      [spells]="spells()"
+      [locked]="battle().phase !== 'ready'"
+      [selected]="battle().spell"
+      (castSpell)="castSpell($event)"
+    />
+  }
+  @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
+    <section class="practice-settings" aria-labelledby="practice-settings-title">
+      <h2 id="practice-settings-title">{{ i.t('practicePath') }}</h2>
+      @if (!practiceConfig()) {
+        <label for="practice-stage">{{ i.t('chooseLevel') }}</label>
+        <select
+          id="practice-stage"
+          [disabled]="started()"
+          [value]="chosenStage()"
+          #stageSelect
+          (change)="chosenStage.set(stageSelect.value)"
+        >
+          <option value="">{{ i.t('friendsOfTen') }}</option>
+          @for (level of stages; track level.id) {
+            <option [value]="level.id">
+              {{ i.t('stage') }} {{ level.practice!.stage }} · {{ i.t(level.title) }} ·
+              {{ i.t('upTo') }} {{ level.practice!.max }}
+            </option>
+          }
+        </select>
+      }
+      @if (!started()) {
+        <div class="practice-options">
+          <fieldset>
+            <legend>{{ i.t('difficulty') }}</legend>
+            @for (option of difficulties; track option) {
+              <label
+                ><input type="radio" [value]="option" [formField]="settings.difficulty" />{{
+                  i.t(option)
+                }}</label
+              >
+            }
+          </fieldset>
+          <fieldset>
+            <legend>{{ i.t('pace') }}</legend>
+            @for (option of paces; track option) {
+              <label
+                ><input type="radio" [value]="option" [formField]="settings.pace" />{{
+                  i.t(option)
+                }}</label
+              >
+            }
+          </fieldset>
+        </div>
+        <p>{{ i.t('paceHelp') }}</p>
+      }
+      @if (training()) {
+        <a [routerLink]="['/worlds', 'missing-number', 'chapters', 'math-to-30']">{{
+          i.t('chooseLevel')
+        }}</a>
+      }
+    </section>
+    @if (!training()) {
+      <app-wave-path
+        [unlocked]="campaign.unlocked()"
+        [completed]="campaign.state().results.length"
+        (selectWave)="play($event)"
+      />
+    }
+    <div class="game-foot">
+      <span>{{ t('playtestHelp') }}</span
+      ><a [routerLink]="chapterLink()">{{ t('back') }}</a>
+    </div>
+  }
+  @if (store.saveFailed() || campaign.saveFailed()) {
+    <p class="audio-notice" role="status">{{ t('save') }}</p>
+  }
+</section>
+<app-game-pause
+  [chapterLink]="chapterLink()"
+  [started]="started()"
+  [instruction]="message()"
+  [canExplain]="battle().phase === 'ready'"
+  [canSpeak]="audio.canSpeak()"
+  [extraInstruction]="battle().wave.number === 11 ? t('zeroSpell') : ''"
+  (explain)="explainInPause()"
+  (replay)="replayInPause()"
+  (resume)="resume()"
+  (chooseWave)="showWaves()"
+  (restart)="restart()"
+  (toggleSound)="toggleSound($event)"
+/>

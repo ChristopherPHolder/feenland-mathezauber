@@ -44,6 +44,12 @@ export const en = {
   shapes: 'Shape Kingdom',
   shapesPreview: 'Geometry, shapes, symmetry, and spatial reasoning.',
 
+  friendsOfTen: 'Friends of Ten',
+  friendsOfTenDescription: 'Discover the number friends that make ten.',
+  fairyCastle: 'Defend the Fairy Castle',
+  fairyPlay: 'Defend the castle',
+  fairyBattleDescription:
+    'Twenty waves of number magic. Make ten, break shields, and save the castle. Your waves are saved so you can continue later.',
   firstSteps: 'The first little mysteries',
   firstStepsDescription: 'Find missing parts in addition stories up to 30.',
   backwards: 'Thinking backwards',
@@ -188,6 +194,12 @@ export const translations: Record<Locale, Messages> = {
     resume: 'Weiter',
     timeHelp: 'Die Zeit ist um. Du kannst weiterdenken und antworten.',
     practiceLevel: 'Diese Stufe üben',
+    friendsOfTen: 'Freunde der Zehn',
+    friendsOfTenDescription: 'Entdecke die Zahlenfreunde, die zusammen zehn ergeben.',
+    fairyCastle: 'Beschütze das Feenschloss',
+    fairyPlay: 'Beschütze das Schloss',
+    fairyBattleDescription:
+      'Zwanzig Wellen voller Zahlenmagie. Mach die zehn voll, zerbrich Schilde und rette das Schloss. Geschaffte Wellen werden gespeichert.',
     firstSteps: 'Die ersten kleinen Rätsel',
     firstStepsDescription: 'Finde die fehlenden Teile in Plusgeschichten bis 30.',
     backwards: 'Rückwärts denken',
@@ -342,6 +354,12 @@ export const translations: Record<Locale, Messages> = {
     resume: 'Continuar',
     timeHelp: 'Se acabó el tiempo. Puedes seguir pensando y responder.',
     practiceLevel: 'Practicar este nivel',
+    friendsOfTen: 'Amigos del diez',
+    friendsOfTenDescription: 'Descubre los números amigos que suman diez.',
+    fairyCastle: 'Defiende el Castillo de las Hadas',
+    fairyPlay: 'Defender el castillo',
+    fairyBattleDescription:
+      'Veinte oleadas de magia numérica. Completa diez, rompe escudos y salva el castillo. Las oleadas se guardan para seguir después.',
     firstSteps: 'Los primeros pequeños misterios',
     firstStepsDescription: 'Encuentra las partes que faltan en historias de sumas hasta 30.',
     backwards: 'Pensar al revés',
@@ -495,6 +513,12 @@ export const translations: Record<Locale, Messages> = {
     resume: 'Reprendre',
     timeHelp: 'Le temps est écoulé. Tu peux encore réfléchir et répondre.',
     practiceLevel: 'Travailler ce niveau',
+    friendsOfTen: 'Les amis de dix',
+    friendsOfTenDescription: 'Découvre les nombres amis qui font dix.',
+    fairyCastle: 'Protège le château des fées',
+    fairyPlay: 'Protéger le château',
+    fairyBattleDescription:
+      'Vingt vagues de magie des nombres. Complète dix, brise les boucliers et sauve le château. Les vagues sont enregistrées pour continuer plus tard.',
     firstSteps: 'Les premiers petits mystères',
     firstStepsDescription:
       'Trouve les parties manquantes dans des histoires d’addition jusqu’à 30.',

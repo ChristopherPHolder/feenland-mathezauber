@@ -1,0 +1,458 @@
+.battlefield {
+  position: relative;
+  height: clamp(300px, 42vw, 480px);
+  isolation: isolate;
+  overflow: hidden;
+  background: #abd9c0;
+}
+.forest {
+  object-fit: cover;
+  object-position: center 64%;
+  z-index: -2;
+}
+.scene-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#112e4b33, transparent 36%, #183c3911);
+  z-index: -1;
+}
+.battle-hud {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 6;
+}
+.wave {
+  background: #152f4a;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 16px;
+  box-shadow: 0 4px 12px #092e3333;
+}
+.encounter-track {
+  display: flex;
+  gap: 8px;
+  margin-top: 7px;
+}
+.encounter-track span {
+  width: 32px;
+  height: 5px;
+  border-radius: 4px;
+  background: #a1b1c2;
+}
+.encounter-track .done {
+  background: #ffdb6a;
+}
+.hearts {
+  display: flex;
+  gap: 5px;
+  background: #fff9e9;
+  padding: 9px 11px;
+  border-radius: 30px;
+}
+.hearts svg {
+  width: 29px;
+  height: 28px;
+  fill: #cc2053;
+  stroke: #8b173b;
+  stroke-width: 1.5;
+}
+.hearts .empty {
+  fill: #e3dace;
+  stroke: #746c64;
+}
+.character {
+  object-fit: contain;
+}
+.fairy {
+  position: absolute;
+  left: 5%;
+  bottom: 10%;
+  height: auto;
+  width: 30%;
+  filter: drop-shadow(0 10px 9px #223b3c33);
+  animation: float 3.8s ease-in-out infinite;
+}
+.waiting-monster {
+  position: absolute;
+  right: 1%;
+  bottom: 22%;
+  width: 12%;
+  height: auto;
+  object-fit: contain;
+  filter: saturate(0.7);
+  opacity: 0.85;
+}
+.monster-position {
+  position: absolute;
+  left: calc(62% - var(--approach) * 12%);
+  bottom: 7%;
+  width: 22%;
+  height: 57%;
+  transition: left 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.monster {
+  width: 100%;
+  height: auto;
+  max-height: 78%;
+  filter: drop-shadow(0 9px 6px #163b3d44);
+  animation: bounce 2.8s ease-in-out infinite;
+}
+.number-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fffdf5;
+  border: 3px solid #d8a84a;
+  border-radius: 14px;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 600;
+  line-height: 1;
+  padding: 8px 18px;
+  z-index: 1;
+  box-shadow: 0 5px 15px #4e301d33;
+}
+.steps {
+  display: flex;
+  gap: 9px;
+  margin: 0 0 0;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #fff8e9;
+}
+.steps span {
+  width: 11px;
+  height: 11px;
+  border: 2px solid #75532c;
+  background: #d6a759;
+  border-radius: 50%;
+}
+.steps .passed {
+  background: #fff8e9;
+}
+.butterfly {
+  width: 100%;
+  height: auto;
+  max-height: 85%;
+  object-fit: contain;
+  animation: friend 2.1s ease-out forwards;
+}
+.equation {
+  position: absolute;
+  top: -10px;
+  white-space: nowrap;
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: #fff4c6;
+  color: #623815;
+  font-size: clamp(20px, 3vw, 34px);
+  font-weight: 600;
+  box-shadow: 0 5px 22px #e8ac4655;
+  z-index: 3;
+}
+.sparkles {
+  position: absolute;
+  inset: 10%;
+  display: flex;
+  justify-content: space-between;
+  color: #fff5ad;
+  animation: friend 1.8s ease-out;
+}
+.sparkles app-icon {
+  width: 40px;
+  height: 40px;
+}
+.sparkles app-icon:nth-child(2) {
+  align-self: flex-end;
+}
+.projectile {
+  position: absolute;
+  left: 25%;
+  bottom: 35%;
+  display: flex;
+  align-items: center;
+  color: #ffeb87;
+  filter: drop-shadow(0 0 8px #fff7b6);
+  animation: spell 0.55s ease-in forwards;
+}
+.projectile app-icon {
+  width: 60px;
+  height: 60px;
+}
+.projectile span {
+  font-size: 28px;
+  font-weight: 600;
+  color: #543c15;
+}
+.damage-ripple {
+  position: absolute;
+  left: 1%;
+  bottom: 5%;
+  width: 24%;
+  height: 70%;
+  border: 5px solid #c91860;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: ripple 0.75s ease-out forwards;
+}
+.wobble .monster {
+  animation: wobble 0.5s ease-out;
+}
+@keyframes float {
+  50% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+@keyframes bounce {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes wobble {
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(6deg);
+  }
+}
+@keyframes spell {
+  to {
+    left: 64%;
+    bottom: 28%;
+    transform: scale(0.8);
+  }
+}
+@keyframes friend {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  30% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-30px);
+    opacity: 1;
+  }
+}
+@keyframes ripple {
+  to {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@media (min-width: 1000px) {
+  .battlefield {
+    height: 450px;
+  }
+}
+
+@media (max-width: 600px) {
+  .battlefield {
+    height: 270px;
+  }
+  .forest {
+    object-position: 40% 65%;
+  }
+  .battle-hud {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    gap: 6px;
+  }
+  .wave {
+    font-size: 13px;
+    padding: 8px 10px;
+    max-width: 65%;
+  }
+  .hearts {
+    padding: 8px;
+    gap: 2px;
+  }
+  .hearts svg {
+    width: 22px;
+    height: 22px;
+  }
+  .fairy {
+    left: 1%;
+    bottom: 8%;
+    height: auto;
+    width: 39%;
+  }
+  .monster-position {
+    left: calc(61% - var(--approach) * 10%);
+    width: 29%;
+    height: 55%;
+    bottom: 8%;
+  }
+  .waiting-monster {
+    width: 17%;
+    right: -2%;
+    bottom: 23%;
+  }
+  .number-badge {
+    font-size: 30px;
+    padding: 6px 13px;
+  }
+  .battlefield.has-overlay,
+  .battlefield.has-overlay {
+    height: 470px;
+  }
+  .equation {
+    font-size: 22px;
+    top: -8px;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-height: 450px) and (min-width: 601px) {
+  .battlefield {
+    height: 260px;
+  }
+  .battlefield.has-overlay,
+  .battlefield.has-overlay {
+    height: 400px;
+  }
+}
+
+:host {
+  display: block;
+}
+.paused * {
+  animation-play-state: paused !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.monster-position.boss {
+  width: 28%;
+  height: 66%;
+  left: calc(57% - var(--approach) * 10%);
+}
+.boss .number-badge {
+  top: -8px;
+}
+.shield-layers {
+  position: absolute;
+  bottom: 35px;
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 18px;
+  background: #fff9e9;
+  color: #744288;
+}
+.shield-layers app-icon {
+  width: 22px;
+  height: 22px;
+}
+.shield-layers .broken {
+  color: #356143;
+  opacity: 0.65;
+}
+.boss .equation {
+  top: -42px;
+}
+.projectile app-icon {
+  width: clamp(12px, 3vw, 36px);
+  height: clamp(12px, 3vw, 36px);
+}
+@media (max-width: 600px) {
+  .monster-position.boss {
+    width: 35%;
+    height: 62%;
+    left: calc(56% - var(--approach) * 10%);
+  }
+  .shield-layers {
+    gap: 3px;
+    bottom: 28px;
+  }
+  .shield-layers app-icon {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.battle-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pause-button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #172555;
+  color: white;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.pause-button svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 3;
+  fill: none;
+}
+
+.intro .wave,
+.intro .hearts {
+  display: none;
+}
+.intro .battle-hud {
+  justify-content: flex-end;
+}
+
+@media (min-width: 600px) and (min-height: 500px) {
+  :host.fit .battlefield {
+    height: 100%;
+    min-height: 0;
+  }
+  :host.fit .monster-position {
+    height: min(calc(100% - 32px), 300px);
+  }
+  :host.fit .monster-position.boss {
+    height: min(calc(100% - 32px), 300px);
+  }
+}
+
+@media (min-width: 600px) and (min-height: 500px) {
+  :host.fit .fairy {
+    width: auto;
+    max-width: 30%;
+    max-height: calc(100% - 110px);
+  }
+  :host.fit .monster {
+    width: auto;
+    max-width: 100%;
+    max-height: calc(100% - 88px);
+  }
+  :host.fit .boss.transforming .number-badge {
+    visibility: hidden;
+  }
+  :host.fit .boss .equation {
+    top: 0;
+  }
+}

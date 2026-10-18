@@ -1,0 +1,42 @@
+<dialog #dialog (cancel)="cancel($event)" aria-labelledby="pause-title">
+  <h2 id="pause-title">{{ t('paused') }}</h2>
+  <p>{{ t('pauseHelp') }}</p>
+  <button class="button primary" autofocus (click)="resume.emit()">{{ t('resume') }}</button>
+  @if (started()) {
+    <p>{{ instruction() }}</p>
+    @if (extraInstruction()) {
+      <p>{{ extraInstruction() }}</p>
+    }
+    <button class="button secondary" [disabled]="!canExplain()" (click)="explain.emit()">
+      {{ t('replay') }}
+    </button>
+    @if (canSpeak() && store.audio().speech) {
+      <button class="button secondary" (click)="replay.emit()">{{ t('speechReplay') }}</button>
+    }
+    @if (!canSpeak() && store.audio().speech) {
+      <p>{{ t('noVoice') }}</p>
+    }
+  }
+  <fieldset class="sound-settings">
+    <legend>{{ t('sound') }}</legend>
+    @for (key of soundKeys; track key) {
+      <label
+        ><span>{{ t(key) }}</span
+        ><input type="checkbox" [checked]="store.audio()[key]" (change)="toggleSound.emit(key)"
+      /></label>
+    }
+  </fieldset>
+  <label class="language-label"
+    >{{ t('language')
+    }}<select #languageSelect [value]="i.locale()" (change)="selectLanguage(languageSelect.value)">
+      @for (language of languages; track language.id) {
+        <option [value]="language.id">{{ language.name }}</option>
+      }
+    </select></label
+  >
+  @if (started()) {
+    <button class="button secondary" (click)="restart.emit()">{{ t('restart') }}</button>
+  }
+  <button class="button secondary" (click)="chooseWave.emit()">{{ t('backWaves') }}</button>
+  <a class="exit-link" [routerLink]="chapterLink()">{{ t('back') }}</a>
+</dialog>

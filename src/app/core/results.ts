@@ -30,7 +30,11 @@ export function applyResult(
 ): Progress | undefined {
   if (!isLevelResult(result)) return undefined;
   const context = findLevel(catalog, result.levelId);
-  if (!context || !['available', 'completed'].includes(levelState(context.level, progress)))
+  if (
+    !context ||
+    context.level.playtest ||
+    !['available', 'completed'].includes(levelState(context.level, progress))
+  )
     return undefined;
   const mastered = result.mastered
     ? [...new Set([...progress.mastered, result.levelId])]

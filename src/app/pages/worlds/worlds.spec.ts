@@ -22,7 +22,8 @@ const gated: World = {
 
 describe('world availability', () => {
   it('derives soon, locked, available and completed from published content', () => {
-    expect(worldState(worlds[1], emptyProgress)).toBe('soon');
+    expect(worldState(worlds.find(world => world.id === 'tens')!, emptyProgress)).toBe('soon');
+    expect(worldState(worlds.find(world => world.id === 'numbers')!, emptyProgress)).toBe('available');
     expect(worldState(gated, emptyProgress)).toBe('locked');
     expect(worldRequirements(gated, emptyProgress)[0].prerequisites).toEqual([level.id]);
     expect(worldState(first, emptyProgress)).toBe('available');
