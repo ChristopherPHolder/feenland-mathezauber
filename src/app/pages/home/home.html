@@ -1,0 +1,209 @@
+<div class="garden-world">
+  <header class="topbar">
+    <a class="brand" routerLink="/"><app-berry />fun<span>math</span></a>
+    <nav aria-label="Game navigation">
+      <a class="all-games" routerLink="/">All games</a>
+      <button class="read-button" (click)="readOrder()">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="m11 4-6 5H2v6h3l6 5V4Zm5 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Read to me
+      </button>
+    </nav>
+  </header>
+  <main id="main">
+    <div class="garden-sign">
+      <span class="sign-line" aria-hidden="true"></span>
+      <h1 #gameTitle tabindex="-1">Luna’s enchanted garden</h1>
+      <span class="sign-line" aria-hidden="true"></span>
+    </div>
+    <p class="welcome">A little kindness. A little counting. A lot of magic.</p>
+    <app-sticker-album [earned]="earned()" />
+    <div class="canopy" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span
+      ><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="play-space">
+      <section
+        class="friend"
+        aria-label="Your friend Luna"
+        [class.celebrating]="served() || finished()"
+      >
+        <div class="speech-bubble">
+          @if (finished()) {
+            You’re my berry best friend!
+          } @else if (served()) {
+            That’s berry delicious!
+          } @else {
+            Hi, I’m Luna!<br />Let’s make a berry treat.
+          }
+        </div>
+        <div class="pip-stage">
+          <picture
+            ><source media="(max-width: 760px)" srcset="/images/luna-small.webp" />
+            <img
+              ngSrc="/images/luna.webp"
+              width="960"
+              height="878"
+              priority
+              alt="Luna, a friendly baby unicorn with a pink and lavender mane and a little bowl of berries"
+          /></picture>
+        </div>
+        <div class="friend-name">
+          <app-magic-icon class="small-heart" kind="heart" /> Your magical new friend
+        </div>
+      </section>
+      <section class="order" aria-labelledby="order-title">
+        @if (finished()) {
+          <div class="final-order">
+            <app-magic-icon class="party-star" kind="star" />
+            <h2 id="order-title" #finishTitle tabindex="-1">You made Luna’s day!</h2>
+            <p>5 treats. 5 friendship stickers.<br />Look what you did!</p>
+            <div class="final-stickers" role="img" aria-label="All five stickers earned">
+              @for (slot of slots; track slot) {
+                <app-magic-icon [kind]="motifs[slot]" />
+              }
+            </div>
+            <a class="finish-link" routerLink="/">Choose another level</a>
+            <button class="primary" (click)="playAgain()">
+              Make more treats <app-magic-icon kind="arrow" />
+            </button>
+          </div>
+        } @else {
+          <div class="order-top">
+            <span class="order-count">Treat {{ index() + 1 }} of 5</span
+            ><span class="recipe-type">{{
+              order().operator === '+' ? 'Mix them together' : 'Take some away'
+            }}</span>
+          </div>
+          <h2 id="order-title">{{ served() ? 'A treat made with love!' : 'How many berries?' }}</h2>
+          <p class="instruction">
+            {{
+              order().operator === '+'
+                ? 'Put both bowls together for Luna.'
+                : 'Start with the berries. Take the crossed-out ones away.'
+            }}
+          </p>
+          <div
+            class="berry-math"
+            role="img"
+            [attr.aria-label]="
+              order().left +
+              (order().operator === '+' ? ' berries plus ' : ' berries minus ') +
+              order().right +
+              ' berries'
+            "
+          >
+            @if (order().operator === '+') {
+              <div class="bowl" aria-hidden="true">
+                @for (berry of leftBerries(); track berry) {
+                  <span class="berry-token"
+                    ><app-berry />
+                    @if (help()) {
+                      <small>{{ berry + 1 }}</small>
+                    }
+                  </span>
+                }
+              </div>
+              <span class="math-symbol" aria-hidden="true">+</span>
+              <div class="bowl" aria-hidden="true">
+                @for (berry of rightBerries(); track berry) {
+                  <span class="berry-token"
+                    ><app-berry />
+                    @if (help()) {
+                      <small>{{ order().left + berry + 1 }}</small>
+                    }
+                  </span>
+                }
+              </div>
+            } @else {
+              <div class="bowl subtraction-bowl" aria-hidden="true">
+                @for (berry of leftBerries(); track berry) {
+                  <span class="berry-token" [class.taken]="berry >= order().left - order().right"
+                    ><app-berry />
+                    @if (help() && berry < order().left - order().right) {
+                      <small>{{ berry + 1 }}</small>
+                    }
+                  </span>
+                }
+              </div>
+            }
+          </div>
+          <div class="equation" aria-hidden="true">
+            {{ order().left }} <span>{{ order().operator }}</span> {{ order().right }}
+            <span>=</span>
+            <span class="missing" [class.filled]="selected() !== null">{{
+              selected() ?? '?'
+            }}</span>
+          </div>
+          <div class="answers" role="group" aria-label="Choose the number of berries">
+            @for (answer of choices(); track $index; let first = $first) {
+              @if (first) {
+                <button
+                  #firstAnswer
+                  class="answer"
+                  [class.chosen]="selected() === answer"
+                  [attr.aria-pressed]="selected() === answer"
+                  [disabled]="served()"
+                  (click)="choose(answer)"
+                >
+                  {{ answer }}
+                </button>
+              } @else {
+                <button
+                  class="answer"
+                  [class.chosen]="selected() === answer"
+                  [attr.aria-pressed]="selected() === answer"
+                  [disabled]="served()"
+                  (click)="choose(answer)"
+                >
+                  {{ answer }}
+                </button>
+              }
+            }
+          </div>
+          <p class="feedback" role="status">
+            {{ feedback() || 'Pick a number, then serve your treat.' }}
+          </p>
+          @if (served()) {
+            <button #nextButton class="primary" (click)="next()">
+              {{ index() === 4 ? 'See my stickers' : 'Next treat' }} <app-magic-icon kind="arrow" />
+            </button>
+          } @else {
+            <button class="primary" [disabled]="selected() === null" (click)="serve()">
+              Serve it to Luna <app-magic-icon kind="arrow" />
+            </button>
+          }
+          <button class="help-button" [attr.aria-pressed]="help()" (click)="help.set(!help())">
+            {{ help() ? 'Hide counting help' : 'Help me count' }}
+          </button>
+        }
+      </section>
+    </div>
+    <div class="bottom-bar">
+      <p>Take your time. Luna’s happy to wait.</p>
+      <label for="level"
+        >Recipe size
+        <select id="level" [value]="level()" (change)="changeLevel($event)">
+          <option value="little">Little bites · to 10</option>
+          <option value="big">Big bites · to 20</option>
+        </select></label
+      >
+    </div>
+    @if (readUnavailable()) {
+      <p role="status">
+        Read-aloud isn’t available in this browser. You can still play using the pictures.
+      </p>
+    }
+  </main>
+  <footer>
+    <span>A little play, every day.</span
+    ><a routerLink="/games/number-bridge">For grown-ups: number bridge practice</a>
+  </footer>
+</div>

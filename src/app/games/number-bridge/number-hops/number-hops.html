@@ -1,0 +1,11 @@
+<div class="bridge" aria-hidden="true">
+  @for (point of points(); track $index; let last = $last; let i = $index) {
+    <span class="point" [class.ten]="point % 10 === 0">{{ last && hideEnd() ? '?' : point }}</span>
+    @if (!last) {
+      <span class="hop" [class.active]="active() === i"
+        ><b>+{{ revealed() > i ? hops()[i] : '?' }}</b
+        ><span>⤴</span></span
+      >
+    }
+  }
+</div>

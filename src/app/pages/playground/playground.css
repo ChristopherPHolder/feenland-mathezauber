@@ -1,0 +1,248 @@
+:host {
+  display: block;
+}
+.playground {
+  min-height: 100vh;
+  background: #eee5fa;
+  color: #493057;
+}
+header {
+  max-width: 1256px;
+  margin: auto;
+  min-height: 88px;
+  padding: 16px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.brand span {
+  color: #a83162;
+  margin-left: -6px;
+}
+.brand app-berry {
+  width: 28px;
+  height: 32px;
+  margin-right: 4px;
+  transform: rotate(-12deg);
+}
+.header-note {
+  font-size: 15px;
+  color: #685075;
+}
+main {
+  max-width: 1040px;
+  margin: auto;
+  padding: 0 32px;
+}
+.welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 12px 40px 20px;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(40px, 5vw, 60px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+h1:focus {
+  outline: none;
+}
+.welcome-copy > p {
+  font-size: 20px;
+  margin: 20px 0 0;
+  line-height: 1.45;
+}
+.welcome-copy .reassurance {
+  color: #685075;
+  font-size: 15px;
+  max-width: 34ch;
+  margin-top: 12px;
+}
+.welcome img {
+  width: 260px;
+  height: auto;
+  flex-shrink: 0;
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin: 16px 0;
+}
+h2 {
+  font-size: 25px;
+  margin: 0;
+  font-weight: 600;
+}
+.section-heading > span {
+  font-size: 14px;
+  color: #685075;
+}
+.levels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.levels a {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 28px;
+  min-height: 142px;
+  border-radius: 16px;
+  text-decoration: none;
+  background: #faf6ff;
+  transition: background 160ms ease-out;
+}
+.levels a:hover {
+  background: #fff;
+}
+.level-number {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  color: #744591;
+  font-size: 14px;
+}
+.level-number strong {
+  font-size: 48px;
+  line-height: 1.1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.level-copy {
+  flex: 1;
+}
+h3 {
+  font-size: 25px;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.level-copy p {
+  margin: 0 0 10px;
+  max-width: 49ch;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.game-detail {
+  font-size: 13px;
+  color: #685075;
+}
+.play-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  color: #ae3264;
+  font-size: 19px;
+  white-space: nowrap;
+}
+.play-link app-magic-icon {
+  width: 24px;
+  height: 24px;
+}
+.big-level a {
+  background: #f8edf3;
+}
+.bridge-level a {
+  background: #d5ebde;
+}
+.bridge-level .level-number,
+.bridge-level .play-link {
+  color: #305d48;
+}
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px 24px;
+  font-size: 14px;
+  color: #685075;
+}
+footer app-magic-icon {
+  color: #ae3264;
+}
+@media (max-width: 640px) {
+  header {
+    min-height: 76px;
+    padding: 16px 24px;
+  }
+  .header-note {
+    display: none;
+  }
+  main {
+    padding: 0 20px;
+  }
+  .welcome {
+    gap: 0;
+    padding: 10px 0 24px;
+  }
+  h1 {
+    font-size: clamp(32px, 8vw, 46px);
+  }
+  .welcome-copy > p {
+    font-size: 17px;
+    margin-top: 14px;
+  }
+  .welcome-copy .reassurance {
+    font-size: 14px;
+  }
+  .welcome img {
+    width: 32%;
+  }
+  .section-heading {
+    display: block;
+    margin: 12px 0 18px;
+  }
+  h2 {
+    font-size: 23px;
+    margin-bottom: 6px;
+  }
+  .levels a {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 10px 16px;
+    padding: 22px 18px;
+  }
+  .level-number {
+    min-width: 0;
+    align-self: start;
+  }
+  .level-number strong {
+    font-size: 40px;
+  }
+  h3 {
+    font-size: 23px;
+  }
+  .level-copy p {
+    font-size: 15px;
+  }
+  .play-link {
+    grid-column: 2;
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .levels a {
+    transition: none;
+  }
+}

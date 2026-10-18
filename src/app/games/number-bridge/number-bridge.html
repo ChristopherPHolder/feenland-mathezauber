@@ -1,0 +1,202 @@
+<div class="game-page" lang="de">
+  <header class="game-header">
+    <a routerLink="/" class="wordmark"><span aria-hidden="true">✳</span> funmath.</a>
+    <a routerLink="/" class="back-link">← Alle Spiele</a>
+  </header>
+  <main>
+    @if (phase() === 'intro') {
+      <section class="intro" aria-labelledby="intro-title">
+        <span class="eyebrow">DEIN ERSTES ZAHLENABENTEUER · BIS 30</span>
+        <h1 id="intro-title" #stageTitle tabindex="-1">
+          Kleine Hüpfer.<br /><span>Große Aha-Momente.</span>
+        </h1>
+        <p class="lead">
+          Finde die fehlende Zahl mit der <strong>Zehnerbrücke</strong>.<br />Erst zum nächsten
+          Zehner. Dann ist der Rest viel leichter!
+        </p>
+        <div class="example">
+          <span class="eyebrow">SCHAU MAL: 7 + ? = 16</span>
+          <app-number-hops [points]="[7, 10, 16]" [hops]="[3, 6]" [revealed]="2" />
+          <p>Bis 10 fehlen <strong>3</strong>. Von 10 bis 16 fehlen <strong>6</strong>.</p>
+          <div class="result-strip">
+            3 + 6 = <strong>9</strong><span>Also: 7 + <strong>9</strong> = 16. Gefunden!</span>
+          </div>
+        </div>
+        <button type="button" class="primary" (click)="start()">
+          Gemeinsam üben <span aria-hidden="true">→</span>
+        </button>
+        <p class="quiet">8 Aufgaben · Erst mit Hilfe, dann du · Kein Zeitdruck</p>
+        <details class="parent-note">
+          <summary>Und wie geht das bei Minus?</summary>
+          <p>
+            <strong>18 − ? = 11:</strong> Hüpfe von 11 bis 18. Der Hüpfer ist 7. Also fehlt die 7.
+          </p>
+          <p>
+            <strong>? − 6 = 17:</strong> Hole die 6 wieder dazu: 17 + 6 = 23. Hier suchst du das
+            Ziel, also 23.
+          </p>
+          <p>
+            Liegt kein Zehner dazwischen? Dann reicht ein einziger Hüpfer. Das üben wir zusammen!
+          </p>
+        </details>
+      </section>
+    } @else if (phase() === 'play') {
+      <section class="play" aria-labelledby="play-title">
+        <div class="session-bar">
+          <span>{{ index() < 4 ? 'ZUSAMMEN ENTDECKEN' : 'JETZT BIST DU DRAN' }}</span
+          ><span>Aufgabe {{ index() + 1 }} von {{ questions().length }}</span>
+        </div>
+        <div
+          class="progress"
+          role="progressbar"
+          aria-label="Gelöste Aufgaben"
+          [attr.aria-valuenow]="earned()"
+          aria-valuemin="0"
+          [attr.aria-valuemax]="questions().length"
+        >
+          <span [style.width.%]="(earned() / questions().length) * 100"></span>
+        </div>
+        <h1 id="play-title" #stageTitle tabindex="-1">
+          {{ solved() ? 'Eine Lücke weniger. Ein Aha mehr!' : 'Welche Zahl versteckt sich hier?' }}
+        </h1>
+        <div class="equation" aria-label="Rechenaufgabe">
+          <span
+            [class.blank]="problem().missing === 'left'"
+            [class.found]="solved() && problem().missing === 'left'"
+            >{{ problem().missing === 'left' && !solved() ? '?' : problem().left }}</span
+          >
+          <span>{{ problem().operator }}</span>
+          <span
+            [class.blank]="problem().missing === 'right'"
+            [class.found]="solved() && problem().missing === 'right'"
+            >{{ problem().missing === 'right' && !solved() ? '?' : problem().right }}</span
+          >
+          <span>=</span><span>{{ plan().result }}</span>
+        </div>
+        @if (guided() || solved()) {
+          <div class="coach">
+            <span class="eyebrow">{{
+              plan().findLanding ? 'HOLE DIE ZAHL WIEDER DAZU' : 'BAUE DEINE ZAHLENBRÜCKE'
+            }}</span>
+            <p>{{ strategy() }}</p>
+            <app-number-hops
+              [points]="plan().points"
+              [hops]="plan().hops"
+              [revealed]="solved() ? plan().hops.length : hopIndex()"
+              [active]="isHop() ? hopIndex() : -1"
+              [hideEnd]="plan().findLanding && !solved()"
+            />
+            @if (!isHop() && !solved()) {
+              <p class="assembly">
+                {{
+                  plan().findLanding
+                    ? 'Du suchst die Zahl am Ende deiner Brücke.'
+                    : 'Die fehlende Zahl ist so groß wie deine Hüpfer zusammen: ' +
+                      plan().hops.join(' + ') +
+                      '.'
+                }}
+              </p>
+            }
+          </div>
+        }
+        @if (!solved()) {
+          <form class="answer-area" (submit)="check($event)" novalidate>
+            <label for="answer">{{ instruction() }}</label>
+            <div class="answer-row">
+              <span aria-hidden="true">{{ isHop() ? '+' : '?' }} =</span
+              ><input
+                id="answer"
+                #answerInput
+                [formField]="answerForm.answer"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                spellcheck="false"
+                aria-describedby="feedback"
+                [attr.aria-invalid]="error()"
+              /><button class="primary" type="submit">
+                Prüfen <span aria-hidden="true">✓</span>
+              </button>
+            </div>
+            <div class="keypad" role="group" aria-label="Zahlentasten">
+              @for (digit of digits; track digit) {
+                <button type="button" (click)="typeDigit(digit)">{{ digit }}</button>
+              }
+              <button
+                type="button"
+                class="erase"
+                (click)="erase()"
+                aria-label="Letzte Ziffer löschen"
+              >
+                ⌫
+              </button>
+            </div>
+          </form>
+        }
+        <div
+          id="feedback"
+          class="feedback"
+          [class.incorrect]="error()"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {{ message() }}
+        </div>
+        @if (solved()) {
+          <div class="success-card">
+            <span aria-hidden="true">✦</span>
+            <div>
+              <strong>{{ plan().calculation }}</strong>
+              <p>
+                {{
+                  plan().findLanding
+                    ? 'Die Zahl am Ziel gehört in die Lücke.'
+                    : 'Deine Hüpfer zusammen füllen die Lücke.'
+                }}
+              </p>
+            </div>
+          </div>
+          <button class="primary next" #nextButton type="button" (click)="next()">
+            {{ index() === questions().length - 1 ? 'Meine Entdeckungen' : 'Nächste Aufgabe' }}
+            <span aria-hidden="true">→</span>
+          </button>
+        } @else if (!guided()) {
+          <button type="button" class="help-button" (click)="showHelp()">
+            ✧ Zeig mir die Zehnerbrücke
+          </button>
+        }
+        <p class="quiet">
+          {{
+            index() < 4
+              ? 'Wir üben jeden Hüpfer zusammen.'
+              : 'Rechne im Kopf. Die Brücke hilft dir, wenn du sie brauchst.'
+          }}
+        </p>
+      </section>
+    } @else {
+      <section class="completion" aria-labelledby="complete-title">
+        <div class="big-star" aria-hidden="true">✳</div>
+        <span class="eyebrow">DEINE BRÜCKE IST GESCHAFFT</span>
+        <h1 id="complete-title" #stageTitle tabindex="-1">
+          8 Aufgaben.<br /><span>Richtig viel entdeckt!</span>
+        </h1>
+        <p class="lead">
+          Du hast fehlende Zahlen gefunden und die Zehnerbrücke geübt. Jeder Hüpfer zählt!
+        </p>
+        <div class="takeaway">
+          <strong>Dein neuer Trick</strong>
+          <p>Beim Plus und bei der fehlenden Minuszahl: Zähle die Hüpfer zusammen.</p>
+          <p>
+            Fehlt die erste Zahl bei Minus? Hole die weggenommene Zahl wieder dazu. Dein Ziel ist
+            die Antwort.
+          </p>
+        </div>
+        <button type="button" class="primary" (click)="start(true)">
+          Noch eine Runde <span aria-hidden="true">↻</span>
+        </button>
+        <a class="home-link" routerLink="/">Zurück zum Spielplatz</a>
+      </section>
+    }
+  </main>
+  <footer>Ein Hüpfer nach dem anderen. Du bestimmst das Tempo.</footer>
+</div>

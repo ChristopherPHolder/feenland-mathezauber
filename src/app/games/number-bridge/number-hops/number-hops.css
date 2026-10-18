@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+.bridge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  gap: 8px;
+}
+.point {
+  flex-shrink: 0;
+  width: 65px;
+  height: 65px;
+  display: grid;
+  place-items: center;
+  background: #fffdf7;
+  border: 1px solid #d5dacb;
+  border-radius: 17px;
+  font:
+    800 28px 'Manrope',
+    sans-serif;
+}
+.ten {
+  background: #eccb83;
+  border-color: #bda461;
+  color: #4d3e22;
+}
+.hop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 110px;
+  color: #49613a;
+}
+.hop b {
+  background: #dce6cd;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 19px;
+}
+.hop > span {
+  font-size: 43px;
+  line-height: 1;
+}
+.hop.active b {
+  background: #2c4d3c;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .point {
+    width: 49px;
+    height: 54px;
+    font-size: 24px;
+  }
+  .hop b {
+    font-size: 17px;
+    padding: 5px 10px;
+  }
+  .bridge {
+    gap: 5px;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fun-math",
+  "account_id": "4c26d155727fa4cf673af44bbb2bab16",
+  "compatibility_date": "2026-10-18",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist/fun-math/browser",
+    "not_found_handling": "single-page-application",
+  },
+  "build": {
+    "command": "npm run build",
+  },
+}
