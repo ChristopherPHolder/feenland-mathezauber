@@ -4,6 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
+import { worlds, WORLD_CATALOG } from './core/catalog';
 import { translations, Locale } from './core/messages';
 describe('Feenland navigation', () => {
   beforeEach(() => {
@@ -75,6 +76,15 @@ describe('Feenland navigation', () => {
     localStorage.setItem('feenland.progress', 'broken');
     const h = await RouterTestingHarness.create('/');
     expect(h.routeNativeElement?.querySelector('h1')).toBeTruthy();
+  });
+  it('derives the Home recommendation label from the configured world', async () => {
+    TestBed.overrideProvider(WORLD_CATALOG, {
+      useValue: [{ ...worlds[0], id: 'new-world', title: 'tens' }],
+    });
+    const h = await RouterTestingHarness.create('/');
+    expect(h.routeNativeElement?.querySelector('.adventure-actions small')?.textContent).toBe(
+      TestBed.inject(LocaleService).t('tens'),
+    );
   });
   it('has identical message keys for every language', () => {
     for (const locale of Object.keys(translations) as Locale[])

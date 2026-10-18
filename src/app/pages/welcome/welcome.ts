@@ -30,7 +30,7 @@ import { Icon } from '../../shared/icon';
                       ? 'continue'
                       : 'start'
                 )
-              }}<small>{{ i.t('missing') }}</small></span
+              }}<small>{{ i.t(p.nextWorld()?.title ?? 'missing') }}</small></span
             ><app-icon kind="arrow"
           /></a>
         } @else {

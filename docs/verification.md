@@ -47,3 +47,9 @@
 - Language, Audio, Accessibility and About now have explicit sections. Audio truthfully states that previews have no sound; accessibility explains keyboard/touch and system reduced-motion behavior. No unsupported switches or destructive controls are present.
 - The shared gear passes the current route (including query/fragment) to Settings. Its back action preserves that context; direct visits and external/recursive return targets fall back to Home. Root-component and route tests cover this behavior.
 - 33 tests pass; production build passes. Settings passes the twelve-size matrix in en/de/es/fr and AXE reports zero violations at phone/desktop widths for all four languages. Existing tests verify immediate switching, persistence and unchanged learning progress.
+
+## Home (#3)
+
+- Home now derives its recommended world label from the injected catalog rather than assuming Missing Number. A catalog replacement regression verifies the label updates with the destination.
+- 34 tests and production build pass. Existing cases cover real zero counts, returning mastery, all-current-content caught-up, saved locale and invalid saves. All four locales pass the twelve-size portrait/landscape matrix and phone/desktop AXE with zero violations.
+- Continue/Start intentionally names the challenge preview while actual gameplay is deferred by #1/#3. Its destination is the correct available challenge shell; Explore opens the implemented World Map and Settings stays in the shared gear.

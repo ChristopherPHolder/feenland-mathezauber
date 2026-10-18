@@ -1,6 +1,13 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, inject, Service, signal } from '@angular/core';
-import { emptyProgress, nextLevel, parseProgress, Progress, WORLD_CATALOG } from './catalog';
+import {
+  emptyProgress,
+  findLevel,
+  nextLevel,
+  parseProgress,
+  Progress,
+  WORLD_CATALOG,
+} from './catalog';
 import { applyResult, LevelResult, ResultSource } from './results';
 @Service()
 export class ProgressService {
@@ -24,6 +31,7 @@ export class ProgressService {
       stars: { ...real.stars, ...demo.stars },
     };
   }
+  readonly nextWorld = computed(() => findLevel(this.catalog, this.next()?.id ?? null)?.world);
   explore(worldId: string) {
     if (
       !this.catalog.some((world) => world.id === worldId) ||
