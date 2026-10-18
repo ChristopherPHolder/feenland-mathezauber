@@ -1,0 +1,27 @@
+<fieldset class="spell-bar" [disabled]="locked()" [attr.aria-busy]="locked()">
+  <legend>{{ t('choose') }}</legend>
+  @for (spell of spells; track spell; let index = $index) {
+    <button
+      #primarySpell
+      class="spell"
+      [class.selected]="selected() === spell && locked()"
+      [attr.aria-label]="t('spell', { n: spell })"
+      (click)="castSpell.emit(spell)"
+    >
+      <span class="gem-art" aria-hidden="true"
+        ><img
+          ngSrc="/images/fairy-defense/crystals.webp"
+          width="2172"
+          height="724"
+          [style.transform]="'translateX(' + -index * 20 + '%)'"
+          alt=""
+      /></span>
+      <span class="spell-number">{{ i.format(spell) }}</span>
+      <span class="spell-quantity" aria-hidden="true">
+        @for (dot of spells.slice(0, spell); track dot) {
+          <span></span>
+        }
+      </span>
+    </button>
+  }
+</fieldset>

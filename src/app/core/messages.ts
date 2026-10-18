@@ -1,4 +1,10 @@
 export const en = {
+  friendsOfTen: 'Friends of Ten',
+  friendsOfTenDescription: 'Discover the number friends that make ten.',
+  fairyCastle: 'Defend the Fairy Castle',
+  fairyPlaytest: 'Play Wave 1',
+  fairyPlaytestDescription:
+    'Try the first guided wave of Fairy Tower Defense. This playtest does not award full-level stars or mastery.',
   firstSteps: 'The first little mysteries',
   firstStepsDescription: 'Find missing parts in addition stories up to 30.',
   backwards: 'Thinking backwards',
@@ -110,6 +116,12 @@ export type Locale = (typeof locales)[number];
 export const translations: Record<Locale, Messages> = {
   en,
   de: {
+    friendsOfTen: 'Freunde der Zehn',
+    friendsOfTenDescription: 'Entdecke die Zahlenfreunde, die zusammen zehn ergeben.',
+    fairyCastle: 'Beschütze das Feenschloss',
+    fairyPlaytest: 'Welle 1 spielen',
+    fairyPlaytestDescription:
+      'Probiere die erste geführte Welle aus. Dieser Spieltest vergibt noch keine Sterne oder Meisterschaft für das ganze Level.',
     firstSteps: 'Die ersten kleinen Rätsel',
     firstStepsDescription: 'Finde die fehlenden Teile in Plusgeschichten bis 30.',
     backwards: 'Rückwärts denken',
@@ -219,6 +231,12 @@ export const translations: Record<Locale, Messages> = {
     close: 'Vorschau schließen',
   },
   es: {
+    friendsOfTen: 'Amigos del diez',
+    friendsOfTenDescription: 'Descubre los números amigos que suman diez.',
+    fairyCastle: 'Defiende el Castillo de las Hadas',
+    fairyPlaytest: 'Jugar la oleada 1',
+    fairyPlaytestDescription:
+      'Prueba la primera oleada guiada. Esta prueba no otorga estrellas ni dominio del nivel completo.',
     firstSteps: 'Los primeros pequeños misterios',
     firstStepsDescription: 'Encuentra las partes que faltan en historias de sumas hasta 30.',
     backwards: 'Pensar al revés',
@@ -327,6 +345,12 @@ export const translations: Record<Locale, Messages> = {
     close: 'Cerrar vista previa',
   },
   fr: {
+    friendsOfTen: 'Les amis de dix',
+    friendsOfTenDescription: 'Découvre les nombres amis qui font dix.',
+    fairyCastle: 'Protège le château des fées',
+    fairyPlaytest: 'Jouer la vague 1',
+    fairyPlaytestDescription:
+      'Essaie la première vague guidée. Cet essai ne donne pas encore d’étoiles ni de maîtrise du niveau complet.',
     firstSteps: 'Les premiers petits mystères',
     firstStepsDescription:
       'Trouve les parties manquantes dans des histoires d’addition jusqu’à 30.',

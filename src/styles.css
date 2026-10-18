@@ -312,3 +312,9 @@ dialog::backdrop {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+main.focused-game {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}

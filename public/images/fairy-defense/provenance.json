@@ -1,0 +1,29 @@
+{
+  "generator": "Built-in image_gen",
+  "reference": "Existing public/images/feenland.webp and user-supplied Fairy Tower Defense storyboard (style only)",
+  "assets": {
+    "fairy": {
+      "prompt": "Use case: illustration-story. Single game character sprite, transparent background. Preserve the established Feenland fairy from reference: cheerful young fairy with flowing copper-red wavy hair, small white flower in hair, green layered leaf dress with little daisies, translucent pale veined wings, green slippers, golden star-tipped wand. Full body, flying three-quarter profile facing RIGHT, wand outstretched right, inviting happy expression. Polished dimensional storybook painted game art, clean silhouette, warm soft light. No text, no frame, no other characters. Leave margin around wings and wand.",
+      "source": "/Users/Christopher.Holder/.codex/generated_images/01a14f8a-e2f3-7ab3-b408-f05ffa7e2b07/exec-131faf05-d7b4-4b38-86a1-3970e612830a.png"
+    },
+    "monsterRed": {
+      "prompt": "Use case: illustration-story. Single isolated sprite on transparent background: funny small red-coral round fluffy monster, two little cream horns, expressive large eyes, tiny feet, silly open grin with one tooth. Child-friendly mischievous rather than frightening. Full body three-quarter facing LEFT, ready to hop. Polished dimensional painted storybook game art matching fairy forest, clean silhouette, warm soft light. No text, no number, no frame, no background.",
+      "source": "/Users/Christopher.Holder/.codex/generated_images/01a14f8a-e2f3-7ab3-b408-f05ffa7e2b07/exec-b567f714-a963-4393-b1b9-ea4793d46ef8.png"
+    },
+    "monsterBlue": {
+      "prompt": "Use case: illustration-story. Single isolated sprite on transparent background: funny small sky-blue pear-shaped fluffy sleepy monster, two small floppy pointed ears, large friendly eyes, tiny feet, a gentle yawning smile. Child-friendly rather than frightening. Full body three-quarter facing LEFT. Polished dimensional painted storybook game art matching fairy forest, clean silhouette, soft light. No text, no number, no frame, no background.",
+      "source": "/Users/Christopher.Holder/.codex/generated_images/01a14f8a-e2f3-7ab3-b408-f05ffa7e2b07/exec-96616b74-9a81-4afc-be75-dcc86c757abd.png"
+    },
+    "crystals": {
+      "prompt": "Use case: illustration-story. A single horizontal game sprite strip containing EXACTLY FIVE separate jewel spell crystals with equal spacing and no overlap, transparent background, no text or numbers or labels. Left to right: ruby pink, sapphire blue, amber gold, amethyst purple, emerald green. Each upright faceted rounded diamond gem with gold rim and tiny organic gold setting. All five identical size, front view, complete objects with generous gap and margins. Polished dimensional storybook fantasy game inventory art, sparkling highlights.",
+      "source": "/Users/Christopher.Holder/.codex/generated_images/01a14f8a-e2f3-7ab3-b408-f05ffa7e2b07/exec-1ec7d254-13c2-4b69-9ec2-4678a9ead15d.png"
+    },
+    "butterfly": {
+      "prompt": "Use case: illustration-story. Single isolated friendly magical golden butterfly sprite on transparent background, full body and four broad glowing wings, cute smiling face, dimensional painted children's storybook fantasy game art. Warm yellow and soft orange wings with pink dots, tiny antennae, facing left, clean silhouette, soft light. No text, no background, no other objects.",
+      "source": "/Users/Christopher.Holder/.codex/generated_images/01a14f8a-e2f3-7ab3-b408-f05ffa7e2b07/exec-251ba776-c554-4ed6-9e1e-3d82fbfb475b.png"
+    },
+    "forest": {
+      "prompt": "Use case: illustration-story. Create one polished wide 1536x1024 children's fairy tale game battlefield background asset. Match the attached Feenland storyboard's lush storybook illustration, soft dimensional painted rendering, jewel greens, sunlight, flowers, friendly enchanted forest. NO characters, NO text, NO numbers, NO interface. A small cream stone fairy castle with pink conical roofs at far LEFT near foreground, a broad flat golden cobblestone path across the bottom third leading from right toward castle at left. Rich leafy trees frame both edges, distant blue mountains and sunny blue sky, pink flowers. Leave center path open and uncluttered for separate character sprites and an open sky area above. Landscape composition designed to crop well for mobile portrait. Warm inviting magical light, high quality game art. Supplied image is style reference only, not an edit target."
+    }
+  }
+}

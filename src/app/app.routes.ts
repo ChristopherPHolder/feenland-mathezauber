@@ -48,6 +48,12 @@ export const routes: Routes = [
   },
   { path: 'worlds', loadComponent: () => import('./pages/worlds/worlds').then((m) => m.Worlds) },
   {
+    path: 'adventure/defend-fairy-castle',
+    data: { focusedGame: true },
+    loadComponent: () =>
+      import('./pages/fairy-defense/fairy-defense.component').then((m) => m.FairyDefenseComponent),
+  },
+  {
     path: 'adventure/:id',
     canActivate: [
       (route) => {
