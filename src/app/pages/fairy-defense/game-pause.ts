@@ -13,6 +13,7 @@ export class GamePause {
   readonly started = input(false);
   readonly resume = output();
   readonly restart = output();
+  readonly chooseWave = output();
   readonly toggleSound = output<keyof AudioSettings>();
   protected readonly i = inject(LocaleService);
   protected readonly store = inject(PlaytestStore);

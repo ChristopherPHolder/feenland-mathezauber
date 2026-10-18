@@ -50,6 +50,12 @@ export const routes: Routes = [
   {
     path: 'adventure/defend-fairy-castle',
     data: { focusedGame: true },
+    canActivate: [
+      (route) =>
+        route.queryParamMap.get('mode') === 'demo'
+          ? inject(Router).createUrlTree(['/worlds', 'numbers', 'chapters', 'friends-of-ten'])
+          : true,
+    ],
     loadComponent: () =>
       import('./pages/fairy-defense/fairy-defense.component').then((m) => m.FairyDefenseComponent),
   },

@@ -1,37 +1,48 @@
-/** Rendering and audio never determine the outcome of a turn. */
-export interface Encounter {
-  readonly energy: number;
-  readonly appearance: string;
-}
-export const WAVE_ONE: readonly Encounter[] = [
-  { energy: 9, appearance: 'monster-red' },
-  { energy: 8, appearance: 'monster-blue' },
-];
+import { createWave, Wave } from './waves';
+export type { Encounter } from './waves';
+export const WAVE_ONE = createWave(1).encounters;
 export type Phase = 'ready' | 'casting' | 'wrong' | 'transforming' | 'lost' | 'complete';
 export interface Battle {
+  readonly wave: Wave;
   readonly encounter: number;
   readonly hearts: number;
   readonly mistakes: number;
+  readonly attempts: number;
+  readonly hintVisible: boolean;
+  readonly helpUsed: boolean;
+  readonly independent: readonly boolean[];
   readonly phase: Phase;
   readonly spell: number | null;
   readonly damaged: boolean;
 }
-export const freshBattle = (): Battle => ({
+export const freshBattle = (number = 1): Battle => ({
+  wave: createWave(number),
   encounter: 0,
   hearts: 3,
   mistakes: 0,
+  attempts: 0,
+  hintVisible: number <= 4,
+  helpUsed: number <= 4,
+  independent: [],
   phase: 'ready',
   spell: null,
   damaged: false,
 });
-export function cast(state: Battle, spell: number): Battle {
-  if (state.phase !== 'ready' || !Number.isInteger(spell) || spell < 1 || spell > 5) return state;
-  return { ...state, spell, damaged: false, phase: 'casting' };
+export function revealHint(state: Battle): Battle {
+  return state.phase === 'ready' ? { ...state, hintVisible: true, helpUsed: true } : state;
 }
-export function resolveSpell(state: Battle, encounters = WAVE_ONE): Battle {
+export function cast(state: Battle, spell: number): Battle {
+  if (state.phase !== 'ready' || !state.wave.spells.includes(spell)) return state;
+  return { ...state, spell, attempts: state.attempts + 1, damaged: false, phase: 'casting' };
+}
+export function resolveSpell(state: Battle): Battle {
   if (state.phase !== 'casting') return state;
-  if (encounters[state.encounter].energy + (state.spell ?? 0) === 10)
-    return { ...state, phase: 'transforming' };
+  if (state.wave.encounters[state.encounter].energy + (state.spell ?? 0) === 10)
+    return {
+      ...state,
+      phase: 'transforming',
+      independent: [...state.independent, state.attempts === 1 && !state.helpUsed],
+    };
   const damaged = state.mistakes === 2;
   const hearts = state.hearts - Number(damaged);
   return {
@@ -39,12 +50,25 @@ export function resolveSpell(state: Battle, encounters = WAVE_ONE): Battle {
     mistakes: damaged ? 0 : state.mistakes + 1,
     hearts,
     damaged,
+    hintVisible: true,
+    helpUsed: true,
     phase: hearts === 0 ? 'lost' : 'wrong',
   };
 }
-export function advance(state: Battle, encounters = WAVE_ONE): Battle {
+export function advance(state: Battle): Battle {
   if (state.phase === 'wrong') return { ...state, phase: 'ready' };
   if (state.phase !== 'transforming') return state;
-  if (state.encounter + 1 === encounters.length) return { ...state, hearts: 3, phase: 'complete' };
-  return { ...freshBattle(), hearts: state.hearts, encounter: state.encounter + 1 };
+  if (state.encounter + 1 === state.wave.encounters.length)
+    return { ...state, hearts: 3, phase: 'complete' };
+  return {
+    ...state,
+    encounter: state.encounter + 1,
+    mistakes: 0,
+    attempts: 0,
+    hintVisible: state.wave.assistance === 'guided',
+    helpUsed: state.wave.assistance === 'guided',
+    spell: null,
+    damaged: false,
+    phase: 'ready',
+  };
 }

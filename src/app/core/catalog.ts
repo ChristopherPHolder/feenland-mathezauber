@@ -110,12 +110,11 @@ export const worlds: readonly World[] = [
                 {
                   id: 'defend-fairy-castle',
                   title: 'fairyCastle',
-                  description: 'fairyPlaytestDescription',
+                  description: 'fairyBattleDescription',
                   implemented: true,
                   prerequisites: [],
                   skills: ['make-ten'],
                   format: 'fairy-defense',
-                  playtest: true,
                 },
               ],
             },

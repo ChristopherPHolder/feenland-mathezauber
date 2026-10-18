@@ -78,3 +78,20 @@ h2 {
     justify-self: center;
   }
 }
+
+.castle-stars {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+.castle-stars app-icon {
+  width: 44px;
+  height: 44px;
+  color: #6d6a61;
+}
+.castle-stars .earned {
+  color: #8c5b13;
+  background: #fff1cb;
+  border-radius: 10px;
+  padding: 4px;
+}

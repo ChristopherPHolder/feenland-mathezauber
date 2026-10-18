@@ -12,7 +12,8 @@ export class SpellBar {
   readonly locked = input(false);
   readonly selected = input<number | null>(null);
   readonly castSpell = output<number>();
-  protected readonly spells = [1, 2, 3, 4, 5];
+  readonly spells = input<readonly number[]>([1, 2, 3, 4, 5]);
+  protected readonly quantities = Array.from({ length: 10 }, (_, index) => index);
   protected readonly i = inject(LocaleService);
   private readonly primarySpell = viewChild<ElementRef<HTMLButtonElement>>('primarySpell');
   focus() {

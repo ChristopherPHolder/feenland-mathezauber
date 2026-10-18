@@ -1,3 +1,4 @@
+import { gameText, GameMessageKey } from '../fairy-defense/game-messages';
 import { Component, computed, inject } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -20,9 +21,24 @@ export class Completion {
   protected readonly context = computed(() =>
     findLevel(this.catalog, this.result()?.levelId ?? null),
   );
+  protected readonly castle = computed(() => this.result()?.levelId === 'defend-fairy-castle');
+  protected readonly starSlots = [1, 2, 3];
+  protected g(key: GameMessageKey, values: Record<string, number> = {}) {
+    return gameText(this.i.locale(), key, values);
+  }
   protected readonly next = computed(() => {
     const result = this.result();
-    return result ? nextLevel(this.catalog, this.p.progressFor(result.source)) : undefined;
+    const catalog =
+      result?.source === 'demo'
+        ? this.catalog.map((world) => ({
+            ...world,
+            chapters: world.chapters.map((chapter) => ({
+              ...chapter,
+              levels: chapter.levels.filter((level) => level.format === 'challenge-preview'),
+            })),
+          }))
+        : this.catalog;
+    return result ? nextLevel(catalog, this.p.progressFor(result.source)) : undefined;
   });
   protected readonly chapterEarned = computed(() => {
     const context = this.context();

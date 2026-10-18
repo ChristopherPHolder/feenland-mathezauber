@@ -22,7 +22,7 @@ describe('Explicit learning results', () => {
     expect(completed.completed).toEqual([first]);
     expect(completed.mastered).toEqual([]);
     expect(completed.chapters).toEqual([]);
-    expect(nextLevel(worlds, completed)?.id).toBe(first);
+    expect(nextLevel(worlds, completed)?.id).toBe('defend-fairy-castle');
     const mastered = applyResult(worlds, completed, earned)!;
     expect(nextLevel(worlds, mastered)?.id).toBe(second);
     const chapter = applyResult(worlds, mastered, { ...earned, levelId: second, stars: 3 })!;
@@ -31,7 +31,7 @@ describe('Explicit learning results', () => {
     expect(replay.stars?.[first]).toBe(2);
     expect(replay.mastered).toEqual([first, second]);
     expect(replay.chapters).toEqual(chapter.chapters);
-    expect(nextLevel(worlds, replay)).toBeUndefined();
+    expect(nextLevel(worlds, replay)?.id).toBe('defend-fairy-castle');
   });
   it('rejects unknown, locked, unpublished and malformed results', () => {
     for (const result of [
