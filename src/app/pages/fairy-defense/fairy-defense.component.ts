@@ -170,6 +170,7 @@ export class FairyDefenseComponent {
     this.battle.update(revealHint);
     this.instructionOverride.set(full ? 'full' : 'short');
     this.audio.speak(this.message());
+    this.focusSpells();
   }
   protected explainInPause() {
     if (this.battle().phase !== 'ready') return;
