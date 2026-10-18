@@ -167,8 +167,14 @@ export class FairyDefenseComponent {
     this.instructionOverride.set(full ? 'full' : 'short');
     this.audio.speak(this.message());
   }
-  protected replaySpeech() {
-    this.audio.speak(this.message());
+  protected explainInPause() {
+    if (this.battle().phase !== 'ready') return;
+    this.battle.update(revealHint);
+    this.instructionOverride.set('full');
+    this.audio.speak(this.message(), true);
+  }
+  protected replayInPause() {
+    this.audio.speak(this.message(), true);
   }
   protected toggleSound(key: keyof AudioSettings) {
     this.store.toggle(key);

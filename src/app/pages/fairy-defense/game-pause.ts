@@ -11,6 +11,12 @@ import { RouterLink } from '@angular/router';
 })
 export class GamePause {
   readonly started = input(false);
+  readonly instruction = input('');
+  readonly extraInstruction = input('');
+  readonly canExplain = input(false);
+  readonly canSpeak = input(false);
+  readonly explain = output();
+  readonly replay = output();
   readonly resume = output();
   readonly restart = output();
   readonly chooseWave = output();

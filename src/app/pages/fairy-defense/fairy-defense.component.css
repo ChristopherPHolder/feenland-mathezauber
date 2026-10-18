@@ -13,36 +13,7 @@
   overflow: hidden;
   box-shadow: 0 16px 50px #041b3355;
 }
-.game-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 28px;
-  background: #fffdf5;
-}
-.game-name h1 {
-  font-size: clamp(20px, 2.6vw, 30px);
-  margin: 2px 0;
-  line-height: 1.15;
-}
-.round-button {
-  width: 48px;
-  height: 48px;
-  flex: none;
-  border: 0;
-  border-radius: 50%;
-  background: #172555;
-  color: #fff;
-  display: grid;
-  place-items: center;
-}
-.round-button svg {
-  width: 24px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 3;
-}
+
 .start-curtain,
 .outcome-curtain {
   position: absolute;
@@ -99,48 +70,49 @@
   padding: 10px;
 }
 .learning-dock {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 24px;
-  padding: 18px 28px;
+  padding: 14px 20px;
   background: #fffdf5;
 }
-.instruction {
-  font-size: 18px;
-  line-height: 1.45;
-  margin: 0 0 10px;
-  max-width: 60ch;
-}
-.guidance-actions {
-  display: flex;
-  gap: 8px 16px;
-  flex-wrap: wrap;
-}
-.guidance-actions button {
-  min-height: 44px;
-  padding: 6px 0;
-  background: none;
-  border: 0;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  color: #355445;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.guidance-actions app-icon {
-  width: 18px;
-  height: 18px;
-}
 .ten-frame-wrap {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  min-height: 44px;
+}
+.hint-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0eddb;
+  color: #172555;
+}
+.hint-button svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 .math-prompt {
   font-size: 24px;
   font-weight: 600;
-  margin: 0 0 8px;
+  margin: 0;
 }
 .math-prompt span {
   color: #ae1652;
@@ -207,20 +179,11 @@
     border-radius: 0;
     box-shadow: none;
   }
-  .game-header {
-    padding: 12px 16px;
-  }
-  .game-name h1 {
-    font-size: 21px;
-  }
+
   .learning-dock {
     padding: 16px;
-    grid-template-columns: 1fr;
-    gap: 12px;
   }
-  .instruction {
-    font-size: 16px;
-  }
+
   .ten-frame-wrap {
     display: flex;
     align-items: center;
@@ -240,12 +203,7 @@
     width: 21px;
     height: 21px;
   }
-  .guidance-actions {
-    gap: 4px 14px;
-  }
-  .guidance-actions button {
-    font-size: 13px;
-  }
+
   .story-panel {
     padding: 22px;
     max-width: 440px;

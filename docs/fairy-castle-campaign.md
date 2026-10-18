@@ -45,7 +45,7 @@ npm start -- --host 127.0.0.1 --port 4301
 
 Open <http://127.0.0.1:4301/adventure/defend-fairy-castle>, or choose Number Kingdom → Friends of Ten → Defend the castle. To test a phone on the same network, use `--host 0.0.0.0` and your computer's local network address.
 
-Audio starts after Play. Pause contains separate remembered music, effects, voice, and language controls. English, German, Spanish, and French have matching instructions and optional device voices. If no matching voice is available, text remains fully playable. Keyboard users can Tab to every spell and press Enter; single digits are shortcuts for spells 0–9, while spell 10 remains available through normal keyboard navigation.
+The visible play surface centers the equation and optional ten-frame beneath the battlefield, with an icon-only help control when counting support is hidden. Pause sits beside the hearts; the game title, live instructions and spell-group legend remain available to assistive technology without visible text rows. Audio starts after Play. Pause contains full explanatory text, speech replay, the unavailable-voice notice, and separate remembered music, effects, voice, and language controls. Explicitly requested explanation or replay speech can run while the battle remains paused. English, German, Spanish, and French have matching instructions and optional device voices. If no matching voice is available, the equation, counting support and text in Pause keep the game playable. Keyboard users can Tab to every spell and press Enter; single digits are shortcuts for spells 0–9, while spell 10 remains available through normal keyboard navigation.
 
 ## Verify
 

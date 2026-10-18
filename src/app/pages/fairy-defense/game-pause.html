@@ -2,6 +2,21 @@
   <h2 id="pause-title">{{ t('paused') }}</h2>
   <p>{{ t('pauseHelp') }}</p>
   <button class="button primary" autofocus (click)="resume.emit()">{{ t('resume') }}</button>
+  @if (started()) {
+    <p>{{ instruction() }}</p>
+    @if (extraInstruction()) {
+      <p>{{ extraInstruction() }}</p>
+    }
+    <button class="button secondary" [disabled]="!canExplain()" (click)="explain.emit()">
+      {{ t('replay') }}
+    </button>
+    @if (canSpeak() && store.audio().speech) {
+      <button class="button secondary" (click)="replay.emit()">{{ t('speechReplay') }}</button>
+    }
+    @if (!canSpeak() && store.audio().speech) {
+      <p>{{ t('noVoice') }}</p>
+    }
+  }
   <fieldset class="sound-settings">
     <legend>{{ t('sound') }}</legend>
     @for (key of soundKeys; track key) {

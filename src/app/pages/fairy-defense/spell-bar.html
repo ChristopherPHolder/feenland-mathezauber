@@ -4,7 +4,7 @@
   [disabled]="locked()"
   [attr.aria-busy]="locked()"
 >
-  <legend>{{ t('choose') }}</legend>
+  <legend class="sr-only">{{ t('choose') }}</legend>
   @for (spell of spells(); track spell; let index = $index) {
     <button
       #primarySpell

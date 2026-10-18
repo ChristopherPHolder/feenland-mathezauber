@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { LocaleService } from '../../core/locale';
 import { Icon } from '../../shared/icon';
 import { Battle } from './battle';
@@ -11,6 +11,7 @@ import { gameText, GameMessageKey } from './game-messages';
   styleUrl: './battle-scene.css',
 })
 export class BattleScene {
+  readonly pauseRequested = output();
   readonly battle = input.required<Battle>();
   readonly paused = input(false);
   readonly started = input(false);

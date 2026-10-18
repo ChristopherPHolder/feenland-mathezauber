@@ -8,13 +8,7 @@
   background: #f0e5c9;
   min-width: 0;
 }
-.spell-bar legend {
-  float: left;
-  width: 100%;
-  text-align: center;
-  font-size: 16px;
-  padding: 8px 0 0;
-}
+
 .spell {
   position: relative;
   background: none;
@@ -84,13 +78,7 @@
     position: relative;
     flex-wrap: wrap;
   }
-  .spell-bar legend {
-    position: absolute;
-    left: 26px;
-    top: 40px;
-    width: auto;
-    font-size: 18px;
-  }
+
   .spell-bar {
     padding-top: 8px;
   }
@@ -104,9 +92,7 @@
     gap: 8px;
     padding: 4px 10px 16px;
   }
-  .spell-bar legend {
-    padding-top: 8px;
-  }
+
   .spell {
     flex: 1 1 44px;
     max-width: 80px;
@@ -135,14 +121,12 @@
 .spell-bar.expanded {
   flex-wrap: wrap;
   gap: 8px;
-  padding-top: 32px;
+  padding-top: 12px;
 }
 .expanded .spell {
   flex: 0 1 70px;
 }
-.expanded legend {
-  position: static;
-}
+
 .expanded .spell-quantity {
   max-width: 42px;
   flex-wrap: wrap;
@@ -157,9 +141,7 @@
     grid-template-columns: repeat(6, minmax(0, 1fr));
     padding-top: 4px;
   }
-  .expanded legend {
-    grid-column: 1/-1;
-  }
+
   .expanded .spell {
     min-height: 100px;
   }
@@ -171,4 +153,16 @@
 
 .spell.zero .gem-art {
   filter: grayscale(1);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
