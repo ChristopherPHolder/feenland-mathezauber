@@ -1,0 +1,142 @@
+:host {
+  display: block;
+}
+.world-page {
+  max-width: 1240px;
+  margin: auto;
+  padding: 24px 40px 48px;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-bottom: 24px;
+}
+.world-intro {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  gap: 48px;
+  margin-bottom: 40px;
+}
+.world-intro h1 {
+  margin: 0 0 20px;
+}
+.world-intro img {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+.lead {
+  max-width: 42ch;
+}
+.caught-message {
+  padding: 24px;
+  background: #dfefe3;
+  border-radius: 16px;
+}
+h2 {
+  font-size: 30px;
+  margin: 40px 0 12px;
+}
+.path-help {
+  color: var(--muted);
+  max-width: 65ch;
+  margin: 0 0 28px;
+}
+.chapter-path {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.chapter-stop {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 28px;
+  background: var(--cream);
+  border-radius: 16px;
+  scroll-margin-top: 24px;
+}
+.path-marker {
+  display: flex;
+  padding: 12px;
+  border-radius: 50%;
+  background: #dfefe3;
+}
+.chapter-copy {
+  min-width: 0;
+  flex: 1;
+}
+.state-label {
+  font-size: 14px;
+}
+h3 {
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.chapter-copy p {
+  margin: 0 0 24px;
+}
+.chapter-copy .button {
+  width: fit-content;
+  font-size: 16px;
+}
+.earned {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.empty-path {
+  padding: 24px 0;
+}
+@media (min-width: 1000px) {
+  .chapter-stop:nth-child(even) {
+    margin-top: 48px;
+  }
+}
+@media (max-width: 700px) {
+  .world-page {
+    padding: 16px 20px 32px;
+  }
+  .world-intro {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .world-intro img {
+    max-width: 360px;
+    justify-self: center;
+  }
+  .chapter-path {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .chapter-stop {
+    padding: 24px 20px;
+    gap: 12px;
+  }
+  .path-marker {
+    padding: 8px;
+  }
+  h3 {
+    font-size: 23px;
+  }
+  .chapter-copy .button {
+    width: 100%;
+    padding: 14px;
+  }
+}
+@media (max-height: 550px) and (min-width: 701px) {
+  .world-intro img {
+    max-height: 180px;
+    width: auto;
+    justify-self: center;
+  }
+}

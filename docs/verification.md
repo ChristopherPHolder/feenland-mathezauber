@@ -19,3 +19,10 @@
 - World entry persists exploration without mastery or chapter rewards; reload retains it. Reduced-motion emulation yields `0s` button transition duration. No browser page errors occurred during these flows.
 - Locked state and prerequisite explanations use a synthetic catalog in integration tests; production currently has one available preview world and five unpublished worlds. No fictional gates or achievements are added to the live catalog.
 - Static design detection flags Angular `ngSrc` images as missing `src`; browser verification confirms the existing fairy artwork loads. The build uses Angular's optimized-image directive.
+
+## World Detail (#5)
+
+- 21 tests and production build pass, including chapter route handoff, forthcoming chapter deep-link rejection, earned award preservation and configuration growth.
+- Chapter paths show configured titles, learning promises, state labels/icons and independent earned chapter awards. A forthcoming inverse-operation chapter previews future learning without launching it.
+- Browser checks: en/de/es/fr at 320, 375, 393, 768, 820, 1024, 1180, 1366, 1440 and 1920px widths plus 852×393 and 568×320 landscape; no page overflow. AXE: zero violations at 393px and 1440px per locale, including native preview dialogs. Escape returns focus to the chapter trigger.
+- The separate chapter destination initially provides the preview handoff; issue #6 adds its complete level path.

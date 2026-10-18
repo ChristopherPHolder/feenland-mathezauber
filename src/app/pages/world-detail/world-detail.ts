@@ -1,55 +1,21 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, viewChild } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { WORLD_CATALOG, levelState, worldState } from '../../core/catalog';
+import { WORLD_CATALOG, Chapter, chapterState, findLevel, worldState } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
 import { Icon } from '../../shared/icon';
-
-/** Map destination; the complete chapter path is tracked separately in issue #5. */
+import { ContentPreview } from '../../shared/content-preview/content-preview';
 @Component({
   selector: 'app-world-detail',
-  imports: [RouterLink, Icon, NgOptimizedImage],
-  template: `<section class="page narrow">
-    <a class="back-link" routerLink="/worlds"><app-icon kind="back" />{{ i.t('backWorlds') }}</a>
-    @if (world(); as world) {
-      <h1>{{ i.t(world.title) }}</h1>
-      <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" />
-      <p class="lead">{{ i.t(world.description) }}</p>
-      @if (caughtUp()) {
-        <p>{{ i.t('worldCaught') }}</p>
-      }
-      <p>{{ i.t('worldDetailNotice') }}</p>
-      @if (next(); as level) {
-        <p>{{ i.t('previewNotice') }}</p>
-        <a class="button primary" [routerLink]="['/adventure', level.id]"
-          >{{ i.t('previewAdventure') }}<app-icon kind="arrow"
-        /></a>
-      }
-    }
-  </section>`,
-  styles: `
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 44px;
-      margin-bottom: 24px;
-    }
-    img {
-      width: 100%;
-      height: auto;
-      border-radius: 16px;
-    }
-    .button {
-      margin-top: 24px;
-    }
-  `,
+  imports: [RouterLink, Icon, NgOptimizedImage, ContentPreview],
+  templateUrl: './world-detail.html',
+  styleUrl: './world-detail.css',
 })
 export class WorldDetail {
   protected readonly i = inject(LocaleService);
-  private readonly p = inject(ProgressService);
+  protected readonly p = inject(ProgressService);
   private readonly catalog = inject(WORLD_CATALOG);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
   protected readonly world = computed(() =>
@@ -59,17 +25,39 @@ export class WorldDetail {
     const world = this.world();
     return world ? worldState(world, this.p.progress()) === 'completed' : false;
   });
-  protected readonly next = computed(() => {
-    const levels = this.world()?.chapters.flatMap((chapter) => chapter.levels) ?? [];
-    return (
-      levels.find((level) => levelState(level, this.p.progress()) === 'available') ??
-      levels.find((level) => levelState(level, this.p.progress()) === 'completed')
-    );
-  });
+  protected readonly chapters = computed(
+    () =>
+      this.world()?.chapters.map((chapter) => ({
+        chapter,
+        state: chapterState(chapter, this.p.progress()),
+        earned: this.p.progress().chapters.includes(chapter.id),
+      })) ?? [],
+  );
+  private readonly dialog = viewChild.required(ContentPreview);
   constructor() {
     effect(() => {
       const world = this.world();
       if (world) this.p.explore(world.id);
+    });
+  }
+  protected preview(chapter: Chapter) {
+    const state = chapterState(chapter, this.p.progress());
+    if (state !== 'locked' && state !== 'soon') return;
+    // One accessible entry level opens the chapter; independent branches are alternatives.
+    const entry = chapter.levels.find((level) => level.implemented);
+    const requirements = [
+      ...new Set(
+        entry?.prerequisites.filter((id) => !this.p.progress().mastered.includes(id)) ?? [],
+      ),
+    ];
+    this.dialog().open({
+      title: chapter.title ?? 'chapterTitle',
+      description: chapter.description ?? 'missingPreview',
+      state,
+      requirements: requirements.map((id) => ({
+        id,
+        title: findLevel(this.catalog, id)?.level.title ?? 'unknownRequirement',
+      })),
     });
   }
 }

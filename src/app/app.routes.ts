@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { WORLD_CATALOG, worldState, levelState } from './core/catalog';
+import { WORLD_CATALOG, worldState, levelState, chapterState, findChapter } from './core/catalog';
 import { ProgressService } from './core/progress';
 import { Router, Routes } from '@angular/router';
 export const routes: Routes = [
@@ -11,6 +11,26 @@ export const routes: Routes = [
   {
     path: 'settings',
     loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
+  },
+  {
+    path: 'worlds/:worldId/chapters/:chapterId',
+    canActivate: [
+      (route) => {
+        const context = findChapter(
+          inject(WORLD_CATALOG),
+          route.paramMap.get('worldId'),
+          route.paramMap.get('chapterId'),
+        );
+        return context &&
+          ['available', 'completed'].includes(
+            chapterState(context.chapter, inject(ProgressService).progress()),
+          )
+          ? true
+          : inject(Router).createUrlTree(['/worlds']);
+      },
+    ],
+    loadComponent: () =>
+      import('./pages/chapter-detail/chapter-detail').then((m) => m.ChapterDetail),
   },
   {
     path: 'worlds/:id',

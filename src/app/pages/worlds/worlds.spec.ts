@@ -95,7 +95,9 @@ describe('World Map navigation', () => {
     expect(TestBed.inject(ProgressService).progress().mastered).toEqual([]);
     expect(h.routeNativeElement?.querySelector('a[href="/worlds"]')).toBeTruthy();
     expect(
-      h.routeNativeElement?.querySelector('a[href="/adventure/missing-number-add-to-30"]'),
+      h.routeNativeElement?.querySelector(
+        'a[href="/worlds/missing-number/chapters/missing-number-first-steps"]',
+      ),
     ).toBeTruthy();
     await h.navigateByUrl('/worlds');
     for (const locale of ['en', 'de', 'es', 'fr'] as const) {

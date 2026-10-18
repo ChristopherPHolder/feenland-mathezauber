@@ -1,0 +1,62 @@
+<section class="world-page" aria-labelledby="world-title">
+  <a class="back-link" routerLink="/worlds"><app-icon kind="back" />{{ i.t('backWorlds') }}</a>
+  @if (world(); as world) {
+    <header class="world-intro">
+      <div>
+        <h1 id="world-title">{{ i.t(world.title) }}</h1>
+        <p class="lead">{{ i.t(world.description) }}</p>
+      </div>
+      <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
+    </header>
+    @if (caughtUp()) {
+      <p class="caught-message">{{ i.t('worldCaught') }}</p>
+    }
+    <section aria-labelledby="chapter-path-title">
+      <h2 id="chapter-path-title">{{ i.t('chapterPath') }}</h2>
+      <p class="path-help">{{ i.t('chapterHelp') }}</p>
+      <ol class="chapter-path">
+        @for (entry of chapters(); track entry.chapter.id) {
+          <li class="chapter-stop" [id]="entry.chapter.id">
+            <span class="path-marker" aria-hidden="true"
+              ><app-icon
+                [kind]="
+                  entry.state === 'locked' ? 'lock' : entry.state === 'completed' ? 'cup' : 'book'
+                "
+            /></span>
+            <div class="chapter-copy">
+              <span class="state-label">{{ i.t(entry.state) }}</span>
+              <h3 [id]="'title-' + entry.chapter.id">
+                {{ i.t(entry.chapter.title ?? 'chapterTitle') }}
+              </h3>
+              <p>{{ i.t(entry.chapter.description ?? 'missingPreview') }}</p>
+              @if (entry.earned) {
+                <p class="earned"><app-icon kind="cup" />{{ i.t('chapterAward') }}</p>
+              }
+              @if (entry.state === 'available' || entry.state === 'completed') {
+                <a
+                  class="button primary"
+                  [routerLink]="['/worlds', world.id, 'chapters', entry.chapter.id]"
+                  [attr.aria-describedby]="'title-' + entry.chapter.id"
+                  >{{ i.t('openChapter') }}<app-icon kind="arrow"
+                /></a>
+              } @else {
+                <button
+                  class="button secondary"
+                  aria-haspopup="dialog"
+                  (click)="preview(entry.chapter)"
+                  [attr.aria-describedby]="'title-' + entry.chapter.id"
+                >
+                  {{ i.t(entry.state === 'locked' ? 'unlock' : 'viewPreview')
+                  }}<app-icon kind="arrow" />
+                </button>
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="empty-path">{{ i.t('worldEmpty') }}</li>
+        }
+      </ol>
+    </section>
+  }
+  <app-content-preview />
+</section>
