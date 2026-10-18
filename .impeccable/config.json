@@ -6,5 +6,20 @@
       "maxFindings": 5,
       "maxChars": 8000
     }
+  },
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/app/app.ts"
+        ],
+        "createdAt": "2026-10-18T13:39:08.683Z",
+        "reason": "Agent verified: NgOptimizedImage supplies src from ngSrc=/logo.svg; public/logo.svg exists."
+      }
+    ]
   }
 }

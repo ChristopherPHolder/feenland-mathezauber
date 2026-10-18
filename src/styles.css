@@ -90,13 +90,19 @@ p {
   gap: 24px;
 }
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
   font-size: 23px;
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.02em;
 }
-.wordmark span {
+.wordmark .brand-name {
+  display: block;
+}
+.wordmark .brand-name > span {
   display: block;
   font-size: 19px;
   margin-top: 5px;
@@ -267,7 +273,7 @@ dialog::backdrop {
   .wordmark {
     font-size: 18px;
   }
-  .wordmark span {
+  .wordmark .brand-name > span {
     font-size: 15px;
   }
   nav {

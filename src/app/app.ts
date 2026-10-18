@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LocaleService } from './core/locale';
@@ -5,9 +6,12 @@ import { ProgressService } from './core/progress';
 import { Icon } from './shared/icon';
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, Icon],
+  imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, Icon],
   template: ` <header class="site-header">
-      <a class="wordmark" routerLink="/">Feenland <span>Mathezauber</span></a>
+      <a class="wordmark" routerLink="/">
+        <img ngSrc="/logo.svg" width="48" height="48" alt="" priority />
+        <span class="brand-name">Feenland <span>Mathezauber</span></span>
+      </a>
       <nav [attr.aria-label]="i.t('home')">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{
           i.t('home')
