@@ -20,7 +20,9 @@
       <p class="caught-message">{{ i.t('chapterCaught') }}</p>
     }
     <h2>{{ i.t('levelPath') }}</h2>
-    <p class="path-help">{{ i.t('levelHelp') }}</p>
+    <p class="path-help">
+      {{ i.t(context.chapter.id === 'math-to-30' ? 'practiceHelp' : 'levelHelp') }}
+    </p>
     <ol class="level-path">
       @for (entry of levels(); track entry.level.id; let index = $index) {
         <li
@@ -32,7 +34,14 @@
           <div class="level-copy">
             <app-content-status [state]="entry.state" />
             <h3 [id]="'level-' + entry.level.id">{{ i.t(entry.level.title) }}</h3>
-            <p>{{ i.t(entry.level.description ?? 'missingPreview') }}</p>
+            @if (entry.level.practice; as practice) {
+              <p>
+                {{ i.t('stage') }} {{ practice.stage }} / 9 · {{ i.t('upTo') }} {{ practice.max }}
+              </p>
+              <p class="lead">{{ practice.example }}</p>
+            } @else {
+              <p>{{ i.t(entry.level.description ?? 'missingPreview') }}</p>
+            }
             @if (entry.level.id === next()) {
               <p class="next-label">{{ i.t('recommended') }}</p>
             }
@@ -54,7 +63,8 @@
                 [class.secondary]="entry.level.id !== next()"
                 [routerLink]="['/adventure', entry.level.id]"
                 [attr.aria-describedby]="'level-' + entry.level.id"
-                >{{ i.t('openLevel') }}<app-icon kind="arrow"
+                >{{ i.t(entry.level.practice ? 'practiceLevel' : 'openLevel')
+                }}<app-icon kind="arrow"
               /></a>
             } @else {
               <button

@@ -1,4 +1,5 @@
-import { emptyProgress, levelState, nextLevel, parseProgress, worlds, World } from './catalog';
+import { worlds } from './preview-catalog.fixture';
+import { emptyProgress, levelState, nextLevel, parseProgress, World } from './catalog';
 import { detectLocale } from './locale';
 describe('expanding-world foundations', () => {
   it('recommends the first available level for a new player', () => {
@@ -15,7 +16,7 @@ describe('expanding-world foundations', () => {
     const catalog: readonly World[] = [
       ...worlds,
       {
-        ...worlds[0],
+        ...worlds.find((world) => world.id === 'missing-number')!,
         id: 'new-world',
         title: 'numbers',
         chapters: [
@@ -39,7 +40,7 @@ describe('expanding-world foundations', () => {
     expect(parseProgress(progress)).toEqual(progress);
   });
   it('distinguishes unavailable, prerequisite-gated and replayable content', () => {
-    const level = worlds[0].chapters[0].levels[0];
+    const level = worlds.find((world) => world.id === 'missing-number')!.chapters[0].levels[0];
     expect(levelState({ ...level, implemented: false }, emptyProgress)).toBe('soon');
     expect(levelState({ ...level, prerequisites: ['other'] }, emptyProgress)).toBe('locked');
     expect(

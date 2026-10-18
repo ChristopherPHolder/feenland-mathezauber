@@ -1,6 +1,8 @@
 import { InjectionToken } from '@angular/core';
+import { practiceLevels, PracticeConfig } from './practice';
 import { MessageKey } from './messages';
 export interface Level {
+  readonly practice?: PracticeConfig;
   readonly description?: MessageKey;
   readonly id: string;
   readonly title: MessageKey;
@@ -24,15 +26,21 @@ export interface World {
   readonly color: string;
   readonly ground: string;
 }
-export const worlds: readonly World[] = [
+const catalog: readonly World[] = [
   {
     id: 'missing-number',
     title: 'missing',
     description: 'missingPreview',
-    emblem: '?',
+    emblem: '🔍',
     color: '#75512c',
     ground: '#fff1cb',
     chapters: [
+      {
+        id: 'math-to-30',
+        title: 'practicePath',
+        description: 'practiceHelp',
+        levels: practiceLevels,
+      },
       {
         id: 'missing-number-first-steps',
         title: 'firstSteps',
@@ -85,11 +93,16 @@ export const worlds: readonly World[] = [
   },
   ...(
     [
-      ['numbers', 'numbersPreview', '1 2 3', '#28604b', '#dfefe3'],
-      ['tens', 'tensPreview', '10', '#315d84', '#dfeefa'],
-      ['subtraction', 'subtractionPreview', '−', '#78476a', '#f3e3ef'],
-      ['big', 'bigPreview', '100', '#87502c', '#f9e5d4'],
-      ['master', 'masterPreview', '∞', '#50467b', '#e9e4f6'],
+      ['numbers', 'numbersPreview', '🌱', '#28604b', '#dfefe3'],
+      ['tens', 'tensPreview', '✨', '#315d84', '#dfeefa'],
+      ['subtraction', 'subtractionPreview', '🌉', '#78476a', '#f3e3ef'],
+      ['multiplication', 'multiplicationPreview', '🏰', '#87502c', '#f9e5d4'],
+      ['division', 'divisionPreview', '🌳', '#28604b', '#dfefe3'],
+      ['patterns', 'patternsPreview', '🧩', '#50467b', '#e9e4f6'],
+      ['fractions', 'fractionsPreview', '🍰', '#78476a', '#f3e3ef'],
+      ['measurement', 'measurementPreview', '📏', '#87502c', '#f9e5d4'],
+      ['shapes', 'shapesPreview', '🔷', '#315d84', '#dfeefa'],
+      ['master', 'masterPreview', '🧠', '#50467b', '#e9e4f6'],
     ] as const
   ).map(([title, description, emblem, color, ground]) => ({
     id: title,
@@ -101,6 +114,23 @@ export const worlds: readonly World[] = [
     chapters: [],
   })),
 ];
+// Keep existing world IDs so bookmarks and saved progress remain valid.
+const worldOrder = [
+  'numbers',
+  'tens',
+  'subtraction',
+  'missing-number',
+  'multiplication',
+  'division',
+  'patterns',
+  'fractions',
+  'measurement',
+  'shapes',
+  'master',
+];
+export const worlds: readonly World[] = [...catalog].sort(
+  (a, b) => worldOrder.indexOf(a.id) - worldOrder.indexOf(b.id),
+);
 export interface Progress {
   readonly completed?: readonly string[];
   readonly stars?: Readonly<Record<string, number>>;

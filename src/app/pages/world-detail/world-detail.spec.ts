@@ -1,15 +1,18 @@
+import { worlds } from '../../core/preview-catalog.fixture';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
-import { chapterState, emptyProgress, WORLD_CATALOG, worlds } from '../../core/catalog';
+import { chapterState, emptyProgress, WORLD_CATALOG } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
 
 describe('World chapter path', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter(routes), { provide: WORLD_CATALOG, useValue: worlds }],
+    });
   });
   it('opens a distinct chapter route and preserves the chapter anchor on return', async () => {
     const h = await RouterTestingHarness.create('/worlds/missing-number');
@@ -41,7 +44,7 @@ describe('World chapter path', () => {
     expect(TestBed.inject(Router).url).toBe('/worlds');
   });
   it('keeps earned chapter awards when a new locked chapter is configured', async () => {
-    const world = worlds[0];
+    const world = worlds.find((world) => world.id === 'missing-number')!;
     const level = world.chapters[0].levels[0];
     const newChapter = {
       id: 'new',

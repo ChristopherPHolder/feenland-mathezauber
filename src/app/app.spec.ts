@@ -1,15 +1,18 @@
+import { worlds } from './core/preview-catalog.fixture';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
-import { worlds, WORLD_CATALOG } from './core/catalog';
+import { WORLD_CATALOG } from './core/catalog';
 import { translations, Locale } from './core/messages';
 describe('Feenland navigation', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter(routes), { provide: WORLD_CATALOG, useValue: worlds }],
+    });
   });
   it('starts with real zero counts and routes to a labeled preview', async () => {
     const h = await RouterTestingHarness.create('/');
@@ -79,7 +82,13 @@ describe('Feenland navigation', () => {
   });
   it('derives the Home recommendation label from the configured world', async () => {
     TestBed.overrideProvider(WORLD_CATALOG, {
-      useValue: [{ ...worlds[0], id: 'new-world', title: 'tens' }],
+      useValue: [
+        {
+          ...worlds.find((world) => world.id === 'missing-number')!,
+          id: 'new-world',
+          title: 'tens',
+        },
+      ],
     });
     const h = await RouterTestingHarness.create('/');
     expect(h.routeNativeElement?.querySelector('.adventure-actions small')?.textContent).toBe(

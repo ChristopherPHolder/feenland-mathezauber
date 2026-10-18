@@ -68,3 +68,11 @@
 - Tested the production build through local Cloudflare Wrangler on port 8787. Deep chapter links load correctly. Angular's service worker controls the page; with networking disabled, World Map → World → Chapter → both demo challenges/completions and completion reload work. Offline Home shows real counts `0, 0, 1` after exploration; demo mastery and chapter awards remain separate. German locale persists. Offline completion AXE reports zero violations, with no browser page errors.
 - `viewport-fit=cover` and body safe-area padding cover standalone display insets; short portrait/landscape widths remain covered by the recorded matrix.
 - GitHub Actions deployment runs for each preceding delivery commit completed successfully. Each ticket is closed only after its implementation commit is pushed.
+
+
+## Practice progression (2026-10-18)
+
+- Production build and all 39 Vitest tests pass, including exhaustive equation/range checks across nine stages and three difficulties. Original demo/navigation regressions use an explicit pre-practice catalog fixture.
+- Headless Chromium checked nine selectable levels at desktop and 375px phone width; no horizontal overflow.
+- Browser flow verified hard difficulty, quick pace, pause/resume, rejected wrong answers, an eight-question completion, saved practice receipt, and restored preferences. No browser runtime errors.
+- Axe reported zero violations on the level selector and practice setup. These checks do not assert full manual WCAG coverage.

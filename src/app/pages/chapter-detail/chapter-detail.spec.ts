@@ -1,15 +1,18 @@
+import { worlds } from '../../core/preview-catalog.fixture';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
-import { emptyProgress, worlds, WORLD_CATALOG } from '../../core/catalog';
+import { emptyProgress, WORLD_CATALOG } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
 
 const url = '/worlds/missing-number/chapters/missing-number-first-steps';
 describe('Chapter level selection', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter(routes), { provide: WORLD_CATALOG, useValue: worlds }],
+    });
   });
   it('renders recommended, locked and forthcoming levels with different behavior', async () => {
     const h = await RouterTestingHarness.create(url);
@@ -56,7 +59,7 @@ describe('Chapter level selection', () => {
     ).toBeTruthy();
   });
   it('renders additional levels through configuration without changing earned awards', async () => {
-    const world = worlds[0];
+    const world = worlds.find((world) => world.id === 'missing-number')!;
     const chapter = world.chapters[0];
     TestBed.overrideProvider(WORLD_CATALOG, {
       useValue: [

@@ -1,8 +1,10 @@
+import { WORLD_CATALOG } from './catalog';
+import { worlds } from './preview-catalog.fixture';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../app.routes';
-import { emptyProgress, nextLevel, worlds } from './catalog';
+import { emptyProgress, nextLevel } from './catalog';
 import { ProgressService } from './progress';
 import { CompletionService } from './completion';
 import { applyResult, LevelResult } from './results';
@@ -49,7 +51,9 @@ describe('Completion flow', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter(routes), { provide: WORLD_CATALOG, useValue: worlds }],
+    });
   });
   it('saves demo results separately, follows Next and reaches caught-up without real mastery', async () => {
     const h = await RouterTestingHarness.create('/adventure/' + first);
@@ -93,7 +97,9 @@ describe('Completion flow', () => {
       TestBed.inject(LocaleService).t('starsEarned'),
     );
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter(routes), { provide: WORLD_CATALOG, useValue: worlds }],
+    });
     const restored = await RouterTestingHarness.create('/complete/' + first);
     expect(restored.routeNativeElement?.querySelector('h1')?.textContent).toBe(
       TestBed.inject(LocaleService).t('wellDone'),

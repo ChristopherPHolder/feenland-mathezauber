@@ -1,3 +1,4 @@
+import { worlds } from '../../core/preview-catalog.fixture';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -5,7 +6,6 @@ import { routes } from '../../app.routes';
 import {
   emptyProgress,
   WORLD_CATALOG,
-  worlds,
   worldState,
   worldRequirements,
   World,
@@ -13,10 +13,10 @@ import {
 import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
 
-const first = worlds[0];
+const first = worlds.find((world) => world.id === 'missing-number')!;
 const level = first.chapters[0].levels[0];
 const gated: World = {
-  ...worlds[1],
+  ...worlds.find((world) => world.id === 'numbers')!,
   chapters: [{ id: 'gated', levels: [{ ...level, id: 'gated-level', prerequisites: [level.id] }] }],
 };
 
@@ -81,11 +81,13 @@ describe('world availability', () => {
 describe('World Map navigation', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter(routes), { provide: WORLD_CATALOG, useValue: worlds }],
+    });
   });
-  it('renders six localized destinations and routes through a world landing without earning mastery', async () => {
+  it('renders eleven localized destinations and routes through a world landing without earning mastery', async () => {
     const h = await RouterTestingHarness.create('/worlds');
-    expect(h.routeNativeElement?.querySelectorAll('[data-world]').length).toBe(6);
+    expect(h.routeNativeElement?.querySelectorAll('[data-world]').length).toBe(11);
     const link = h.routeNativeElement?.querySelector<HTMLAnchorElement>(
       '[data-world="missing-number"] a',
     );
@@ -121,7 +123,7 @@ describe('World Map navigation', () => {
   it('supports catalog additions without screen changes and renders locked explanations', async () => {
     TestBed.overrideProvider(WORLD_CATALOG, { useValue: [...worlds, { ...gated, id: 'extra' }] });
     const h = await RouterTestingHarness.create('/worlds');
-    expect(h.routeNativeElement?.querySelectorAll('[data-world]').length).toBe(7);
+    expect(h.routeNativeElement?.querySelectorAll('[data-world]').length).toBe(12);
     const button = h.routeNativeElement?.querySelector<HTMLButtonElement>(
       '[data-world="extra"] button',
     );
