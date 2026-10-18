@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component, ElementRef, inject, viewChild } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
 import { Icon } from './shared/icon';
@@ -21,6 +21,7 @@ import { Icon } from './shared/icon';
         ><a
           class="settings-link"
           routerLink="/settings"
+          [queryParams]="{ returnTo: settingsReturnTarget() }"
           routerLinkActive="active"
           [attr.aria-label]="i.t('settings')"
           ><app-icon kind="gear"
@@ -40,6 +41,10 @@ import { Icon } from './shared/icon';
 export class App {
   protected readonly i = inject(LocaleService);
   protected readonly p = inject(ProgressService);
+  private readonly router = inject(Router);
+  protected settingsReturnTarget() {
+    return this.router.url.startsWith('/settings') ? '/' : this.router.url;
+  }
   private readonly main = viewChild<ElementRef<HTMLElement>>('main');
   protected focusMain() {
     this.main()?.nativeElement.focus({ preventScroll: true });

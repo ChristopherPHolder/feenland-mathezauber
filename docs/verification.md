@@ -41,3 +41,9 @@
 - Completion passes all four locales across the twelve-size viewport matrix; phone/desktop AXE reports zero violations. Reduced motion uses the shared zero-transition rule.
 
 - Real-browser Home → Map → World → Chapter → Preview → Complete → Next → caught-up → Chapter passes in en/de/es/fr. Reload retains the completion receipt and demo progress; real mastery and chapter awards remain empty. Explicit demo routes do not write real exploration progress.
+
+## Settings (#8)
+
+- Language, Audio, Accessibility and About now have explicit sections. Audio truthfully states that previews have no sound; accessibility explains keyboard/touch and system reduced-motion behavior. No unsupported switches or destructive controls are present.
+- The shared gear passes the current route (including query/fragment) to Settings. Its back action preserves that context; direct visits and external/recursive return targets fall back to Home. Root-component and route tests cover this behavior.
+- 33 tests pass; production build passes. Settings passes the twelve-size matrix in en/de/es/fr and AXE reports zero violations at phone/desktop widths for all four languages. Existing tests verify immediate switching, persistence and unchanged learning progress.

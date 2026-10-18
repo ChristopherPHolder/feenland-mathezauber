@@ -1,0 +1,40 @@
+<section class="settings-page" aria-labelledby="settings-title">
+  <a class="back-link" [routerLink]="backTarget()"
+    ><app-icon kind="back" />{{ i.t('backAdventure') }}</a
+  >
+  <header class="settings-intro">
+    <h1 id="settings-title">{{ i.t('settings') }}</h1>
+    <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" />
+  </header>
+  <div class="settings-sections">
+    <section class="panel language-panel" aria-labelledby="language-title">
+      <h2 id="language-title">{{ i.t('language') }}</h2>
+      <p>{{ i.t('languageHelp') }}</p>
+      <div class="languages" role="group" aria-labelledby="language-title">
+        @for (language of languages; track language.id) {
+          <button
+            [attr.lang]="language.id"
+            [attr.aria-pressed]="i.locale() === language.id"
+            (click)="i.select(language.id)"
+          >
+            {{ language.name }}<app-icon [kind]="i.locale() === language.id ? 'check' : 'arrow'" />
+          </button>
+        }
+      </div>
+    </section>
+    <div class="settings-notes">
+      <section aria-labelledby="audio-title">
+        <h2 id="audio-title">{{ i.t('audio') }}</h2>
+        <p>{{ i.t('audioHelp') }}</p>
+      </section>
+      <section aria-labelledby="accessibility-title">
+        <h2 id="accessibility-title">{{ i.t('accessibility') }}</h2>
+        <p>{{ i.t('accessibilityHelp') }}</p>
+      </section>
+      <section aria-labelledby="about-title">
+        <h2 id="about-title">{{ i.t('about') }}</h2>
+        <p>{{ i.t('aboutText') }}</p>
+      </section>
+    </div>
+  </div>
+</section>

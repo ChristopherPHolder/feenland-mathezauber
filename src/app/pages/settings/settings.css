@@ -1,0 +1,67 @@
+:host {
+  display: block;
+}
+.settings-page {
+  max-width: 1180px;
+  margin: auto;
+  padding: 24px 40px 48px;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.settings-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  margin: 24px 0 32px;
+}
+.settings-intro h1 {
+  margin: 0;
+}
+.settings-intro img {
+  width: 220px;
+  height: auto;
+  border-radius: 16px;
+}
+.settings-sections {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+.settings-notes {
+  display: grid;
+  gap: 24px;
+}
+.settings-notes h2 {
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+.settings-notes p {
+  margin: 0;
+  max-width: 55ch;
+}
+@media (max-width: 700px) {
+  .settings-page {
+    padding: 16px 20px 32px;
+  }
+  .settings-intro {
+    gap: 20px;
+  }
+  .settings-intro img {
+    width: 130px;
+  }
+  .settings-sections {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+@media (max-width: 360px) {
+  .settings-intro {
+    flex-wrap: wrap;
+  }
+}

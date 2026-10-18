@@ -26,10 +26,11 @@ import { Component, input } from '@angular/core';
   `,
 })
 export class Icon {
-  readonly kind = input<'star' | 'book' | 'cup' | 'gem' | 'gear' | 'arrow' | 'back' | 'lock'>(
-    'star',
-  );
+  readonly kind = input<
+    'check' | 'star' | 'book' | 'cup' | 'gem' | 'gear' | 'arrow' | 'back' | 'lock'
+  >('star');
   protected readonly paths = {
+    check: 'm5 12 4 4 10-10',
     star: 'm12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z',
     book: 'M12 5v16M3 3l9 2 9-2v16l-9 2-9-2z',
     cup: 'M7 3h10v7a5 5 0 0 1-10 0zM7 5H3v3a4 4 0 0 0 4 4m10-7h4v3a4 4 0 0 1-4 4m-5 3v6m-4 0h8',
