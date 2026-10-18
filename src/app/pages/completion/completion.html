@@ -1,0 +1,61 @@
+<section class="completion-page" aria-labelledby="completion-title">
+  @if (result(); as result) {
+    @if (result.source === 'demo') {
+      <aside class="demo-banner">
+        <strong>{{ i.t('demo') }}</strong>
+        <p>{{ i.t('demoHelp') }}</p>
+      </aside>
+    }
+    <div class="celebration">
+      <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
+      <div class="celebration-copy">
+        <h1 id="completion-title">{{ i.t('wellDone') }}</h1>
+        @if (context(); as context) {
+          <h2>{{ i.t(context.level.title) }}</h2>
+        }
+        <p>{{ i.t('completionHelp') }}</p>
+        <ul class="awards">
+          <li><app-icon kind="book" />{{ i.t('completedLabel') }}</li>
+          @if (result.mastered) {
+            <li>
+              <app-icon kind="star" />{{
+                i.t(result.source === 'demo' ? 'demoMastered' : 'masteryEarned')
+              }}
+            </li>
+          }
+          @if (result.stars !== undefined) {
+            <li><app-icon kind="star" />{{ i.t('starsEarned') }}: {{ i.format(result.stars) }}</li>
+          }
+          @if (chapterEarned()) {
+            <li>
+              <app-icon kind="cup" />{{
+                i.t(result.source === 'demo' ? 'demoAward' : 'chapterAward')
+              }}
+            </li>
+          }
+        </ul>
+        @if (next(); as next) {
+          <a
+            class="button primary"
+            [routerLink]="['/adventure', next.id]"
+            [queryParams]="result.source === 'demo' ? { mode: 'demo' } : {}"
+            >{{ i.t('nextLevel') }}<app-icon kind="arrow"
+          /></a>
+        } @else {
+          <p class="caught">
+            <strong>{{ i.t('caught') }}</strong>
+          </p>
+          <a class="button primary" routerLink="/worlds">{{ i.t('worlds') }}</a>
+        }
+        @if (context(); as context) {
+          <a
+            class="button secondary"
+            [routerLink]="['/worlds', context.world.id, 'chapters', context.chapter.id]"
+            [fragment]="context.level.id"
+            >{{ i.t('backChapter') }}</a
+          >
+        }
+      </div>
+    </div>
+  }
+</section>

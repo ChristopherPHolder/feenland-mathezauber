@@ -33,7 +33,14 @@ export class ChapterDetail {
       })) ?? [],
   );
   protected readonly next = computed(
-    () => this.levels().find((entry) => entry.state === 'available')?.level.id,
+    () =>
+      (
+        this.levels().find((entry) => entry.state === 'available') ??
+        this.levels().find(
+          (entry) =>
+            entry.state === 'completed' && !this.p.progress().mastered.includes(entry.level.id),
+        )
+      )?.level.id,
   );
   protected readonly caughtUp = computed(
     () => !this.next() && this.levels().some((entry) => entry.state === 'completed'),

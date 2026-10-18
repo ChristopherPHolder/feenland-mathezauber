@@ -102,6 +102,8 @@ export const worlds: readonly World[] = [
   })),
 ];
 export interface Progress {
+  readonly completed?: readonly string[];
+  readonly stars?: Readonly<Record<string, number>>;
   readonly version: 1;
   readonly mastered: readonly string[];
   readonly chapters: readonly string[];
@@ -113,14 +115,19 @@ export function levelState(
   progress: Progress,
 ): 'soon' | 'locked' | 'available' | 'completed' {
   if (!level.implemented) return 'soon';
-  if (progress.mastered.includes(level.id)) return 'completed';
+  if (progress.mastered.includes(level.id) || progress.completed?.includes(level.id))
+    return 'completed';
   return level.prerequisites.every((id) => progress.mastered.includes(id)) ? 'available' : 'locked';
 }
 export function nextLevel(catalog: readonly World[], progress: Progress): Level | undefined {
-  return catalog
-    .flatMap((world) => world.chapters)
-    .flatMap((chapter) => chapter.levels)
-    .find((level) => levelState(level, progress) === 'available');
+  const levels = catalog.flatMap((world) => world.chapters).flatMap((chapter) => chapter.levels);
+  return (
+    levels.find((level) => levelState(level, progress) === 'available') ??
+    levels.find(
+      (level) =>
+        levelState(level, progress) === 'completed' && !progress.mastered.includes(level.id),
+    )
+  );
 }
 export function parseProgress(value: unknown): Progress {
   if (!value || typeof value !== 'object' || !('version' in value) || value.version !== 1)
@@ -135,8 +142,20 @@ export function parseProgress(value: unknown): Progress {
           ),
         ]
       : [];
+  const rawStars = 'stars' in value ? value.stars : undefined;
+  const stars =
+    rawStars && typeof rawStars === 'object' && !Array.isArray(rawStars)
+      ? Object.fromEntries(
+          Object.entries(rawStars).filter(
+            ([, score]) =>
+              typeof score === 'number' && Number.isInteger(score) && score >= 0 && score <= 3,
+          ),
+        )
+      : {};
   return {
     version: 1,
+    ...('completed' in value ? { completed: strings('completed') } : {}),
+    ...('stars' in value ? { stars } : {}),
     mastered: strings('mastered'),
     chapters: strings('chapters'),
     explored: strings('explored'),
@@ -162,7 +181,7 @@ function contentState(levels: readonly Level[], progress: Progress): ContentStat
   const published = levels.filter((level) => level.implemented);
   if (!published.length) return 'soon';
   const states = published.map((level) => levelState(level, progress));
-  if (states.every((state) => state === 'completed')) return 'completed';
+  if (published.every((level) => progress.mastered.includes(level.id))) return 'completed';
   // An earned level remains a way back into a world even when its new levels are locked.
   if (states.some((state) => state === 'available' || state === 'completed')) return 'available';
   return 'locked';

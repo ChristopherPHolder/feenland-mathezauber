@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { WORLD_CATALOG, worldState, levelState, chapterState, findChapter } from './core/catalog';
+import { CompletionService } from './core/completion';
 import { ProgressService } from './core/progress';
 import { Router, Routes } from '@angular/router';
 export const routes: Routes = [
@@ -54,13 +55,27 @@ export const routes: Routes = [
           .flatMap((world) => world.chapters)
           .flatMap((chapter) => chapter.levels)
           .find((level) => level.id === route.paramMap.get('id'));
-        const progress = inject(ProgressService).progress();
+        const progress = inject(ProgressService).progressFor(
+          route.queryParamMap.get('mode') === 'demo' ? 'demo' : 'practice',
+        );
         return level && ['available', 'completed'].includes(levelState(level, progress))
           ? true
           : inject(Router).createUrlTree(['/']);
       },
     ],
     loadComponent: () => import('./pages/challenge/challenge').then((m) => m.Challenge),
+  },
+  {
+    path: 'complete/:id',
+    canActivate: [
+      (route) => {
+        const result = inject(CompletionService).result();
+        return result?.levelId === route.paramMap.get('id')
+          ? true
+          : inject(Router).createUrlTree(['/worlds']);
+      },
+    ],
+    loadComponent: () => import('./pages/completion/completion').then((m) => m.Completion),
   },
   { path: '**', redirectTo: '' },
 ];

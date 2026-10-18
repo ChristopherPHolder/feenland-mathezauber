@@ -33,3 +33,11 @@
 - The first chapter now contains an available addition preview, a subtraction preview gated on mastery of the addition level, and a forthcoming make-ten level. No real math completion is fabricated.
 - All four locales pass the twelve-size viewport matrix used for #5. AXE reports zero violations at 393px and 1440px and on locked previews; Escape restores trigger focus. In-memory router scrolling restores previous positions and chapter/level anchors.
 - Independent desktop/phone review: ship, no material findings.
+
+## Completion (#7)
+
+- 30 tests and production build pass. New cases distinguish completed/mastered/stars, preserve best rewards on replay, derive chapter awards from published mastery, reject invalid/locked/unpublished results, isolate persisted demo progress, handle Next and caught-up, restore receipts without re-awarding, and keep navigation usable when storage fails.
+- Completion and demo entry clearly disclose sandbox progress. The production placeholder supplies no earned stars. Real result handling is exercised with explicit supplied practice results in integration tests; actual math gameplay remains out of scope.
+- Completion passes all four locales across the twelve-size viewport matrix; phone/desktop AXE reports zero violations. Reduced motion uses the shared zero-transition rule.
+
+- Real-browser Home → Map → World → Chapter → Preview → Complete → Next → caught-up → Chapter passes in en/de/es/fr. Reload retains the completion receipt and demo progress; real mastery and chapter awards remain empty. Explicit demo routes do not write real exploration progress.

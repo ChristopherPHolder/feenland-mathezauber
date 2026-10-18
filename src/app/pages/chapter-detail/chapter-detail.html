@@ -49,7 +49,15 @@
               <p class="next-label">{{ i.t('recommended') }}</p>
             }
             @if (entry.state === 'completed') {
-              <p class="earned"><app-icon kind="cup" />{{ i.t('masteryEarned') }}</p>
+              <p class="earned">
+                <app-icon kind="cup" />{{
+                  i.t(
+                    p.progress().mastered.includes(entry.level.id)
+                      ? 'masteryEarned'
+                      : 'completedLabel'
+                  )
+                }}
+              </p>
             }
             @if (entry.state === 'available' || entry.state === 'completed') {
               <a
