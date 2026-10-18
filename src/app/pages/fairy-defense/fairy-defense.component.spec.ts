@@ -73,7 +73,8 @@ describe('Wave 1 playable integration', () => {
     expect(TestBed.inject(ProgressService).progress()).toEqual(progress);
     expect(localStorage.getItem('feenland.progress')).toBeNull();
     expect(localStorage.getItem('feenland.result')).toBeNull();
-    expect(localStorage.getItem('feenland.playtest.checkpoint')).toContain('tried');
+    expect(localStorage.getItem('feenland.castle-campaign.v1')).toContain('results');
+    expect(element.textContent).toContain('Next wave');
   });
   it('pauses a pending cast and resumes its remaining transition only once', () => {
     const { fixture, element, click } = setup();

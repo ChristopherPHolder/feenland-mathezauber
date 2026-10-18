@@ -19,8 +19,22 @@
           <h2>{{ t('intro') }}</h2>
           <p>{{ t('briefing') }}</p>
           <p class="rule-copy">{{ t('rules') }}</p>
-          <button class="button primary" (click)="play()">
-            {{ t('play') }}<app-icon kind="arrow" />
+          <button
+            class="button primary"
+            (click)="play(campaign.finished() ? 1 : campaign.unlocked())"
+          >
+            {{
+              t(
+                campaign.finished()
+                  ? 'again'
+                  : campaign.state().results.length
+                    ? 'continueWave'
+                    : 'play',
+                {
+                  n: campaign.unlocked(),
+                }
+              )
+            }}<app-icon kind="arrow" />
           </button>
           <p class="playtest-note">{{ t('playtest') }}</p>
         </div>
@@ -32,18 +46,35 @@
           #outcome
           class="story-panel outcome"
           tabindex="-1"
-          [attr.aria-label]="t(battle().phase === 'lost' ? 'retryTitle' : 'complete')"
+          [attr.aria-label]="
+            t(battle().phase === 'lost' ? 'retryTitle' : 'complete', { n: battle().wave.number })
+          "
         >
           <app-icon [kind]="battle().phase === 'lost' ? 'gem' : 'star'" />
-          <h2>{{ t(battle().phase === 'lost' ? 'retryTitle' : 'complete') }}</h2>
+          <h2>
+            {{
+              t(battle().phase === 'lost' ? 'retryTitle' : 'complete', { n: battle().wave.number })
+            }}
+          </h2>
           <p>{{ t(battle().phase === 'lost' ? 'retryText' : 'completeText') }}</p>
           @if (battle().phase === 'complete') {
             <p>{{ t('restored') }}</p>
-            <p class="rule-copy">{{ t('playtestHelp') }}</p>
+            <p class="rule-copy">{{ t('waveSaved') }}</p>
           }
-          <button class="button primary" (click)="play()">
-            {{ t(battle().phase === 'lost' ? 'retry' : 'again') }}
-          </button>
+          @if (battle().phase === 'lost') {
+            <button class="button primary" (click)="play(battle().wave.number)">
+              {{ t('retry') }}
+            </button>
+          } @else if (battle().wave.number < 20) {
+            <button class="button primary" (click)="play(battle().wave.number + 1)">
+              {{ t('nextWave') }}
+            </button>
+            <button class="button secondary" (click)="play(battle().wave.number)">
+              {{ t('again') }}
+            </button>
+          } @else {
+            <button class="button primary" (click)="celebrate()">{{ t('celebrate') }}</button>
+          }
           <a class="exit-link" [routerLink]="chapterLink">{{ t('back') }}</a>
         </section>
       </div>
@@ -56,8 +87,12 @@
           {{ message() }}
         </p>
         <div class="guidance-actions">
-          <button (click)="help()"><app-icon kind="gem" />{{ t('hint') }}</button>
-          <button (click)="help(true)">{{ t('replay') }}</button>
+          <button [disabled]="battle().phase !== 'ready'" (click)="help()">
+            <app-icon kind="gem" />{{ t('hint') }}
+          </button>
+          <button [disabled]="battle().phase !== 'ready'" (click)="help(true)">
+            {{ t('replay') }}
+          </button>
           @if (audio.canSpeak() && store.audio().speech) {
             <button (click)="replaySpeech()">{{ t('speechReplay') }}</button>
           }
@@ -65,24 +100,35 @@
       </div>
       <div class="ten-frame-wrap">
         <p class="math-prompt" aria-hidden="true">{{ encounter().energy }} + <span>?</span> = 10</p>
-        <div
-          class="ten-frame"
-          role="img"
-          [attr.aria-label]="t('filled', { n: encounter().energy })"
-        >
-          @for (dot of dots; track dot) {
-            <span class="dot" [class.filled]="dot < encounter().energy"></span>
-          }
-        </div>
+        @if (battle().hintVisible) {
+          <div
+            class="ten-frame"
+            role="img"
+            [attr.aria-label]="t('filled', { n: encounter().energy })"
+          >
+            @for (dot of dots; track dot) {
+              <span class="dot" [class.filled]="dot < encounter().energy"></span>
+            }
+          </div>
+        }
       </div>
     </div>
+    @if (battle().wave.number === 11) {
+      <p class="audio-notice">{{ t('fullRange') }}. {{ t('zeroSpell') }}</p>
+    }
     <app-spell-bar
+      [spells]="battle().wave.spells"
       [locked]="battle().phase !== 'ready'"
       [selected]="battle().spell"
       (castSpell)="castSpell($event)"
     />
   }
   @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
+    <app-wave-path
+      [unlocked]="campaign.unlocked()"
+      [completed]="campaign.state().results.length"
+      (selectWave)="play($event)"
+    />
     <div class="game-foot">
       <span>{{ t('playtestHelp') }}</span
       ><a [routerLink]="chapterLink">{{ t('back') }}</a>
@@ -91,13 +137,14 @@
   @if (started() && store.audio().speech && !audio.canSpeak()) {
     <p class="audio-notice">{{ t('noVoice') }}</p>
   }
-  @if (store.saveFailed()) {
+  @if (store.saveFailed() || campaign.saveFailed()) {
     <p class="audio-notice" role="status">{{ t('save') }}</p>
   }
 </section>
 <app-game-pause
   [started]="started()"
   (resume)="resume()"
+  (chooseWave)="showWaves()"
   (restart)="restart()"
   (toggleSound)="toggleSound($event)"
 />

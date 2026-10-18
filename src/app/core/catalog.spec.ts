@@ -7,7 +7,11 @@ describe('expanding-world foundations', () => {
   it('keeps achievements when a caught-up catalog grows', () => {
     const progress = {
       version: 1 as const,
-      mastered: ['missing-number-add-to-30', 'missing-number-subtract-to-30'],
+      mastered: [
+        'missing-number-add-to-30',
+        'missing-number-subtract-to-30',
+        'defend-fairy-castle',
+      ],
       chapters: ['missing-number-first-steps'],
       explored: ['missing-number'],
     };

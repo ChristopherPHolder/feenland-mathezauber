@@ -131,3 +131,44 @@
     transition: none !important;
   }
 }
+
+.spell-bar.expanded {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 32px;
+}
+.expanded .spell {
+  flex: 0 1 70px;
+}
+.expanded legend {
+  position: static;
+}
+.expanded .spell-quantity {
+  max-width: 42px;
+  flex-wrap: wrap;
+  margin-inline: auto;
+}
+.expanded .gem-art {
+  max-width: 46px;
+}
+@media (max-width: 700px) {
+  .spell-bar.expanded {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    padding-top: 4px;
+  }
+  .expanded legend {
+    grid-column: 1/-1;
+  }
+  .expanded .spell {
+    min-height: 100px;
+  }
+  .expanded .gem-art {
+    width: 80%;
+    max-width: 38px;
+  }
+}
+
+.spell.zero .gem-art {
+  filter: grayscale(1);
+}

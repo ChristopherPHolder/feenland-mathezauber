@@ -7,14 +7,20 @@
   <div class="scene-shade" aria-hidden="true"></div>
   <div class="battle-hud">
     <div class="wave">
-      <span>{{ t('wave') }}</span>
+      <span>{{ t('wave', { n: battle().wave.number }) }}</span>
       <div
         class="encounter-track"
-        [attr.aria-label]="t('encounter', { n: battle().encounter + 1 })"
+        [attr.aria-label]="
+          t(battle().wave.boss ? 'shield' : 'encounter', {
+            n: battle().encounter + 1,
+            total: battle().wave.encounters.length,
+          })
+        "
         role="img"
       >
-        <span [class.done]="battle().encounter > 0 || battle().phase === 'complete'"></span
-        ><span [class.done]="battle().phase === 'complete'"></span>
+        @for (step of shieldLayers(); track step) {
+          <span [class.done]="battle().encounter > step || battle().phase === 'complete'"></span>
+        }
       </div>
     </div>
     <div class="hearts" role="img" [attr.aria-label]="t('health', { n: battle().hearts })">
@@ -32,7 +38,11 @@
     height="1024"
     alt=""
   />
-  @if (battle().encounter === 0 && battle().phase !== 'complete') {
+  @if (
+    !battle().wave.boss &&
+    battle().encounter < battle().wave.encounters.length - 1 &&
+    battle().phase !== 'complete'
+  ) {
     <img
       class="waiting-monster"
       ngSrc="/images/fairy-defense/monster-blue.webp"
@@ -46,18 +56,38 @@
       class="monster-position"
       [style.--approach]="battle().mistakes"
       [class.transforming]="battle().phase === 'transforming'"
+      [class.boss]="battle().wave.boss"
       [class.wobble]="battle().phase === 'wrong'"
     >
-      @if (battle().phase !== 'transforming') {
+      @if (battle().phase !== 'transforming' || shieldBreaking()) {
         <span class="number-badge">{{ i.format(encounter().energy) }}</span>
         @for (active of [encounter()]; track active.appearance) {
           <img
             class="monster character"
             [ngSrc]="'/images/fairy-defense/' + active.appearance + '.webp'"
-            [width]="active.appearance === 'monster-red' ? 1278 : 1146"
-            [height]="active.appearance === 'monster-red' ? 1230 : 1372"
+            [width]="sprite().width"
+            [height]="sprite().height"
             alt=""
           />
+        }
+        @if (battle().wave.boss) {
+          <div
+            class="shield-layers"
+            role="img"
+            [attr.aria-label]="
+              t('shield', { n: battle().encounter + 1, total: battle().wave.encounters.length })
+            "
+          >
+            @for (layer of shieldLayers(); track layer) {
+              <app-icon
+                [kind]="layer < battle().encounter ? 'check' : 'gem'"
+                [class.broken]="layer < battle().encounter"
+              />
+            }
+          </div>
+          @if (shieldBreaking()) {
+            <span class="equation">{{ encounter().energy }} + {{ battle().spell }} = 10</span>
+          }
         }
         <div class="steps" role="img" [attr.aria-label]="t('steps', { n: 3 - battle().mistakes })">
           @for (step of hearts; track step) {

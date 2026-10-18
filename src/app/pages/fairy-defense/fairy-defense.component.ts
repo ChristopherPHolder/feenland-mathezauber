@@ -1,3 +1,7 @@
+import { WavePathComponent } from './wave-path/wave-path.component';
+import { CampaignStore } from './campaign';
+import { CompletionService } from '../../core/completion';
+import { Router } from '@angular/router';
 import { GamePause } from './game-pause';
 import { SpellBar } from './spell-bar';
 import { BattleScene } from './battle-scene';
@@ -15,13 +19,13 @@ import {
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
 import { Icon } from '../../shared/icon';
-import { advance, cast, freshBattle, resolveSpell, WAVE_ONE } from './battle';
+import { advance, cast, freshBattle, resolveSpell, revealHint } from './battle';
 import { GameAudio } from './game-audio';
 import { gameText, GameMessageKey } from './game-messages';
 import { AudioSettings, PlaytestStore } from './playtest-store';
 @Component({
   selector: 'app-fairy-defense',
-  imports: [BattleScene, SpellBar, GamePause, RouterLink, Icon],
+  imports: [BattleScene, SpellBar, GamePause, WavePathComponent, RouterLink, Icon],
   providers: [GameAudio],
   templateUrl: './fairy-defense.component.html',
   styleUrl: './fairy-defense.component.css',
@@ -32,16 +36,21 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
 })
 export class FairyDefenseComponent {
   protected readonly i = inject(LocaleService);
+  protected readonly campaign = inject(CampaignStore);
+  private readonly completion = inject(CompletionService);
+  private readonly router = inject(Router);
   protected readonly store = inject(PlaytestStore);
   protected readonly audio = inject(GameAudio);
   private readonly document = inject(DOCUMENT);
-  protected readonly battle = signal(freshBattle());
+  protected readonly battle = signal(freshBattle(this.campaign.unlocked()));
   protected readonly started = signal(false);
   protected readonly paused = signal(false);
   protected readonly hasPlayed = signal(this.store.read('tutorial-seen') === 'true');
   protected readonly fullExplanation = signal(!this.hasPlayed());
   private readonly instructionOverride = signal<'full' | 'short' | null>(null);
-  protected readonly encounter = computed(() => WAVE_ONE[this.battle().encounter]);
+  protected readonly encounter = computed(
+    () => this.battle().wave.encounters[this.battle().encounter],
+  );
   protected readonly dots = Array.from({ length: 10 }, (_, index) => index);
   protected readonly chapterLink = ['/worlds', 'numbers', 'chapters', 'friends-of-ten'];
   private readonly dialog = viewChild.required(GamePause);
@@ -57,12 +66,26 @@ export class FairyDefenseComponent {
     if (state.phase === 'complete') return this.t('completeText');
     if (state.phase === 'lost') return this.t('retryText');
     if (state.phase === 'transforming')
-      return this.t('correct', { n: this.encounter().energy, s: state.spell ?? 0 });
+      return this.t(
+        state.wave.boss && state.encounter < state.wave.encounters.length - 1
+          ? 'shieldBroken'
+          : 'correct',
+        { n: this.encounter().energy, s: state.spell ?? 0 },
+      );
     const instruction = this.instructionOverride();
     if (instruction) return this.t(instruction, { n: this.encounter().energy });
     if (state.damaged) return this.t('damage');
     if (state.phase === 'wrong' || state.mistakes > 0) return this.t('wrong');
-    return this.t(this.fullExplanation() ? 'full' : 'short', { n: this.encounter().energy });
+    return (
+      (state.wave.boss && state.encounter === 0
+        ? this.t('bossIntro') + '. '
+        : state.wave.assistance === 'assisted' && !state.hintVisible
+          ? this.t('assistStage') + '. '
+          : '') +
+      this.t(this.fullExplanation() ? 'full' : state.hintVisible ? 'short' : 'prompt', {
+        n: this.encounter().energy,
+      })
+    );
   });
   constructor() {
     effect(() => {
@@ -76,15 +99,15 @@ export class FairyDefenseComponent {
   protected t(key: GameMessageKey, values: Record<string, number> = {}) {
     return gameText(this.i.locale(), key, values);
   }
-  protected play() {
+  protected play(number = this.campaign.unlocked()) {
+    if (number > this.campaign.unlocked() || number < 1 || !Number.isInteger(number)) return;
     this.clearTurn();
     this.instructionOverride.set(null);
-    this.battle.set(freshBattle());
+    this.battle.set(freshBattle(number));
     this.started.set(true);
-    this.fullExplanation.set(!this.hasPlayed());
+    this.fullExplanation.set(number === 1 && !this.hasPlayed());
     this.hasPlayed.set(true);
     this.store.write('tutorial-seen', 'true');
-    this.store.write('checkpoint', JSON.stringify({ version: 1, wave: 1 }));
     this.audio.start();
     this.audio.speak(this.message());
     this.focusSpells();
@@ -118,8 +141,15 @@ export class FairyDefenseComponent {
           this.battle.update((state) => advance(state));
           if (this.battle().phase === 'complete') {
             this.audio.effect('complete');
-            this.audio.speak(this.t('complete') + ' ' + this.t('restored'));
-            this.store.write('checkpoint', JSON.stringify({ version: 1, wave: 1, tried: true }));
+            const state = this.battle();
+            this.campaign.complete({
+              wave: state.wave.number,
+              independent: state.independent.filter(Boolean).length,
+            });
+            this.audio.speak(
+              this.t('complete', { n: state.wave.number }) + ' ' + this.t('restored'),
+            );
+            if (this.campaign.finished()) this.recordCompletion();
             this.focusOutcome();
           } else {
             if (resolved.phase === 'transforming')
@@ -132,6 +162,8 @@ export class FairyDefenseComponent {
     }, 550);
   }
   protected help(full = false) {
+    if (this.battle().phase !== 'ready') return;
+    this.battle.update(revealHint);
     this.instructionOverride.set(full ? 'full' : 'short');
     this.audio.speak(this.message());
   }
@@ -164,7 +196,29 @@ export class FairyDefenseComponent {
   }
   protected restart() {
     this.resume();
-    this.play();
+    this.play(this.battle().wave.number);
+  }
+  protected showWaves() {
+    this.resume();
+    this.clearTurn();
+    this.started.set(false);
+    this.audio.pause();
+  }
+  private recordCompletion() {
+    const stars = this.campaign.stars();
+    return (
+      stars > 0 &&
+      this.completion.finish({
+        levelId: 'defend-fairy-castle',
+        source: 'practice',
+        completed: true,
+        mastered: stars >= 2,
+        stars,
+      })
+    );
+  }
+  protected celebrate() {
+    if (this.recordCompletion()) void this.router.navigate(['/complete', 'defend-fairy-castle']);
   }
   protected visibilityChanged() {
     if (this.document.hidden && this.started() && !this.paused()) this.openPause();
@@ -184,7 +238,7 @@ export class FairyDefenseComponent {
       this.openPause();
       return;
     }
-    if (/^[1-5]$/.test(event.key) && !(event.target instanceof HTMLSelectElement)) {
+    if (/^[0-9]$/.test(event.key) && !(event.target instanceof HTMLSelectElement)) {
       event.preventDefault();
       this.castSpell(Number(event.key));
     }

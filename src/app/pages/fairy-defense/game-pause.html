@@ -22,5 +22,6 @@
   @if (started()) {
     <button class="button secondary" (click)="restart.emit()">{{ t('restart') }}</button>
   }
+  <button class="button secondary" (click)="chooseWave.emit()">{{ t('backWaves') }}</button>
   <a class="exit-link" [routerLink]="chapterLink">{{ t('back') }}</a>
 </dialog>

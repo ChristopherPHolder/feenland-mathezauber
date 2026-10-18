@@ -24,6 +24,15 @@
     },
     "forest": {
       "prompt": "Use case: illustration-story. Create one polished wide 1536x1024 children's fairy tale game battlefield background asset. Match the attached Feenland storyboard's lush storybook illustration, soft dimensional painted rendering, jewel greens, sunlight, flowers, friendly enchanted forest. NO characters, NO text, NO numbers, NO interface. A small cream stone fairy castle with pink conical roofs at far LEFT near foreground, a broad flat golden cobblestone path across the bottom third leading from right toward castle at left. Rich leafy trees frame both edges, distant blue mountains and sunny blue sky, pink flowers. Leave center path open and uncluttered for separate character sprites and an open sky area above. Landscape composition designed to crop well for mobile portrait. Warm inviting magical light, high quality game art. Supplied image is style reference only, not an edit target."
+    },
+    "monster-green": {
+      "prompt": "Use case: illustration-story. One isolated full-body game sprite on transparent background. Funny round moss-green fluffy monster, tiny leaf-shaped ears and two short cream horns, large friendly amber eyes, tiny feet, playful wide grin with one tooth. Faces LEFT toward a fairy. Polished dimensional children's storybook rendering, warm soft light and clean silhouette, matching the red and blue friendly Feenland monster illustrations. No text, numbers, frame or scene."
+    },
+    "monster-purple": {
+      "prompt": "Use case: illustration-story. One isolated full-body game sprite on transparent background. Funny small lavender-purple fluffy monster with a pear-shaped body, tiny curled horns, wide friendly eyes, little feet and comically surprised smile. Facing LEFT. Polished dimensional children's storybook rendering, warm light, clean silhouette. Matches existing red and blue friendly Feenland monsters. No text, numbers, frame or scene."
+    },
+    "boss": {
+      "prompt": "Use case: illustration-story. Single isolated friendly fantasy boss monster sprite with transparent background. Large round plush purple furry creature with funny broad smile, two short curved ivory horns, small gold crown, expressive kind amber eyes, squat tiny feet and soft tummy. Full body facing LEFT. Silly and mischievous, suitable for a young child's fairy game, not scary. Polished dimensional storybook painted rendering, warm soft light, clean silhouette. Leave space above head for a separate number badge. No shield symbols, no text or numbers, no scene."
     }
   }
 }
