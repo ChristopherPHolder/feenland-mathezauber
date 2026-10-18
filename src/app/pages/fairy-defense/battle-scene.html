@@ -1,6 +1,7 @@
 <div
   class="battlefield"
   [class.paused]="paused()"
+  [class.intro]="!started()"
   [class.has-overlay]="!started() || battle().phase === 'lost' || battle().phase === 'complete'"
 >
   <img class="forest" ngSrc="/images/fairy-defense/forest.webp" fill priority alt="" />
@@ -23,12 +24,17 @@
         }
       </div>
     </div>
-    <div class="hearts" role="img" [attr.aria-label]="t('health', { n: battle().hearts })">
-      @for (heart of hearts; track heart) {
-        <svg viewBox="0 0 32 30" [class.empty]="heart > battle().hearts" aria-hidden="true">
-          <path d="M16 27S2 19 2 10a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 9-14 17-14 17Z" />
-        </svg>
-      }
+    <div class="battle-actions">
+      <div class="hearts" role="img" [attr.aria-label]="t('health', { n: battle().hearts })">
+        @for (heart of hearts; track heart) {
+          <svg viewBox="0 0 32 30" [class.empty]="heart > battle().hearts" aria-hidden="true">
+            <path d="M16 27S2 19 2 10a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 9-14 17-14 17Z" />
+          </svg>
+        }
+      </div>
+      <button class="pause-button" (click)="pauseRequested.emit()" [attr.aria-label]="t('pause')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+      </button>
     </div>
   </div>
   <img

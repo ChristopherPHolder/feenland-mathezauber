@@ -45,7 +45,9 @@ npm start -- --host 127.0.0.1 --port 4301
 
 Open <http://127.0.0.1:4301/adventure/defend-fairy-castle>, or choose Number Kingdom → Friends of Ten → Defend the castle. To test a phone on the same network, use `--host 0.0.0.0` and your computer's local network address.
 
-Audio starts after Play. Pause contains separate remembered music, effects, voice, and language controls. English, German, Spanish, and French have matching instructions and optional device voices. If no matching voice is available, text remains fully playable. Keyboard users can Tab to every spell and press Enter; single digits are shortcuts for spells 0–9, while spell 10 remains available through normal keyboard navigation.
+The visible play surface centers the equation and optional ten-frame beneath the battlefield, with an icon-only help control when counting support is hidden. Pause sits beside the hearts; the game title, live instructions and spell-group legend remain available to assistive technology without visible text rows. Audio starts after Play. Pause contains full explanatory text, speech replay, the unavailable-voice notice, and separate remembered music, effects, voice, and language controls. Explicitly requested explanation or replay speech can run while the battle remains paused. English, German, Spanish, and French have matching instructions and optional device voices. If no matching voice is available, the equation, counting support and text in Pause keep the game playable. Keyboard users can Tab to every spell and press Enter; single digits are shortcuts for spells 0–9, while spell 10 remains available through normal keyboard navigation.
+
+Active gameplay fits one tablet screen in portrait and landscape. A height-aware `100dvh` flex layout accounts for safe areas, reserves space for the equation, counting support and spells, and lets the battlefield and characters resize within the remaining height. Pause and menus can still scroll as needed for explanatory text and accessibility.
 
 ## Verify
 
@@ -57,6 +59,14 @@ NODE_PATH=/tmp/feenland-browser-check/node_modules node scripts/verify-fairy-cam
 ```
 
 The Chrome script uses a controlled browser clock to play all twenty waves. It checks boss damage, full boss retry, broken-layer persistence, wave-boundary saving and resume, zero and ten spells, completion/mastery, replay, image loading, and all four languages. It audits AXE and overflow at 1366×1000, 820×1180, 393×852 and 320×700 for representative waves 1, 5, 11 and 20, plus setback, completion, wave selection and language states. Captures are ignored under `.impeccable/review/campaign/`. Set `FAIRY_BASE_URL` to test another local port.
+
+The focused tablet-fit check runs separately with the dev server and browser dependencies above:
+
+```sh
+NODE_PATH=/tmp/feenland-browser-check/node_modules node scripts/verify-fairy-tablet.cjs
+```
+
+It checks active waves 1, 11 and 20 with counting dots visible at 768×1024, 1024×768, 820×1180, 1180×820, 600×960, 960×600, 1024×600 and 1024×550. It asserts page scroll height within the viewport (with a 1px rounding tolerance), the spell bar’s bottom within the screen, no horizontal overflow, battlefield height of at least 170px and zero AXE violations. Captures go under `.impeccable/review/tablet-fit/`. This fit check applies to active play, not scrolling Pause or menu text.
 
 Unit tests cover all wave definitions, solvability, staged help, shuffling, damage, locked input, hint independence, shield retries, save validation, progression, star thresholds, speech fallback and compatibility with existing navigation/results.
 

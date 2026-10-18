@@ -30,6 +30,7 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
   templateUrl: './fairy-defense.component.html',
   styleUrl: './fairy-defense.component.css',
   host: {
+    '[class.playing]': 'playing()',
     '(document:visibilitychange)': 'visibilityChanged()',
     '(document:keydown)': 'onKey($event)',
   },
@@ -45,6 +46,9 @@ export class FairyDefenseComponent {
   protected readonly battle = signal(freshBattle(this.campaign.unlocked()));
   protected readonly started = signal(false);
   protected readonly paused = signal(false);
+  protected readonly playing = computed(
+    () => this.started() && this.battle().phase !== 'lost' && this.battle().phase !== 'complete',
+  );
   protected readonly hasPlayed = signal(this.store.read('tutorial-seen') === 'true');
   protected readonly fullExplanation = signal(!this.hasPlayed());
   private readonly instructionOverride = signal<'full' | 'short' | null>(null);
@@ -166,9 +170,16 @@ export class FairyDefenseComponent {
     this.battle.update(revealHint);
     this.instructionOverride.set(full ? 'full' : 'short');
     this.audio.speak(this.message());
+    this.focusSpells();
   }
-  protected replaySpeech() {
-    this.audio.speak(this.message());
+  protected explainInPause() {
+    if (this.battle().phase !== 'ready') return;
+    this.battle.update(revealHint);
+    this.instructionOverride.set('full');
+    this.audio.speak(this.message(), true);
+  }
+  protected replayInPause() {
+    this.audio.speak(this.message(), true);
   }
   protected toggleSound(key: keyof AudioSettings) {
     this.store.toggle(key);

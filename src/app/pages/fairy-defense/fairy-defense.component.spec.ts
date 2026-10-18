@@ -113,12 +113,14 @@ describe('Wave 1 playable integration', () => {
     click('Cast spell 5');
     vi.advanceTimersByTime(1300);
     fixture.detectChanges();
+    click('Pause');
     click('Hear the full explanation');
     expect(element.querySelector('.instruction')?.textContent).toContain(
       'This monster has 9 magic points.',
     );
     expect(sound.speak).toHaveBeenLastCalledWith(
       element.querySelector('.instruction')?.textContent?.trim(),
+      true,
     );
   });
   it('cancels a pending turn on exit and remembers tutorial and audio preferences', () => {

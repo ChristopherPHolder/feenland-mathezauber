@@ -61,9 +61,10 @@ export class GameAudio {
       950,
     );
   }
-  speak(text: string) {
+  speak(text: string, whilePaused = false) {
     const voice = this.voice();
-    if (!this.started || this.paused || !this.settings.audio().speech || !voice) return;
+    if (!this.started || (this.paused && !whilePaused) || !this.settings.audio().speech || !voice)
+      return;
     const synth = this.window?.speechSynthesis;
     synth?.cancel();
     const utterance = new SpeechSynthesisUtterance(text);

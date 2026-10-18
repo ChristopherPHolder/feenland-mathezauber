@@ -4,15 +4,14 @@
   [class.is-complete]="battle().phase === 'complete'"
   aria-labelledby="game-title"
 >
-  <header class="game-header">
-    <div class="game-name">
-      <h1 id="game-title">{{ t('title') }}</h1>
-    </div>
-    <button class="round-button" (click)="openPause()" [attr.aria-label]="t('pause')">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
-    </button>
-  </header>
-  <app-battle-scene [battle]="battle()" [paused]="paused()" [started]="started()">
+  <h1 class="sr-only" id="game-title">{{ t('title') }}</h1>
+  <app-battle-scene
+    [battle]="battle()"
+    [paused]="paused()"
+    [started]="started()"
+    [fit]="playing()"
+    (pauseRequested)="openPause()"
+  >
     @if (!started()) {
       <div class="start-curtain">
         <div class="story-panel">
@@ -82,24 +81,24 @@
   </app-battle-scene>
   @if (started() && battle().phase !== 'lost' && battle().phase !== 'complete') {
     <div class="learning-dock">
-      <div class="fairy-guidance">
-        <p class="instruction" role="status" aria-live="polite" aria-atomic="true">
-          {{ message() }}
-        </p>
-        <div class="guidance-actions">
-          <button [disabled]="battle().phase !== 'ready'" (click)="help()">
-            <app-icon kind="gem" />{{ t('hint') }}
-          </button>
-          <button [disabled]="battle().phase !== 'ready'" (click)="help(true)">
-            {{ t('replay') }}
-          </button>
-          @if (audio.canSpeak() && store.audio().speech) {
-            <button (click)="replaySpeech()">{{ t('speechReplay') }}</button>
-          }
-        </div>
-      </div>
+      <p class="instruction sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {{ message() }}
+      </p>
       <div class="ten-frame-wrap">
         <p class="math-prompt" aria-hidden="true">{{ encounter().energy }} + <span>?</span> = 10</p>
+        @if (!battle().hintVisible) {
+          <button
+            class="hint-button"
+            [disabled]="battle().phase !== 'ready'"
+            (click)="help()"
+            [attr.aria-label]="t('hint')"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9.5 8a2.5 2.5 0 1 1 4 2c-1 .7-1.5 1.2-1.5 3M12 16v.5" />
+            </svg>
+          </button>
+        }
         @if (battle().hintVisible) {
           <div
             class="ten-frame"
@@ -113,9 +112,6 @@
         }
       </div>
     </div>
-    @if (battle().wave.number === 11) {
-      <p class="audio-notice">{{ t('fullRange') }}. {{ t('zeroSpell') }}</p>
-    }
     <app-spell-bar
       [spells]="battle().wave.spells"
       [locked]="battle().phase !== 'ready'"
@@ -134,15 +130,18 @@
       ><a [routerLink]="chapterLink">{{ t('back') }}</a>
     </div>
   }
-  @if (started() && store.audio().speech && !audio.canSpeak()) {
-    <p class="audio-notice">{{ t('noVoice') }}</p>
-  }
   @if (store.saveFailed() || campaign.saveFailed()) {
     <p class="audio-notice" role="status">{{ t('save') }}</p>
   }
 </section>
 <app-game-pause
   [started]="started()"
+  [instruction]="message()"
+  [canExplain]="battle().phase === 'ready'"
+  [canSpeak]="audio.canSpeak()"
+  [extraInstruction]="battle().wave.number === 11 ? t('zeroSpell') : ''"
+  (explain)="explainInPause()"
+  (replay)="replayInPause()"
   (resume)="resume()"
   (chooseWave)="showWaves()"
   (restart)="restart()"

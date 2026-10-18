@@ -25,7 +25,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  z-index: 2;
+  z-index: 6;
 }
 .wave {
   background: #152f4a;
@@ -390,5 +390,69 @@
   .shield-layers app-icon {
     width: 17px;
     height: 17px;
+  }
+}
+
+.battle-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pause-button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #172555;
+  color: white;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.pause-button svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 3;
+  fill: none;
+}
+
+.intro .wave,
+.intro .hearts {
+  display: none;
+}
+.intro .battle-hud {
+  justify-content: flex-end;
+}
+
+@media (min-width: 600px) and (min-height: 500px) {
+  :host.fit .battlefield {
+    height: 100%;
+    min-height: 0;
+  }
+  :host.fit .monster-position {
+    height: min(calc(100% - 32px), 300px);
+  }
+  :host.fit .monster-position.boss {
+    height: min(calc(100% - 32px), 300px);
+  }
+}
+
+@media (min-width: 600px) and (min-height: 500px) {
+  :host.fit .fairy {
+    width: auto;
+    max-width: 30%;
+    max-height: calc(100% - 110px);
+  }
+  :host.fit .monster {
+    width: auto;
+    max-width: 100%;
+    max-height: calc(100% - 88px);
+  }
+  :host.fit .boss.transforming .number-badge {
+    visibility: hidden;
+  }
+  :host.fit .boss .equation {
+    top: 0;
   }
 }

@@ -63,6 +63,16 @@ describe('optional fairy speech', () => {
     expect(cancel).toHaveBeenCalled();
     expect(removeEventListener).toHaveBeenCalledWith('voiceschanged', expect.any(Function));
   });
+  it('allows explicitly requested voice replay while the battle remains paused', () => {
+    const audio = TestBed.inject(GameAudio);
+    audio.updateVoice('en');
+    audio.start();
+    audio.pause();
+    audio.speak('Automatic feedback');
+    expect(speak).not.toHaveBeenCalled();
+    audio.speak('Requested explanation', true);
+    expect(speak.mock.lastCall?.[0]).toMatchObject({ text: 'Requested explanation' });
+  });
   it('keeps text-only play possible with no suitable voice and after a speech failure', () => {
     TestBed.inject(PlaytestStore).toggle('speech');
     const audio = TestBed.inject(GameAudio);
