@@ -13,3 +13,9 @@ Home shows cumulative counts only, no whole-game percentage or fraction. Unknown
 Verification scenarios: new player has zero achievements and a start link; returning player retains counts on reload and locale switch; fully mastered catalog shows caught-up; adding a new level restores a recommendation without revoking chapter achievements; prerequisites distinguish locked from unpublished; corrupt saves and unavailable storage do not break navigation. Unit tests cover these foundation rules. No reward mutation is exposed in preview UI.
 
 Current scope is issue #2's architecture, issue #3's Home, and shared parts of #1/#8/#9. The world map is an explicitly forthcoming preview, not the completed issue #4. Chapter detail, world detail, completion, scoring, actual gameplay, audio, theme controls and cloud sync are deferred. Unknown/removed game URLs redirect Home.
+
+### World Map delivery
+
+`WORLD_CATALOG` supplies the same configuration to recommendations, exploration, route guards and map destinations. Worlds own localized description keys and presentation metadata; adding a destination does not require changing the map template or routes. World state aggregates implemented levels: none means Coming Soon; all mastered means Completed for the current catalog; any available or replayable level means Available; otherwise Locked. Completion is a current-content state, not a permanent award or a fixed ending. New published content can change the displayed state while all earned IDs remain intact.
+
+World routes reject unknown, unpublished and wholly locked destinations back to the map. Locked previews list unmet prerequisite level names; Coming Soon previews explain future learning without launching it. Entering an accessible world records exploration. The minimal World Detail landing is part of #4's navigation handoff; the full chapter path remains #5. The earlier scope paragraph describes the first delivery, before this map implementation.

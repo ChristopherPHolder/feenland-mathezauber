@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { worlds, levelState } from './core/catalog';
+import { WORLD_CATALOG, worldState, levelState } from './core/catalog';
 import { ProgressService } from './core/progress';
 import { Router, Routes } from '@angular/router';
 export const routes: Routes = [
@@ -12,12 +12,25 @@ export const routes: Routes = [
     path: 'settings',
     loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
   },
+  {
+    path: 'worlds/:id',
+    canActivate: [
+      (route) => {
+        const world = inject(WORLD_CATALOG).find((world) => world.id === route.paramMap.get('id'));
+        return world &&
+          ['available', 'completed'].includes(worldState(world, inject(ProgressService).progress()))
+          ? true
+          : inject(Router).createUrlTree(['/worlds']);
+      },
+    ],
+    loadComponent: () => import('./pages/world-detail/world-detail').then((m) => m.WorldDetail),
+  },
   { path: 'worlds', loadComponent: () => import('./pages/worlds/worlds').then((m) => m.Worlds) },
   {
     path: 'adventure/:id',
     canActivate: [
       (route) => {
-        const level = worlds
+        const level = inject(WORLD_CATALOG)
           .flatMap((world) => world.chapters)
           .flatMap((chapter) => chapter.levels)
           .find((level) => level.id === route.paramMap.get('id'));

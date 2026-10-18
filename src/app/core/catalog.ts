@@ -1,3 +1,4 @@
+import { InjectionToken } from '@angular/core';
 import { MessageKey } from './messages';
 export interface Level {
   readonly id: string;
@@ -15,11 +16,19 @@ export interface World {
   readonly id: string;
   readonly title: MessageKey;
   readonly chapters: readonly Chapter[];
+  readonly description: MessageKey;
+  readonly emblem: string;
+  readonly color: string;
+  readonly ground: string;
 }
 export const worlds: readonly World[] = [
   {
     id: 'missing-number',
     title: 'missing',
+    description: 'missingPreview',
+    emblem: '?',
+    color: '#75512c',
+    ground: '#fff1cb',
     chapters: [
       {
         id: 'missing-number-first-steps',
@@ -36,9 +45,21 @@ export const worlds: readonly World[] = [
       },
     ],
   },
-  ...(['numbers', 'tens', 'subtraction', 'big', 'master'] as const).map((title) => ({
+  ...(
+    [
+      ['numbers', 'numbersPreview', '1 2 3', '#28604b', '#dfefe3'],
+      ['tens', 'tensPreview', '10', '#315d84', '#dfeefa'],
+      ['subtraction', 'subtractionPreview', '−', '#78476a', '#f3e3ef'],
+      ['big', 'bigPreview', '100', '#87502c', '#f9e5d4'],
+      ['master', 'masterPreview', '∞', '#50467b', '#e9e4f6'],
+    ] as const
+  ).map(([title, description, emblem, color, ground]) => ({
     id: title,
     title,
+    description,
+    emblem,
+    color,
+    ground,
     chapters: [],
   })),
 ];
@@ -82,4 +103,32 @@ export function parseProgress(value: unknown): Progress {
     chapters: strings('chapters'),
     explored: strings('explored'),
   };
+}
+
+/** Injectable so catalog extensions and state scenarios use the same navigation code. */
+export const WORLD_CATALOG = new InjectionToken<readonly World[]>('World catalog', {
+  providedIn: 'root',
+  factory: () => worlds,
+});
+export type ContentState = ReturnType<typeof levelState>;
+export function worldState(world: World, progress: Progress): ContentState {
+  const levels = world.chapters.flatMap((chapter) => chapter.levels);
+  const published = levels.filter((level) => level.implemented);
+  if (!published.length) return 'soon';
+  const states = published.map((level) => levelState(level, progress));
+  if (states.every((state) => state === 'completed')) return 'completed';
+  // An earned level remains a way back into a world even when its new levels are locked.
+  if (states.some((state) => state === 'available' || state === 'completed')) return 'available';
+  return 'locked';
+}
+export function worldRequirements(world: World, progress: Progress) {
+  return world.chapters
+    .flatMap((chapter) => chapter.levels)
+    .filter((level) => levelState(level, progress) === 'locked')
+    .map((level) => ({
+      level,
+      prerequisites: [
+        ...new Set(level.prerequisites.filter((id) => !progress.mastered.includes(id))),
+      ],
+    }));
 }

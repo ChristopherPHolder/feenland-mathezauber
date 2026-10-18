@@ -15,6 +15,7 @@ describe('expanding-world foundations', () => {
     const catalog: readonly World[] = [
       ...worlds,
       {
+        ...worlds[0],
         id: 'new-world',
         title: 'numbers',
         chapters: [

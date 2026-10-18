@@ -1,0 +1,92 @@
+<section class="map-page" aria-labelledby="map-title">
+  <a class="back-link" routerLink="/"><app-icon kind="back" />{{ i.t('back') }}</a>
+  <header class="map-intro">
+    <div>
+      <h1 id="map-title">{{ i.t('mapTitle') }}</h1>
+      <p class="lead">{{ i.t('mapHelp') }}</p>
+    </div>
+    <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
+  </header>
+  <ul class="destinations" [attr.aria-label]="i.t('worlds')">
+    @for (destination of destinations(); track destination.world.id) {
+      @let world = destination.world;
+      @let state = destination.state;
+      <li
+        class="destination"
+        [class.ready]="state === 'available' || state === 'completed'"
+        [style.--world-color]="world.color"
+        [style.--world-ground]="world.ground"
+        [attr.data-world]="world.id"
+      >
+        <div class="world-emblem" aria-hidden="true">{{ world.emblem }}</div>
+        <div class="world-copy">
+          <span class="world-state">
+            <app-icon
+              [kind]="
+                state === 'locked'
+                  ? 'lock'
+                  : state === 'completed'
+                    ? 'cup'
+                    : state === 'available'
+                      ? 'book'
+                      : 'star'
+              "
+            />
+            {{ i.t(state) }}
+          </span>
+          <h2 [id]="'world-' + world.id">{{ i.t(world.title) }}</h2>
+          <p>{{ i.t(world.description) }}</p>
+        </div>
+        @if (state === 'available' || state === 'completed') {
+          <a
+            class="button primary"
+            [routerLink]="['/worlds', world.id]"
+            [attr.aria-describedby]="'world-' + world.id"
+            >{{ i.t('openWorld') }}<app-icon kind="arrow"
+          /></a>
+        } @else {
+          <button
+            class="button secondary"
+            (click)="preview(world)"
+            aria-haspopup="dialog"
+            [attr.aria-describedby]="'world-' + world.id"
+          >
+            {{ i.t(state === 'locked' ? 'unlock' : 'viewPreview') }}<app-icon kind="arrow" />
+          </button>
+        }
+      </li>
+    }
+  </ul>
+  <p class="map-end">{{ i.t('invitation') }}</p>
+  <dialog
+    #dialog
+    aria-labelledby="preview-title"
+    aria-describedby="preview-description"
+    (close)="restoreFocus()"
+  >
+    @if (selected(); as world) {
+      <span class="world-state"
+        ><app-icon [kind]="selectedState() === 'locked' ? 'lock' : 'star'" />{{
+          i.t(selectedState())
+        }}</span
+      >
+      <h2 id="preview-title">{{ i.t(world.title) }}</h2>
+      <p id="preview-description">{{ i.t(world.description) }}</p>
+      @if (selectedState() === 'locked') {
+        <p>{{ i.t('unlockHelp') }}</p>
+        @for (requirement of requirements(); track requirement.level.id) {
+          <h3>{{ i.t(requirement.level.title) }}</h3>
+          <p>{{ i.t('prerequisiteHelp') }}</p>
+          <ul>
+            @for (prerequisite of requirement.prerequisites; track prerequisite.id) {
+              <li>{{ i.t(prerequisite.title) }}</li>
+            }
+          </ul>
+        }
+      } @else {
+        <p>{{ i.t('preview') }}</p>
+      }
+    }
+    <button class="button primary" autofocus (click)="dialog.close()">{{ i.t('close') }}</button>
+  </dialog>
+</section>
