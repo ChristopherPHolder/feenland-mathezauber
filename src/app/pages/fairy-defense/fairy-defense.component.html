@@ -5,6 +5,72 @@
   aria-labelledby="game-title"
 >
   <h1 class="sr-only" id="game-title">{{ t('title') }}</h1>
+  @if (!started()) {
+    <section class="practice-settings" aria-labelledby="practice-settings-title">
+      <h2 id="practice-settings-title">{{ i.t('gameSettings') }}</h2>
+      @if (!practiceConfig()) {
+        <label for="practice-stage">{{ i.t('chooseLevel') }}</label>
+        <select
+          id="practice-stage"
+          [disabled]="started()"
+          [value]="chosenStage()"
+          #stageSelect
+          (change)="chosenStage.set(stageSelect.value)"
+        >
+          <option value="">{{ t('title') }}</option>
+          @for (level of stages; track level.id) {
+            <option [value]="level.id">
+              {{ i.t('stage') }} {{ level.practice!.stage }} · {{ i.t(level.title) }} ·
+              {{ i.t('upTo') }} {{ level.practice!.max }}
+            </option>
+          }
+        </select>
+      }
+      @if (!training()) {
+        <label for="campaign-math">{{ i.t('mathComplexity') }}</label>
+        <select
+          id="campaign-math"
+          [value]="mathRange()"
+          #rangeSelect
+          (change)="mathRange.set(rangeSelect.value)"
+        >
+          <option value="10">{{ i.t('mathTen') }}</option>
+          <option value="30">{{ i.t('mathThirty') }}</option>
+          <option value="100">{{ i.t('mathHundred') }}</option>
+        </select>
+      }
+      @if (!started()) {
+        <div class="practice-options">
+          <fieldset>
+            <legend>{{ i.t('difficulty') }}</legend>
+            @for (option of difficulties; track option) {
+              <label
+                ><input type="radio" [value]="option" [formField]="settings.difficulty" />{{
+                  i.t(option)
+                }}</label
+              >
+            }
+          </fieldset>
+          <fieldset>
+            <legend>{{ i.t('pace') }}</legend>
+            @for (option of paces; track option) {
+              <label
+                ><input type="radio" [value]="option" [formField]="settings.pace" />{{
+                  i.t(option)
+                }}</label
+              >
+            }
+          </fieldset>
+        </div>
+        <p>{{ i.t('paceHelp') }}</p>
+      }
+      @if (training()) {
+        <a [routerLink]="['/worlds', 'missing-number', 'chapters', 'math-to-30']">{{
+          i.t('chooseLevel')
+        }}</a>
+      }
+    </section>
+  }
   <app-battle-scene
     [battle]="battle()"
     [stageLabel]="training() ? i.t('stage') + ' ' + training()!.stage + ' / 9' : ''"
@@ -17,7 +83,7 @@
       <div class="start-curtain">
         <div class="story-panel">
           <h2>{{ training() ? i.t(training()!.skill) : t('intro') }}</h2>
-          @if (!training()) {
+          @if (!training() && mathRange() === '10') {
             <p>{{ t('briefing') }}</p>
           }
           @if (training(); as config) {
@@ -27,7 +93,7 @@
             </p>
             <p>{{ config.example }}</p>
           } @else {
-            <p class="rule-copy">{{ t('rules') }}</p>
+            <p class="rule-copy">{{ mathRange() === '10' ? t('rules') : i.t('mixedMathHelp') }}</p>
           }
           <button
             class="button primary"
@@ -117,7 +183,7 @@
       </p>
       <div class="ten-frame-wrap">
         <p class="math-prompt" aria-hidden="true">{{ equation() }}</p>
-        @if (!battle().hintVisible && !training()) {
+        @if (!battle().hintVisible && !encounter().question) {
           <button
             class="hint-button"
             [disabled]="battle().phase !== 'ready'"
@@ -130,7 +196,7 @@
             </svg>
           </button>
         }
-        @if (battle().hintVisible && !training()) {
+        @if (battle().hintVisible && !encounter().question) {
           <div
             class="ten-frame"
             role="img"
@@ -151,57 +217,6 @@
     />
   }
   @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
-    <section class="practice-settings" aria-labelledby="practice-settings-title">
-      <h2 id="practice-settings-title">{{ i.t('practicePath') }}</h2>
-      @if (!practiceConfig()) {
-        <label for="practice-stage">{{ i.t('chooseLevel') }}</label>
-        <select
-          id="practice-stage"
-          [disabled]="started()"
-          [value]="chosenStage()"
-          #stageSelect
-          (change)="chosenStage.set(stageSelect.value)"
-        >
-          <option value="">{{ i.t('friendsOfTen') }}</option>
-          @for (level of stages; track level.id) {
-            <option [value]="level.id">
-              {{ i.t('stage') }} {{ level.practice!.stage }} · {{ i.t(level.title) }} ·
-              {{ i.t('upTo') }} {{ level.practice!.max }}
-            </option>
-          }
-        </select>
-      }
-      @if (!started()) {
-        <div class="practice-options">
-          <fieldset>
-            <legend>{{ i.t('difficulty') }}</legend>
-            @for (option of difficulties; track option) {
-              <label
-                ><input type="radio" [value]="option" [formField]="settings.difficulty" />{{
-                  i.t(option)
-                }}</label
-              >
-            }
-          </fieldset>
-          <fieldset>
-            <legend>{{ i.t('pace') }}</legend>
-            @for (option of paces; track option) {
-              <label
-                ><input type="radio" [value]="option" [formField]="settings.pace" />{{
-                  i.t(option)
-                }}</label
-              >
-            }
-          </fieldset>
-        </div>
-        <p>{{ i.t('paceHelp') }}</p>
-      }
-      @if (training()) {
-        <a [routerLink]="['/worlds', 'missing-number', 'chapters', 'math-to-30']">{{
-          i.t('chooseLevel')
-        }}</a>
-      }
-    </section>
     @if (!training()) {
       <app-wave-path
         [unlocked]="campaign.unlocked()"
@@ -224,7 +239,7 @@
   [instruction]="message()"
   [canExplain]="battle().phase === 'ready'"
   [canSpeak]="audio.canSpeak()"
-  [extraInstruction]="battle().wave.number === 11 ? t('zeroSpell') : ''"
+  [extraInstruction]="battle().wave.number === 11 && !encounter().question ? t('zeroSpell') : ''"
   (explain)="explainInPause()"
   (replay)="replayInPause()"
   (resume)="resume()"

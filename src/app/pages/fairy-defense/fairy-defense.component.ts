@@ -1,6 +1,6 @@
 import { form, FormField } from '@angular/forms/signals';
 import { Difficulty, Pace, PracticeConfig, practiceLevels } from '../../core/practice';
-import { practiceBattle, practiceSpells } from './practice-battle';
+import { practiceBattle, practiceSpells, withCampaignMath } from './practice-battle';
 import { WavePathComponent } from './wave-path/wave-path.component';
 import { CampaignStore } from './campaign';
 import { CompletionService } from '../../core/completion';
@@ -41,6 +41,7 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
 })
 export class FairyDefenseComponent {
   readonly practiceConfig = input<PracticeConfig>();
+  protected readonly mathRange = signal('30');
   protected readonly stages = practiceLevels;
   protected readonly chosenStage = signal('');
   protected readonly training = computed(
@@ -99,7 +100,7 @@ export class FairyDefenseComponent {
   private returnFocus?: HTMLElement;
   protected readonly message = computed(() => {
     const state = this.battle();
-    if (this.training())
+    if (this.encounter()?.question)
       return (
         this.equation() +
         (state.phase === 'wrong'
@@ -134,6 +135,8 @@ export class FairyDefenseComponent {
   });
   constructor() {
     try {
+      const range = this.document.defaultView?.localStorage.getItem('feenland.campaign-math');
+      if (range === '10' || range === '30' || range === '100') this.mathRange.set(range);
       const saved: unknown = JSON.parse(
         this.document.defaultView?.localStorage.getItem('feenland.practice-options') ?? 'null',
       );
@@ -150,11 +153,13 @@ export class FairyDefenseComponent {
     }
     effect(() => {
       const options = this.settingsModel();
+      const range = this.mathRange();
       try {
         this.document.defaultView?.localStorage.setItem(
           'feenland.practice-options',
           JSON.stringify(options),
         );
+        this.document.defaultView?.localStorage.setItem('feenland.campaign-math', range);
       } catch {
         /* Settings remain in memory. */
       }
@@ -190,10 +195,12 @@ export class FairyDefenseComponent {
     this.clearTurn();
     this.instructionOverride.set(null);
     const training = this.training();
-    const fresh = training
+    let fresh = training
       ? practiceBattle(training, this.settingsModel().difficulty)
       : freshBattle(number);
     const difficulty = this.settingsModel().difficulty;
+    if (!training && this.mathRange() !== '10')
+      fresh = withCampaignMath(fresh, this.mathRange() === '100' ? 100 : 30, difficulty);
     this.battle.set(
       !training && difficulty !== 'medium'
         ? {
@@ -255,8 +262,7 @@ export class FairyDefenseComponent {
             if (this.training() || this.campaign.finished()) this.recordCompletion();
             this.focusOutcome();
           } else {
-            if (resolved.phase === 'transforming')
-              this.audio.speak(this.t('prompt', { n: this.encounter().energy }));
+            if (resolved.phase === 'transforming') this.audio.speak(this.message());
             this.focusSpells();
           }
         },
@@ -360,13 +366,13 @@ export class FairyDefenseComponent {
       this.openPause();
       return;
     }
-    if (this.training() && /^[1-5]$/.test(event.key)) {
+    if (this.encounter().question && /^[1-5]$/.test(event.key)) {
       event.preventDefault();
       this.castSpell(this.spells()[Number(event.key) - 1]);
       return;
     }
     if (
-      !this.training() &&
+      !this.encounter().question &&
       /^[0-9]$/.test(event.key) &&
       !(event.target instanceof HTMLSelectElement)
     ) {

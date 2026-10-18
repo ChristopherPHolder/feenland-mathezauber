@@ -24,7 +24,7 @@
       /></span>
       <span class="spell-number">{{ i.format(spell) }}</span>
       <span class="spell-quantity" aria-hidden="true">
-        @for (dot of quantities.slice(0, spell); track dot) {
+        @for (dot of quantities.slice(0, spell <= 10 ? spell : 0); track dot) {
           <span></span>
         }
       </span>

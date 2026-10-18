@@ -73,3 +73,9 @@ Unit tests cover all wave definitions, solvability, staged help, shuffling, dama
 The established fairy, forest, butterfly and crystals are retained. Two additional regular monsters and a crowned boss extend the illustrated asset set. Assets and exact generation prompts are in `public/images/fairy-defense/` and its provenance/sidecar files; they were produced with the built-in image generator.
 
 For the child test, observe whether the wave path and Continue action are clear, whether counting support fades comfortably, whether zero makes sense, whether boss shields are understandable, and whether they want to return for another wave. Device voice quality and enjoyment require human testing; no analytics or tracking is added.
+
+## Selectable campaign maths
+
+Before Play, choose making ten, mixed addition/subtraction and missing-number sums to 30 (the default), or mixed sums to 100. The choice is remembered in `feenland.campaign-math`. Difficulty further filters the question pool; pace remains independent. The existing twenty-wave path, bosses, encounter counts and saved results are retained. Higher ranges use five answer spells; keyboard keys 1–5 choose their positions. Quantities above ten use numerals without misleading counting dots. The nine dedicated practice stages retain their own skill and range.
+
+Mixed campaign waves alternate crossing-ten addition with subtraction; Hard uses missing starting numbers for subtraction. Medium and relaxed pace remain the defaults, and explicitly saved range choices are respected.

@@ -22,6 +22,7 @@ describe('Wave 1 playable integration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     localStorage.clear();
+    localStorage.setItem('feenland.campaign-math', '10');
     TestBed.configureTestingModule({
       imports: [FairyDefenseComponent],
       providers: [provideRouter([])],

@@ -6,7 +6,7 @@ export type Skill =
 export interface PracticeConfig {
   readonly stage: number;
   readonly skill: Skill;
-  readonly max: 10 | 20 | 30;
+  readonly max: 10 | 20 | 30 | 100;
   readonly example: string;
 }
 export interface Question {

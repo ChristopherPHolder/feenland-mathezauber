@@ -28,6 +28,31 @@ export function practiceBattle(config: PracticeConfig, difficulty: Difficulty): 
 }
 export function practiceSpells(answer: number): readonly number[] {
   const offset = (answer * 7 + 3) % 5;
-  const start = Math.max(0, Math.min(26, answer - offset));
+  const start = Math.max(0, Math.min(Math.max(30, answer) - 4, answer - offset));
   return Array.from({ length: 5 }, (_, index) => start + index);
+}
+
+/** Keep campaign encounters, bosses and progress while replacing their maths. */
+export function withCampaignMath(battle: Battle, max: 30 | 100, difficulty: Difficulty): Battle {
+  const addition = createRound({ stage: 0, skill: 'crossing', max, example: '' }, difficulty);
+  const subtraction = createRound(
+    {
+      stage: 0,
+      skill: difficulty === 'hard' ? 'startingNumber' : 'subtractionSkill',
+      max,
+      example: '',
+    },
+    difficulty,
+  );
+  return {
+    ...battle,
+    wave: {
+      ...battle.wave,
+      encounters: battle.wave.encounters.map((encounter, index) => ({
+        ...encounter,
+        question:
+          index % 2 === 0 ? addition[Math.floor(index / 2)] : subtraction[Math.floor(index / 2)],
+      })),
+    },
+  };
 }
