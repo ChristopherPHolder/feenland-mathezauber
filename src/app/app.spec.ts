@@ -53,7 +53,7 @@ describe('Feenland navigation', () => {
       'feenland.progress',
       JSON.stringify({
         version: 1,
-        mastered: ['missing-number-add-to-30'],
+        mastered: ['missing-number-add-to-30', 'missing-number-subtract-to-30'],
         chapters: ['earned-chapter'],
         explored: ['missing-number'],
       }),
@@ -61,7 +61,7 @@ describe('Feenland navigation', () => {
     const h = await RouterTestingHarness.create('/');
     expect(h.routeNativeElement?.textContent).toContain(TestBed.inject(LocaleService).t('caught'));
     expect([...h.routeNativeElement!.querySelectorAll('dd')].map((e) => e.textContent)).toEqual([
-      '1',
+      '2',
       '1',
       '1',
     ]);

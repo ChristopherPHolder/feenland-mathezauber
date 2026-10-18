@@ -1,0 +1,82 @@
+<section class="chapter-page" aria-labelledby="chapter-title">
+  @if (context(); as context) {
+    <a
+      class="back-link"
+      [routerLink]="['/worlds', context.world.id]"
+      [fragment]="context.chapter.id"
+      ><app-icon kind="back" />{{ i.t('backWorld') }}</a
+    >
+    <header class="chapter-intro">
+      <div>
+        <h1 id="chapter-title">{{ i.t(context.chapter.title ?? 'chapterTitle') }}</h1>
+        <p class="lead">{{ i.t(context.chapter.description ?? 'missingPreview') }}</p>
+      </div>
+      <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" />
+    </header>
+    @if (p.progress().chapters.includes(context.chapter.id)) {
+      <p class="earned"><app-icon kind="cup" />{{ i.t('chapterAward') }}</p>
+    }
+    @if (caughtUp()) {
+      <p class="caught-message">{{ i.t('chapterCaught') }}</p>
+    }
+    <h2>{{ i.t('levelPath') }}</h2>
+    <p class="path-help">{{ i.t('levelHelp') }}</p>
+    <ol class="level-path">
+      @for (entry of levels(); track entry.level.id; let index = $index) {
+        <li
+          class="level-stop"
+          [id]="entry.level.id"
+          [class.recommended]="entry.level.id === next()"
+        >
+          <span class="level-number" aria-hidden="true">{{ i.format(index + 1) }}</span>
+          <div class="level-copy">
+            <span class="state-label"
+              ><app-icon
+                [kind]="
+                  entry.state === 'locked'
+                    ? 'lock'
+                    : entry.state === 'completed'
+                      ? 'cup'
+                      : entry.state === 'soon'
+                        ? 'star'
+                        : 'book'
+                "
+              />{{ i.t(entry.state) }}</span
+            >
+            <h3 [id]="'level-' + entry.level.id">{{ i.t(entry.level.title) }}</h3>
+            <p>{{ i.t(entry.level.description ?? 'missingPreview') }}</p>
+            @if (entry.level.id === next()) {
+              <p class="next-label">{{ i.t('recommended') }}</p>
+            }
+            @if (entry.state === 'completed') {
+              <p class="earned"><app-icon kind="cup" />{{ i.t('masteryEarned') }}</p>
+            }
+            @if (entry.state === 'available' || entry.state === 'completed') {
+              <a
+                class="button"
+                [class.primary]="entry.level.id === next()"
+                [class.secondary]="entry.level.id !== next()"
+                [routerLink]="['/adventure', entry.level.id]"
+                [attr.aria-describedby]="'level-' + entry.level.id"
+                >{{ i.t('openLevel') }}<app-icon kind="arrow"
+              /></a>
+            } @else {
+              <button
+                class="button secondary"
+                aria-haspopup="dialog"
+                (click)="preview(entry.level)"
+                [attr.aria-describedby]="'level-' + entry.level.id"
+              >
+                {{ i.t(entry.state === 'locked' ? 'unlock' : 'viewPreview')
+                }}<app-icon kind="arrow" />
+              </button>
+            }
+          </div>
+        </li>
+      } @empty {
+        <li>{{ i.t('chapterEmpty') }}</li>
+      }
+    </ol>
+  }
+  <app-content-preview />
+</section>

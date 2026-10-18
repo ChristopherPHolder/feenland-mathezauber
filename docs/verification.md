@@ -26,3 +26,10 @@
 - Chapter paths show configured titles, learning promises, state labels/icons and independent earned chapter awards. A forthcoming inverse-operation chapter previews future learning without launching it.
 - Browser checks: en/de/es/fr at 320, 375, 393, 768, 820, 1024, 1180, 1366, 1440 and 1920px widths plus 852×393 and 568×320 landscape; no page overflow. AXE: zero violations at 393px and 1440px per locale, including native preview dialogs. Escape returns focus to the chapter trigger.
 - The separate chapter destination initially provides the preview handoff; issue #6 adds its complete level path.
+
+## Chapter Detail (#6)
+
+- 24 tests and production build pass. Coverage includes recommended/locked/forthcoming levels, gated deep links, earned replay, newly configured levels, retained chapter awards and challenge-to-level anchored return links.
+- The first chapter now contains an available addition preview, a subtraction preview gated on mastery of the addition level, and a forthcoming make-ten level. No real math completion is fabricated.
+- All four locales pass the twelve-size viewport matrix used for #5. AXE reports zero violations at 393px and 1440px and on locked previews; Escape restores trigger focus. In-memory router scrolling restores previous positions and chapter/level anchors.
+- Independent desktop/phone review: ship, no material findings.

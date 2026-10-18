@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { MessageKey } from './messages';
 export interface Level {
+  readonly description?: MessageKey;
   readonly id: string;
   readonly title: MessageKey;
   readonly implemented: boolean;
@@ -43,6 +44,24 @@ export const worlds: readonly World[] = [
             implemented: true,
             prerequisites: [],
             skills: ['missing-addend', 'make-ten'],
+            format: 'challenge-preview',
+          },
+          {
+            id: 'missing-number-subtract-to-30',
+            title: 'subtractLevel',
+            description: 'subtractDescription',
+            implemented: true,
+            prerequisites: ['missing-number-add-to-30'],
+            skills: ['missing-subtrahend'],
+            format: 'challenge-preview',
+          },
+          {
+            id: 'missing-number-make-ten',
+            title: 'makeTenLevel',
+            description: 'makeTenDescription',
+            implemented: false,
+            prerequisites: ['missing-number-add-to-30'],
+            skills: ['make-ten'],
             format: 'challenge-preview',
           },
         ],

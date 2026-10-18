@@ -26,7 +26,7 @@ describe('world availability', () => {
     expect(worldState(gated, emptyProgress)).toBe('locked');
     expect(worldRequirements(gated, emptyProgress)[0].prerequisites).toEqual([level.id]);
     expect(worldState(first, emptyProgress)).toBe('available');
-    const earned = { ...emptyProgress, mastered: [level.id] };
+    const earned = { ...emptyProgress, mastered: [level.id, 'missing-number-subtract-to-30'] };
     expect(worldState(first, earned)).toBe('completed');
     expect(worldState(gated, earned)).toBe('available');
     expect(worldRequirements(gated, earned)).toEqual([]);
@@ -136,7 +136,7 @@ describe('World Map navigation', () => {
   it('keeps completed worlds revisitable and reflects progress restored on reload', async () => {
     localStorage.setItem(
       'feenland.progress',
-      JSON.stringify({ ...emptyProgress, mastered: [level.id] }),
+      JSON.stringify({ ...emptyProgress, mastered: [level.id, 'missing-number-subtract-to-30'] }),
     );
     const h = await RouterTestingHarness.create('/worlds');
     expect(

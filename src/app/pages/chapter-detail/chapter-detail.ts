@@ -1,32 +1,21 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, viewChild } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { findChapter, WORLD_CATALOG } from '../../core/catalog';
+import { findChapter, findLevel, Level, levelState, WORLD_CATALOG } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
+import { ProgressService } from '../../core/progress';
+import { ContentPreview } from '../../shared/content-preview/content-preview';
+import { Icon } from '../../shared/icon';
 @Component({
   selector: 'app-chapter-detail',
-  imports: [RouterLink],
-  template: `<section class="page narrow">
-    @if (context(); as context) {
-      <a
-        class="button secondary"
-        [routerLink]="['/worlds', context.world.id]"
-        [fragment]="context.chapter.id"
-        >{{ i.t('backWorld') }}</a
-      >
-      <h1>{{ i.t(context.chapter.title ?? 'chapterTitle') }}</h1>
-      <p>{{ i.t(context.chapter.description ?? 'missingPreview') }}</p>
-      <p>{{ i.t('chapterPreview') }}</p>
-      @if (context.chapter.levels[0]; as level) {
-        <a class="button primary" [routerLink]="['/adventure', level.id]">{{
-          i.t('previewAdventure')
-        }}</a>
-      }
-    }
-  </section>`,
+  imports: [RouterLink, Icon, NgOptimizedImage, ContentPreview],
+  templateUrl: './chapter-detail.html',
+  styleUrl: './chapter-detail.css',
 })
 export class ChapterDetail {
   protected readonly i = inject(LocaleService);
+  protected readonly p = inject(ProgressService);
   private readonly catalog = inject(WORLD_CATALOG);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
   protected readonly context = computed(() =>
@@ -36,4 +25,33 @@ export class ChapterDetail {
       this.params()?.get('chapterId') ?? null,
     ),
   );
+  protected readonly levels = computed(
+    () =>
+      this.context()?.chapter.levels.map((level) => ({
+        level,
+        state: levelState(level, this.p.progress()),
+      })) ?? [],
+  );
+  protected readonly next = computed(
+    () => this.levels().find((entry) => entry.state === 'available')?.level.id,
+  );
+  protected readonly caughtUp = computed(
+    () => !this.next() && this.levels().some((entry) => entry.state === 'completed'),
+  );
+  private readonly dialog = viewChild.required(ContentPreview);
+  protected preview(level: Level) {
+    const state = levelState(level, this.p.progress());
+    if (state !== 'locked' && state !== 'soon') return;
+    this.dialog().open({
+      title: level.title,
+      description: level.description ?? 'missingPreview',
+      state,
+      requirements: level.prerequisites
+        .filter((id) => !this.p.progress().mastered.includes(id))
+        .map((id) => ({
+          id,
+          title: findLevel(this.catalog, id)?.level.title ?? 'unknownRequirement',
+        })),
+    });
+  }
 }
