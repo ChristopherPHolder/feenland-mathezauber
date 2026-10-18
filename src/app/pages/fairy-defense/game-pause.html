@@ -1,0 +1,26 @@
+<dialog #dialog (cancel)="cancel($event)" aria-labelledby="pause-title">
+  <h2 id="pause-title">{{ t('paused') }}</h2>
+  <p>{{ t('pauseHelp') }}</p>
+  <button class="button primary" autofocus (click)="resume.emit()">{{ t('resume') }}</button>
+  <fieldset class="sound-settings">
+    <legend>{{ t('sound') }}</legend>
+    @for (key of soundKeys; track key) {
+      <label
+        ><span>{{ t(key) }}</span
+        ><input type="checkbox" [checked]="store.audio()[key]" (change)="toggleSound.emit(key)"
+      /></label>
+    }
+  </fieldset>
+  <label class="language-label"
+    >{{ t('language')
+    }}<select #languageSelect [value]="i.locale()" (change)="selectLanguage(languageSelect.value)">
+      @for (language of languages; track language.id) {
+        <option [value]="language.id">{{ language.name }}</option>
+      }
+    </select></label
+  >
+  @if (started()) {
+    <button class="button secondary" (click)="restart.emit()">{{ t('restart') }}</button>
+  }
+  <a class="exit-link" [routerLink]="chapterLink">{{ t('back') }}</a>
+</dialog>

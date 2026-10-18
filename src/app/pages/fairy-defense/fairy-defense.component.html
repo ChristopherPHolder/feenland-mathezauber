@@ -1,0 +1,103 @@
+<section
+  class="game"
+  [class.is-paused]="paused()"
+  [class.is-complete]="battle().phase === 'complete'"
+  aria-labelledby="game-title"
+>
+  <header class="game-header">
+    <div class="game-name">
+      <h1 id="game-title">{{ t('title') }}</h1>
+    </div>
+    <button class="round-button" (click)="openPause()" [attr.aria-label]="t('pause')">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+    </button>
+  </header>
+  <app-battle-scene [battle]="battle()" [paused]="paused()" [started]="started()">
+    @if (!started()) {
+      <div class="start-curtain">
+        <div class="story-panel">
+          <h2>{{ t('intro') }}</h2>
+          <p>{{ t('briefing') }}</p>
+          <p class="rule-copy">{{ t('rules') }}</p>
+          <button class="button primary" (click)="play()">
+            {{ t('play') }}<app-icon kind="arrow" />
+          </button>
+          <p class="playtest-note">{{ t('playtest') }}</p>
+        </div>
+      </div>
+    }
+    @if (battle().phase === 'lost' || battle().phase === 'complete') {
+      <div class="outcome-curtain">
+        <section
+          #outcome
+          class="story-panel outcome"
+          tabindex="-1"
+          [attr.aria-label]="t(battle().phase === 'lost' ? 'retryTitle' : 'complete')"
+        >
+          <app-icon [kind]="battle().phase === 'lost' ? 'gem' : 'star'" />
+          <h2>{{ t(battle().phase === 'lost' ? 'retryTitle' : 'complete') }}</h2>
+          <p>{{ t(battle().phase === 'lost' ? 'retryText' : 'completeText') }}</p>
+          @if (battle().phase === 'complete') {
+            <p>{{ t('restored') }}</p>
+            <p class="rule-copy">{{ t('playtestHelp') }}</p>
+          }
+          <button class="button primary" (click)="play()">
+            {{ t(battle().phase === 'lost' ? 'retry' : 'again') }}
+          </button>
+          <a class="exit-link" [routerLink]="chapterLink">{{ t('back') }}</a>
+        </section>
+      </div>
+    }
+  </app-battle-scene>
+  @if (started() && battle().phase !== 'lost' && battle().phase !== 'complete') {
+    <div class="learning-dock">
+      <div class="fairy-guidance">
+        <p class="instruction" role="status" aria-live="polite" aria-atomic="true">
+          {{ message() }}
+        </p>
+        <div class="guidance-actions">
+          <button (click)="help()"><app-icon kind="gem" />{{ t('hint') }}</button>
+          <button (click)="help(true)">{{ t('replay') }}</button>
+          @if (audio.canSpeak() && store.audio().speech) {
+            <button (click)="replaySpeech()">{{ t('speechReplay') }}</button>
+          }
+        </div>
+      </div>
+      <div class="ten-frame-wrap">
+        <p class="math-prompt" aria-hidden="true">{{ encounter().energy }} + <span>?</span> = 10</p>
+        <div
+          class="ten-frame"
+          role="img"
+          [attr.aria-label]="t('filled', { n: encounter().energy })"
+        >
+          @for (dot of dots; track dot) {
+            <span class="dot" [class.filled]="dot < encounter().energy"></span>
+          }
+        </div>
+      </div>
+    </div>
+    <app-spell-bar
+      [locked]="battle().phase !== 'ready'"
+      [selected]="battle().spell"
+      (castSpell)="castSpell($event)"
+    />
+  }
+  @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
+    <div class="game-foot">
+      <span>{{ t('playtestHelp') }}</span
+      ><a [routerLink]="chapterLink">{{ t('back') }}</a>
+    </div>
+  }
+  @if (started() && store.audio().speech && !audio.canSpeak()) {
+    <p class="audio-notice">{{ t('noVoice') }}</p>
+  }
+  @if (store.saveFailed()) {
+    <p class="audio-notice" role="status">{{ t('save') }}</p>
+  }
+</section>
+<app-game-pause
+  [started]="started()"
+  (resume)="resume()"
+  (restart)="restart()"
+  (toggleSound)="toggleSound($event)"
+/>

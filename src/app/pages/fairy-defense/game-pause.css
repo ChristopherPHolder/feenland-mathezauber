@@ -1,0 +1,68 @@
+dialog {
+  width: min(460px, calc(100% - 32px));
+  max-height: 90dvh;
+  overflow: auto;
+  border: 0;
+  border-radius: 24px;
+  padding: 28px;
+  background: #fffdf5;
+  color: #172555;
+  box-shadow: 0 16px 60px #10284155;
+}
+dialog::backdrop {
+  background: #102841aa;
+}
+dialog h2 {
+  margin: 0;
+  font-size: 28px;
+}
+dialog p {
+  line-height: 1.5;
+}
+dialog .button {
+  width: 100%;
+  margin: 10px 0 0;
+}
+.sound-settings {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 12px;
+}
+.sound-settings legend {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.sound-settings label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 44px;
+}
+.sound-settings input {
+  width: 24px;
+  height: 24px;
+  accent-color: #c91860;
+}
+.language-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  min-height: 48px;
+  margin: 10px 0 20px;
+}
+.language-label select {
+  min-height: 44px;
+  max-width: 65%;
+  padding: 8px;
+  border: 1px solid #728078;
+  border-radius: 8px;
+  background: #fff;
+}
+.exit-link {
+  display: block;
+  margin-top: 16px;
+  min-height: 44px;
+  padding: 10px;
+  text-align: center;
+}
