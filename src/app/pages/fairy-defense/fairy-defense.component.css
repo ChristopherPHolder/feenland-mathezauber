@@ -266,6 +266,17 @@
   }
 }
 
+@media (min-width: 601px) and (max-width: 1400px) {
+  :host {
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding-block: 0;
+  }
+  .game {
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
 .practice-settings {
   background: #fffdf5;
   color: #172555;
