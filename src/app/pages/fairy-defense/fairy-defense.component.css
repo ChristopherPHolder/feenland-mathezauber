@@ -244,3 +244,24 @@
     transition: none !important;
   }
 }
+
+@media (min-width: 600px) and (min-height: 500px) {
+  :host.playing {
+    height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    min-height: 0;
+  }
+  :host.playing .game {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  :host.playing app-battle-scene {
+    flex: 1 1 0%;
+    min-height: 0;
+  }
+  :host.playing .learning-dock,
+  :host.playing app-spell-bar,
+  :host.playing .audio-notice {
+    flex: none;
+  }
+}

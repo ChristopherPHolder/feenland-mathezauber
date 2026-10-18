@@ -9,12 +9,14 @@ import { gameText, GameMessageKey } from './game-messages';
   imports: [NgOptimizedImage, Icon],
   templateUrl: './battle-scene.html',
   styleUrl: './battle-scene.css',
+  host: { '[class.fit]': 'fit()' },
 })
 export class BattleScene {
   readonly pauseRequested = output();
   readonly battle = input.required<Battle>();
   readonly paused = input(false);
   readonly started = input(false);
+  readonly fit = input(false);
   protected readonly i = inject(LocaleService);
   protected readonly sprite = computed(() => {
     switch (this.encounter().appearance) {

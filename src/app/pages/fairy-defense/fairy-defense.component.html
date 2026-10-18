@@ -9,6 +9,7 @@
     [battle]="battle()"
     [paused]="paused()"
     [started]="started()"
+    [fit]="playing()"
     (pauseRequested)="openPause()"
   >
     @if (!started()) {
