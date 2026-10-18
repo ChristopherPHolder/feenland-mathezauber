@@ -51,7 +51,29 @@ export class ProgressService {
   }
   private save(key: string, progress: Progress) {
     try {
-      this.document.defaultView?.localStorage.setItem(key, JSON.stringify(progress));
+      const storage = this.document.defaultView?.localStorage;
+      const original = storage?.getItem(key);
+      if (original !== null && original !== undefined) {
+        let supported = false;
+        try {
+          const value: unknown = JSON.parse(original);
+          supported =
+            !!value &&
+            typeof value === 'object' &&
+            'version' in value &&
+            value.version === 1 &&
+            'mastered' in value &&
+            Array.isArray(value.mastered) &&
+            'chapters' in value &&
+            Array.isArray(value.chapters) &&
+            'explored' in value &&
+            Array.isArray(value.explored);
+        } catch {
+          /* Keep the original corrupt save recoverable before replacing it. */
+        }
+        if (!supported) storage?.setItem(key + '.recovery', original);
+      }
+      storage?.setItem(key, JSON.stringify(progress));
       this.saveFailed.set(false);
     } catch {
       this.saveFailed.set(true);

@@ -57,3 +57,6 @@ Thumbs.db
 /.impeccable/config.local.json
 /.impeccable/hook.cache.json
 /.agents/skills/impeccable/scripts/bin/
+
+# Local browser review captures
+/.impeccable/review/

@@ -60,3 +60,11 @@
 - Shared `ContentStatus` now supplies localized labels and SVG state icons across world, chapter, level and native preview surfaces. Existing buttons, icons, modal previews and keyed path patterns form the reusable foundation.
 - 34 tests and production build pass. Fresh shared-state map/chapter checks pass the twelve-size/four-language matrix and phone/desktop/dialog AXE with zero violations. Static detector returns advisories only on the shared components/styles; documented incumbent type variations remain intentional.
 - Independent reviewer inspected Home, Worlds, World Detail, Chapter Detail, Completion and Settings desktop/phone captures: ship. Documentation review verified tokens and required accurate Completed semantics, minimum button heights and current product scope; those corrections are applied.
+
+## Final integration (#1)
+
+- 37 tests pass across eight files; production build passes without budget warnings. Recovery tests preserve the exact corrupt/future save before replacement and refuse to overwrite the original when its backup fails. Valid unknown completion IDs and bounded earned stars survive parsing.
+- The complete four-locale browser flow passes: Home → Worlds → World → Chapter → challenge preview → demo completion → Next → caught-up → Chapter. Reload retains receipts and sandbox progress; real learning mastery/chapter awards remain unchanged. Settings returns to the originating chapter.
+- Tested the production build through local Cloudflare Wrangler on port 8787. Deep chapter links load correctly. Angular's service worker controls the page; with networking disabled, World Map → World → Chapter → both demo challenges/completions and completion reload work. Offline Home shows real counts `0, 0, 1` after exploration; demo mastery and chapter awards remain separate. German locale persists. Offline completion AXE reports zero violations, with no browser page errors.
+- `viewport-fit=cover` and body safe-area padding cover standalone display insets; short portrait/landscape widths remain covered by the recorded matrix.
+- GitHub Actions deployment runs for each preceding delivery commit completed successfully. Each ticket is closed only after its implementation commit is pushed.
