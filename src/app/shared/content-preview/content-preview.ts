@@ -1,8 +1,8 @@
+import { ContentStatus } from '../content-status/content-status';
 import { DOCUMENT } from '@angular/common';
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
-import { Icon } from '../icon';
 export interface PreviewDetails {
   readonly title: MessageKey;
   readonly description: MessageKey;
@@ -11,7 +11,7 @@ export interface PreviewDetails {
 }
 @Component({
   selector: 'app-content-preview',
-  imports: [Icon],
+  imports: [ContentStatus],
   template: `<dialog
     #dialog
     aria-labelledby="content-preview-title"
@@ -19,11 +19,7 @@ export interface PreviewDetails {
     (close)="restoreFocus()"
   >
     @if (details(); as details) {
-      <span class="preview-state"
-        ><app-icon [kind]="details.state === 'locked' ? 'lock' : 'star'" />{{
-          i.t(details.state)
-        }}</span
-      >
+      <app-content-status [state]="details.state" />
       <h2 id="content-preview-title">{{ i.t(details.title) }}</h2>
       <p id="content-preview-description">{{ i.t(details.description) }}</p>
       @if (details.state === 'locked') {

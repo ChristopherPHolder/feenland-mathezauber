@@ -25,7 +25,7 @@
 .settings-intro img {
   width: 220px;
   height: auto;
-  border-radius: 16px;
+  border-radius: var(--radius-surface);
 }
 .settings-sections {
   display: grid;

@@ -53,3 +53,10 @@
 - Home now derives its recommended world label from the injected catalog rather than assuming Missing Number. A catalog replacement regression verifies the label updates with the destination.
 - 34 tests and production build pass. Existing cases cover real zero counts, returning mastery, all-current-content caught-up, saved locale and invalid saves. All four locales pass the twelve-size portrait/landscape matrix and phone/desktop AXE with zero violations.
 - Continue/Start intentionally names the challenge preview while actual gameplay is deferred by #1/#3. Its destination is the correct available challenge shell; Explore opens the implemented World Map and Settings stays in the shared gear.
+
+## Shared design system (#9)
+
+- Documented actual palette, type, spacing, radii, elevation, responsive compositions, fairy traits/pose guidance, dialog/focus contract and distinct content/earned/demo semantics in DESIGN.md. The schema-2 sidecar extends tokens with motion, breakpoints and representative implemented examples.
+- Shared `ContentStatus` now supplies localized labels and SVG state icons across world, chapter, level and native preview surfaces. Existing buttons, icons, modal previews and keyed path patterns form the reusable foundation.
+- 34 tests and production build pass. Fresh shared-state map/chapter checks pass the twelve-size/four-language matrix and phone/desktop/dialog AXE with zero violations. Static detector returns advisories only on the shared components/styles; documented incumbent type variations remain intentional.
+- Independent reviewer inspected Home, Worlds, World Detail, Chapter Detail, Completion and Settings desktop/phone captures: ship. Documentation review verified tokens and required accurate Completed semantics, minimum button heights and current product scope; those corrections are applied.

@@ -1,3 +1,4 @@
+import { ContentStatus } from '../../shared/content-status/content-status';
 import { Component, computed, effect, inject, viewChild } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -9,7 +10,7 @@ import { Icon } from '../../shared/icon';
 import { ContentPreview } from '../../shared/content-preview/content-preview';
 @Component({
   selector: 'app-world-detail',
-  imports: [RouterLink, Icon, NgOptimizedImage, ContentPreview],
+  imports: [ContentStatus, RouterLink, Icon, NgOptimizedImage, ContentPreview],
   templateUrl: './world-detail.html',
   styleUrl: './world-detail.css',
 })

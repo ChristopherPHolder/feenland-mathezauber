@@ -20,20 +20,7 @@
       >
         <div class="world-emblem" aria-hidden="true">{{ world.emblem }}</div>
         <div class="world-copy">
-          <span class="world-state">
-            <app-icon
-              [kind]="
-                state === 'locked'
-                  ? 'lock'
-                  : state === 'completed'
-                    ? 'cup'
-                    : state === 'available'
-                      ? 'book'
-                      : 'star'
-              "
-            />
-            {{ i.t(state) }}
-          </span>
+          <app-content-status [state]="state" />
           <h2 [id]="'world-' + world.id">{{ i.t(world.title) }}</h2>
           <p>{{ i.t(world.description) }}</p>
         </div>
@@ -65,11 +52,7 @@
     (close)="restoreFocus()"
   >
     @if (selected(); as world) {
-      <span class="world-state"
-        ><app-icon [kind]="selectedState() === 'locked' ? 'lock' : 'star'" />{{
-          i.t(selectedState())
-        }}</span
-      >
+      <app-content-status [state]="selectedState()" />
       <h2 id="preview-title">{{ i.t(world.title) }}</h2>
       <p id="preview-description">{{ i.t(world.description) }}</p>
       @if (selectedState() === 'locked') {

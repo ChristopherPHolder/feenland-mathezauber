@@ -1,3 +1,4 @@
+import { ContentStatus } from '../../shared/content-status/content-status';
 import { DOCUMENT, NgOptimizedImage } from '@angular/common';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -7,7 +8,7 @@ import { ProgressService } from '../../core/progress';
 import { Icon } from '../../shared/icon';
 @Component({
   selector: 'app-worlds',
-  imports: [RouterLink, Icon, NgOptimizedImage],
+  imports: [ContentStatus, RouterLink, Icon, NgOptimizedImage],
   templateUrl: './worlds.html',
   styleUrl: './worlds.css',
 })

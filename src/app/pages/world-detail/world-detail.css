@@ -26,15 +26,15 @@
 .world-intro img {
   width: 100%;
   height: auto;
-  border-radius: 16px;
+  border-radius: var(--radius-surface);
 }
 .lead {
   max-width: 42ch;
 }
 .caught-message {
   padding: 24px;
-  background: #dfefe3;
-  border-radius: 16px;
+  background: var(--success-ground);
+  border-radius: var(--radius-surface);
 }
 h2 {
   font-size: 30px;
@@ -60,14 +60,14 @@ h2 {
   gap: 20px;
   padding: 28px;
   background: var(--cream);
-  border-radius: 16px;
+  border-radius: var(--radius-surface);
   scroll-margin-top: 24px;
 }
 .path-marker {
   display: flex;
   padding: 12px;
   border-radius: 50%;
-  background: #dfefe3;
+  background: var(--success-ground);
 }
 .chapter-copy {
   min-width: 0;

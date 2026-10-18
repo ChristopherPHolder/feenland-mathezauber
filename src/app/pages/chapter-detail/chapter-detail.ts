@@ -1,3 +1,4 @@
+import { ContentStatus } from '../../shared/content-status/content-status';
 import { Component, computed, inject, viewChild } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -9,7 +10,7 @@ import { ContentPreview } from '../../shared/content-preview/content-preview';
 import { Icon } from '../../shared/icon';
 @Component({
   selector: 'app-chapter-detail',
-  imports: [RouterLink, Icon, NgOptimizedImage, ContentPreview],
+  imports: [ContentStatus, RouterLink, Icon, NgOptimizedImage, ContentPreview],
   templateUrl: './chapter-detail.html',
   styleUrl: './chapter-detail.css',
 })

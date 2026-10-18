@@ -16,6 +16,18 @@
   background: #edf7fb;
   font-weight: 400;
   color-scheme: light;
+  --ink: #172555;
+  --ground: #edf7fb;
+  --focus: #1746ab;
+  --success-ground: #dfefe3;
+  --warm-ground: #fff1cb;
+  --radius-surface: 16px;
+  --radius-panel: 24px;
+  --radius-button: 30px;
+  --space-small: 8px;
+  --space-medium: 16px;
+  --space-large: 24px;
+  --space-section: 40px;
   --pink: #c91860;
   --cream: #fffdf5;
   --muted: #4c6079;
@@ -48,7 +60,7 @@ a {
 }
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid #1746ab;
+  outline: 3px solid var(--focus);
   outline-offset: 5px;
 }
 main:focus {
@@ -87,7 +99,7 @@ p {
   max-width: 1400px;
   margin: auto;
   padding: 18px 40px;
-  gap: 24px;
+  gap: var(--space-large);
 }
 .wordmark {
   display: inline-flex;
@@ -115,11 +127,11 @@ nav {
 nav a {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-small);
   min-height: 46px;
   padding: 10px 16px;
   text-decoration: none;
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
   font-size: 15px;
 }
 nav a.active {
@@ -139,7 +151,7 @@ footer {
   padding: 20px 40px 28px;
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-medium);
   color: var(--muted);
   font-size: 13px;
 }
@@ -152,7 +164,7 @@ footer {
   padding: 15px 24px;
   text-decoration: none;
   border: 0;
-  border-radius: 30px;
+  border-radius: var(--radius-button);
   font-size: 18px;
   font-weight: 600;
   line-height: 1.25;
@@ -182,7 +194,7 @@ footer {
 .page {
   max-width: 1180px;
   margin: auto;
-  padding: 40px;
+  padding: var(--space-section);
 }
 .page h1 {
   margin-top: 0;
@@ -194,7 +206,7 @@ footer {
 .panel {
   background: var(--cream);
   padding: 28px;
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
 }
 .panel h2 {
   margin-top: 0;
@@ -206,7 +218,7 @@ footer {
 .languages {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-small);
 }
 .languages button {
   display: flex;
@@ -228,7 +240,7 @@ footer {
 }
 dialog {
   border: 0;
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
   max-width: min(480px, calc(100% - 32px));
   padding: 32px;
   color: #172555;
@@ -294,6 +306,7 @@ dialog::backdrop {
 }
 @supports (padding: max(0px)) {
   body {
+    padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     padding-bottom: env(safe-area-inset-bottom);

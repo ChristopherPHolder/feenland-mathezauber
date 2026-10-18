@@ -1,27 +1,99 @@
 {
-  "version": 1,
-  "title": "Feenland Mathezauber",
-  "source": "DESIGN.md",
-  "colors": {
-    "ink": "#172555",
-    "ground": "#edf7fb",
-    "cream": "#fffdf5",
-    "primary": "#c91860",
-    "muted": "#4c6079"
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T16:00:00+02:00",
+  "title": "Design System: Feenland Mathezauber",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "primary-action",
+        "value": "0 6px 16px #b722511c",
+        "purpose": "Primary action depth"
+      },
+      {
+        "name": "secondary-action",
+        "value": "0 4px 15px #214d5a0a",
+        "purpose": "Secondary action depth"
+      }
+    ],
+    "motion": [
+      {
+        "name": "button-feedback",
+        "value": "background 0.15s, transform 0.15s",
+        "purpose": "Subtle hover feedback; disabled for reduced motion"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "600px"
+      },
+      {
+        "name": "compact-layout",
+        "value": "700px"
+      },
+      {
+        "name": "tablet-grid",
+        "value": "1000px"
+      }
+    ]
   },
-  "font": {
-    "family": "Fredoka",
-    "weights": [400, 600]
-  },
-  "components": {
-    "primary": "pink pill, minimum 56px height",
-    "secondary": "white pill, dark ink",
-    "panel": "cream, 24px radius"
-  },
-  "mascot": "red-haired fairy, green leaf dress, translucent wings, golden star wand",
-  "responsive": {
-    "phone": "stacked hero and achievements",
-    "tablet": "split hero, full-width action row",
-    "desktop": "split hero, horizontal achievements"
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "description": "Primary action",
+      "html": "<button class=\"ds-primary\">Continue adventure</button>",
+      "css": ".ds-primary { background:var(--pink);color:#fff;min-height:56px;padding:15px 24px;border:0;border-radius:var(--radius-button);font:600 18px Fredoka,sans-serif; }",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "description": "Secondary action",
+      "html": "<button class=\"ds-secondary\">Explore worlds</button>",
+      "css": ".ds-secondary { background:#fff;color:var(--ink);min-height:56px;padding:15px 24px;border:0;border-radius:var(--radius-button);font:600 18px Fredoka,sans-serif; }",
+      "refersTo": "button-secondary"
+    },
+    {
+      "name": "Content state",
+      "kind": "custom",
+      "description": "Content state",
+      "html": "<span class=\"ds-status\">Available</span>",
+      "css": ".ds-status { display:inline-flex;align-items:center;gap:8px;font:14px Fredoka,sans-serif;color:var(--ink); }",
+      "refersTo": "content-status"
+    },
+    {
+      "name": "Learning path stop",
+      "kind": "card",
+      "description": "Learning path stop",
+      "html": "<article class=\"ds-stop\"><h3>The first little mysteries</h3><p>Find missing parts in addition stories up to 30.</p></article>",
+      "css": ".ds-stop { background:var(--cream);color:var(--ink);padding:24px;border-radius:var(--radius-surface);font:16px/1.6 Fredoka,sans-serif; } .ds-stop h3 { margin:0 0 12px;font-size:26px;line-height:1.2; }"
+    },
+    {
+      "name": "Demo notice",
+      "kind": "custom",
+      "description": "Demo notice",
+      "html": "<aside class=\"ds-demo\"><strong>Adventure demo</strong><p>Demo progress is saved separately from learning mastery.</p></aside>",
+      "css": ".ds-demo { background:var(--warm-ground);color:var(--ink);padding:20px 24px;border-radius:var(--radius-surface);font:16px/1.6 Fredoka,sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A welcoming fairyland of growing number discoveries",
+    "overview": "Preserve the familiar fairy, rounded typography, gentle surfaces and clear next actions. Exploration grows without revoking accomplishments.",
+    "keyCharacteristics": [
+      "Recognizable fairy",
+      "Localized text and SVG state icons",
+      "Responsive paths",
+      "Cumulative earned achievements"
+    ],
+    "rules": [
+      {
+        "name": "Earned means earned",
+        "body": "Demo results stay separate from real learning progress.",
+        "section": "components"
+      }
+    ],
+    "dos": ["Preserve earned IDs as content grows", "Keep focus and touch targets visible"],
+    "donts": ["Use global fixed completion totals", "Invent rewards or nonfunctional controls"]
   }
 }

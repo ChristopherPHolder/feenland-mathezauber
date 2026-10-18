@@ -24,7 +24,7 @@
                 "
             /></span>
             <div class="chapter-copy">
-              <span class="state-label">{{ i.t(entry.state) }}</span>
+              <app-content-status [state]="entry.state" />
               <h3 [id]="'title-' + entry.chapter.id">
                 {{ i.t(entry.chapter.title ?? 'chapterTitle') }}
               </h3>

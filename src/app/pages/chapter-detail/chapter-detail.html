@@ -30,19 +30,7 @@
         >
           <span class="level-number" aria-hidden="true">{{ i.format(index + 1) }}</span>
           <div class="level-copy">
-            <span class="state-label"
-              ><app-icon
-                [kind]="
-                  entry.state === 'locked'
-                    ? 'lock'
-                    : entry.state === 'completed'
-                      ? 'cup'
-                      : entry.state === 'soon'
-                        ? 'star'
-                        : 'book'
-                "
-              />{{ i.t(entry.state) }}</span
-            >
+            <app-content-status [state]="entry.state" />
             <h3 [id]="'level-' + entry.level.id">{{ i.t(entry.level.title) }}</h3>
             <p>{{ i.t(entry.level.description ?? 'missingPreview') }}</p>
             @if (entry.level.id === next()) {
