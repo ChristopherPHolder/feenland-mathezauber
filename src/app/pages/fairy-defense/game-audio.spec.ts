@@ -64,6 +64,7 @@ describe('optional fairy speech', () => {
     expect(removeEventListener).toHaveBeenCalledWith('voiceschanged', expect.any(Function));
   });
   it('allows explicitly requested voice replay while the battle remains paused', () => {
+    TestBed.inject(PlaytestStore).toggle('speech');
     const audio = TestBed.inject(GameAudio);
     audio.updateVoice('en');
     audio.start();
