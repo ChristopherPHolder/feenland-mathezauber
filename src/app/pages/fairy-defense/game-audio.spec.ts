@@ -32,6 +32,7 @@ describe('optional fairy speech', () => {
     vi.clearAllMocks();
   });
   it('waits for Play and uses only a matching game-language voice', () => {
+    TestBed.inject(PlaytestStore).toggle('speech');
     const audio = TestBed.inject(GameAudio);
     for (const [locale, lang] of [
       ['en', 'en-GB'],
@@ -50,11 +51,11 @@ describe('optional fairy speech', () => {
       expect(speak.mock.lastCall?.[0]).toMatchObject({ lang, text: 'Matching visible text' });
     }
   });
-  it('respects speech-off and releases speech listeners on route exit', () => {
+  it('defaults speech off after Play and releases speech listeners on route exit', () => {
     const audio = TestBed.inject(GameAudio);
     audio.updateVoice('en');
     audio.start();
-    TestBed.inject(PlaytestStore).toggle('speech');
+    expect(TestBed.inject(PlaytestStore).audio().speech).toBe(false);
     audio.sync();
     audio.speak('Quiet');
     expect(speak).not.toHaveBeenCalled();
@@ -63,6 +64,7 @@ describe('optional fairy speech', () => {
     expect(removeEventListener).toHaveBeenCalledWith('voiceschanged', expect.any(Function));
   });
   it('keeps text-only play possible with no suitable voice and after a speech failure', () => {
+    TestBed.inject(PlaytestStore).toggle('speech');
     const audio = TestBed.inject(GameAudio);
     audio.updateVoice('en');
     audio.start();

@@ -5,7 +5,7 @@ export interface AudioSettings {
   readonly effects: boolean;
   readonly speech: boolean;
 }
-const defaults: AudioSettings = { music: true, effects: true, speech: true };
+const defaults: AudioSettings = { music: true, effects: true, speech: false };
 /** Deliberately separate from earned Progress and completion receipts. */
 @Service()
 export class PlaytestStore {
