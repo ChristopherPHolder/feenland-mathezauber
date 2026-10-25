@@ -195,7 +195,7 @@
             [class.peek-right]="!round().chosen && pose() === '<'"
             [class.peek-up]="!round().chosen && pose() === '='"
           >
-            @if (pose() === '=') {
+            @if (pose() === null || pose() === '=') {
               <app-crocodile kind="front" [hat]="hat()" />
             } @else {
               <app-crocodile
@@ -260,7 +260,7 @@
         {{ message() }}
       </p>
     </section>
-    <fieldset class="choices" [attr.aria-busy]="round().phase !== 'ready'">
+    <fieldset class="choices" tabindex="-1" [attr.aria-busy]="round().phase !== 'ready'">
       <legend class="sr-only">{{ t('chooseLabel') }}</legend>
       @for (choice of choices; track choice) {
         <button

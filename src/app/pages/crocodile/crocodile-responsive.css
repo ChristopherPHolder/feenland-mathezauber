@@ -1,0 +1,177 @@
+@media (max-width: 640px) {
+  :host {
+    padding: 12px 12px 24px;
+  }
+  .game {
+    gap: 12px;
+  }
+  .game-top {
+    flex-direction: column;
+  }
+  .top-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .panel {
+    padding: 20px 16px;
+  }
+  .board {
+    padding: 22px 12px 14px;
+  }
+  .demo-row {
+    grid-template-columns: 54px 96px 54px;
+  }
+  .demo-number {
+    font-size: 30px;
+  }
+  .demo-croc {
+    width: 96px;
+  }
+  .hud {
+    gap: 6px 10px;
+  }
+  .score strong {
+    font-size: 22px;
+  }
+  .combo {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  .sides {
+    grid-template-columns: 1fr 96px 1fr;
+    gap: 6px;
+  }
+  .side {
+    min-height: 98px;
+    padding: 10px 6px;
+    border-radius: 20px;
+    box-shadow:
+      0 0 0 5px #5fbf6f,
+      0 8px 16px #0f4c5c33;
+  }
+  .expression {
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+  .sides.needs-maths {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .sides.needs-maths .slot {
+    grid-column: 1 / 3;
+    order: 3;
+    min-height: 84px;
+  }
+  .sides.needs-maths .side {
+    padding: 10px 0;
+  }
+  .tile {
+    min-width: 32px;
+    height: 56px;
+    padding: 0 6px;
+    border-radius: 14px;
+    font-size: 24px;
+    box-shadow:
+      0 4px 0 #e2dcc4,
+      0 6px 14px #214d5a12;
+  }
+  .plain .tile,
+  .boss .plain .tile {
+    min-width: 70px;
+    height: 70px;
+    font-size: 40px;
+  }
+  .operator {
+    width: 24px;
+    height: 24px;
+    flex: none;
+    font-size: 21px;
+  }
+  .side-value {
+    font-size: 18px;
+    padding: 3px 12px;
+  }
+  .slot {
+    min-height: 96px;
+  }
+  .slot-croc {
+    width: 96px;
+  }
+  .slot-croc.to-left {
+    transform: translateX(-30%);
+  }
+  .slot-croc.to-right {
+    transform: translateX(30%);
+  }
+  .slot-sign {
+    font-size: 26px;
+  }
+  .points-float {
+    font-size: 22px;
+  }
+  .banner {
+    font-size: 15px;
+    padding: 6px 12px;
+  }
+  .instruction {
+    font-size: 16px;
+  }
+  .choices {
+    gap: 8px;
+  }
+  .choice {
+    min-height: 112px;
+    padding: 10px 4px 8px;
+  }
+  .choice-croc {
+    width: 84px;
+  }
+  .choice-sign {
+    font-size: 28px;
+  }
+  .snacks li {
+    width: 20px;
+    height: 15px;
+  }
+  .snacks li.boss {
+    width: 26px;
+    height: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .slot-croc.to-left,
+  .slot-croc.to-right,
+  .slot-croc.peek-left,
+  .slot-croc.peek-right,
+  .slot-croc.peek-up {
+    transform: none;
+  }
+}
+
+/* Leave room for the answers and correction hints in short tablet landscapes. */
+@media (min-width: 641px) and (max-height: 760px) {
+  :host {
+    padding-top: 12px;
+    padding-bottom: 16px;
+  }
+  .game {
+    gap: 12px;
+  }
+  .board {
+    padding: 20px 20px 14px;
+  }
+  .slot {
+    min-height: 130px;
+  }
+  .choice {
+    min-height: 112px;
+    padding: 8px;
+  }
+  .choice-croc {
+    width: 88px;
+  }
+}
