@@ -1,5 +1,10 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, input } from '@angular/core';
-/** Decorative crocodile: a side view whose jaws open toward the bigger number, or a content front view. */
+import type { HatId } from './crocodile-score';
+/**
+ * Decorative crocodile: a side view whose jaws open toward the bigger number, a content front
+ * view, or just a hat for the wardrobe. Hats are drawn with their brim at the origin.
+ */
 @Component({
   selector: 'app-crocodile',
   template: `@if (kind() === 'front') {
@@ -15,6 +20,15 @@ import { Component, input } from '@angular/core';
         <circle cx="92" cy="58" r="3" class="dark" />
         <path d="M46 72 Q80 92 114 72" class="smile" />
         <path d="M58 76 l3 6 3-6M96 76 l3 6 3-6" class="smile thin" />
+        <svg:g class="hat" transform="translate(80 22) scale(1.1)">
+          <ng-container *ngTemplateOutlet="hatArt" />
+        </svg:g>
+      </svg>
+    } @else if (kind() === 'hat') {
+      <svg viewBox="-24 -34 48 46" aria-hidden="true" class="only-hat">
+        <svg:g class="hat" transform="translate(0 2)">
+          <ng-container *ngTemplateOutlet="hatArt" />
+        </svg:g>
       </svg>
     } @else {
       <svg
@@ -45,13 +59,57 @@ import { Component, input } from '@angular/core';
         <circle cx="96" cy="46" r="11" class="skin" />
         <circle cx="98" cy="45" r="6" fill="#fff" />
         <circle cx="100" cy="45" r="3" class="ink" />
+        <svg:g class="hat" transform="translate(94 36) scale(0.85)">
+          <ng-container *ngTemplateOutlet="hatArt" />
+        </svg:g>
       </svg>
-    }`,
+    }
+    <ng-template #hatArt>
+      @switch (hat()) {
+        @case ('party') {
+          <svg:path d="M-12 4 L0 -24 L12 4z" fill="#e0457b" />
+          <svg:circle cx="0" cy="-24" r="3.5" fill="#f4b740" />
+          <svg:path d="M-8 -4 l4 -4 4 4 4-4 4 4" fill="none" stroke="#fff" stroke-width="2" />
+        }
+        @case ('crown') {
+          <svg:path d="M-13 4 L-13 -12 L-6 -4 L0 -16 L6 -4 L13 -12 L13 4z" fill="#f4b740" />
+          <svg:circle cx="0" cy="-2" r="2.5" fill="#e0457b" />
+        }
+        @case ('pirate') {
+          <svg:path d="M-18 2 Q0 -8 18 2 L14 -4 Q0 -22 -14 -4z" fill="#172555" />
+          <svg:circle cx="0" cy="-8" r="3" fill="#fff" />
+          <svg:path d="M-3 -4 l6 0 M-2 -4 l0 3 M2 -4 l0 3" stroke="#fff" stroke-width="1.5" />
+        }
+        @case ('wizard') {
+          <svg:path d="M-14 4 L0 -28 L14 4z" fill="#5a4fcf" />
+          <svg:path d="M-17 4 L17 4" stroke="#5a4fcf" stroke-width="5" stroke-linecap="round" />
+          <svg:path d="M-3 -10 l2 -5 2 5 -5 -3 6 0z" fill="#f4b740" />
+        }
+        @case ('flower') {
+          <svg:circle cx="-10" cy="-2" r="4" fill="#ff8fb6" />
+          <svg:circle cx="-3" cy="-6" r="4" fill="#ffd166" />
+          <svg:circle cx="4" cy="-6" r="4" fill="#ff8fb6" />
+          <svg:circle cx="11" cy="-2" r="4" fill="#ffd166" />
+          <svg:path d="M-13 1 Q0 -4 13 1" fill="none" stroke="#3a8f55" stroke-width="2.5" />
+        }
+        @case ('gold') {
+          <svg:path d="M-15 4 L-15 -14 L-8 -6 L0 -20 L8 -6 L15 -14 L15 4z" fill="#f4b740" />
+          <svg:path d="M-15 4 L15 4" stroke="#c98a00" stroke-width="3" />
+          <svg:circle cx="-8" cy="-2" r="2" fill="#e0457b" />
+          <svg:circle cx="0" cy="-4" r="2.4" fill="#4aa3ff" />
+          <svg:circle cx="8" cy="-2" r="2" fill="#e0457b" />
+        }
+      }
+    </ng-template>`,
+  imports: [NgTemplateOutlet],
   styles: `
     :host {
       display: inline-flex;
       width: 100%;
       aspect-ratio: 1.6;
+    }
+    :host(.hat-only) {
+      aspect-ratio: 1.05;
     }
     svg {
       width: 100%;
@@ -124,10 +182,12 @@ import { Component, input } from '@angular/core';
       }
     }
   `,
+  host: { '[class.hat-only]': "kind() === 'hat'" },
 })
 export class CrocodileArt {
-  readonly kind = input<'profile' | 'front'>('profile');
+  readonly kind = input<'profile' | 'front' | 'hat'>('profile');
   readonly facing = input<'left' | 'right'>('right');
   readonly open = input(true);
   readonly chomping = input(false);
+  readonly hat = input<HatId | 'none'>('none');
 }

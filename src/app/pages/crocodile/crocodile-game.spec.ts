@@ -11,6 +11,7 @@ import { Locale } from '../../core/messages';
 import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
 import { evaluate } from './comparison.fixture';
+import { SnackKind, snackPoints } from './crocodile-score';
 
 const labels = {
   '>': 'Greater than. The crocodile eats the left side.',
@@ -57,8 +58,14 @@ describe('the hungry crocodile game', () => {
     expect(TestBed.inject(ProgressService).progress().explored).toContain('numbers');
     expect(element.querySelectorAll('.choice').length).toBe(3);
     const seen = new Set<string>();
+    let expectedScore = 0;
     for (let n = 0; n < 10; n++) {
       expect(element.textContent).toContain(`${n} of 10 snacks`);
+      const board = element.querySelector<HTMLElement>('.board')!;
+      const kind = board.dataset['snackKind'] as SnackKind;
+      expect(kind).toBe(n === 9 ? 'boss' : kind);
+      expectedScore += snackPoints(kind, n + 1);
+      if (n === 9) expect(element.querySelector('.banner')?.textContent).toContain('big fish');
       const question = current(element);
       seen.add(question.answer);
       if (n === 0) {
@@ -70,6 +77,12 @@ describe('the hungry crocodile game', () => {
       expect(element.querySelector('.instruction')!.textContent).toContain(
         question.answer === '=' ? 'full' : 'bigger than',
       );
+      expect(element.querySelector('.points-float')?.textContent).toBe(
+        `+${snackPoints(kind, n + 1)}`,
+      );
+      if (n === 2)
+        expect(element.querySelector('.banner')?.textContent).toContain('Three in a row');
+      if (n === 5) expect(element.querySelector('.banner')?.textContent).toContain('frenzy');
       pick(element, question.answer === '=' ? '<' : '=');
       fixture.detectChanges();
       expect(element.querySelector('.slot-sign')?.textContent?.trim()).toBe(question.answer);
@@ -77,7 +90,16 @@ describe('the hungry crocodile game', () => {
       fixture.detectChanges();
     }
     expect(seen).toEqual(new Set(['<', '=', '>']));
-    expect(element.textContent).toContain(crocodileTranslations.en.done);
+    expect(element.textContent).toContain(`Perfect pond! ${expectedScore} points.`);
+    expect(element.querySelector('.score-line')?.textContent).toContain('New best score!');
+    expect(element.querySelector('.hat-unlocked')?.textContent).toContain(
+      'New hat for Kiki: Party hat!',
+    );
+    expect(element.querySelectorAll('.hat-slot.owned').length).toBe(1);
+    expect(element.querySelectorAll('.confetti span').length).toBe(10);
+    expect(JSON.parse(localStorage.getItem('feenland.crocodile-scores.v1')!).best).toEqual({
+      'crocodile-1': expectedScore,
+    });
     expect(element.querySelectorAll('.stars .earned').length).toBe(3);
     expect(element.querySelector('a.button.primary')!.getAttribute('href')).toBe(
       '/adventure/crocodile-2',
@@ -118,6 +140,10 @@ describe('the hungry crocodile game', () => {
       fixture.detectChanges();
     }
     expect(element.textContent).toContain('Mistakes: 3');
+    expect(element.textContent).toContain(crocodileTranslations.en.done);
+    expect(element.querySelector('.hat-unlocked')).toBeNull();
+    expect(element.querySelectorAll('.hat-slot.owned').length).toBe(0);
+    expect(element.querySelector('.confetti')).toBeNull();
     expect(element.querySelectorAll('.stars .earned').length).toBe(1);
     expect(element.textContent).toContain(crocodileTranslations.en.oneStar);
     expect(element.querySelector('a[href="/adventure/crocodile-2"]')).not.toBeNull();
