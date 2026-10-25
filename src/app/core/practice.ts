@@ -28,7 +28,6 @@ export const practiceLevels: readonly Level[] = stages.map(([skill, max, example
   id: `practice-30-${index + 1}`,
   title: skill,
   description: 'practiceHelp',
-  implemented: true,
   prerequisites: [],
   skills: [skill],
   format: 'math-practice',

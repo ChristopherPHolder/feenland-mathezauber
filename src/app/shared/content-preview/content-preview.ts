@@ -6,7 +6,6 @@ import { MessageKey } from '../../core/messages';
 export interface PreviewDetails {
   readonly title: MessageKey;
   readonly description: MessageKey;
-  readonly state: 'soon' | 'locked';
   readonly requirements: readonly { readonly id: string; readonly title: MessageKey }[];
 }
 @Component({
@@ -19,19 +18,15 @@ export interface PreviewDetails {
     (close)="restoreFocus()"
   >
     @if (details(); as details) {
-      <app-content-status [state]="details.state" />
+      <app-content-status state="locked" />
       <h2 id="content-preview-title">{{ i.t(details.title) }}</h2>
       <p id="content-preview-description">{{ i.t(details.description) }}</p>
-      @if (details.state === 'locked') {
-        <p>{{ i.t('prerequisiteHelp') }}</p>
-        <ul>
-          @for (requirement of details.requirements; track requirement.id) {
-            <li>{{ i.t(requirement.title) }}</li>
-          }
-        </ul>
-      } @else {
-        <p>{{ i.t('preview') }}</p>
-      }
+      <p>{{ i.t('prerequisiteHelp') }}</p>
+      <ul>
+        @for (requirement of details.requirements; track requirement.id) {
+          <li>{{ i.t(requirement.title) }}</li>
+        }
+      </ul>
     }
     <button class="button primary" autofocus (click)="dialog.close()">{{ i.t('close') }}</button>
   </dialog>`,

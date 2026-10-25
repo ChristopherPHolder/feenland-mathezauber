@@ -55,25 +55,23 @@ describe('Wave 1 battle rules', () => {
     }
   });
   it('rejects playtest learning rewards even if a result is submitted directly', () => {
-    for (const source of ['practice', 'demo'] as const)
-      expect(
-        applyResult(
-          worlds.map((world) => ({
-            ...world,
-            chapters: world.chapters.map((chapter) => ({
-              ...chapter,
-              levels: chapter.levels.map((level) => ({ ...level, playtest: true })),
-            })),
+    expect(
+      applyResult(
+        worlds.map((world) => ({
+          ...world,
+          chapters: world.chapters.map((chapter) => ({
+            ...chapter,
+            levels: chapter.levels.map((level) => ({ ...level, playtest: true })),
           })),
-          emptyProgress,
-          {
-            levelId: 'defend-fairy-castle',
-            source,
-            completed: true,
-            mastered: true,
-            stars: 3,
-          },
-        ),
-      ).toBeUndefined();
+        })),
+        emptyProgress,
+        {
+          levelId: 'defend-fairy-castle',
+          completed: true,
+          mastered: true,
+          stars: 3,
+        },
+      ),
+    ).toBeUndefined();
   });
 });

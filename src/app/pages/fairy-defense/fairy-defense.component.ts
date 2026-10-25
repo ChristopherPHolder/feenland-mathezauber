@@ -328,7 +328,6 @@ export class FairyDefenseComponent {
     if (training)
       return this.completion.finish({
         levelId: `practice-30-${training.stage}`,
-        source: 'practice',
         completed: true,
         mastered: true,
       });
@@ -337,7 +336,6 @@ export class FairyDefenseComponent {
       stars > 0 &&
       this.completion.finish({
         levelId: 'defend-fairy-castle',
-        source: 'practice',
         completed: true,
         mastered: stars >= 2,
         stars,

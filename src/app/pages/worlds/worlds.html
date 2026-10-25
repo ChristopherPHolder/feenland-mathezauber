@@ -38,7 +38,7 @@
             aria-haspopup="dialog"
             [attr.aria-describedby]="'world-' + world.id"
           >
-            {{ i.t(state === 'locked' ? 'unlock' : 'viewPreview') }}<app-icon kind="arrow" />
+            {{ i.t('unlock') }}<app-icon kind="arrow" />
           </button>
         }
       </li>
@@ -55,19 +55,15 @@
       <app-content-status [state]="selectedState()" />
       <h2 id="preview-title">{{ i.t(world.title) }}</h2>
       <p id="preview-description">{{ i.t(world.description) }}</p>
-      @if (selectedState() === 'locked') {
-        <p>{{ i.t('unlockHelp') }}</p>
-        @for (requirement of requirements(); track requirement.level.id) {
-          <h3>{{ i.t(requirement.level.title) }}</h3>
-          <p>{{ i.t('prerequisiteHelp') }}</p>
-          <ul>
-            @for (prerequisite of requirement.prerequisites; track prerequisite.id) {
-              <li>{{ i.t(prerequisite.title) }}</li>
-            }
-          </ul>
-        }
-      } @else {
-        <p>{{ i.t('preview') }}</p>
+      <p>{{ i.t('unlockHelp') }}</p>
+      @for (requirement of requirements(); track requirement.level.id) {
+        <h3>{{ i.t(requirement.level.title) }}</h3>
+        <p>{{ i.t('prerequisiteHelp') }}</p>
+        <ul>
+          @for (prerequisite of requirement.prerequisites; track prerequisite.id) {
+            <li>{{ i.t(prerequisite.title) }}</li>
+          }
+        </ul>
       }
     }
     <button class="button primary" autofocus (click)="dialog.close()">{{ i.t('close') }}</button>

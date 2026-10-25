@@ -169,7 +169,6 @@ describe('crocodile navigation', () => {
       'feenland.result',
       JSON.stringify({
         levelId: 'crocodile-1',
-        source: 'practice',
         completed: true,
         mastered: true,
         stars: 2,

@@ -1,6 +1,6 @@
-import { worlds } from './preview-catalog.fixture';
-import { emptyProgress, levelState, nextLevel, parseProgress, World } from './catalog';
+import { emptyProgress, levelState, nextLevel, parseProgress, World, worlds } from './catalog';
 import { detectLocale } from './locale';
+const everyLevel = worlds.flatMap((world) => world.chapters).flatMap((chapter) => chapter.levels);
 describe('expanding-world foundations', () => {
   it('recommends the first available level for a new player', () => {
     expect(nextLevel(worlds, emptyProgress)?.id).toBe('defend-fairy-castle');
@@ -8,33 +8,29 @@ describe('expanding-world foundations', () => {
   it('keeps achievements when a caught-up catalog grows', () => {
     const progress = {
       version: 1 as const,
-      mastered: [
-        'missing-number-add-to-30',
-        'missing-number-subtract-to-30',
-        'defend-fairy-castle',
-        'number-wall',
-      ],
-      chapters: ['missing-number-first-steps'],
-      explored: ['missing-number'],
+      mastered: everyLevel.map((level) => level.id),
+      chapters: ['friends-of-ten'],
+      explored: ['numbers'],
     };
     expect(nextLevel(worlds, progress)).toBeUndefined();
     const catalog: readonly World[] = [
       ...worlds,
       {
-        ...worlds.find((world) => world.id === 'missing-number')!,
+        ...worlds[0],
         id: 'new-world',
-        title: 'numbers',
         chapters: [
           {
             id: 'new-chapter',
+            title: 'numberWalls',
+            description: 'numberWallDescription',
             levels: [
               {
                 id: 'new-level',
-                title: 'level',
-                implemented: true,
+                title: 'numberWall',
+                description: 'numberWallDescription',
                 prerequisites: progress.mastered,
                 skills: [],
-                format: 'preview',
+                format: 'number-wall',
               },
             ],
           },
@@ -44,9 +40,9 @@ describe('expanding-world foundations', () => {
     expect(nextLevel(catalog, progress)?.id).toBe('new-level');
     expect(parseProgress(progress)).toEqual(progress);
   });
-  it('distinguishes unavailable, prerequisite-gated and replayable content', () => {
-    const level = worlds.find((world) => world.id === 'missing-number')!.chapters[0].levels[0];
-    expect(levelState({ ...level, implemented: false }, emptyProgress)).toBe('soon');
+  it('distinguishes prerequisite-gated and replayable content', () => {
+    const level = everyLevel[0];
+    expect(levelState(level, emptyProgress)).toBe('available');
     expect(levelState({ ...level, prerequisites: ['other'] }, emptyProgress)).toBe('locked');
     expect(
       levelState(

@@ -49,11 +49,10 @@ export class ChapterDetail {
   private readonly dialog = viewChild.required(ContentPreview);
   protected preview(level: Level) {
     const state = levelState(level, this.p.progress());
-    if (state !== 'locked' && state !== 'soon') return;
+    if (state !== 'locked') return;
     this.dialog().open({
       title: level.title,
-      description: level.description ?? 'missingPreview',
-      state,
+      description: level.description,
       requirements: level.prerequisites
         .filter((id) => !this.p.progress().mastered.includes(id))
         .map((id) => ({

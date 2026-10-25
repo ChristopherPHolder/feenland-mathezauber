@@ -280,7 +280,6 @@ export class NumberWallComponent {
     const starred = this.store.save().stars.length;
     this.progress.record({
       levelId: 'number-wall',
-      source: 'practice',
       completed: true,
       mastered: starred === levels.length,
       stars: Math.min(3, starred),

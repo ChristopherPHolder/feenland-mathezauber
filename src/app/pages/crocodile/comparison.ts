@@ -33,7 +33,6 @@ export const comparisonLevels: readonly Level[] = comparisonStages.map((config) 
   id: `crocodile-${config.stage}`,
   title: `crocodile${config.stage}` as MessageKey,
   description: `crocodile${config.stage}Help` as MessageKey,
-  implemented: true,
   prerequisites: [],
   skills: ['compare-numbers', config.skill],
   format: 'crocodile',

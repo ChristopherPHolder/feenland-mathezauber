@@ -43,18 +43,17 @@ export class WorldDetail {
   }
   protected preview(chapter: Chapter) {
     const state = chapterState(chapter, this.p.progress());
-    if (state !== 'locked' && state !== 'soon') return;
+    if (state !== 'locked') return;
     // One accessible entry level opens the chapter; independent branches are alternatives.
-    const entry = chapter.levels.find((level) => level.implemented);
+    const entry = chapter.levels[0];
     const requirements = [
       ...new Set(
         entry?.prerequisites.filter((id) => !this.p.progress().mastered.includes(id)) ?? [],
       ),
     ];
     this.dialog().open({
-      title: chapter.title ?? 'chapterTitle',
-      description: chapter.description ?? 'missingPreview',
-      state,
+      title: chapter.title,
+      description: chapter.description,
       requirements: requirements.map((id) => ({
         id,
         title: findLevel(this.catalog, id)?.level.title ?? 'unknownRequirement',
