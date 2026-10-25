@@ -24,6 +24,7 @@ import {
   isMastered,
   ROUND_LENGTH,
   roundStars,
+  Side,
   TOTAL_STAGES,
 } from './comparison';
 import { CrocodileArt } from './crocodile-art';
@@ -99,7 +100,7 @@ export class CrocodileGame {
   protected readonly showHint = computed(() => this.round().attempts > 0);
   protected readonly nextLink = computed(() => {
     const stage = this.stage();
-    return stage && stage.stage < TOTAL_STAGES && isMastered(this.round().mistakes)
+    return stage && stage.stage < TOTAL_STAGES
       ? ['/adventure', `crocodile-${stage.stage + 1}`]
       : null;
   });
@@ -121,7 +122,7 @@ export class CrocodileGame {
             });
       return praise + ' ' + this.t('points', { n: points });
     }
-    if (this.wrongPick()) return this.t('wrong');
+    if (this.wrongPick()) return this.t(answer === '=' ? 'wrongEqual' : 'wrong');
     if (round.attempts > 0) return this.t('hint', { left: left.value, right: right.value });
     const callout = this.banner();
     const prompt = this.t(this.needsMaths() ? 'computeFirst' : 'question');
@@ -153,6 +154,9 @@ export class CrocodileGame {
   }
   protected helpKey(stage: number) {
     return `crocodile${stage}Help` as MessageKey;
+  }
+  protected tokens(side: Side): readonly string[] {
+    return side.text.split(' ');
   }
   protected label(choice: Comparison) {
     return this.t(choice === '>' ? 'eatsLeft' : choice === '<' ? 'eatsRight' : 'full');
@@ -247,7 +251,6 @@ export class CrocodileGame {
     const mistakes = this.round().mistakes;
     return this.completion.finish({
       levelId: this.levelId(),
-      source: 'practice',
       completed: true,
       mastered: isMastered(mistakes),
       stars: roundStars(mistakes),

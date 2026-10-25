@@ -165,7 +165,7 @@
               name="level"
               value=""
               [checked]="chosenStage() === ''"
-              (change)="chosenStage.set('')"
+              (change)="chooseStage('')"
             />
             <span class="level-emblem" aria-hidden="true">🏰</span>
             <span class="level-name">{{ t('title') }}</span>
@@ -178,7 +178,7 @@
                 name="level"
                 [value]="level.id"
                 [checked]="chosenStage() === level.id"
-                (change)="chosenStage.set(level.id)"
+                (change)="chooseStage(level.id)"
               />
               <span class="level-number"
                 ><span class="sr-only">{{ i.t('stage') }} </span>{{ level.practice!.stage }}</span

@@ -64,9 +64,24 @@
   text-align: center;
 }
 .fairy {
-  font-size: 56px;
-  line-height: 1;
-  margin-bottom: 8px;
+  display: block;
+  width: min(220px, 60vw);
+  height: auto;
+  margin: 0 auto 4px;
+}
+.demo-wall {
+  --brick-w: 64px;
+  --brick-h: 46px;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  margin: 0 auto 16px;
+}
+.demo-wall .brick {
+  font-size: 24px;
+}
+.demo-wall .row {
+  gap: 4px;
 }
 .lead {
   font-size: 20px;
@@ -119,19 +134,12 @@ button.level-card:hover {
 .level-card.starred {
   background: var(--success-ground);
 }
-.level-card.locked {
-  background: #f1f1f1;
-  color: #3f4a5e;
-}
 .level-number {
   font-size: 14px;
   font-weight: 600;
   color: var(--pink);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-.locked .level-number {
-  color: #3f4a5e;
 }
 .level-name {
   display: flex;
@@ -278,7 +286,17 @@ button.level-card:hover {
 .row {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 8px;
+}
+.plus {
+  width: 18px;
+  text-align: center;
+  color: var(--muted);
+  font-size: clamp(20px, 4vw, 26px);
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
 }
 .brick {
   display: grid;

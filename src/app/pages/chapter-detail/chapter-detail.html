@@ -8,8 +8,8 @@
     >
     <header class="chapter-intro">
       <div>
-        <h1 id="chapter-title">{{ i.t(context.chapter.title ?? 'chapterTitle') }}</h1>
-        <p class="lead">{{ i.t(context.chapter.description ?? 'missingPreview') }}</p>
+        <h1 id="chapter-title">{{ i.t(context.chapter.title) }}</h1>
+        <p class="lead">{{ i.t(context.chapter.description) }}</p>
       </div>
       <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" />
     </header>
@@ -40,7 +40,7 @@
               </p>
               <p class="lead">{{ practice.example }}</p>
             } @else {
-              <p>{{ i.t(entry.level.description ?? 'missingPreview') }}</p>
+              <p>{{ i.t(entry.level.description) }}</p>
             }
             @if (entry.level.id === next()) {
               <p class="next-label">{{ i.t('recommended') }}</p>
@@ -71,9 +71,7 @@
                         ? 'fairyPlay'
                         : entry.level.format === 'crocodile'
                           ? 'crocodilePlay'
-                          : entry.level.format === 'number-wall'
-                            ? 'numberWallPlay'
-                            : 'openLevel'
+                          : 'numberWallPlay'
                   )
                 }}<app-icon kind="arrow"
               /></a>
@@ -84,14 +82,11 @@
                 (click)="preview(entry.level)"
                 [attr.aria-describedby]="'level-' + entry.level.id"
               >
-                {{ i.t(entry.state === 'locked' ? 'unlock' : 'viewPreview')
-                }}<app-icon kind="arrow" />
+                {{ i.t('unlock') }}<app-icon kind="arrow" />
               </button>
             }
           </div>
         </li>
-      } @empty {
-        <li>{{ i.t('chapterEmpty') }}</li>
       }
     </ol>
   }

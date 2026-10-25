@@ -218,6 +218,11 @@ export class FairyDefenseComponent {
     this.audio.speak(this.message());
     this.focusSpells();
   }
+  /** A picture card is a play button: one tap picks the game and starts it. */
+  protected chooseStage(id: string) {
+    this.chosenStage.set(id);
+    this.play(this.campaign.nextWave());
+  }
   protected castSpell(spell: number) {
     if (!this.started() || this.paused()) return;
     const next = cast(this.battle(), spell);
@@ -323,7 +328,6 @@ export class FairyDefenseComponent {
     if (training)
       return this.completion.finish({
         levelId: `practice-30-${training.stage}`,
-        source: 'practice',
         completed: true,
         mastered: true,
       });
@@ -332,7 +336,6 @@ export class FairyDefenseComponent {
       stars > 0 &&
       this.completion.finish({
         levelId: 'defend-fairy-castle',
-        source: 'practice',
         completed: true,
         mastered: stars >= 2,
         stars,

@@ -111,7 +111,7 @@ describe('the hungry crocodile game', () => {
     element.querySelector<HTMLButtonElement>('button.button.secondary')!.click();
     expect(navigate).toHaveBeenCalledWith(['/complete', 'crocodile-1']);
   });
-  it('shows help after a wrong pick, counts one mistake per snack and keeps the path gated', () => {
+  it('shows help after a wrong pick, counts one mistake per snack and still offers the next level', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
@@ -146,7 +146,7 @@ describe('the hungry crocodile game', () => {
     expect(element.querySelector('.confetti')).toBeNull();
     expect(element.querySelectorAll('.stars .earned').length).toBe(1);
     expect(element.textContent).toContain(crocodileTranslations.en.oneStar);
-    expect(element.querySelector('a[href="/adventure/crocodile-2"]')).toBeNull();
+    expect(element.querySelector('a[href="/adventure/crocodile-2"]')).not.toBeNull();
     const progress = TestBed.inject(ProgressService).progress();
     expect(progress.completed).toContain('crocodile-1');
     expect(progress.mastered).not.toContain('crocodile-1');
@@ -166,17 +166,17 @@ describe('crocodile navigation', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
   afterEach(() => TestBed.resetTestingModule());
-  it('lists six chained levels and sends locked deep links back to the chapter', async () => {
+  it('lists six open levels and sends unknown deep links home', async () => {
     const h = await RouterTestingHarness.create('/worlds/numbers/chapters/compare-crocodile');
     expect(h.routeNativeElement?.querySelectorAll('.level-stop').length).toBe(6);
     expect(h.routeNativeElement?.querySelectorAll('a[href^="/adventure/crocodile-"]').length).toBe(
-      1,
+      6,
     );
     expect(h.routeNativeElement?.textContent).toContain(
       TestBed.inject(LocaleService).t('crocodilePlay'),
     );
-    await h.navigateByUrl('/adventure/crocodile-2');
-    expect(TestBed.inject(Router).url).toBe('/worlds/numbers/chapters/compare-crocodile');
+    await h.navigateByUrl('/adventure/crocodile-7');
+    expect(TestBed.inject(Router).url).toBe('/');
     await h.navigateByUrl('/adventure/crocodile-1');
     expect(TestBed.inject(Router).url).toBe('/adventure/crocodile-1');
     expect(h.routeNativeElement?.textContent).toContain(crocodileTranslations.en.start);
@@ -195,7 +195,6 @@ describe('crocodile navigation', () => {
       'feenland.result',
       JSON.stringify({
         levelId: 'crocodile-1',
-        source: 'practice',
         completed: true,
         mastered: true,
         stars: 2,

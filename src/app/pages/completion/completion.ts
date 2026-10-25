@@ -33,12 +33,10 @@ export class Completion {
       const following = context.chapter.levels.filter(
         (level) => (level.practice?.stage ?? 0) > context.level.practice!.stage,
       );
-      return following.find(
-        (level) => !this.p.progressFor(result.source).mastered.includes(level.id),
-      );
+      return following.find((level) => !this.p.progress().mastered.includes(level.id));
     }
     if (context?.level.format === 'crocodile' && result) {
-      const progress = this.p.progressFor(result.source);
+      const progress = this.p.progress();
       const following = context.chapter.levels
         .slice(context.chapter.levels.indexOf(context.level) + 1)
         .find(
@@ -47,25 +45,11 @@ export class Completion {
         );
       if (following) return following;
     }
-    const catalog =
-      result?.source === 'demo'
-        ? this.catalog.map((world) => ({
-            ...world,
-            chapters: world.chapters.map((chapter) => ({
-              ...chapter,
-              levels: chapter.levels.filter((level) => level.format === 'challenge-preview'),
-            })),
-          }))
-        : this.catalog;
-    return result ? nextLevel(catalog, this.p.progressFor(result.source)) : undefined;
+    return result ? nextLevel(this.catalog, this.p.progress()) : undefined;
   });
   protected readonly chapterEarned = computed(() => {
     const context = this.context();
     const result = this.result();
-    return (
-      !!context &&
-      !!result &&
-      this.p.progressFor(result.source).chapters.includes(context.chapter.id)
-    );
+    return !!context && !!result && this.p.progress().chapters.includes(context.chapter.id);
   });
 }

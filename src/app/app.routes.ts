@@ -50,12 +50,6 @@ export const routes: Routes = [
   {
     path: 'adventure/defend-fairy-castle',
     data: { focusedGame: true },
-    canActivate: [
-      (route) =>
-        route.queryParamMap.get('mode') === 'demo'
-          ? inject(Router).createUrlTree(['/worlds', 'numbers', 'chapters', 'friends-of-ten'])
-          : true,
-    ],
     loadComponent: () =>
       import('./pages/fairy-defense/fairy-defense.component').then((m) => m.FairyDefenseComponent),
   },
@@ -97,24 +91,6 @@ export const routes: Routes = [
     data: { focusedGame: true },
     loadComponent: () =>
       import('./pages/number-wall/number-wall.component').then((m) => m.NumberWallComponent),
-  },
-  {
-    path: 'adventure/:id',
-    canActivate: [
-      (route) => {
-        const level = inject(WORLD_CATALOG)
-          .flatMap((world) => world.chapters)
-          .flatMap((chapter) => chapter.levels)
-          .find((level) => level.id === route.paramMap.get('id'));
-        const progress = inject(ProgressService).progressFor(
-          route.queryParamMap.get('mode') === 'demo' ? 'demo' : 'practice',
-        );
-        return level && ['available', 'completed'].includes(levelState(level, progress))
-          ? true
-          : inject(Router).createUrlTree(['/']);
-      },
-    ],
-    loadComponent: () => import('./pages/challenge/challenge').then((m) => m.Challenge),
   },
   {
     path: 'complete/:id',

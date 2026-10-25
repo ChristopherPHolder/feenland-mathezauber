@@ -26,7 +26,7 @@ export class Worlds {
   protected readonly selected = signal<World | null>(null);
   protected readonly selectedState = computed(() => {
     const world = this.selected();
-    return world ? worldState(world, this.p.progress()) : 'soon';
+    return world ? worldState(world, this.p.progress()) : 'locked';
   });
   protected readonly requirements = computed(() => {
     const world = this.selected();

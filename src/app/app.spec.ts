@@ -1,20 +1,17 @@
-import { worlds } from './core/preview-catalog.fixture';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
-import { WORLD_CATALOG } from './core/catalog';
+import { WORLD_CATALOG, worlds } from './core/catalog';
 import { translations, Locale } from './core/messages';
 describe('Feenland navigation', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({
-      providers: [provideRouter(routes), { provide: WORLD_CATALOG, useValue: worlds }],
-    });
+    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
-  it('starts with real zero counts and routes to a labeled preview', async () => {
+  it('starts with real zero counts and recommends the first open game', async () => {
     const h = await RouterTestingHarness.create('/');
     expect(h.routeNativeElement?.textContent).toContain('Feenland');
     expect([...h.routeNativeElement!.querySelectorAll('dd')].map((e) => e.textContent)).toEqual([
@@ -25,12 +22,7 @@ describe('Feenland navigation', () => {
     expect(
       h.routeNativeElement?.querySelector('a[href="/adventure/defend-fairy-castle"]'),
     ).toBeTruthy();
-    await h.navigateByUrl('/adventure/missing-number-add-to-30');
-    expect(h.routeNativeElement?.textContent).toContain(
-      TestBed.inject(LocaleService).t('placeholder'),
-    );
     expect(TestBed.inject(ProgressService).progress().mastered).toEqual([]);
-    expect(TestBed.inject(ProgressService).progress().explored).toEqual(['missing-number']);
   });
   it('switches all locales immediately and persists preference without changing progress', async () => {
     const h = await RouterTestingHarness.create('/settings');
@@ -53,16 +45,15 @@ describe('Feenland navigation', () => {
     }
   });
   it('restores returning and caught-up players', async () => {
+    const mastered = worlds
+      .flatMap((world) => world.chapters)
+      .flatMap((chapter) => chapter.levels)
+      .map((level) => level.id);
     localStorage.setItem(
       'feenland.progress',
       JSON.stringify({
         version: 1,
-        mastered: [
-          'missing-number-add-to-30',
-          'missing-number-subtract-to-30',
-          'defend-fairy-castle',
-          'number-wall',
-        ],
+        mastered,
         chapters: ['earned-chapter'],
         explored: ['missing-number'],
       }),
@@ -70,7 +61,7 @@ describe('Feenland navigation', () => {
     const h = await RouterTestingHarness.create('/');
     expect(h.routeNativeElement?.textContent).toContain(TestBed.inject(LocaleService).t('caught'));
     expect([...h.routeNativeElement!.querySelectorAll('dd')].map((e) => e.textContent)).toEqual([
-      '4',
+      String(mastered.length),
       '1',
       '1',
     ]);
@@ -78,6 +69,8 @@ describe('Feenland navigation', () => {
   it('loads saved locale and redirects removed game URLs home', async () => {
     localStorage.setItem('feenland.locale', 'fr');
     const h = await RouterTestingHarness.create('/games/number-bridge');
+    expect(h.routeNativeElement?.textContent).toContain(translations.fr.welcome);
+    await h.navigateByUrl('/adventure/missing-number-add-to-30');
     expect(h.routeNativeElement?.textContent).toContain(translations.fr.welcome);
   });
   it('keeps navigation usable with corrupt progress', async () => {
@@ -88,11 +81,7 @@ describe('Feenland navigation', () => {
   it('derives the Home recommendation label from the configured world', async () => {
     TestBed.overrideProvider(WORLD_CATALOG, {
       useValue: [
-        {
-          ...worlds.find((world) => world.id === 'missing-number')!,
-          id: 'new-world',
-          title: 'tens',
-        },
+        { ...worlds.find((world) => world.id === 'numbers')!, id: 'new-world', title: 'tens' },
       ],
     });
     const h = await RouterTestingHarness.create('/');

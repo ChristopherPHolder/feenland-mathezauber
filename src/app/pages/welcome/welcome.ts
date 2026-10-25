@@ -22,14 +22,7 @@ import { Icon } from '../../shared/icon';
           <a class="button primary" [routerLink]="['/adventure', next.id]"
             ><span class="play" aria-hidden="true">▶</span
             ><span
-              >{{
-                i.t(
-                  next.format === 'challenge-preview'
-                    ? 'previewAdventure'
-                    : p.progress().mastered.length
-                      ? 'continue'
-                      : 'start'
-                )
+              >{{ i.t(p.progress().mastered.length ? 'continue' : 'start')
               }}<small>{{ i.t(p.nextWorld()?.title ?? 'missing') }}</small></span
             ><app-icon kind="arrow"
           /></a>
@@ -47,6 +40,26 @@ import { Icon } from '../../shared/icon';
     <section class="games" aria-labelledby="games-title">
       <h2 id="games-title">{{ i.t('games') }}</h2>
       <ul class="game-list">
+        <li class="game-card">
+          <span class="game-emblem" aria-hidden="true">🏰</span>
+          <div class="game-copy">
+            <h3>{{ i.t('fairyCastle') }}</h3>
+            <p>{{ i.t('fairyGameDescription') }}</p>
+          </div>
+          <a class="button primary game-link" routerLink="/adventure/defend-fairy-castle"
+            >{{ i.t('fairyPlay') }}<app-icon kind="arrow"
+          /></a>
+        </li>
+        <li class="game-card">
+          <span class="game-emblem" aria-hidden="true">🐊</span>
+          <div class="game-copy">
+            <h3>{{ i.t('crocodileChapter') }}</h3>
+            <p>{{ i.t('crocodileChapterHelp') }}</p>
+          </div>
+          <a class="button primary game-link" routerLink="/adventure/crocodile-1"
+            >{{ i.t('crocodilePlay') }}<app-icon kind="arrow"
+          /></a>
+        </li>
         <li class="game-card">
           <span class="game-emblem" aria-hidden="true">🧱</span>
           <div class="game-copy">

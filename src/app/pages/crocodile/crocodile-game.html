@@ -166,7 +166,20 @@
           [class.winner]="round().chosen === '>'"
           [class.eaten]="round().chosen === '>'"
         >
-          <span class="side-text">{{ question().left.text }}</span>
+          <span class="side-text sr-only">{{ question().left.text }}</span>
+          <span
+            class="expression"
+            [class.plain]="tokens(question().left).length === 1"
+            aria-hidden="true"
+          >
+            @for (token of tokens(question().left); track $index) {
+              @if (token === '+' || token === '−') {
+                <span class="operator" [class.minus]="token === '−'">{{ token }}</span>
+              } @else {
+                <span class="tile">{{ token }}</span>
+              }
+            }
+          </span>
           @if (showHint() && needsMaths()) {
             <span class="side-value">= {{ i.format(question().left.value) }}</span>
           }
@@ -201,7 +214,20 @@
           [class.winner]="round().chosen === '<'"
           [class.eaten]="round().chosen === '<'"
         >
-          <span class="side-text">{{ question().right.text }}</span>
+          <span class="side-text sr-only">{{ question().right.text }}</span>
+          <span
+            class="expression"
+            [class.plain]="tokens(question().right).length === 1"
+            aria-hidden="true"
+          >
+            @for (token of tokens(question().right); track $index) {
+              @if (token === '+' || token === '−') {
+                <span class="operator" [class.minus]="token === '−'">{{ token }}</span>
+              } @else {
+                <span class="tile">{{ token }}</span>
+              }
+            }
+          </span>
           @if (showHint() && needsMaths()) {
             <span class="side-value">= {{ i.format(question().right.value) }}</span>
           }

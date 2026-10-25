@@ -70,10 +70,11 @@ describe('Number wall game', () => {
     return { fixture, element, click, key, status, openBricks, typeNumber, answerFor };
   }
 
-  it('only opens level 1 at first and lists the other levels as locked', () => {
+  it('opens every level from the start and shows the rule with a demo wall', () => {
     const { element } = setup();
-    expect(element.querySelectorAll('button.level-card')).toHaveLength(1);
-    expect(element.querySelectorAll('.level-card.locked')).toHaveLength(3);
+    expect(element.querySelectorAll('button.level-card')).toHaveLength(4);
+    expect(element.querySelector('.level-card.locked')).toBeNull();
+    expect(element.querySelector('.demo-wall')?.textContent?.replace(/\s+/g, '')).toBe('52+3');
   });
 
   it('builds five walls, celebrates and earns the star that unlocks level 2', () => {
@@ -115,7 +116,8 @@ describe('Number wall game', () => {
     const wrong = answer === 10 ? 11 : 10;
     key(String(Math.floor(wrong / 10)));
     key(String(wrong % 10));
-    expect(status()).toBe('Not quite. Try again!');
+    expect(status()).toMatch(/^Not quite\. Try again! Trick: \d+ \+ \? = \d+\. Count up from/);
+    expect(element.querySelector('.number-line')).toBeTruthy();
     expect(element.querySelector('.brick.wobble')).toBeTruthy();
     expect(sound.effect).toHaveBeenLastCalledWith('wrong');
     expect(element.querySelector('.show-me')).toBeNull();

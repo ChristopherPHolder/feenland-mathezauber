@@ -24,8 +24,7 @@ export class CompletionService {
         this.document.defaultView?.sessionStorage.getItem('feenland.result') ?? 'null',
       );
       // Restoring a receipt never applies a result or awards anything.
-      return isLevelResult(value) &&
-        this.p.progressFor(value.source).completed?.includes(value.levelId)
+      return isLevelResult(value) && this.p.progress().completed?.includes(value.levelId)
         ? value
         : null;
     } catch {
