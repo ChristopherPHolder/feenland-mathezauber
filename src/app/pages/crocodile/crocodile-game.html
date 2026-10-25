@@ -35,12 +35,12 @@
       <div class="demo" aria-hidden="true">
         <div class="demo-row">
           <span class="demo-number">3</span>
-          <span class="demo-croc"><app-crocodile facing="right" /></span>
+          <span class="demo-croc"><app-crocodile facing="right" [hat]="hat()" /></span>
           <span class="demo-number big">8</span>
         </div>
         <div class="demo-row">
           <span class="demo-number">6</span>
-          <span class="demo-croc"><app-crocodile kind="front" /></span>
+          <span class="demo-croc"><app-crocodile kind="front" [hat]="hat()" /></span>
           <span class="demo-number">6</span>
         </div>
       </div>
@@ -49,14 +49,39 @@
       @if (stage(); as stage) {
         <p class="example">{{ i.t(helpKey(stage.stage)) }}</p>
       }
+      @if (best() > 0) {
+        <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+      }
       <button class="button primary" type="button" (click)="play()">
         {{ t('start') }}<app-icon kind="arrow" />
       </button>
+      <app-hat-wardrobe [owned]="ownedHats()" [fresh]="newHat()" />
     </section>
   } @else if (round().phase === 'complete') {
-    <section #outcome class="panel outcome" tabindex="-1" [attr.aria-label]="t('done')">
-      <span class="outcome-croc"><app-crocodile kind="front" /></span>
-      <h2>{{ t('done') }}</h2>
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      @if (stars() === 3) {
+        <div class="confetti" aria-hidden="true">
+          @for (piece of snacks; track piece) {
+            <span [style.--i]="piece"></span>
+          }
+        </div>
+      }
+      <span class="outcome-croc"><app-crocodile kind="front" [hat]="hat()" /></span>
+      <h2>{{ t(stars() === 3 ? 'perfect' : 'done', { n: i.format(round().score) }) }}</h2>
+      <p class="score-line">
+        <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+        @if (newBest()) {
+          <span class="new-best">{{ t('newBest') }}</span>
+        } @else {
+          <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+        }
+      </p>
       <p>{{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}</p>
       <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
         @for (star of starSlots; track star) {
@@ -69,6 +94,12 @@
           {{ t('lastLevel') }}
         }
       </p>
+      @if (newHat(); as unlocked) {
+        <p class="hat-unlocked" role="status">
+          <span class="hat-badge"><app-crocodile kind="hat" [hat]="unlocked.id" /></span>
+          {{ t('hatUnlocked', { hat: t(unlocked.name) }) }}
+        </p>
+      }
       @if (saveFailed()) {
         <p class="save-note" role="alert">{{ t('save') }}</p>
       }
@@ -85,50 +116,101 @@
         }
         <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
       </div>
+      <app-hat-wardrobe [owned]="ownedHats()" [fresh]="newHat()" />
     </section>
   } @else {
-    <div class="snack-bar">
-      <ol class="snacks" [attr.aria-label]="t('snacks', { n: round().index })">
-        @for (snack of snacks; track snack) {
-          <li [class.eaten]="snack < round().index" aria-hidden="true"></li>
-        }
-      </ol>
-      <p class="snack-count">
-        {{ t('snacks', { n: round().index }) }}
-        @if (round().streak >= 3 && round().phase === 'chomping') {
-          <strong>{{ t('streak', { n: round().streak }) }}</strong>
+    <div class="hud">
+      <div class="snack-bar">
+        <ol class="snacks" [attr.aria-label]="t('snackBar')">
+          @for (snack of snacks; track snack) {
+            <li
+              [class.eaten]="snack < round().index"
+              [class.current]="snack === round().index"
+              [class.golden]="round().golden.has(snack)"
+              [class.boss]="snack === roundLength - 1"
+              aria-hidden="true"
+            ></li>
+          }
+        </ol>
+        <p class="snack-count">{{ t('snacks', { n: round().index }) }}</p>
+      </div>
+      <p class="score" [class.bump]="round().phase === 'chomping'">
+        <span class="score-label">{{ t('scoreLabel') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      <p class="combo" [class.hot]="combo() >= 2" [class.frenzy]="frenzy()">
+        {{ t('combo', { n: combo() }) }}
+        @if (round().streak >= 3) {
+          <span class="streak">{{ t('streak', { n: round().streak }) }}</span>
         }
       </p>
     </div>
-    <section class="panel board" [class.chomping]="round().phase === 'chomping'">
+    <section
+      class="panel board pond"
+      [class.chomping]="round().phase === 'chomping'"
+      [class.boss]="kind() === 'boss'"
+      [class.golden]="kind() === 'golden'"
+      [class.frenzy]="frenzy()"
+      [attr.data-snack-kind]="kind()"
+      [attr.aria-label]="t('pondTitle')"
+    >
+      <app-pond-scene [boss]="kind() === 'boss'" />
+      @if (banner(); as callout) {
+        <p class="banner" [class.boss-banner]="callout === 'bossSnack'" aria-hidden="true">
+          {{ t(callout) }}
+        </p>
+      }
       <div class="sides" [class.needs-maths]="needsMaths()">
-        <div class="side" [class.winner]="round().chosen === '>'">
+        <div
+          class="side pad"
+          [class.winner]="round().chosen === '>'"
+          [class.eaten]="round().chosen === '>'"
+        >
           <span class="side-text">{{ question().left.text }}</span>
           @if (showHint() && needsMaths()) {
             <span class="side-value">= {{ i.format(question().left.value) }}</span>
           }
+          <span class="splash" aria-hidden="true"></span>
         </div>
         <div class="slot" aria-hidden="true">
+          <span
+            class="slot-croc"
+            [class.to-left]="round().chosen === '>'"
+            [class.to-right]="round().chosen === '<'"
+            [class.surfaced]="round().chosen === '='"
+          >
+            @if (round().chosen === '=') {
+              <app-crocodile kind="front" [hat]="hat()" />
+            } @else {
+              <app-crocodile
+                [facing]="round().chosen === '>' ? 'left' : 'right'"
+                [open]="round().chosen !== null"
+                [chomping]="round().chosen !== null"
+                [hat]="hat()"
+              />
+            }
+          </span>
           @if (round().chosen; as chosen) {
-            <span class="slot-croc">
-              @if (chosen === '=') {
-                <app-crocodile kind="front" />
-              } @else {
-                <app-crocodile [facing]="chosen === '>' ? 'left' : 'right'" [chomping]="true" />
-              }
-            </span>
             <span class="slot-sign">{{ chosen }}</span>
           } @else {
             <span class="slot-empty">?</span>
           }
         </div>
-        <div class="side" [class.winner]="round().chosen === '<'">
+        <div
+          class="side pad"
+          [class.winner]="round().chosen === '<'"
+          [class.eaten]="round().chosen === '<'"
+        >
           <span class="side-text">{{ question().right.text }}</span>
           @if (showHint() && needsMaths()) {
             <span class="side-value">= {{ i.format(question().right.value) }}</span>
           }
+          <span class="splash" aria-hidden="true"></span>
         </div>
       </div>
+      @for (float of floats(); track float.id) {
+        <span class="points-float" aria-hidden="true">+{{ i.format(float.points) }}</span>
+      }
       @if (showHint()) {
         <div class="bars" aria-hidden="true">
           <span

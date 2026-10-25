@@ -1,5 +1,7 @@
 import { DestroyRef, inject, Injectable } from '@angular/core';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
+export type CrocodileSound =
+  'start' | 'chomp' | 'wrong' | 'win' | 'splash' | 'combo' | 'frenzy' | 'golden' | 'boss' | 'hat';
 /** Component-scoped so leaving the game releases the audio context. Shares the effects preference. */
 @Injectable()
 export class CrocodileSounds {
@@ -14,7 +16,7 @@ export class CrocodileSounds {
   toggle() {
     this.settings.toggle('effects');
   }
-  play(kind: 'start' | 'chomp' | 'wrong' | 'win') {
+  play(kind: CrocodileSound) {
     if (!this.enabled) return;
     try {
       this.context ??= new AudioContext();
@@ -22,15 +24,21 @@ export class CrocodileSounds {
     } catch {
       return; /* The game stays fully playable without Web Audio. */
     }
-    const notes = {
+    const notes: Record<CrocodileSound, readonly number[]> = {
       start: [523, 784],
       chomp: [196, 147],
       wrong: [330, 262],
       win: [523, 659, 784, 1047],
-    }[kind];
-    notes.forEach((frequency, index) =>
-      this.tone(frequency, kind === 'chomp' ? 0.16 : 0.3, index * (kind === 'chomp' ? 0.1 : 0.13)),
-    );
+      splash: [880, 440, 220],
+      combo: [659, 880],
+      frenzy: [659, 880, 1109, 1319],
+      golden: [1047, 1319, 1568],
+      boss: [110, 98, 87, 110],
+      hat: [784, 988, 1175, 1568],
+    };
+    const step = kind === 'chomp' || kind === 'splash' ? 0.1 : kind === 'boss' ? 0.22 : 0.13;
+    const length = kind === 'chomp' ? 0.16 : kind === 'boss' ? 0.4 : 0.3;
+    notes[kind].forEach((frequency, index) => this.tone(frequency, length, index * step));
   }
   private tone(frequency: number, duration: number, delay: number) {
     const context = this.context;

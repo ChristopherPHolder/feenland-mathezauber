@@ -28,20 +28,28 @@ import {
 } from './comparison';
 import { CrocodileArt } from './crocodile-art';
 import { crocodileText, CrocodileMessageKey } from './crocodile-messages';
+import { comboFor, earnedHats, goldenSnacks, Hat, snackKind, snackPoints } from './crocodile-score';
+import { CrocodileScores } from './crocodile-scores';
 import { CrocodileSounds } from './crocodile-sounds';
+import { HatWardrobe } from './hat-wardrobe';
+import { PondScene } from './pond-scene';
 interface Round {
   readonly questions: readonly ComparisonQuestion[];
+  readonly golden: ReadonlySet<number>;
   readonly index: number;
   readonly mistakes: number;
   readonly streak: number;
   readonly attempts: number;
+  readonly score: number;
   readonly phase: 'ready' | 'chomping' | 'complete';
   readonly chosen: Comparison | null;
 }
+type Banner = 'comboOn' | 'frenzy' | 'goldenSnack' | 'bossSnack';
 const CHOMP_DELAY = 1400;
+const BANNER_DELAY = 1800;
 @Component({
   selector: 'app-crocodile-game',
-  imports: [RouterLink, Icon, CrocodileArt],
+  imports: [RouterLink, Icon, CrocodileArt, PondScene, HatWardrobe],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
   styleUrl: './crocodile-game.css',
@@ -53,6 +61,7 @@ export class CrocodileGame {
   private readonly completion = inject(CompletionService);
   private readonly router = inject(Router);
   protected readonly sounds = inject(CrocodileSounds);
+  protected readonly scores = inject(CrocodileScores);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
   protected readonly total = TOTAL_STAGES;
   protected readonly roundLength = ROUND_LENGTH;
@@ -65,6 +74,10 @@ export class CrocodileGame {
   });
   protected readonly saveFailed = signal(false);
   protected readonly wrongPick = signal<Comparison | null>(null);
+  protected readonly banner = signal<Banner | null>(null);
+  protected readonly floats = signal<readonly { id: number; points: number }[]>([]);
+  protected readonly newHat = signal<Hat | null>(null);
+  protected readonly newBest = signal(false);
   protected readonly choices: readonly Comparison[] = ['>', '=', '<'];
   protected readonly question = computed(
     () => this.round().questions[Math.min(this.round().index, ROUND_LENGTH - 1)],
@@ -72,6 +85,13 @@ export class CrocodileGame {
   protected readonly snacks = Array.from({ length: ROUND_LENGTH }, (_, index) => index);
   protected readonly stars = computed(() => roundStars(this.round().mistakes));
   protected readonly starSlots = [1, 2, 3];
+  protected readonly kind = computed(() => snackKind(this.round().index, this.round().golden));
+  protected readonly combo = computed(() => comboFor(this.round().streak));
+  protected readonly frenzy = computed(() => this.combo() === 3);
+  /** Kiki wears the newest hat she has earned; the wardrobe shows the whole collection. */
+  protected readonly ownedHats = computed(() => earnedHats(this.p.progress()));
+  protected readonly hat = computed(() => this.ownedHats().at(-1)?.id ?? 'none');
+  protected readonly best = computed(() => this.scores.best()[this.levelId()] ?? 0);
   protected readonly needsMaths = computed(() => {
     const question = this.question();
     return question.left.text.includes(' ') || question.right.text.includes(' ');
@@ -87,24 +107,34 @@ export class CrocodileGame {
   protected readonly message = computed(() => {
     const round = this.round();
     const { left, right, answer } = this.question();
-    if (round.phase === 'chomping')
-      return answer === '='
-        ? this.t('correctEqual', { value: left.value, left: left.text, right: right.text })
-        : this.t('correctBigger', {
-            big: answer === '>' ? left.value : right.value,
-            small: answer === '>' ? right.value : left.value,
-            left: left.text,
-            sign: answer,
-            right: right.text,
-          });
+    if (round.phase === 'chomping') {
+      const points = this.floats().at(-1)?.points ?? 0;
+      const praise =
+        answer === '='
+          ? this.t('correctEqual', { value: left.value, left: left.text, right: right.text })
+          : this.t('correctBigger', {
+              big: answer === '>' ? left.value : right.value,
+              small: answer === '>' ? right.value : left.value,
+              left: left.text,
+              sign: answer,
+              right: right.text,
+            });
+      return praise + ' ' + this.t('points', { n: points });
+    }
     if (this.wrongPick()) return this.t('wrong');
     if (round.attempts > 0) return this.t('hint', { left: left.value, right: right.value });
-    return this.t(this.needsMaths() ? 'computeFirst' : 'question');
+    const callout = this.banner();
+    const prompt = this.t(this.needsMaths() ? 'computeFirst' : 'question');
+    return callout === 'goldenSnack' || callout === 'bossSnack'
+      ? this.t(callout) + ' ' + prompt
+      : prompt;
   });
   private readonly outcome = viewChild<ElementRef<HTMLElement>>('outcome');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private timer?: ReturnType<typeof setTimeout>;
   private shake?: ReturnType<typeof setTimeout>;
+  private bannerTimer?: ReturnType<typeof setTimeout>;
+  private floatId = 0;
   constructor() {
     effect(() => {
       if (this.started()) this.p.explore('numbers');
@@ -112,6 +142,7 @@ export class CrocodileGame {
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.timer);
       clearTimeout(this.shake);
+      clearTimeout(this.bannerTimer);
     });
   }
   protected t(key: CrocodileMessageKey, values: Record<string, string | number> = {}) {
@@ -128,9 +159,14 @@ export class CrocodileGame {
   }
   protected play() {
     clearTimeout(this.timer);
+    clearTimeout(this.bannerTimer);
     this.round.set(this.fresh());
     this.saveFailed.set(false);
     this.wrongPick.set(null);
+    this.banner.set(null);
+    this.floats.set([]);
+    this.newHat.set(null);
+    this.newBest.set(false);
     this.started.set(true);
     this.sounds.play('start');
     requestAnimationFrame(() =>
@@ -156,25 +192,55 @@ export class CrocodileGame {
       return;
     }
     this.wrongPick.set(null);
-    this.round.set({ ...round, phase: 'chomping', chosen: choice, streak: round.streak + 1 });
-    this.sounds.play('chomp');
+    // Only a first-try snack keeps the combo growing; a corrected one still scores base points.
+    const streak = round.attempts === 0 ? round.streak + 1 : 0;
+    const points = snackPoints(this.kind(), streak);
+    this.round.set({
+      ...round,
+      phase: 'chomping',
+      chosen: choice,
+      streak,
+      score: round.score + points,
+    });
+    this.floats.update((floats) => [...floats, { id: ++this.floatId, points }]);
+    this.sounds.play(choice === '=' ? 'splash' : 'chomp');
+    if (streak === 6) this.callout('frenzy');
+    else if (streak === 3) this.callout('comboOn');
+    else if (this.kind() === 'golden') this.sounds.play('golden');
     this.timer = setTimeout(() => this.advance(), CHOMP_DELAY);
+  }
+  private callout(banner: Banner) {
+    this.banner.set(banner);
+    this.sounds.play(
+      banner === 'frenzy'
+        ? 'frenzy'
+        : banner === 'comboOn'
+          ? 'combo'
+          : banner === 'goldenSnack'
+            ? 'golden'
+            : 'boss',
+    );
+    clearTimeout(this.bannerTimer);
+    this.bannerTimer = setTimeout(() => this.banner.set(null), BANNER_DELAY);
   }
   private advance() {
     const round = this.round();
+    this.floats.set([]);
     if (round.index + 1 < ROUND_LENGTH) {
-      this.round.set({
-        ...round,
-        index: round.index + 1,
-        attempts: 0,
-        phase: 'ready',
-        chosen: null,
-      });
+      const index = round.index + 1;
+      this.round.set({ ...round, index, attempts: 0, phase: 'ready', chosen: null });
+      const kind = snackKind(index, round.golden);
+      if (kind === 'boss') this.callout('bossSnack');
+      else if (kind === 'golden') this.callout('goldenSnack');
       return;
     }
+    const hatsBefore = this.ownedHats();
     this.round.set({ ...round, phase: 'complete' });
-    this.sounds.play('win');
     this.saveFailed.set(!this.record());
+    this.newBest.set(this.scores.record(this.levelId(), round.score));
+    const unlocked = this.ownedHats().find((hat) => !hatsBefore.includes(hat)) ?? null;
+    this.newHat.set(unlocked);
+    this.sounds.play(unlocked ? 'hat' : 'win');
     requestAnimationFrame(() => this.outcome()?.nativeElement.focus({ preventScroll: true }));
   }
   private record() {
@@ -216,10 +282,12 @@ export class CrocodileGame {
             right: { text: '2', value: 2 },
             answer: '<',
           }),
+      golden: goldenSnacks(),
       index: 0,
       mistakes: 0,
       streak: 0,
       attempts: 0,
+      score: 0,
       phase: 'ready',
       chosen: null,
     };
