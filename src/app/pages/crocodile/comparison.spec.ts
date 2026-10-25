@@ -8,8 +8,8 @@ import {
   isMastered,
   roundStars,
   ROUND_LENGTH,
-  Side,
 } from './comparison';
+import { evaluate } from './comparison.fixture';
 /** Deterministic generator so every stage is exercised across many rounds. */
 function seeded(seed: number) {
   let state = seed >>> 0;
@@ -17,11 +17,6 @@ function seeded(seed: number) {
     state = (state * 1664525 + 1013904223) >>> 0;
     return state / 2 ** 32;
   };
-}
-function evaluate(side: Side): number {
-  const [a, operator, b] = side.text.split(' ');
-  if (!operator) return Number(a);
-  return operator === '+' ? Number(a) + Number(b) : Number(a) - Number(b);
 }
 describe('crocodile comparison rounds', () => {
   it('builds correct, in-range and varied questions for every stage', () => {

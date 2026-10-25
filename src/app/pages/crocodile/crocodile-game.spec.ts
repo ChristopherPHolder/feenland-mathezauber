@@ -10,13 +10,7 @@ import { LocaleService } from '../../core/locale';
 import { Locale } from '../../core/messages';
 import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
-import type { Side } from './comparison';
-/** Local copy: importing another spec file would register its suite twice and empty it on CI. */
-function evaluate(side: Side): number {
-  const [a, operator, b] = side.text.split(' ');
-  if (!operator) return Number(a);
-  return operator === '+' ? Number(a) + Number(b) : Number(a) - Number(b);
-}
+import { evaluate } from './comparison.fixture';
 
 const labels = {
   '>': 'Greater than. The crocodile eats the left side.',
