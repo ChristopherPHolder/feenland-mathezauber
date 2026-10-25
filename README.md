@@ -40,7 +40,7 @@ Authentication stays in Wrangler's local credential store. Do not commit tokens 
 
 ## Architecture
 
-See [expanding world](docs/architecture/expanding-world.md) for content IDs, durable achievements, locale preferences and catalog growth. Production assets are cached by the Angular service worker.
+See [expanding world](docs/architecture/expanding-world.md) for content IDs, durable achievements, locale preferences and catalog growth. The app ships a web manifest so it can be added to a phone's home screen, but no service worker: every launch loads the current deployment from the network, so a new deploy is visible on the next open. `public/ngsw-worker.js` is a tiny safety worker that unregisters the Angular service worker older installs still have and clears its caches.
 
 English, German, Spanish and French are detected from browser preferences and selectable in Settings. Progress and preferences stay on the device; no accounts or analytics. Current challenges are explicitly labeled previews. Their completion demos save sandbox progress separately from real learning mastery and chapter awards. Actual mathematical gameplay and scoring remain future work.
 

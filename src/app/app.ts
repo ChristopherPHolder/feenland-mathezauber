@@ -6,12 +6,10 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
 import { Icon } from './shared/icon';
-import { UpdateNotice } from './shared/update-notice';
 @Component({
   selector: 'app-root',
-  imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, Icon, UpdateNotice],
-  template: ` <app-update-notice />
-    @if (!focusedGame()) {
+  imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, Icon],
+  template: `@if (!focusedGame()) {
       <header class="site-header">
         <a class="wordmark" routerLink="/">
           <img ngSrc="/logo.svg" width="48" height="48" alt="" priority />
