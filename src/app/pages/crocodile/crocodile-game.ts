@@ -24,6 +24,7 @@ import {
   isMastered,
   ROUND_LENGTH,
   roundStars,
+  Side,
   TOTAL_STAGES,
 } from './comparison';
 import { CrocodileArt } from './crocodile-art';
@@ -122,6 +123,9 @@ export class CrocodileGame {
   }
   protected helpKey(stage: number) {
     return `crocodile${stage}Help` as MessageKey;
+  }
+  protected tokens(side: Side): readonly string[] {
+    return side.text.split(' ');
   }
   protected label(choice: Comparison) {
     return this.t(choice === '>' ? 'eatsLeft' : choice === '<' ? 'eatsRight' : 'full');
