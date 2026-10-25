@@ -2,13 +2,18 @@ import {
   allBricks,
   fillOrder,
   generateWall,
+  gemsFor,
   generateWorld,
   hintFor,
+  isFast,
   isSolvable,
   levels,
+  maxGems,
+  ratingFor,
   rulesFor,
   seededRandom,
   solve,
+  trollSeconds,
   valueOf,
   Wall,
   WALLS_PER_WORLD,
@@ -152,5 +157,36 @@ describe('number wall hints', () => {
     ]);
     expect(allBricks(wall)).toHaveLength(6);
     expect(valueOf(wall, { row: 1, col: 1 })).toBe(9);
+  });
+});
+
+describe('number wall pacing and rewards', () => {
+  it('sends no troll in cozy mode and gives more time for more missing bricks', () => {
+    expect(trollSeconds('relaxed', 2)).toBeUndefined();
+    expect(trollSeconds('steady', 1)).toBe(40);
+    expect(trollSeconds('steady', 2)).toBe(60);
+    expect(trollSeconds('quick', 1)).toBe(20);
+    expect(trollSeconds('quick', 2)).toBe(30);
+  });
+
+  it('awards gems for building, first-try bricks and beating the troll', () => {
+    expect(gemsFor({ misses: 2 })).toBe(1);
+    expect(gemsFor({ misses: 0 })).toBe(2);
+    expect(gemsFor({ misses: 0, trollProgress: 0.2 })).toBe(3);
+    expect(gemsFor({ misses: 1, trollProgress: 0.9 })).toBe(1);
+    expect(isFast({ misses: 0, trollProgress: 0.49 })).toBe(true);
+    expect(isFast({ misses: 0 })).toBe(false);
+  });
+
+  it('rates a world from its share of possible gems', () => {
+    expect(maxGems(true)).toBe(15);
+    expect(maxGems(false)).toBe(10);
+    expect(ratingFor(15, true)).toBe(3);
+    expect(ratingFor(12, true)).toBe(3);
+    expect(ratingFor(11, true)).toBe(2);
+    expect(ratingFor(7, true)).toBe(1);
+    expect(ratingFor(8, false)).toBe(3);
+    expect(ratingFor(5, false)).toBe(2);
+    expect(ratingFor(4, false)).toBe(1);
   });
 });
