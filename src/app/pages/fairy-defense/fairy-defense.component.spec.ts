@@ -162,19 +162,29 @@ describe('Wave 1 playable integration', () => {
     fixture.detectChanges();
     expect(element.querySelectorAll('.wave-path button')).toHaveLength(20);
   });
-  it('switches to a practice stage with one tap on its card', () => {
-    const { fixture, element } = setup();
+  it('starts a practice stage with one tap on its card', () => {
+    const { fixture, element, click } = setup();
     const cards = element.querySelectorAll<HTMLInputElement>('.level-card input');
     expect(cards).toHaveLength(10);
     expect(cards[0].checked).toBe(true);
     expect(element.textContent).toContain('4 + □ = 9');
     cards[3].click();
     fixture.detectChanges();
-    expect(element.querySelector('.level-card.selected')?.textContent).toContain('4 + □ = 9');
+    expect(element.querySelector('.level-picker')).toBeNull();
     expect(element.querySelector('.wave-path')).toBeNull();
-    expect(element.querySelector('#campaign-math')).toBeNull();
+    expect(element.querySelector('.spell-bar')).toBeTruthy();
     expect(element.textContent).toContain('Stage 3 / 9');
-    cards[0].click();
+    click('Pause');
+    click('Choose a wave');
+    fixture.detectChanges();
+    expect(element.querySelector('.level-card.selected')?.textContent).toContain('4 + □ = 9');
+    expect(element.querySelector('#campaign-math')).toBeNull();
+    element.querySelectorAll<HTMLInputElement>('.level-card input')[0].click();
+    fixture.detectChanges();
+    expect(element.textContent).toContain('Wave 1 of 20');
+    expect(element.querySelector('.level-picker')).toBeNull();
+    click('Pause');
+    click('Choose a wave');
     fixture.detectChanges();
     expect(element.querySelectorAll('.wave-path button')).toHaveLength(20);
   });

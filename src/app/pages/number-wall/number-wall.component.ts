@@ -1,5 +1,6 @@
 import { Component, computed, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgOptimizedImage } from '@angular/common';
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
@@ -14,6 +15,7 @@ import {
   hintFor,
   isMissing,
   levels,
+  parentOf,
   sameBrick,
   valueOf,
   Wall,
@@ -24,13 +26,13 @@ import { NumberWallStore } from './number-wall-store';
 type Feedback =
   | { readonly kind: 'idle' }
   | { readonly kind: 'correct'; readonly value: number }
-  | { readonly kind: 'wrong' }
+  | { readonly kind: 'wrong'; readonly hint: Hint }
   | { readonly kind: 'hint'; readonly hint: Hint }
   | { readonly kind: 'shown'; readonly value: number; readonly hint: Hint }
   | { readonly kind: 'built'; readonly perfect: boolean; readonly explanation?: string };
 @Component({
   selector: 'app-number-wall',
-  imports: [RouterLink, Icon],
+  imports: [RouterLink, Icon, NgOptimizedImage],
   providers: [GameAudio],
   templateUrl: './number-wall.component.html',
   styleUrl: './number-wall.component.css',
@@ -67,6 +69,15 @@ export class NumberWallComponent {
       : [];
   });
   protected readonly built = computed(() => this.feedback().kind === 'built');
+  /** The left brick of the pair that makes (or completes) the glowing brick. */
+  private readonly pair = computed<BrickId | undefined>(() => {
+    const wall = this.wall();
+    const brick = this.selected();
+    if (!wall || !brick) return undefined;
+    if (brick.row > 0) return { row: brick.row - 1, col: brick.col };
+    const above = parentOf(wall, brick);
+    return above && { row: 0, col: Math.min(brick.col, above.sibling.col) };
+  });
   protected readonly status = computed(() => {
     const feedback = this.feedback();
     switch (feedback.kind) {
@@ -79,7 +90,7 @@ export class NumberWallComponent {
       case 'correct':
         return this.t('wallCorrect', { n: feedback.value });
       case 'wrong':
-        return this.t('wallWrong');
+        return this.t('wallWrong') + ' ' + this.hintText(feedback.hint);
       case 'hint':
         return this.hintText(feedback.hint);
       case 'shown':
@@ -94,7 +105,10 @@ export class NumberWallComponent {
   });
   protected readonly numberLine = computed(() => {
     const feedback = this.feedback();
-    const hint = feedback.kind === 'hint' || feedback.kind === 'shown' ? feedback.hint : undefined;
+    const hint =
+      feedback.kind === 'wrong' || feedback.kind === 'hint' || feedback.kind === 'shown'
+        ? feedback.hint
+        : undefined;
     if (hint?.kind !== 'complete' || hint.target - hint.known > 12) return undefined;
     return {
       from: hint.known,
@@ -163,6 +177,11 @@ export class NumberWallComponent {
     const selected = this.selected();
     return !!selected && sameBrick(selected, brick);
   }
+  /** A plus sign sits between the two bricks a child should add right now. */
+  protected plusBefore(brick: BrickId): boolean {
+    const pair = this.pair();
+    return !!pair && pair.row === brick.row && pair.col + 1 === brick.col;
+  }
   protected isJustFilled(brick: BrickId): boolean {
     const just = this.justFilled();
     return !!just && sameBrick(just, brick);
@@ -207,11 +226,8 @@ export class NumberWallComponent {
     this.wallMissed = true;
     this.streak.set(0);
     this.entry.set('');
-    this.feedback.set(
-      this.misses() >= 2
-        ? { kind: 'hint', hint: hintFor(wall, brick, this.filled()) }
-        : { kind: 'wrong' },
-    );
+    const hint = hintFor(wall, brick, this.filled());
+    this.feedback.set(this.misses() >= 2 ? { kind: 'hint', hint } : { kind: 'wrong', hint });
     this.wobbling.set(true);
     clearTimeout(this.timer);
     this.timer = setTimeout(() => this.wobbling.set(false), 500);

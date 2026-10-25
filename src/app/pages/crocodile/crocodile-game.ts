@@ -79,7 +79,7 @@ export class CrocodileGame {
   protected readonly showHint = computed(() => this.round().attempts > 0);
   protected readonly nextLink = computed(() => {
     const stage = this.stage();
-    return stage && stage.stage < TOTAL_STAGES && isMastered(this.round().mistakes)
+    return stage && stage.stage < TOTAL_STAGES
       ? ['/adventure', `crocodile-${stage.stage + 1}`]
       : null;
   });
@@ -97,7 +97,7 @@ export class CrocodileGame {
             sign: answer,
             right: right.text,
           });
-    if (this.wrongPick()) return this.t('wrong');
+    if (this.wrongPick()) return this.t(answer === '=' ? 'wrongEqual' : 'wrong');
     if (round.attempts > 0) return this.t('hint', { left: left.value, right: right.value });
     return this.t(this.needsMaths() ? 'computeFirst' : 'question');
   });

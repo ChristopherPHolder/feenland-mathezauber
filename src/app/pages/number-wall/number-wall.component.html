@@ -26,40 +26,43 @@
     @case ('intro') {
       <div class="intro">
         <div class="story">
-          <div class="fairy" aria-hidden="true">🧚</div>
+          <img
+            class="fairy"
+            ngSrc="/images/fairy-defense/fairy.webp"
+            width="1536"
+            height="1024"
+            priority
+            alt=""
+          />
           <p class="lead">{{ i.t('wallIntro') }}</p>
+          <div class="demo-wall" aria-hidden="true">
+            <div class="row"><span class="brick filled">5</span></div>
+            <div class="row">
+              <span class="brick">2</span><span class="plus">+</span><span class="brick">3</span>
+            </div>
+          </div>
           <p class="rule">{{ i.t('wallRule') }}</p>
         </div>
         <h2 class="choose-title">{{ i.t('wallChooseLevel') }}</h2>
         <ol class="level-list">
           @for (option of levels; track option) {
             <li>
-              @if (store.unlocked(option)) {
-                <button
-                  type="button"
-                  class="level-card"
-                  [class.starred]="store.hasStar(option)"
-                  (click)="start(option)"
-                >
-                  <span class="level-number">{{ t('wallLevelLabel', { n: option }) }}</span>
-                  <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
-                  <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
-                  @if (store.hasStar(option)) {
-                    <span class="level-star"
-                      ><app-icon kind="star" />{{ i.t('wallStarEarned') }}</span
-                    >
-                  }
-                  <span class="level-go"><app-icon kind="arrow" /></span>
-                </button>
-              } @else {
-                <div class="level-card locked">
-                  <span class="level-number">{{ t('wallLevelLabel', { n: option }) }}</span>
-                  <span class="level-name"
-                    ><app-icon kind="lock" />{{ i.t(levelTitle(option)) }}</span
+              <button
+                type="button"
+                class="level-card"
+                [class.starred]="store.hasStar(option)"
+                (click)="start(option)"
+              >
+                <span class="level-number">{{ t('wallLevelLabel', { n: option }) }}</span>
+                <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
+                <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
+                @if (store.hasStar(option)) {
+                  <span class="level-star"
+                    ><app-icon kind="star" />{{ i.t('wallStarEarned') }}</span
                   >
-                  <span class="level-help">{{ t('wallLocked', { n: option - 1 }) }}</span>
-                </div>
-              }
+                }
+                <span class="level-go"><app-icon kind="arrow" /></span>
+              </button>
             </li>
           }
         </ol>
@@ -112,6 +115,9 @@
               @for (row of displayRows(); track row.rowIndex) {
                 <div class="row">
                   @for (col of row.cols; track col) {
+                    @if (plusBefore({ row: row.rowIndex, col })) {
+                      <span class="plus" aria-hidden="true">+</span>
+                    }
                     @if (isOpen({ row: row.rowIndex, col })) {
                       <button
                         type="button"

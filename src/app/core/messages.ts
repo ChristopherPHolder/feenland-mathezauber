@@ -182,6 +182,7 @@ export const en = {
     'Help the fairy build a magic wall. Two bricks side by side make the brick above them.',
   numberWallPlay: 'Build the magic wall',
   games: 'Fairy games',
+  fairyGameDescription: 'Make ten, solve missing numbers and save the castle from the monsters.',
   wallRule: 'Two bricks side by side always make the brick above them.',
   wallIntro:
     'The fairy is building a magic wall to protect the castle. Can you find the missing bricks?',
@@ -425,6 +426,8 @@ export const translations: Record<Locale, Messages> = {
       'Hilf der Fee, eine Zaubermauer zu bauen. Zwei Steine nebeneinander ergeben den Stein darüber.',
     numberWallPlay: 'Zaubermauer bauen',
     games: 'Feen-Spiele',
+    fairyGameDescription:
+      'Mach die zehn voll, finde fehlende Zahlen und rette das Schloss vor den Monstern.',
     wallRule: 'Zwei Steine nebeneinander ergeben immer den Stein darüber.',
     wallIntro:
       'Die Fee baut eine Zaubermauer, die das Schloss beschützt. Findest du die fehlenden Steine?',
@@ -660,6 +663,8 @@ export const translations: Record<Locale, Messages> = {
       'Ayuda al hada a construir un muro mágico. Dos ladrillos juntos forman el ladrillo de arriba.',
     numberWallPlay: 'Construir el muro mágico',
     games: 'Juegos de hadas',
+    fairyGameDescription:
+      'Completa diez, encuentra números perdidos y salva el castillo de los monstruos.',
     wallRule: 'Dos ladrillos juntos siempre forman el ladrillo de arriba.',
     wallIntro:
       'El hada construye un muro mágico para proteger el castillo. ¿Encuentras los ladrillos que faltan?',
@@ -899,6 +904,8 @@ export const translations: Record<Locale, Messages> = {
       'Aide la fée à construire un mur magique. Deux briques côte à côte forment la brique au-dessus.',
     numberWallPlay: 'Construire le mur magique',
     games: 'Jeux de fées',
+    fairyGameDescription:
+      'Complète dix, trouve les nombres manquants et sauve le château des monstres.',
     wallRule: 'Deux briques côte à côte forment toujours la brique au-dessus.',
     wallIntro:
       'La fée construit un mur magique pour protéger le château. Trouves-tu les briques qui manquent ?',
