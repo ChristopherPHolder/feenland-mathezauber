@@ -191,13 +191,16 @@
             [class.to-left]="round().chosen === '>'"
             [class.to-right]="round().chosen === '<'"
             [class.surfaced]="round().chosen === '='"
+            [class.peek-left]="!round().chosen && pose() === '>'"
+            [class.peek-right]="!round().chosen && pose() === '<'"
+            [class.peek-up]="!round().chosen && pose() === '='"
           >
-            @if (round().chosen === '=') {
+            @if (pose() === '=') {
               <app-crocodile kind="front" [hat]="hat()" />
             } @else {
               <app-crocodile
-                [facing]="round().chosen === '>' ? 'left' : 'right'"
-                [open]="round().chosen !== null"
+                [facing]="pose() === '>' ? 'left' : 'right'"
+                [open]="pose() !== null"
                 [chomping]="round().chosen !== null"
                 [hat]="hat()"
               />
@@ -264,6 +267,10 @@
           [attr.aria-disabled]="round().phase !== 'ready'"
           [attr.aria-label]="label(choice)"
           (click)="choose(choice)"
+          (pointerenter)="peekAt(choice)"
+          (pointerleave)="peekAt(null)"
+          (focus)="peekAt(choice)"
+          (blur)="peekAt(null)"
         >
           <span class="choice-croc">
             @if (choice === '=') {

@@ -1,4 +1,11 @@
-<div class="fairy" aria-hidden="true">🧚</div>
+<div class="sky" aria-hidden="true">
+  <span class="cloud c1"></span>
+  <span class="cloud c2"></span>
+  <span class="bird">🐦</span>
+</div>
+@for (dive of [justFilled()]; track dive ? dive.row + '-' + dive.col : 'none') {
+  <div class="fairy" [class.dive]="!!dive" aria-hidden="true">🧚</div>
+}
 <div class="tower left" aria-hidden="true"></div>
 <div class="tower right" aria-hidden="true"></div>
 @if (wallsDone() >= total) {
@@ -31,6 +38,7 @@
           <div
             class="brick"
             [class.filled]="isFilled({ row: row.rowIndex, col })"
+            [class.pair]="isPair({ row: row.rowIndex, col })"
             [class.golden]="isGolden({ row: row.rowIndex, col })"
             [class.sparkle]="isJustFilled({ row: row.rowIndex, col })"
             [attr.aria-label]="t('wallBrickValue', { n: value({ row: row.rowIndex, col }) })"
@@ -54,7 +62,10 @@
     [attr.aria-valuenow]="trollPercent()"
     [attr.aria-label]="t('wallTrollLabel')"
   >
-    <span aria-hidden="true">🧌</span>
+    <span class="troll-body" aria-hidden="true">🧌</span>
+    @if (!trollAsleep()) {
+      <span class="dust-cloud" aria-hidden="true">💨</span>
+    }
     @if (trollAsleep()) {
       <span class="zzz" aria-hidden="true">💤</span>
     }
@@ -64,6 +75,9 @@
   <div class="confetti" aria-hidden="true">
     @for (piece of confetti; track $index) {
       <span [style.--i]="$index">{{ piece }}</span>
+    }
+    @for (gem of gems; track gem) {
+      <span class="gem" [style.--i]="gem">💎</span>
     }
   </div>
 }

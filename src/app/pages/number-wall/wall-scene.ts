@@ -19,6 +19,7 @@ import { wallText } from './wall-text';
     '[class.celebrating]': 'built()',
     '[style.--built]': 'wallsDone()',
     '[style.--p]': 'trollProgress() ?? 0',
+    '[class.danger]': '(trollProgress() ?? 0) > 0.7 && !trollAsleep()',
   },
 })
 export class WallScene {
@@ -43,6 +44,7 @@ export class WallScene {
       .reverse(),
   );
   protected readonly confetti = ['✦', '★', '✦', '✧', '★', '✦'];
+  protected readonly gems = [0, 1, 2];
   /** The left brick of the pair that makes (or completes) the glowing brick. */
   private readonly pair = computed<BrickId | undefined>(() => {
     const brick = this.selected();
@@ -55,6 +57,13 @@ export class WallScene {
   protected plusBefore(brick: BrickId): boolean {
     const pair = this.pair();
     return !!pair && pair.row === brick.row && pair.col + 1 === brick.col;
+  }
+  /** Both bricks of that pair pulse together so the child sees what to add. */
+  protected isPair(brick: BrickId): boolean {
+    const pair = this.pair();
+    return (
+      !!pair && pair.row === brick.row && (pair.col === brick.col || pair.col + 1 === brick.col)
+    );
   }
   protected readonly trollPercent = computed(() => Math.round((this.trollProgress() ?? 0) * 100));
   protected isOpen(brick: BrickId): boolean {

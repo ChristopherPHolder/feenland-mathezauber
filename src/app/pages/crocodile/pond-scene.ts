@@ -10,6 +10,9 @@ import { Component, input } from '@angular/core';
     <span class="bubble b3"></span>
     <span class="reed reed-left"></span>
     <span class="reed reed-right"></span>
+    <span class="lily l1"></span>
+    <span class="lily l2"><span class="frog">🐸</span></span>
+    <span class="butterfly">🦋</span>
     @if (boss()) {
       <svg class="big-fish" viewBox="0 0 120 60">
         <path d="M10 30 L34 12 L34 48z" />
@@ -92,6 +95,41 @@ import { Component, input } from '@angular/core';
       height: 48px;
       animation-delay: 1s;
     }
+    .lily {
+      position: absolute;
+      width: 46px;
+      height: 28px;
+      border-radius: 50%;
+      background: #4ca25f;
+      box-shadow: inset 0 -4px 0 #2f7a44;
+      clip-path: polygon(0 0, 60% 0, 50% 50%, 100% 35%, 100% 100%, 0 100%);
+      animation: bob-lily 4s ease-in-out infinite;
+    }
+    .l1 {
+      left: 8%;
+      bottom: 10%;
+    }
+    .l2 {
+      right: 10%;
+      bottom: 14%;
+      animation-delay: -2s;
+    }
+    .frog {
+      position: absolute;
+      left: 8px;
+      top: -20px;
+      font-size: 22px;
+      line-height: 1;
+      animation: hop 7s ease-in-out infinite;
+    }
+    .butterfly {
+      position: absolute;
+      left: 30%;
+      top: 10%;
+      font-size: 22px;
+      line-height: 1;
+      animation: flit 11s ease-in-out infinite;
+    }
     .fishy {
       position: absolute;
       width: 26px;
@@ -126,6 +164,45 @@ import { Component, input } from '@angular/core';
       fill: #2b78c7;
       opacity: 0.55;
       animation: big-swim 9s ease-in-out infinite;
+    }
+    @keyframes bob-lily {
+      0%,
+      100% {
+        transform: translateY(0) rotate(0);
+      }
+      50% {
+        transform: translateY(-4px) rotate(3deg);
+      }
+    }
+    @keyframes hop {
+      0%,
+      84%,
+      100% {
+        transform: translateY(0) scaleY(1);
+      }
+      88% {
+        transform: translateY(2px) scaleY(0.85);
+      }
+      94% {
+        transform: translateY(-22px) scaleY(1.1);
+      }
+    }
+    @keyframes flit {
+      0% {
+        transform: translate(0, 0) rotate(-10deg);
+      }
+      25% {
+        transform: translate(120px, 24px) rotate(10deg);
+      }
+      50% {
+        transform: translate(220px, -10px) rotate(-10deg) scaleX(-1);
+      }
+      75% {
+        transform: translate(90px, 30px) rotate(10deg) scaleX(-1);
+      }
+      100% {
+        transform: translate(0, 0) rotate(-10deg);
+      }
     }
     @keyframes ripple {
       0% {
