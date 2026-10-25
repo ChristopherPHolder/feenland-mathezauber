@@ -52,18 +52,50 @@
       @if (best() > 0) {
         <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
       }
-      <div class="bubble-option">
-        <label class="bubble-toggle">
-          <input
-            type="checkbox"
-            [checked]="timed()"
-            (change)="toggleTimer()"
-            aria-describedby="bubble-help"
-          />
-          <span>{{ t('bubbleTitle') }}</span>
-        </label>
-        <p id="bubble-help">{{ t('bubbleHelp') }}</p>
-      </div>
+      <fieldset class="bubble-option" aria-describedby="bubble-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="bubble-help">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id) {
+            <label
+              class="pace-choice"
+              [class.selected]="pace() === option.id"
+              [attr.data-pace]="option.id"
+            >
+              <input
+                type="radio"
+                name="bubble-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <svg class="pace-picture" viewBox="0 0 64 40" aria-hidden="true">
+                @if (option.id === 'off') {
+                  <path d="M8 25c8-8 16 8 24 0s16 8 24 0M12 32c8-6 12 6 20 0s12 6 20 0" />
+                  <path d="M28 15c-4-7 8-7 8 0s-12 7-8 0" />
+                } @else {
+                  <circle cx="40" cy="20" r="14" />
+                  <path d="M34 14q1-3 5-3" />
+                  <path d="M8 20h12" />
+                  @if (option.id === 'normal' || option.id === 'fast') {
+                    <path d="M12 12h10" />
+                  }
+                  @if (option.id === 'fast') {
+                    <path d="M10 28h12M2 12h3M2 28h3" />
+                  }
+                }
+              </svg>
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceUnlimited')
+                  : t('paceDuration', { n: needsMaths() ? option.mathsSeconds : option.seconds })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'bubbleHelp' : 'paceCalmHelp') }}</p>
+      </fieldset>
       <button class="button primary" type="button" (click)="play()">
         {{ t('start') }}<app-icon kind="arrow" />
       </button>
@@ -165,11 +197,14 @@
         [attr.aria-label]="t('bubbleTitle')"
       >
         <div class="bubble-heading">
-          <strong>{{ t(bubblePopped() ? 'bubbleRest' : 'bubbleTitle') }}</strong>
+          <strong
+            >{{ t(bubblePopped() ? 'bubbleRest' : 'bubbleTitle') }}
+            <span class="active-pace">{{ t(selectedPace().label) }}</span></strong
+          >
           <span class="bubble-seconds" role="timer" aria-live="off">{{
             t('bubbleSeconds', { n: secondsLeft() })
           }}</span>
-          <button type="button" (click)="toggleTimer()">{{ t('bubbleOff') }}</button>
+          <button type="button" (click)="selectPace('off')">{{ t('bubbleOff') }}</button>
         </div>
         <div class="bubble-track" aria-hidden="true">
           <span class="bubble-water" [style.width.%]="bubbleLeft() * 100"></span>

@@ -108,3 +108,10 @@ Turned the comparison rounds into a game: a living pond with ripples, bubbles an
 - Production Angular build passes (existing component CSS budget warnings remain).
 - Chrome browser checks cover English, German, Spanish and French at 320, 390 and 1280px: no horizontal overflow; axe WCAG 2 A/AA and 2.1 AA scans report zero violations on the intro and timed game.
 - Desktop and phone screenshots inspected; real browser clock checks confirm 15-second expiry, playable recovery, 25 seconds for calculation snacks, and turning the timer off.
+
+
+### Remembered crocodile paces (2026-10-25)
+
+- 108 tests pass. Added coverage for every timed pace, restoration across component visits, number/calculation deadlines, saving No rush, keyboard focus after disabling, invalid saved values, and blocked storage writes.
+- Production build passes with existing component CSS budget warnings.
+- Chrome: actual reload preserves Relaxed and No rush; native arrow-key selection chooses Fast. All four languages at 320, 390 and 1280px have no horizontal overflow and zero axe WCAG 2 A/AA or 2.1 AA violations on intro and play (24 scans). Desktop and phone screenshots inspected.

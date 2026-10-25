@@ -1,8 +1,18 @@
 import { Locale } from '../../core/messages';
 const en = {
+  paceTitle: 'Choose your bubble speed',
+  paceHelp: 'A gentle float or a speedy splash? You choose!',
+  paceOff: 'No rush',
+  paceRelaxed: 'Relaxed',
+  paceNormal: 'Normal',
+  paceFast: 'Fast',
+  paceUnlimited: 'All the time you need',
+  paceDuration: '{n} s per snack',
+  paceCalmHelp: 'Feed Kiki at your own pace. No ticking clock.',
+
   bubbleTitle: 'Beat the bubble',
   bubbleHelp:
-    'Optional: 15 seconds per snack, 25 for calculations. A pop resets your combo and counts as a missed first try. You can still solve it.',
+    'Feed Kiki before the bubble pops! If it pops, your combo resets and you get a hint. You can still finish the snack.',
   bubblePop: 'Pop! Take your time. Use the help below, then feed Kiki.',
   bubbleRest: 'Bubble break',
   bubbleSeconds: '{n} s',
@@ -70,9 +80,19 @@ const en = {
 export type CrocodileMessageKey = keyof typeof en;
 type Messages = Record<CrocodileMessageKey, string>;
 const de: Messages = {
+  paceTitle: 'Wähle dein Blasentempo',
+  paceHelp: 'Gemütlich treiben oder schnell flitzen? Du entscheidest!',
+  paceOff: 'Ohne Zeit',
+  paceRelaxed: 'Entspannt',
+  paceNormal: 'Normal',
+  paceFast: 'Schnell',
+  paceUnlimited: 'So viel Zeit du brauchst',
+  paceDuration: '{n} s pro Häppchen',
+  paceCalmHelp: 'Füttere Kiki in deinem Tempo. Ohne tickende Uhr.',
+
   bubbleTitle: 'Schlag die Blase',
   bubbleHelp:
-    'Optional: 15 Sekunden pro Häppchen, 25 zum Rechnen. Platzt die Blase, endet die Kombo und der erste Versuch zählt als verpasst. Du kannst weiterlösen.',
+    'Füttere Kiki, bevor die Blase platzt! Platzt sie, endet die Kombo und du bekommst Hilfe. Du kannst das Häppchen noch lösen.',
   bubblePop: 'Plopp! Lass dir Zeit. Nutze die Hilfe und füttere Kiki.',
   bubbleRest: 'Blasenpause',
   bubbleSeconds: '{n} s',
@@ -139,9 +159,19 @@ const de: Messages = {
   pondTitle: 'Kikis Teich',
 };
 const es: Messages = {
+  paceTitle: 'Elige la velocidad de tu burbuja',
+  paceHelp: '¿Un paseo tranquilo o un chapuzón veloz? ¡Tú eliges!',
+  paceOff: 'Sin prisa',
+  paceRelaxed: 'Tranquilo',
+  paceNormal: 'Normal',
+  paceFast: 'Rápido',
+  paceUnlimited: 'Todo el tiempo que necesites',
+  paceDuration: '{n} s por bocado',
+  paceCalmHelp: 'Alimenta a Kiki a tu ritmo. Sin reloj.',
+
   bubbleTitle: 'Gana a la burbuja',
   bubbleHelp:
-    'Opcional: 15 segundos por bocado, 25 para cálculos. Si explota, se reinicia el combo y cuenta como un primer intento fallido. Puedes seguir resolviendo.',
+    '¡Alimenta a Kiki antes de que explote la burbuja! Si explota, el combo se reinicia y recibes una pista. Puedes terminar el bocado.',
   bubblePop: '¡Pop! Tómate tu tiempo. Usa la ayuda y alimenta a Kiki.',
   bubbleRest: 'Pausa de burbujas',
   bubbleSeconds: '{n} s',
@@ -208,9 +238,19 @@ const es: Messages = {
   pondTitle: 'El estanque de Kiki',
 };
 const fr: Messages = {
+  paceTitle: 'Choisis la vitesse de ta bulle',
+  paceHelp: 'Une balade tranquille ou un plongeon rapide ? À toi de choisir !',
+  paceOff: 'Sans chrono',
+  paceRelaxed: 'Détente',
+  paceNormal: 'Normal',
+  paceFast: 'Rapide',
+  paceUnlimited: 'Tout le temps nécessaire',
+  paceDuration: '{n} s par collation',
+  paceCalmHelp: 'Nourris Kiki à ton rythme. Sans chrono.',
+
   bubbleTitle: 'Bats la bulle',
   bubbleHelp:
-    'Facultatif : 15 secondes par collation, 25 pour les calculs. Si elle éclate, le combo repart à zéro et le premier essai est manqué. Tu peux encore résoudre.',
+    'Nourris Kiki avant que la bulle éclate ! Si elle éclate, le combo repart à zéro et tu reçois un indice. Tu peux finir la collation.',
   bubblePop: 'Pop ! Prends ton temps. Utilise l’aide puis nourris Kiki.',
   bubbleRest: 'Pause bulle',
   bubbleSeconds: '{n} s',

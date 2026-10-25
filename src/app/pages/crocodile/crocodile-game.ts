@@ -27,6 +27,7 @@ import {
   Side,
   TOTAL_STAGES,
 } from './comparison';
+import { BUBBLE_PACES, BubblePace, readBubblePace, saveBubblePace } from './bubble-pace';
 import { CrocodileArt } from './crocodile-art';
 import { crocodileText, CrocodileMessageKey } from './crocodile-messages';
 import { comboFor, earnedHats, goldenSnacks, Hat, snackKind, snackPoints } from './crocodile-score';
@@ -78,10 +79,18 @@ export class CrocodileGame {
     this.stage();
     return false;
   });
-  protected readonly timed = signal(false);
+  protected readonly paces = BUBBLE_PACES;
+  protected readonly pace = signal<BubblePace>(readBubblePace());
+  protected readonly timed = computed(() => this.pace() !== 'off');
+  protected readonly selectedPace = computed(() =>
+    this.paces.find((pace) => pace.id === this.pace())!,
+  );
   protected readonly bubbleLeft = signal(1);
   protected readonly bubblePopped = signal(false);
-  protected readonly bubbleSeconds = computed(() => (this.needsMaths() ? 25 : 15));
+  protected readonly bubbleSeconds = computed(() => {
+    const pace = this.selectedPace();
+    return this.needsMaths() ? pace.mathsSeconds : pace.seconds;
+  });
   protected readonly secondsLeft = computed(() =>
     Math.ceil(this.bubbleLeft() * this.bubbleSeconds()),
   );
@@ -215,8 +224,9 @@ export class CrocodileGame {
   protected peekAt(choice: Comparison | null) {
     this.peek.set(choice);
   }
-  protected toggleTimer() {
-    this.timed.update((enabled) => !enabled);
+  protected selectPace(pace: BubblePace) {
+    this.pace.set(pace);
+    saveBubblePace(pace);
     this.bubbleLeft.set(1);
     this.bubblePopped.set(false);
     if (this.started())
