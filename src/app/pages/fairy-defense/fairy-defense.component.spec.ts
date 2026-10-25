@@ -147,6 +147,37 @@ describe('Wave 1 playable integration', () => {
       next.nativeElement.querySelector('[aria-label="3 hearts remaining out of three"]'),
     ).toBeTruthy();
   });
+  it('lets the child start any wave straight from the always-open wave grid', () => {
+    const { fixture, element, click } = setup();
+    const waveButtons = element.querySelectorAll<HTMLButtonElement>('.wave-path button');
+    expect(waveButtons).toHaveLength(20);
+    expect([...waveButtons].every((button) => !button.disabled)).toBe(true);
+    expect(element.querySelector('details[open]')).toBeNull();
+    expect(element.textContent).toContain('What do you want to play?');
+    click('Wave 7');
+    expect(element.textContent).toContain('Wave 7 of 20');
+    expect(element.querySelector('.wave-path')).toBeNull();
+    click('Pause');
+    click('Choose a wave');
+    fixture.detectChanges();
+    expect(element.querySelectorAll('.wave-path button')).toHaveLength(20);
+  });
+  it('switches to a practice stage with one tap on its card', () => {
+    const { fixture, element } = setup();
+    const cards = element.querySelectorAll<HTMLInputElement>('.level-card input');
+    expect(cards).toHaveLength(10);
+    expect(cards[0].checked).toBe(true);
+    expect(element.textContent).toContain('4 + □ = 9');
+    cards[3].click();
+    fixture.detectChanges();
+    expect(element.querySelector('.level-card.selected')?.textContent).toContain('4 + □ = 9');
+    expect(element.querySelector('.wave-path')).toBeNull();
+    expect(element.querySelector('#campaign-math')).toBeNull();
+    expect(element.textContent).toContain('Stage 3 / 9');
+    cards[0].click();
+    fixture.detectChanges();
+    expect(element.querySelectorAll('.wave-path button')).toHaveLength(20);
+  });
   it('has a complete translated game vocabulary', () => {
     for (const locale of Object.keys(gameMessages) as Locale[]) {
       expect(Object.keys(gameMessages[locale]).sort()).toEqual(Object.keys(gameMessages.en).sort());

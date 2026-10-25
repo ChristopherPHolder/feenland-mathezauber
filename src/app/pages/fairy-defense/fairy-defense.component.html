@@ -5,72 +5,6 @@
   aria-labelledby="game-title"
 >
   <h1 class="sr-only" id="game-title">{{ t('title') }}</h1>
-  @if (!started()) {
-    <section class="practice-settings" aria-labelledby="practice-settings-title">
-      <h2 id="practice-settings-title">{{ i.t('gameSettings') }}</h2>
-      @if (!practiceConfig()) {
-        <label for="practice-stage">{{ i.t('chooseLevel') }}</label>
-        <select
-          id="practice-stage"
-          [disabled]="started()"
-          [value]="chosenStage()"
-          #stageSelect
-          (change)="chosenStage.set(stageSelect.value)"
-        >
-          <option value="">{{ t('title') }}</option>
-          @for (level of stages; track level.id) {
-            <option [value]="level.id">
-              {{ i.t('stage') }} {{ level.practice!.stage }} · {{ i.t(level.title) }} ·
-              {{ i.t('upTo') }} {{ level.practice!.max }}
-            </option>
-          }
-        </select>
-      }
-      @if (!training()) {
-        <label for="campaign-math">{{ i.t('mathComplexity') }}</label>
-        <select
-          id="campaign-math"
-          [value]="mathRange()"
-          #rangeSelect
-          (change)="mathRange.set(rangeSelect.value)"
-        >
-          <option value="10">{{ i.t('mathTen') }}</option>
-          <option value="30">{{ i.t('mathThirty') }}</option>
-          <option value="100">{{ i.t('mathHundred') }}</option>
-        </select>
-      }
-      @if (!started()) {
-        <div class="practice-options">
-          <fieldset>
-            <legend>{{ i.t('difficulty') }}</legend>
-            @for (option of difficulties; track option) {
-              <label
-                ><input type="radio" [value]="option" [formField]="settings.difficulty" />{{
-                  i.t(option)
-                }}</label
-              >
-            }
-          </fieldset>
-          <fieldset>
-            <legend>{{ i.t('pace') }}</legend>
-            @for (option of paces; track option) {
-              <label
-                ><input type="radio" [value]="option" [formField]="settings.pace" />{{
-                  i.t(option)
-                }}</label
-              >
-            }
-          </fieldset>
-        </div>
-        <p>{{ i.t('paceHelp') }}</p>
-      }
-      @if (training()) {
-        <a [routerLink]="['/worlds', 'missing-number', 'chapters', 'math-to-30']">{{
-          i.t('chooseLevel')
-        }}</a>
-      }
-    </section>
-  }
   <app-battle-scene
     [battle]="battle()"
     [stageLabel]="training() ? i.t('stage') + ' ' + training()!.stage + ' / 9' : ''"
@@ -95,10 +29,7 @@
           } @else {
             <p class="rule-copy">{{ mathRange() === '10' ? t('rules') : i.t('mixedMathHelp') }}</p>
           }
-          <button
-            class="button primary"
-            (click)="play(campaign.finished() ? 1 : campaign.unlocked())"
-          >
+          <button class="button primary" (click)="play(campaign.nextWave())">
             {{
               t(
                 campaign.finished()
@@ -106,9 +37,7 @@
                   : campaign.state().results.length
                     ? 'continueWave'
                     : 'play',
-                {
-                  n: campaign.unlocked(),
-                }
+                { n: campaign.nextWave() }
               )
             }}<app-icon kind="arrow" />
           </button>
@@ -219,11 +148,96 @@
   @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
     @if (!training()) {
       <app-wave-path
-        [unlocked]="campaign.unlocked()"
-        [completed]="campaign.state().results.length"
+        [completed]="campaign.completed()"
+        [next]="campaign.nextWave()"
         (selectWave)="play($event)"
       />
     }
+  }
+  @if (!started()) {
+    @if (!practiceConfig()) {
+      <section class="level-picker" aria-labelledby="level-picker-title">
+        <h2 id="level-picker-title">{{ i.t('chooseGame') }}</h2>
+        <div class="level-cards" role="radiogroup" aria-labelledby="level-picker-title">
+          <label class="level-card" [class.selected]="chosenStage() === ''">
+            <input
+              type="radio"
+              name="level"
+              value=""
+              [checked]="chosenStage() === ''"
+              (change)="chosenStage.set('')"
+            />
+            <span class="level-emblem" aria-hidden="true">🏰</span>
+            <span class="level-name">{{ t('title') }}</span>
+            <span class="level-detail">{{ t('playtest') }}</span>
+          </label>
+          @for (level of stages; track level.id) {
+            <label class="level-card" [class.selected]="chosenStage() === level.id">
+              <input
+                type="radio"
+                name="level"
+                [value]="level.id"
+                [checked]="chosenStage() === level.id"
+                (change)="chosenStage.set(level.id)"
+              />
+              <span class="level-number"
+                ><span class="sr-only">{{ i.t('stage') }} </span>{{ level.practice!.stage }}</span
+              >
+              <span class="level-example">{{ level.practice!.example }}</span>
+              <span class="level-name">{{ i.t(level.title) }}</span>
+              <span class="level-detail">{{ i.t('upTo') }} {{ level.practice!.max }}</span>
+            </label>
+          }
+        </div>
+      </section>
+    } @else {
+      <p class="level-switch">
+        <a [routerLink]="['/worlds', 'missing-number', 'chapters', 'math-to-30']">{{
+          i.t('chooseLevel')
+        }}</a>
+      </p>
+    }
+    <details class="practice-settings">
+      <summary>{{ i.t('gameSettings') }}</summary>
+      @if (!training()) {
+        <label for="campaign-math">{{ i.t('mathComplexity') }}</label>
+        <select
+          id="campaign-math"
+          [value]="mathRange()"
+          #rangeSelect
+          (change)="mathRange.set(rangeSelect.value)"
+        >
+          <option value="10">{{ i.t('mathTen') }}</option>
+          <option value="30">{{ i.t('mathThirty') }}</option>
+          <option value="100">{{ i.t('mathHundred') }}</option>
+        </select>
+      }
+      <div class="practice-options">
+        <fieldset>
+          <legend>{{ i.t('difficulty') }}</legend>
+          @for (option of difficulties; track option) {
+            <label
+              ><input type="radio" [value]="option" [formField]="settings.difficulty" />{{
+                i.t(option)
+              }}</label
+            >
+          }
+        </fieldset>
+        <fieldset>
+          <legend>{{ i.t('pace') }}</legend>
+          @for (option of paces; track option) {
+            <label
+              ><input type="radio" [value]="option" [formField]="settings.pace" />{{
+                i.t(option)
+              }}</label
+            >
+          }
+        </fieldset>
+      </div>
+      <p>{{ i.t('paceHelp') }}</p>
+    </details>
+  }
+  @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
     <div class="game-foot">
       <span>{{ t('playtestHelp') }}</span
       ><a [routerLink]="chapterLink()">{{ t('back') }}</a>

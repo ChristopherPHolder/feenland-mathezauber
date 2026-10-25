@@ -24,7 +24,7 @@ const en = {
   independentStage: 'Try your number magic. Help is always here.',
   bossIntro: 'A shield monster! Make ten to break each shield layer.',
   backWaves: 'Choose a wave',
-  lockedWave: 'Wave {n} · locked',
+  nextUp: 'Next up',
   completedWave: 'Wave {n} · completed',
   starsLabel: '{n} stars earned',
 
@@ -107,7 +107,7 @@ export const gameMessages: Record<Locale, GameMessages> = {
     independentStage: 'Probiere deine Zahlenmagie. Hilfe ist immer da.',
     bossIntro: 'Ein Schildmonster! Mach die zehn voll, um jede Schildschicht zu brechen.',
     backWaves: 'Welle auswählen',
-    lockedWave: 'Welle {n} · gesperrt',
+    nextUp: 'Als Nächstes',
     completedWave: 'Welle {n} · geschafft',
     starsLabel: '{n} Sterne verdient',
 
@@ -187,7 +187,7 @@ export const gameMessages: Record<Locale, GameMessages> = {
     independentStage: 'Prueba tu magia numérica. Siempre puedes pedir ayuda.',
     bossIntro: '¡Un monstruo con escudo! Completa diez para romper cada capa.',
     backWaves: 'Elige una oleada',
-    lockedWave: 'Oleada {n} · bloqueada',
+    nextUp: 'Siguiente',
     completedWave: 'Oleada {n} · completada',
     starsLabel: '{n} estrellas ganadas',
 
@@ -267,7 +267,7 @@ export const gameMessages: Record<Locale, GameMessages> = {
     independentStage: 'Essaie ta magie des nombres. L’aide est toujours là.',
     bossIntro: 'Un monstre à boucliers ! Complète dix pour briser chaque couche.',
     backWaves: 'Choisir une vague',
-    lockedWave: 'Vague {n} · verrouillée',
+    nextUp: 'À suivre',
     completedWave: 'Vague {n} · terminée',
     starsLabel: '{n} étoiles gagnées',
 

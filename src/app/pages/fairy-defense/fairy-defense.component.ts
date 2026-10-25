@@ -3,6 +3,7 @@ import { Difficulty, Pace, PracticeConfig, practiceLevels } from '../../core/pra
 import { practiceBattle, practiceSpells, withCampaignMath } from './practice-battle';
 import { WavePathComponent } from './wave-path/wave-path.component';
 import { CampaignStore } from './campaign';
+import { TOTAL_WAVES } from './waves';
 import { CompletionService } from '../../core/completion';
 import { Router } from '@angular/router';
 import { GamePause } from './game-pause';
@@ -72,7 +73,7 @@ export class FairyDefenseComponent {
   protected readonly store = inject(PlaytestStore);
   protected readonly audio = inject(GameAudio);
   private readonly document = inject(DOCUMENT);
-  protected readonly battle = signal(freshBattle(this.campaign.unlocked()));
+  protected readonly battle = signal(freshBattle(this.campaign.nextWave()));
   protected readonly started = signal(false);
   protected readonly paused = signal(false);
   protected readonly playing = computed(
@@ -186,11 +187,8 @@ export class FairyDefenseComponent {
   protected t(key: GameMessageKey, values: Record<string, number> = {}) {
     return gameText(this.i.locale(), key, values);
   }
-  protected play(number = this.campaign.unlocked()) {
-    if (
-      !this.training() &&
-      (number > this.campaign.unlocked() || number < 1 || !Number.isInteger(number))
-    )
+  protected play(number = this.campaign.nextWave()) {
+    if (!this.training() && (number < 1 || number > TOTAL_WAVES || !Number.isInteger(number)))
       return;
     this.clearTurn();
     this.instructionOverride.set(null);
