@@ -4,18 +4,17 @@ import { comparisonLevels } from '../pages/crocodile/comparison';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
-  readonly description?: MessageKey;
+  readonly description: MessageKey;
   readonly id: string;
   readonly title: MessageKey;
-  readonly implemented: boolean;
   readonly prerequisites: readonly string[];
   readonly skills: readonly string[];
   readonly format: string;
   readonly playtest?: boolean;
 }
 export interface Chapter {
-  readonly title?: MessageKey;
-  readonly description?: MessageKey;
+  readonly title: MessageKey;
+  readonly description: MessageKey;
   readonly id: string;
   readonly levels: readonly Level[];
 }
@@ -28,7 +27,64 @@ export interface World {
   readonly color: string;
   readonly ground: string;
 }
-const catalog: readonly World[] = [
+// World and chapter IDs are part of saved progress and bookmarks; keep them stable.
+export const worlds: readonly World[] = [
+  {
+    id: 'numbers',
+    title: 'numbers',
+    description: 'numbersPreview',
+    emblem: '🌱',
+    color: '#28604b',
+    ground: '#dfefe3',
+    chapters: [
+      {
+        id: 'friends-of-ten',
+        title: 'friendsOfTen',
+        description: 'friendsOfTenDescription',
+        levels: [
+          {
+            id: 'defend-fairy-castle',
+            title: 'fairyCastle',
+            description: 'fairyBattleDescription',
+            prerequisites: [],
+            skills: ['make-ten'],
+            format: 'fairy-defense',
+          },
+        ],
+      },
+      {
+        id: 'compare-crocodile',
+        title: 'crocodileChapter',
+        description: 'crocodileChapterHelp',
+        levels: comparisonLevels,
+      },
+    ],
+  },
+  {
+    id: 'tens',
+    title: 'tens',
+    description: 'tensPreview',
+    emblem: '✨',
+    color: '#315d84',
+    ground: '#dfeefa',
+    chapters: [
+      {
+        id: 'number-walls',
+        title: 'numberWalls',
+        description: 'numberWallDescription',
+        levels: [
+          {
+            id: 'number-wall',
+            title: 'numberWall',
+            description: 'numberWallDescription',
+            prerequisites: [],
+            skills: ['addition', 'missing-addend'],
+            format: 'number-wall',
+          },
+        ],
+      },
+    ],
+  },
   {
     id: 'missing-number',
     title: 'missing',
@@ -43,141 +99,9 @@ const catalog: readonly World[] = [
         description: 'practiceHelp',
         levels: practiceLevels,
       },
-      {
-        id: 'missing-number-first-steps',
-        title: 'firstSteps',
-        description: 'firstStepsDescription',
-        levels: [
-          {
-            id: 'missing-number-add-to-30',
-            title: 'level',
-            implemented: true,
-            prerequisites: [],
-            skills: ['missing-addend', 'make-ten'],
-            format: 'challenge-preview',
-          },
-          {
-            id: 'missing-number-subtract-to-30',
-            title: 'subtractLevel',
-            description: 'subtractDescription',
-            implemented: true,
-            prerequisites: ['missing-number-add-to-30'],
-            skills: ['missing-subtrahend'],
-            format: 'challenge-preview',
-          },
-          {
-            id: 'missing-number-make-ten',
-            title: 'makeTenLevel',
-            description: 'makeTenDescription',
-            implemented: false,
-            prerequisites: ['missing-number-add-to-30'],
-            skills: ['make-ten'],
-            format: 'challenge-preview',
-          },
-        ],
-      },
-      {
-        id: 'missing-number-backwards',
-        title: 'backwards',
-        description: 'backwardsDescription',
-        levels: [
-          {
-            id: 'missing-number-inverse',
-            title: 'inverseLevel',
-            implemented: false,
-            prerequisites: ['missing-number-add-to-30'],
-            skills: ['inverse-operation'],
-            format: 'challenge-preview',
-          },
-        ],
-      },
     ],
   },
-  ...(
-    [
-      ['numbers', 'numbersPreview', '🌱', '#28604b', '#dfefe3'],
-      ['tens', 'tensPreview', '✨', '#315d84', '#dfeefa'],
-      ['subtraction', 'subtractionPreview', '🌉', '#78476a', '#f3e3ef'],
-      ['multiplication', 'multiplicationPreview', '🏰', '#87502c', '#f9e5d4'],
-      ['division', 'divisionPreview', '🌳', '#28604b', '#dfefe3'],
-      ['patterns', 'patternsPreview', '🧩', '#50467b', '#e9e4f6'],
-      ['fractions', 'fractionsPreview', '🍰', '#78476a', '#f3e3ef'],
-      ['measurement', 'measurementPreview', '📏', '#87502c', '#f9e5d4'],
-      ['shapes', 'shapesPreview', '🔷', '#315d84', '#dfeefa'],
-      ['master', 'masterPreview', '🧠', '#50467b', '#e9e4f6'],
-    ] as const
-  ).map(([title, description, emblem, color, ground]): World => ({
-    id: title,
-    title,
-    description,
-    emblem,
-    color,
-    ground,
-    chapters:
-      title === 'numbers'
-        ? [
-            {
-              id: 'friends-of-ten',
-              title: 'friendsOfTen',
-              description: 'friendsOfTenDescription',
-              levels: [
-                {
-                  id: 'defend-fairy-castle',
-                  title: 'fairyCastle',
-                  description: 'fairyBattleDescription',
-                  implemented: true,
-                  prerequisites: [],
-                  skills: ['make-ten'],
-                  format: 'fairy-defense',
-                },
-              ],
-            },
-            {
-              id: 'compare-crocodile',
-              title: 'crocodileChapter',
-              description: 'crocodileChapterHelp',
-              levels: comparisonLevels,
-            },
-          ]
-        : title === 'tens'
-          ? [
-              {
-                id: 'number-walls',
-                title: 'numberWalls',
-                description: 'numberWallDescription',
-                levels: [
-                  {
-                    id: 'number-wall',
-                    title: 'numberWall',
-                    description: 'numberWallDescription',
-                    implemented: true,
-                    prerequisites: [],
-                    skills: ['addition', 'missing-addend'],
-                    format: 'number-wall',
-                  },
-                ],
-              },
-            ]
-          : [],
-  })),
 ];
-// Keep existing world IDs so bookmarks and saved progress remain valid.
-const worldOrder = [
-  'numbers',
-  'tens',
-  'subtraction',
-  'missing-number',
-  'multiplication',
-  'division',
-  'patterns',
-  'fractions',
-  'measurement',
-  'shapes',
-  'master',
-];
-export const worlds: readonly World[] = [...catalog].sort(
-  (a, b) => worldOrder.indexOf(a.id) - worldOrder.indexOf(b.id),
-);
 export interface Progress {
   readonly completed?: readonly string[];
   readonly stars?: Readonly<Record<string, number>>;
@@ -187,11 +111,7 @@ export interface Progress {
   readonly explored: readonly string[];
 }
 export const emptyProgress: Progress = { version: 1, mastered: [], chapters: [], explored: [] };
-export function levelState(
-  level: Level,
-  progress: Progress,
-): 'soon' | 'locked' | 'available' | 'completed' {
-  if (!level.implemented) return 'soon';
+export function levelState(level: Level, progress: Progress): 'locked' | 'available' | 'completed' {
   if (progress.mastered.includes(level.id) || progress.completed?.includes(level.id))
     return 'completed';
   return level.prerequisites.every((id) => progress.mastered.includes(id)) ? 'available' : 'locked';
@@ -258,10 +178,8 @@ export function chapterState(chapter: Chapter, progress: Progress): ContentState
   return contentState(chapter.levels, progress);
 }
 function contentState(levels: readonly Level[], progress: Progress): ContentState {
-  const published = levels.filter((level) => level.implemented);
-  if (!published.length) return 'soon';
-  const states = published.map((level) => levelState(level, progress));
-  if (published.every((level) => progress.mastered.includes(level.id))) return 'completed';
+  const states = levels.map((level) => levelState(level, progress));
+  if (levels.every((level) => progress.mastered.includes(level.id))) return 'completed';
   // An earned level remains a way back into a world even when its new levels are locked.
   if (states.some((state) => state === 'available' || state === 'completed')) return 'available';
   return 'locked';

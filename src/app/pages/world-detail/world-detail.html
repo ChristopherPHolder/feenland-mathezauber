@@ -25,10 +25,8 @@
             /></span>
             <div class="chapter-copy">
               <app-content-status [state]="entry.state" />
-              <h3 [id]="'title-' + entry.chapter.id">
-                {{ i.t(entry.chapter.title ?? 'chapterTitle') }}
-              </h3>
-              <p>{{ i.t(entry.chapter.description ?? 'missingPreview') }}</p>
+              <h3 [id]="'title-' + entry.chapter.id">{{ i.t(entry.chapter.title) }}</h3>
+              <p>{{ i.t(entry.chapter.description) }}</p>
               @if (entry.earned) {
                 <p class="earned"><app-icon kind="cup" />{{ i.t('chapterAward') }}</p>
               }
@@ -46,14 +44,11 @@
                   (click)="preview(entry.chapter)"
                   [attr.aria-describedby]="'title-' + entry.chapter.id"
                 >
-                  {{ i.t(entry.state === 'locked' ? 'unlock' : 'viewPreview')
-                  }}<app-icon kind="arrow" />
+                  {{ i.t('unlock') }}<app-icon kind="arrow" />
                 </button>
               }
             </div>
           </li>
-        } @empty {
-          <li class="empty-path">{{ i.t('worldEmpty') }}</li>
         }
       </ol>
     </section>

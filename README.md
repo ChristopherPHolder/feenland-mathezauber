@@ -2,7 +2,7 @@
 
 [Play Feenland Mathezauber](https://fun-math.toholderandrews-4c2.workers.dev)
 
-A responsive, multilingual fairyland math adventure built with Angular 22. The navigation includes Home, a six-world map, world/chapter paths, level selection, challenge previews, result-driven completion and language Settings. All old games and unicorn content have been removed.
+A responsive, multilingual fairyland math adventure built with Angular 22. The navigation includes Home, a world map, world/chapter paths, level selection, result-driven completion and language Settings. Every level on the map is a playable game.
 
 ## Development
 
@@ -42,10 +42,10 @@ Authentication stays in Wrangler's local credential store. Do not commit tokens 
 
 See [expanding world](docs/architecture/expanding-world.md) for content IDs, durable achievements, locale preferences and catalog growth. The app ships a web manifest so it can be added to a phone's home screen, but no service worker: every launch loads the current deployment from the network, so a new deploy is visible on the next open. `public/ngsw-worker.js` is a tiny safety worker that unregisters the Angular service worker older installs still have and clears its caches.
 
-English, German, Spanish and French are detected from browser preferences and selectable in Settings. Progress and preferences stay on the device; no accounts or analytics. Current challenges are explicitly labeled previews. Their completion demos save sandbox progress separately from real learning mastery and chapter awards. Actual mathematical gameplay and scoring remain future work.
+English, German, Spanish and French are detected from browser preferences and selectable in Settings. Progress and preferences stay on the device; no accounts or analytics.
 
 The Hungry Crocodile lives in the Numbers world under its own chapter. Each of its six levels is a ten-question comparison round with greater, less and equal choices drawn as a crocodile that eats the bigger side. Level results are real practice results: finishing records completion and stars, and two stars master the level and open the next one.
 
-To inspect the full flow, choose Explore Worlds → Missing Number Mystery → the first chapter → the open adventure preview → Preview the celebration. Next Adventure follows demo prerequisites and eventually reaches the caught-up state. Home achievements continue to show real learning progress only. Settings returns to the screen you came from.
+To inspect the full flow, choose Explore Worlds → Number Kingdom → a chapter → a game, then finish a round to reach the completion screen. Next Adventure follows the catalog order and eventually reaches the caught-up state. Settings returns to the screen you came from.
 
 See [design rules](DESIGN.md) and [verification evidence](docs/verification.md) for shared states, accessibility, responsive coverage, storage recovery and offline navigation.

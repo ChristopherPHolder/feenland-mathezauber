@@ -1,8 +1,6 @@
 import { findLevel, levelState, Progress, World } from './catalog';
-export type ResultSource = 'practice' | 'demo';
 export interface LevelResult {
   readonly levelId: string;
-  readonly source: ResultSource;
   readonly completed: true;
   readonly mastered: boolean;
   readonly stars?: number;
@@ -12,7 +10,6 @@ export function isLevelResult(value: unknown): value is LevelResult {
   const result = value as Record<string, unknown>;
   return (
     typeof result['levelId'] === 'string' &&
-    (result['source'] === 'practice' || result['source'] === 'demo') &&
     result['completed'] === true &&
     typeof result['mastered'] === 'boolean' &&
     (result['stars'] === undefined ||
@@ -22,7 +19,7 @@ export function isLevelResult(value: unknown): value is LevelResult {
         result['stars'] <= 3))
   );
 }
-/** Only a challenge's explicit result can record progress; URLs never produce results. */
+/** Only a game's explicit result can record progress; URLs never produce results. */
 export function applyResult(
   catalog: readonly World[],
   progress: Progress,
@@ -39,8 +36,7 @@ export function applyResult(
   const mastered = result.mastered
     ? [...new Set([...progress.mastered, result.levelId])]
     : progress.mastered;
-  const published = context.chapter.levels.filter((level) => level.implemented);
-  const earned = published.length > 0 && published.every((level) => mastered.includes(level.id));
+  const earned = context.chapter.levels.every((level) => mastered.includes(level.id));
   return {
     ...progress,
     completed: [...new Set([...(progress.completed ?? []), result.levelId])],

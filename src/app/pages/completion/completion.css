@@ -6,16 +6,6 @@
   padding: 32px 40px 48px;
   margin: auto;
 }
-.demo-banner {
-  padding: 20px 24px;
-  background: var(--warm-ground);
-  border-radius: var(--radius-surface);
-  margin-bottom: 32px;
-}
-.demo-banner p {
-  margin: 8px 0 0;
-  max-width: 75ch;
-}
 .celebration {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -64,10 +54,6 @@ h2 {
   .celebration img {
     max-width: 260px;
     justify-self: center;
-  }
-  .demo-banner {
-    padding: 16px;
-    margin-bottom: 24px;
   }
 }
 @media (max-height: 550px) {

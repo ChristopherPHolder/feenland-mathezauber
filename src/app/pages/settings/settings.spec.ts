@@ -11,7 +11,7 @@ describe('Settings return navigation', () => {
   it('links the shared Settings gear back to the current adventure', async () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
-    const target = '/worlds/missing-number/chapters/missing-number-first-steps';
+    const target = '/worlds/numbers/chapters/compare-crocodile';
     await TestBed.inject(Router).navigateByUrl(target);
     await fixture.whenStable();
     fixture.detectChanges();
@@ -21,8 +21,7 @@ describe('Settings return navigation', () => {
     expect(new URL(href, 'http://localhost').searchParams.get('returnTo')).toBe(target);
   });
   it('preserves the originating chapter and level anchor', async () => {
-    const target =
-      '/worlds/missing-number/chapters/missing-number-first-steps#missing-number-add-to-30';
+    const target = '/worlds/numbers/chapters/compare-crocodile#crocodile-2';
     const h = await RouterTestingHarness.create('/settings?returnTo=' + encodeURIComponent(target));
     expect(h.routeNativeElement?.querySelector('.back-link')?.getAttribute('href')).toBe(target);
   });

@@ -8,29 +8,15 @@ import {
   Progress,
   WORLD_CATALOG,
 } from './catalog';
-import { applyResult, LevelResult, ResultSource } from './results';
+import { applyResult, LevelResult } from './results';
 @Service()
 export class ProgressService {
   private readonly catalog = inject(WORLD_CATALOG);
   private readonly document = inject(DOCUMENT);
-  private readonly state = signal<Progress>(this.load('feenland.progress'));
-  private readonly demoState = signal<Progress>(this.load('feenland.demo-progress'));
+  private readonly state = signal<Progress>(this.load());
   readonly progress = this.state.asReadonly();
   readonly saveFailed = signal(false);
   readonly next = computed(() => nextLevel(this.catalog, this.progress()));
-  progressFor(source: ResultSource): Progress {
-    if (source === 'practice') return this.progress();
-    const real = this.progress();
-    const demo = this.demoState();
-    return {
-      ...demo,
-      mastered: [...new Set([...real.mastered, ...demo.mastered])],
-      completed: [...new Set([...(real.completed ?? []), ...(demo.completed ?? [])])],
-      chapters: [...new Set([...real.chapters, ...demo.chapters])],
-      explored: [...new Set([...real.explored, ...demo.explored])],
-      stars: { ...real.stars, ...demo.stars },
-    };
-  }
   readonly nextWorld = computed(() => findLevel(this.catalog, this.next()?.id ?? null)?.world);
   explore(worldId: string) {
     if (
@@ -39,17 +25,17 @@ export class ProgressService {
     )
       return;
     this.state.update((progress) => ({ ...progress, explored: [...progress.explored, worldId] }));
-    this.save('feenland.progress', this.progress());
+    this.save(this.progress());
   }
   record(result: LevelResult): boolean {
-    const progress = applyResult(this.catalog, this.progressFor(result.source), result);
+    const progress = applyResult(this.catalog, this.progress(), result);
     if (!progress) return false;
-    if (result.source === 'demo') this.demoState.set(progress);
-    else this.state.set(progress);
-    this.save(result.source === 'demo' ? 'feenland.demo-progress' : 'feenland.progress', progress);
+    this.state.set(progress);
+    this.save(progress);
     return true;
   }
-  private save(key: string, progress: Progress) {
+  private save(progress: Progress) {
+    const key = 'feenland.progress';
     try {
       const storage = this.document.defaultView?.localStorage;
       const original = storage?.getItem(key);
@@ -79,10 +65,10 @@ export class ProgressService {
       this.saveFailed.set(true);
     }
   }
-  private load(key: string): Progress {
+  private load(): Progress {
     try {
       return parseProgress(
-        JSON.parse(this.document.defaultView?.localStorage.getItem(key) ?? 'null'),
+        JSON.parse(this.document.defaultView?.localStorage.getItem('feenland.progress') ?? 'null'),
       );
     } catch {
       return emptyProgress;

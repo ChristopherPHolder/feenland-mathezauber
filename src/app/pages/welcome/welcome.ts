@@ -22,14 +22,7 @@ import { Icon } from '../../shared/icon';
           <a class="button primary" [routerLink]="['/adventure', next.id]"
             ><span class="play" aria-hidden="true">▶</span
             ><span
-              >{{
-                i.t(
-                  next.format === 'challenge-preview'
-                    ? 'previewAdventure'
-                    : p.progress().mastered.length
-                      ? 'continue'
-                      : 'start'
-                )
+              >{{ i.t(p.progress().mastered.length ? 'continue' : 'start')
               }}<small>{{ i.t(p.nextWorld()?.title ?? 'missing') }}</small></span
             ><app-icon kind="arrow"
           /></a>

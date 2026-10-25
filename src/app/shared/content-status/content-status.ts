@@ -34,9 +34,6 @@ export class ContentStatus {
   readonly state = input.required<ContentState>();
   protected readonly i = inject(LocaleService);
   protected readonly icon = computed(
-    () =>
-      (({ soon: 'star', locked: 'lock', available: 'book', completed: 'cup' }) as const)[
-        this.state()
-      ],
+    () => (({ locked: 'lock', available: 'book', completed: 'cup' }) as const)[this.state()],
   );
 }

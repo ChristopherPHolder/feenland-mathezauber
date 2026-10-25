@@ -181,7 +181,6 @@ export class CrocodileGame {
     const mistakes = this.round().mistakes;
     return this.completion.finish({
       levelId: this.levelId(),
-      source: 'practice',
       completed: true,
       mastered: isMastered(mistakes),
       stars: roundStars(mistakes),
