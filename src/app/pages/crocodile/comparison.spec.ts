@@ -18,7 +18,7 @@ function seeded(seed: number) {
     return state / 2 ** 32;
   };
 }
-export function evaluate(side: Side): number {
+function evaluate(side: Side): number {
   const [a, operator, b] = side.text.split(' ');
   if (!operator) return Number(a);
   return operator === '+' ? Number(a) + Number(b) : Number(a) - Number(b);
