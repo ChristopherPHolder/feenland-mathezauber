@@ -71,6 +71,28 @@ export const routes: Routes = [
       import('./pages/fairy-defense/practice-defense').then((m) => m.PracticeDefense),
   },
   {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^crocodile-[1-6]$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    canActivate: [
+      (route) => {
+        const level = inject(WORLD_CATALOG)
+          .flatMap((world) => world.chapters)
+          .flatMap((chapter) => chapter.levels)
+          .find((level) => level.id === route.paramMap.get('id'));
+        return level &&
+          ['available', 'completed'].includes(levelState(level, inject(ProgressService).progress()))
+          ? true
+          : inject(Router).createUrlTree(['/worlds', 'numbers', 'chapters', 'compare-crocodile']);
+      },
+    ],
+    loadComponent: () => import('./pages/crocodile/crocodile-game').then((m) => m.CrocodileGame),
+  },
+  {
     path: 'adventure/:id',
     canActivate: [
       (route) => {

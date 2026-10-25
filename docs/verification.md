@@ -85,3 +85,9 @@ After fetching the newer main branch, connected the nine-stage progression to th
 - Production build and all 67 tests pass, including all original campaign tests and new exhaustive stage battle checks and a real component completion test.
 - Chromium completed an eight-question subtraction battle, pause/resume, remembered hard/quick preferences, and real result navigation. No runtime errors or phone-width horizontal overflow.
 - Axe reported zero violations on stage setup and active battle.
+
+## The Hungry Crocodile (comparison game) — 25 October 2026
+
+- 80 tests pass across 17 files. New coverage generates 150 seeded rounds per level and checks every question's values, operands and answers stay in range and correct, that each round mixes greater, less and equal without repeats, that the six levels chain behind mastery, and that stars award three for a flawless round, two for up to two mistakes and one otherwise. Component tests play a flawless round by keyboard and touch, confirm a wrong pick shows help and counts one mistake per snack, verify three mistakes complete without mastery, reject locked deep links back to the chapter, and recommend the next crocodile level from the completion screen. Crocodile message keys are identical in en/de/es/fr.
+- Production build passes. The game stylesheet sits inside the 8 kB component style budget with the same size warning as the existing battle screens.
+- Browser check on the dev server: the chapter lists six levels with only the first open, the intro shows the trick with a crocodile eating the bigger of 3 and 8 and a full crocodile between 6 and 6, a wrong pick shakes the chosen crocodile and reveals comparison bars plus both results, and a correct pick seats the crocodile in the circle with its sign and reads the comparison aloud through the live region.

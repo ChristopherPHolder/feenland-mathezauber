@@ -44,6 +44,8 @@ See [expanding world](docs/architecture/expanding-world.md) for content IDs, dur
 
 English, German, Spanish and French are detected from browser preferences and selectable in Settings. Progress and preferences stay on the device; no accounts or analytics. Current challenges are explicitly labeled previews. Their completion demos save sandbox progress separately from real learning mastery and chapter awards. Actual mathematical gameplay and scoring remain future work.
 
+The Hungry Crocodile lives in the Numbers world under its own chapter. Each of its six levels is a ten-question comparison round with greater, less and equal choices drawn as a crocodile that eats the bigger side. Level results are real practice results: finishing records completion and stars, and two stars master the level and open the next one.
+
 To inspect the full flow, choose Explore Worlds → Missing Number Mystery → the first chapter → the open adventure preview → Preview the celebration. Next Adventure follows demo prerequisites and eventually reaches the caught-up state. Home achievements continue to show real learning progress only. Settings returns to the screen you came from.
 
 See [design rules](DESIGN.md) and [verification evidence](docs/verification.md) for shared states, accessibility, responsive coverage, storage recovery and offline navigation.
