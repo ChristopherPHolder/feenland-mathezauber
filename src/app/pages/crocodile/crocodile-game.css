@@ -543,18 +543,19 @@ h1 {
   color: var(--ink);
   box-shadow: 0 6px 16px #214d5a12;
   transition:
-    transform 0.15s,
+    box-shadow 0.15s,
     border-color 0.15s;
 }
+/* Keep the hit target still while the pointer is pressed or near an edge. */
 .choice:hover {
-  transform: translateY(-3px);
+  box-shadow: 0 9px 20px #214d5a26;
 }
 .choice:hover .choice-croc,
 .choice:focus-visible .choice-croc {
   animation: bob 1s ease-in-out infinite;
 }
 .choice:active {
-  transform: translateY(1px) scale(0.97);
+  box-shadow: inset 0 2px 6px #214d5a26;
 }
 .choice[aria-disabled='true'] {
   cursor: default;
