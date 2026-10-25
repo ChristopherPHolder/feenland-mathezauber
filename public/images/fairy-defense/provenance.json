@@ -4,7 +4,8 @@
   "assets": {
     "fairy": {
       "prompt": "Use case: illustration-story. Single game character sprite, transparent background. Preserve the established Feenland fairy from reference: cheerful young fairy with flowing copper-red wavy hair, small white flower in hair, green layered leaf dress with little daisies, translucent pale veined wings, green slippers, golden star-tipped wand. Full body, flying three-quarter profile facing RIGHT, wand outstretched right, inviting happy expression. Polished dimensional storybook painted game art, clean silhouette, warm soft light. No text, no frame, no other characters. Leave margin around wings and wand.",
-      "source": "/Users/Christopher.Holder/.codex/generated_images/01a14f8a-e2f3-7ab3-b408-f05ffa7e2b07/exec-131faf05-d7b4-4b38-86a1-3970e612830a.png"
+      "source": "/Users/Christopher.Holder/.codex/generated_images/01a14f8a-e2f3-7ab3-b408-f05ffa7e2b07/exec-131faf05-d7b4-4b38-86a1-3970e612830a.png",
+      "revision": "Recolored on October 25, 2026 from the original copper-red sprite with a scripted HSV pass so the fairy matches the owner's daughter: light golden-blonde hair, blue-grey eyes, pale mint leaf dress, gold slippers. Wings, wand, pose and the white daisies are unchanged."
     },
     "monsterRed": {
       "prompt": "Use case: illustration-story. Single isolated sprite on transparent background: funny small red-coral round fluffy monster, two little cream horns, expressive large eyes, tiny feet, silly open grin with one tooth. Child-friendly mischievous rather than frightening. Full body three-quarter facing LEFT, ready to hop. Polished dimensional painted storybook game art matching fairy forest, clean silhouette, warm soft light. No text, no number, no frame, no background.",
