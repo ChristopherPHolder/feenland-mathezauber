@@ -10,7 +10,7 @@ import { LocaleService } from '../../core/locale';
 import { Locale } from '../../core/messages';
 import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
-import { evaluate } from './comparison.spec';
+import { evaluate } from './comparison.fixture';
 
 const labels = {
   '>': 'Greater than. The crocodile eats the left side.',
