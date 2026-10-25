@@ -1,0 +1,202 @@
+<section class="croc-game" aria-labelledby="croc-title">
+  <header class="croc-header">
+    <a class="exit-link" [routerLink]="chapterLink"><app-icon kind="back" />{{ t('exit') }}</a>
+    <h1 id="croc-title">{{ t('title') }}</h1>
+    <button
+      class="sound-button"
+      type="button"
+      (click)="toggleSound()"
+      [attr.aria-pressed]="soundOn()"
+      [attr.aria-label]="t(soundOn() ? 'soundOn' : 'soundOff')"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9z" />
+        @if (soundOn()) {
+          <path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" />
+        } @else {
+          <path d="m16 9 5 6m0-6-5 6" />
+        }
+      </svg>
+    </button>
+  </header>
+  @if (!pond()) {
+    <div class="lobby">
+      <div class="story-panel intro">
+        <app-croc facing="right" mood="idle" />
+        <div class="intro-copy">
+          <h2>{{ t('intro') }}</h2>
+          <p>{{ t('trick') }}</p>
+          <p class="rule-copy">{{ t('keys') }}</p>
+        </div>
+      </div>
+      <h2 id="ponds-title">{{ t('choosePond') }}</h2>
+      <ol class="pond-path" aria-labelledby="ponds-title">
+        @for (entry of ponds; track entry.number) {
+          <li>
+            <button
+              type="button"
+              class="pond-card"
+              [disabled]="!store.isOpen(entry.number)"
+              [class.done]="store.starsOf(entry.number) > 0"
+              (click)="start(entry)"
+              [attr.aria-label]="
+                t(store.isOpen(entry.number) ? 'pond' : 'lockedPond', { n: entry.number }) +
+                ' · ' +
+                t(entry.title) +
+                ' · ' +
+                t('starsLabel', { n: store.starsOf(entry.number) })
+              "
+            >
+              <span class="pond-number">{{ t('pond', { n: entry.number }) }}</span>
+              <strong>{{ t(entry.title) }}</strong>
+              <span class="pond-example">{{ entry.example }}</span>
+              <span class="pond-stars" aria-hidden="true">
+                @if (store.isOpen(entry.number)) {
+                  @for (slot of starSlots; track slot) {
+                    <app-icon kind="star" [class.earned]="slot <= store.starsOf(entry.number)" />
+                  }
+                } @else {
+                  <app-icon kind="lock" />
+                }
+              </span>
+            </button>
+          </li>
+        }
+      </ol>
+      @if (store.unlocked() < ponds.length) {
+        <p class="rule-copy">{{ t('unlockHint') }}</p>
+      }
+      @if (store.state().bestStreak > 0) {
+        <p class="best-streak">{{ t('bestStreak', { n: store.state().bestStreak }) }}</p>
+      }
+      <a class="chapter-link" [routerLink]="chapterLink">{{ t('back') }}</a>
+    </div>
+  } @else if (phase() === 'complete') {
+    <div class="outcome-curtain">
+      <section
+        #outcome
+        class="story-panel outcome"
+        tabindex="-1"
+        [attr.aria-label]="t('roundDone')"
+      >
+        <app-croc facing="equal" mood="happy" />
+        <h2>{{ t('roundDone') }}</h2>
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (slot of starSlots; track slot) {
+            <app-icon kind="star" [class.earned]="slot <= stars()" />
+          }
+        </div>
+        <p>{{ t('firstTry', { n: firstTry(), total: total }) }}</p>
+        <p>{{ t('bestStreak', { n: bestStreak() }) }}</p>
+        @if (stars() === 0) {
+          <p class="rule-copy">{{ t('unlockHint') }}</p>
+        }
+        @if (store.mastered()) {
+          <p class="champion">{{ t('champion') }}</p>
+        }
+        @if (nextPond(); as next) {
+          <button type="button" class="button primary" (click)="start(next)">
+            {{ t('nextPond') }}<app-icon kind="arrow" />
+          </button>
+        }
+        <button type="button" class="button secondary" (click)="start(pond()!)">
+          {{ t('again') }}
+        </button>
+        @if (recorded()) {
+          <button type="button" class="button secondary" (click)="celebrate()">
+            {{ t('celebrate') }}
+          </button>
+        }
+        <button type="button" class="link-button" (click)="showPonds()">{{ t('allPonds') }}</button>
+      </section>
+    </div>
+  } @else if (question(); as q) {
+    <div class="play">
+      <div class="hud">
+        <span class="pond-label"
+          >{{ t('pond', { n: pond()!.number }) }} · {{ t(pond()!.title) }}</span
+        >
+        <div
+          class="fish-track"
+          role="img"
+          [attr.aria-label]="t('progress', { n: index(), total: total })"
+        >
+          @for (step of steps; track step) {
+            <span [class.done]="step < index()"></span>
+          }
+        </div>
+        <span class="streak" [class.hot]="streak() >= 3">{{ t('streak', { n: streak() }) }}</span>
+      </div>
+      <div class="pond-scene" [class.answered]="phase() === 'correct'">
+        <div
+          class="number-card left"
+          [class.eaten]="phase() === 'correct' && q.answer === '>'"
+          [class.shake]="phase() === 'wrong'"
+        >
+          <span class="card-text">{{ q.left.text }}</span>
+          @if (helpVisible()) {
+            <app-number-aid [side]="q.left" />
+          }
+        </div>
+        <div class="croc-stage">
+          <app-croc [facing]="facing()" [mood]="mood()" />
+          <span class="symbol" [class.shown]="phase() === 'correct'" aria-hidden="true">{{
+            phase() === 'correct' ? q.answer : '?'
+          }}</span>
+        </div>
+        <div
+          class="number-card right"
+          [class.eaten]="phase() === 'correct' && q.answer === '<'"
+          [class.shake]="phase() === 'wrong'"
+        >
+          <span class="card-text">{{ q.right.text }}</span>
+          @if (helpVisible()) {
+            <app-number-aid [side]="q.right" />
+          }
+        </div>
+      </div>
+      <p class="instruction" role="status" aria-live="polite" aria-atomic="true">{{ message() }}</p>
+      <fieldset class="answers" [disabled]="phase() !== 'ready'">
+        <legend class="sr-only">{{ t('prompt', { a: q.left.text, b: q.right.text }) }}</legend>
+        <button
+          #firstAnswer
+          type="button"
+          class="answer"
+          [class.chosen]="chosen() === '>'"
+          [attr.aria-label]="t('greater')"
+          (click)="choose('>')"
+        >
+          <app-croc facing="left" mood="idle" /><span class="answer-symbol">&gt;</span>
+        </button>
+        <button
+          type="button"
+          class="answer equal"
+          [class.chosen]="chosen() === '='"
+          [attr.aria-label]="t('equal')"
+          (click)="choose('=')"
+        >
+          <app-croc facing="equal" mood="idle" /><span class="answer-symbol">=</span>
+        </button>
+        <button
+          type="button"
+          class="answer"
+          [class.chosen]="chosen() === '<'"
+          [attr.aria-label]="t('less')"
+          (click)="choose('<')"
+        >
+          <app-croc facing="right" mood="idle" /><span class="answer-symbol">&lt;</span>
+        </button>
+      </fieldset>
+      <div class="play-foot">
+        @if (!helpVisible()) {
+          <button type="button" class="hint-button" (click)="help()">{{ t('help') }}</button>
+        }
+        <span class="reminder">{{ t('reminder') }}</span>
+        <button type="button" class="link-button" (click)="showPonds()">{{ t('allPonds') }}</button>
+      </div>
+    </div>
+  }
+  @if (store.saveFailed() || sound.saveFailed()) {
+    <p class="save-notice" role="status">{{ t('save') }}</p>
+  }
+</section>

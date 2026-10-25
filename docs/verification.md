@@ -85,3 +85,12 @@ After fetching the newer main branch, connected the nine-stage progression to th
 - Production build and all 67 tests pass, including all original campaign tests and new exhaustive stage battle checks and a real component completion test.
 - Chromium completed an eight-question subtraction battle, pause/resume, remembered hard/quick preferences, and real result navigation. No runtime errors or phone-width horizontal overflow.
 - Axe reported zero violations on stage setup and active battle.
+
+
+## Hungry Crocodile comparison game — 25 October 2026
+
+Added the greater/less/equal game at `/adventure/hungry-crocodile`, reachable from Home and the new “Greater, less, equal” chapter of the Number Kingdom. Five ponds move from counting fish up to 10 through sums against numbers (the worksheet form `7 + 6 ○ 14`) and sums against sums to big numbers up to 100. A pure generator builds ten solvable comparisons per round with a deliberate share of equal answers; stars reward first-try answers and the next pond opens after one star.
+
+- Production build and all 80 tests pass, including generator range/solvability checks across all ponds, a full component round that records real completion with stars but no mastery, help after a mistake, keyboard answers, corrupt-save recovery and complete vocabularies in en/de/es/fr.
+- Chromium: a full German round on a 375px phone emulation with the three large answer buttons, chomp/heart feedback, counting help after a mistake, the outcome panel and the celebration page. No horizontal overflow at 375px or desktop widths.
+- Axe reported zero WCAG 2 A/AA violations on Home, the pond lobby and an active round.

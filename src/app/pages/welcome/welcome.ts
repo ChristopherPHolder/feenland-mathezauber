@@ -4,6 +4,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
 import { Icon } from '../../shared/icon';
+import { featuredGames } from '../../core/featured-games';
 @Component({
   selector: 'app-welcome',
   imports: [RouterLink, NgOptimizedImage, Icon],
@@ -44,6 +45,24 @@ import { Icon } from '../../shared/icon';
         >
       </div>
     </div>
+    <section class="games" aria-labelledby="games-title">
+      <h2 id="games-title">{{ i.t('games') }}</h2>
+      <p class="games-help">{{ i.t('gamesHelp') }}</p>
+      <ul class="game-list">
+        @for (game of games; track game.id) {
+          <li>
+            <a class="game-card" [routerLink]="['/adventure', game.id]">
+              <span class="game-emblem" aria-hidden="true">{{ game.emblem }}</span>
+              <span class="game-copy">
+                <strong>{{ i.t(game.title) }}</strong>
+                <small>{{ i.t(game.description) }}</small>
+              </span>
+              <app-icon kind="arrow" />
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
     <section class="journey" aria-labelledby="journey-title">
       <h2 id="journey-title">{{ i.t('journey') }}</h2>
       <dl>
@@ -68,4 +87,5 @@ import { Icon } from '../../shared/icon';
 export class Welcome {
   protected readonly i = inject(LocaleService);
   protected readonly p = inject(ProgressService);
+  protected readonly games = featuredGames;
 }

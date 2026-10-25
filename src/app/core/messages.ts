@@ -53,6 +53,14 @@ export const en = {
   friendsOfTen: 'Friends of Ten',
   friendsOfTenDescription: 'Discover the number friends that make ten.',
   fairyCastle: 'Defend the Fairy Castle',
+  compareChapter: 'Greater, less, equal',
+  compareChapterDescription: 'Compare numbers and sums with the hungry crocodile’s trick.',
+  crocodileLevel: 'The Hungry Crocodile',
+  crocodileDescription:
+    'Kiki always eats the bigger number. Learn the > < = trick in five ponds, from numbers to 10 up to sums and big numbers.',
+  crocodilePlay: 'Feed the crocodile',
+  games: 'Games',
+  gamesHelp: 'Pick a game and play right away.',
   fairyPlay: 'Defend the castle',
   fairyBattleDescription:
     'Twenty waves of number magic. Make ten, break shields, and save the castle. Your waves are saved so you can continue later.',
@@ -209,6 +217,15 @@ export const translations: Record<Locale, Messages> = {
     friendsOfTen: 'Freunde der Zehn',
     friendsOfTenDescription: 'Entdecke die Zahlenfreunde, die zusammen zehn ergeben.',
     fairyCastle: 'Beschütze das Feenschloss',
+    compareChapter: 'Größer, kleiner, gleich',
+    compareChapterDescription:
+      'Vergleiche Zahlen und Rechnungen mit dem Trick vom hungrigen Krokodil.',
+    crocodileLevel: 'Das hungrige Krokodil',
+    crocodileDescription:
+      'Kiki frisst immer die größere Zahl. Lerne den > < = Trick in fünf Teichen, von Zahlen bis 10 bis zu Rechnungen und großen Zahlen.',
+    crocodilePlay: 'Krokodil füttern',
+    games: 'Spiele',
+    gamesHelp: 'Such dir ein Spiel aus und leg gleich los.',
     fairyPlay: 'Beschütze das Schloss',
     fairyBattleDescription:
       'Zwanzig Wellen voller Zahlenmagie. Mach die zehn voll, zerbrich Schilde und rette das Schloss. Geschaffte Wellen werden gespeichert.',
@@ -375,6 +392,14 @@ export const translations: Record<Locale, Messages> = {
     friendsOfTen: 'Amigos del diez',
     friendsOfTenDescription: 'Descubre los números amigos que suman diez.',
     fairyCastle: 'Defiende el Castillo de las Hadas',
+    compareChapter: 'Mayor, menor, igual',
+    compareChapterDescription: 'Compara números y cuentas con el truco del cocodrilo hambriento.',
+    crocodileLevel: 'El cocodrilo hambriento',
+    crocodileDescription:
+      'Kiki siempre se come el número más grande. Aprende el truco > < = en cinco estanques, desde números hasta 10 hasta cuentas y números grandes.',
+    crocodilePlay: 'Alimentar al cocodrilo',
+    games: 'Juegos',
+    gamesHelp: 'Elige un juego y empieza a jugar.',
     fairyPlay: 'Defender el castillo',
     fairyBattleDescription:
       'Veinte oleadas de magia numérica. Completa diez, rompe escudos y salva el castillo. Las oleadas se guardan para seguir después.',
@@ -540,6 +565,15 @@ export const translations: Record<Locale, Messages> = {
     friendsOfTen: 'Les amis de dix',
     friendsOfTenDescription: 'Découvre les nombres amis qui font dix.',
     fairyCastle: 'Protège le château des fées',
+    compareChapter: 'Plus grand, plus petit, égal',
+    compareChapterDescription:
+      'Compare des nombres et des calculs avec l’astuce du crocodile affamé.',
+    crocodileLevel: 'Le crocodile affamé',
+    crocodileDescription:
+      'Kiki mange toujours le plus grand nombre. Apprends l’astuce > < = dans cinq mares, des nombres jusqu’à 10 aux calculs et aux grands nombres.',
+    crocodilePlay: 'Nourrir le crocodile',
+    games: 'Jeux',
+    gamesHelp: 'Choisis un jeu et joue tout de suite.',
     fairyPlay: 'Protéger le château',
     fairyBattleDescription:
       'Vingt vagues de magie des nombres. Complète dix, brise les boucliers et sauve le château. Les vagues sont enregistrées pour continuer plus tard.',

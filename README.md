@@ -42,7 +42,7 @@ Authentication stays in Wrangler's local credential store. Do not commit tokens 
 
 See [expanding world](docs/architecture/expanding-world.md) for content IDs, durable achievements, locale preferences and catalog growth. Production assets are cached by the Angular service worker.
 
-English, German, Spanish and French are detected from browser preferences and selectable in Settings. Progress and preferences stay on the device; no accounts or analytics. Current challenges are explicitly labeled previews. Their completion demos save sandbox progress separately from real learning mastery and chapter awards. Actual mathematical gameplay and scoring remain future work.
+English, German, Spanish and French are detected from browser preferences and selectable in Settings. Progress and preferences stay on the device; no accounts or analytics. The Fairy Castle defense and the Hungry Crocodile comparison game are real math gameplay; remaining challenges are explicitly labeled previews. Their completion demos save sandbox progress separately from real learning mastery and chapter awards. Actual mathematical gameplay and scoring remain future work.
 
 To inspect the full flow, choose Explore Worlds → Missing Number Mystery → the first chapter → the open adventure preview → Preview the celebration. Next Adventure follows demo prerequisites and eventually reaches the caught-up state. Home achievements continue to show real learning progress only. Settings returns to the screen you came from.
 

@@ -60,6 +60,12 @@ export const routes: Routes = [
       import('./pages/fairy-defense/fairy-defense.component').then((m) => m.FairyDefenseComponent),
   },
   {
+    path: 'adventure/hungry-crocodile',
+    data: { focusedGame: true },
+    loadComponent: () =>
+      import('./pages/crocodile/crocodile.component').then((m) => m.CrocodileComponent),
+  },
+  {
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&

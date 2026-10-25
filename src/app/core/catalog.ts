@@ -131,6 +131,22 @@ const catalog: readonly World[] = [
                 },
               ],
             },
+            {
+              id: 'compare-numbers',
+              title: 'compareChapter',
+              description: 'compareChapterDescription',
+              levels: [
+                {
+                  id: 'hungry-crocodile',
+                  title: 'crocodileLevel',
+                  description: 'crocodileDescription',
+                  implemented: true,
+                  prerequisites: [],
+                  skills: ['compare-numbers', 'greater-less-equal'],
+                  format: 'crocodile',
+                },
+              ],
+            },
           ]
         : [],
   })),

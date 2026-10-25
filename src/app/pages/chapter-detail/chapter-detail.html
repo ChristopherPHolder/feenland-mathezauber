@@ -69,7 +69,9 @@
                       ? 'practiceLevel'
                       : entry.level.format === 'fairy-defense'
                         ? 'fairyPlay'
-                        : 'openLevel'
+                        : entry.level.format === 'crocodile'
+                          ? 'crocodilePlay'
+                          : 'openLevel'
                   )
                 }}<app-icon kind="arrow"
               /></a>
