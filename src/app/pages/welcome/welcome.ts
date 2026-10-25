@@ -70,19 +70,7 @@ import { Icon } from '../../shared/icon';
             >{{ i.t('numberWallPlay') }}<app-icon kind="arrow"
           /></a>
         </li>
-        <li class="game-card">
-          <span class="game-emblem" aria-hidden="true">🐊</span>
-          <div class="game-copy">
-            <h3>{{ i.t('crocodileChapter') }}</h3>
-            <p>{{ i.t('crocodileChapterHelp') }}</p>
-          </div>
-          <a
-            class="button primary game-link"
-            [routerLink]="['/worlds', 'numbers', 'chapters', 'compare-crocodile']"
-            >{{ i.t('crocodilePlay') }}<app-icon kind="arrow"
-          /></a>
-        </li>
-      </ul>
+              </ul>
     </section>
     <section class="journey" aria-labelledby="journey-title">
       <h2 id="journey-title">{{ i.t('journey') }}</h2>
