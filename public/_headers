@@ -1,6 +1,6 @@
-/index.html
+/
   Cache-Control: no-cache
-/ngsw.json
+/index.html
   Cache-Control: no-cache
 /ngsw-worker.js
   Cache-Control: no-cache
