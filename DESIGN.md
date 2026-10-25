@@ -49,9 +49,9 @@ components:
 
 ## Overview
 
-A calm, welcoming fairyland for children's growing number discoveries. Preserve the approved illustrated Home direction: red-haired fairy, green leaf dress, translucent wings, golden star wand, friendly rounded Fredoka lettering, blue text, cream/pastel surfaces and pink next actions.
+A calm, welcoming fairyland for children's growing number discoveries. Preserve the approved illustrated Home direction: blonde fairy with blue-grey eyes, pale mint leaf dress, gold slippers, translucent wings, golden star wand, friendly rounded Fredoka lettering, blue text, cream/pastel surfaces and pink next actions.
 
-The visual reference is [the existing fairyland illustration](public/images/feenland.webp). Reuse it across Home, map, world, chapter, completion and Settings. New poses must preserve hair color and shape, leaf outfit, wing construction, wand and proportions. Helpful pointing, a welcoming wave and a gentle celebration are suitable future variants; avoid changing the character between screens. Never use expression or motion alone to communicate success or a gate.
+The visual reference is [the existing fairyland illustration](public/images/feenland.webp). Reuse it across Home, map, world, chapter, completion and Settings. The fairy is modelled on the owner's daughter: light golden-blonde hair, blue-grey eyes, a pale mint dress and gold shoes. New poses must preserve hair color, eye color, the mint leaf outfit, gold slippers, wing construction, wand and proportions. Helpful pointing, a welcoming wave and a gentle celebration are suitable future variants; avoid changing the character between screens. Never use expression or motion alone to communicate success or a gate.
 
 ## Colors
 

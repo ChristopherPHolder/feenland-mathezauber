@@ -1,4 +1,5 @@
 {
   "prompt": "Use case: illustration-story. Single game character sprite, transparent background. Preserve the established Feenland fairy from reference: cheerful young fairy with flowing copper-red wavy hair, small white flower in hair, green layered leaf dress with little daisies, translucent pale veined wings, green slippers, golden star-tipped wand. Full body, flying three-quarter profile facing RIGHT, wand outstretched right, inviting happy expression. Polished dimensional storybook painted game art, clean silhouette, warm soft light. No text, no frame, no other characters. Leave margin around wings and wand.",
-  "createdAt": "2026-10-18T15:31:23.501Z"
+  "createdAt": "2026-10-18T15:31:23.501Z",
+  "revision": "Recolored on October 25, 2026 from the original copper-red sprite with a scripted HSV pass so the fairy matches the owner's daughter: light golden-blonde hair, blue-grey eyes, pale mint leaf dress, gold slippers. Wings, wand, pose and the white daisies are unchanged."
 }

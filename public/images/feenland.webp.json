@@ -3,5 +3,6 @@
   "use_case": "illustration-story",
   "prompt": "Simple cheerful children's storybook landscape: friendly red-haired fairy in green leaf dress, translucent wings and gold star wand on the left; pink-roof castle, turquoise stream, green meadow, flowers, blue sky and clouds. Bright painted cartoon, restrained detail, open upper sky. No text, UI, border or watermark.",
   "source": "generated October 18, 2026",
-  "conversion": "cwebp quality 82; 1536x1024"
+  "conversion": "cwebp quality 82; 1536x1024",
+  "revision": "Recolored on October 25, 2026 from the original copper-red sprite with a scripted HSV pass so the fairy matches the owner's daughter: light golden-blonde hair, blue-grey eyes, pale mint leaf dress, gold slippers. Wings, wand, pose and the white daisies are unchanged."
 }
