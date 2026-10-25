@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Service, signal } from '@angular/core';
-import { WallLevel } from './number-wall';
+import { levels, WallLevel } from './number-wall';
 export interface WallSave {
   readonly version: 1;
   readonly stars: readonly WallLevel[];
@@ -17,8 +17,9 @@ export class NumberWallStore {
   hasStar(level: WallLevel): boolean {
     return this.save().stars.includes(level);
   }
+  /** Every level is open from the start; stars reward finishing a level, they never gate one. */
   unlocked(level: WallLevel): boolean {
-    return level === 1 || this.hasStar((level - 1) as WallLevel);
+    return levels.includes(level);
   }
   earnStar(level: WallLevel) {
     if (this.hasStar(level)) return;

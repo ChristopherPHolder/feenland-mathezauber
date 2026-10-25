@@ -28,12 +28,13 @@ export const comparisonStages: readonly ComparisonStage[] = [
   { stage: 6, skill: 'mixed', max: 100, example: '40 + 8 ○ 50' },
 ];
 export const TOTAL_STAGES = comparisonStages.length;
-export const comparisonLevels: readonly Level[] = comparisonStages.map((config, index) => ({
+/** Every level stays open so a child can pick any crocodile; stars still reward mastery. */
+export const comparisonLevels: readonly Level[] = comparisonStages.map((config) => ({
   id: `crocodile-${config.stage}`,
   title: `crocodile${config.stage}` as MessageKey,
   description: `crocodile${config.stage}Help` as MessageKey,
   implemented: true,
-  prerequisites: index ? [`crocodile-${index}`] : [],
+  prerequisites: [],
   skills: ['compare-numbers', config.skill],
   format: 'crocodile',
 }));

@@ -60,7 +60,7 @@ describe('crocodile comparison rounds', () => {
         }
       }
   });
-  it('keeps the first level open and chains the rest behind mastery', () => {
+  it('keeps every level open so a child can pick any crocodile', () => {
     expect(comparisonLevels.map((level) => level.id)).toEqual([
       'crocodile-1',
       'crocodile-2',
@@ -70,7 +70,7 @@ describe('crocodile comparison rounds', () => {
       'crocodile-6',
     ]);
     expect(comparisonLevels[0].prerequisites).toEqual([]);
-    expect(comparisonLevels[3].prerequisites).toEqual(['crocodile-3']);
+    expect(comparisonLevels.every((level) => level.prerequisites.length === 0)).toBe(true);
     expect(comparisonStage('crocodile-5')?.skill).toBe('twoSides');
     expect(comparisonStage('crocodile-7')).toBeUndefined();
     expect(comparisonStage('practice-30-1')).toBeUndefined();
