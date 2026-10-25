@@ -69,7 +69,9 @@
                       ? 'practiceLevel'
                       : entry.level.format === 'fairy-defense'
                         ? 'fairyPlay'
-                        : 'openLevel'
+                        : entry.level.format === 'number-wall'
+                          ? 'numberWallPlay'
+                          : 'openLevel'
                   )
                 }}<app-icon kind="arrow"
               /></a>

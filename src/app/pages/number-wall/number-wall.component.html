@@ -1,0 +1,256 @@
+<section class="game" aria-labelledby="wall-title">
+  <header class="top-bar">
+    <a class="home-link" routerLink="/" [attr.aria-label]="i.t('home')"
+      ><app-icon kind="back" /><span>{{ i.t('home') }}</span></a
+    >
+    <h1 id="wall-title">{{ i.t('numberWalls') }}</h1>
+    <button
+      type="button"
+      class="sound-button"
+      [attr.aria-pressed]="soundOn()"
+      [attr.aria-label]="i.t(soundOn() ? 'wallSoundOn' : 'wallSoundOff')"
+      (click)="toggleSound()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9z" />
+        @if (soundOn()) {
+          <path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" />
+        } @else {
+          <path d="m16 9 5 6m0-6-5 6" />
+        }
+      </svg>
+    </button>
+  </header>
+
+  @switch (phase()) {
+    @case ('intro') {
+      <div class="intro">
+        <div class="story">
+          <div class="fairy" aria-hidden="true">🧚</div>
+          <p class="lead">{{ i.t('wallIntro') }}</p>
+          <p class="rule">{{ i.t('wallRule') }}</p>
+        </div>
+        <h2 class="choose-title">{{ i.t('wallChooseLevel') }}</h2>
+        <ol class="level-list">
+          @for (option of levels; track option) {
+            <li>
+              @if (store.unlocked(option)) {
+                <button
+                  type="button"
+                  class="level-card"
+                  [class.starred]="store.hasStar(option)"
+                  (click)="start(option)"
+                >
+                  <span class="level-number">{{ t('wallLevelLabel', { n: option }) }}</span>
+                  <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
+                  <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
+                  @if (store.hasStar(option)) {
+                    <span class="level-star"
+                      ><app-icon kind="star" />{{ i.t('wallStarEarned') }}</span
+                    >
+                  }
+                  <span class="level-go"><app-icon kind="arrow" /></span>
+                </button>
+              } @else {
+                <div class="level-card locked">
+                  <span class="level-number">{{ t('wallLevelLabel', { n: option }) }}</span>
+                  <span class="level-name"
+                    ><app-icon kind="lock" />{{ i.t(levelTitle(option)) }}</span
+                  >
+                  <span class="level-help">{{ t('wallLocked', { n: option - 1 }) }}</span>
+                </div>
+              }
+            </li>
+          }
+        </ol>
+        @if (store.save().bestStreak > 0) {
+          <p class="best">{{ i.t('wallBestStreak') }}: {{ i.format(store.save().bestStreak) }}</p>
+        }
+      </div>
+    }
+    @case ('playing') {
+      @if (wall(); as current) {
+        <div class="hud">
+          <p class="level-tag">
+            {{ t('wallLevelLabel', { n: level() }) }} · {{ i.t(levelTitle(level())) }}
+          </p>
+          <div
+            class="progress"
+            role="progressbar"
+            [attr.aria-valuemin]="0"
+            [attr.aria-valuemax]="total"
+            [attr.aria-valuenow]="wallIndex() + (built() ? 1 : 0)"
+            [attr.aria-label]="t('wallProgress', { n: wallIndex() + 1, total: total })"
+          >
+            @for (step of walls(); track $index) {
+              <span
+                class="progress-brick"
+                [class.done]="$index < wallIndex() || ($index === wallIndex() && built())"
+                [class.current]="$index === wallIndex() && !built()"
+              ></span>
+            }
+          </div>
+          <p class="streak" [attr.aria-label]="i.t('wallStreak') + ': ' + i.format(streak())">
+            <span aria-hidden="true">⚡</span>{{ i.t('wallStreak') }}
+            <strong>{{ i.format(streak()) }}</strong>
+          </p>
+        </div>
+        <div class="play-area">
+          <div
+            #scene
+            class="scene"
+            [class.celebrating]="built()"
+            tabindex="-1"
+            role="group"
+            [attr.aria-label]="
+              i.t('wallScene') + ' · ' + t('wallProgress', { n: wallIndex() + 1, total: total })
+            "
+          >
+            <div class="tower left" aria-hidden="true"></div>
+            <div class="tower right" aria-hidden="true"></div>
+            <div class="wall" [class.three-rows]="current.rows.length === 3">
+              @for (row of displayRows(); track row.rowIndex) {
+                <div class="row">
+                  @for (col of row.cols; track col) {
+                    @if (isOpen({ row: row.rowIndex, col })) {
+                      <button
+                        type="button"
+                        class="brick open"
+                        [attr.data-row]="row.rowIndex"
+                        [attr.data-col]="col"
+                        [class.selected]="isSelected({ row: row.rowIndex, col })"
+                        [class.wobble]="wobbling() && isSelected({ row: row.rowIndex, col })"
+                        [attr.aria-pressed]="isSelected({ row: row.rowIndex, col })"
+                        [attr.aria-label]="
+                          t('wallBrickEmpty', {
+                            r: current.rows.length - row.rowIndex,
+                            c: col + 1,
+                          }) +
+                          (isSelected({ row: row.rowIndex, col }) && entry()
+                            ? ' · ' + t('wallEntry', { n: entry() })
+                            : '')
+                        "
+                        (click)="select({ row: row.rowIndex, col })"
+                      >
+                        <span aria-hidden="true">{{
+                          isSelected({ row: row.rowIndex, col }) && entry() ? entry() : '?'
+                        }}</span>
+                      </button>
+                    } @else {
+                      <div
+                        class="brick"
+                        [class.filled]="isFilled({ row: row.rowIndex, col })"
+                        [class.sparkle]="isJustFilled({ row: row.rowIndex, col })"
+                        [attr.aria-label]="
+                          t('wallBrickValue', { n: value({ row: row.rowIndex, col }) })
+                        "
+                        role="img"
+                      >
+                        <span aria-hidden="true">{{
+                          i.format(value({ row: row.rowIndex, col }))
+                        }}</span>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+            </div>
+            @if (built()) {
+              <div class="confetti" aria-hidden="true">
+                @for (piece of ['✦', '★', '✦', '✧', '★', '✦']; track $index) {
+                  <span [style.--i]="$index">{{ piece }}</span>
+                }
+              </div>
+            }
+          </div>
+          <div class="dock">
+            <p
+              class="status"
+              role="status"
+              [class.happy]="feedback().kind === 'correct' || built()"
+            >
+              @if (built()) {
+                <app-icon kind="star" />
+              } @else if (feedback().kind === 'correct') {
+                <app-icon kind="check" />
+              }
+              <span>{{ status() }}</span>
+            </p>
+            @if (numberLine(); as line) {
+              <div
+                class="number-line"
+                role="img"
+                [attr.aria-label]="t('wallNumberLine', { a: line.from, t: line.to })"
+              >
+                <span class="dot start">{{ i.format(line.from) }}</span>
+                @for (step of line.steps; track step) {
+                  <span class="hop" aria-hidden="true"></span>
+                  <span class="dot" [class.end]="step === line.to">{{ i.format(step) }}</span>
+                }
+              </div>
+            }
+            @if (built()) {
+              <button #nextButton type="button" class="button primary next" (click)="next()">
+                {{ wallIndex() + 1 < walls().length ? i.t('wallNext') : i.t('wallWorldDone') }}
+                <app-icon kind="arrow" />
+              </button>
+            } @else {
+              <div class="pad" role="group" [attr.aria-label]="i.t('wallPad')">
+                @for (digit of ['1', '2', '3', '4', '5', '6', '7', '8', '9']; track digit) {
+                  <button type="button" class="key" (click)="type(digit)">{{ digit }}</button>
+                }
+                <button
+                  type="button"
+                  class="key erase"
+                  [attr.aria-label]="i.t('wallDelete')"
+                  (click)="erase()"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 5h11v14H9l-6-7zM12 9l6 6m0-6-6 6" />
+                  </svg>
+                </button>
+                <button type="button" class="key" (click)="type('0')">0</button>
+                <button
+                  type="button"
+                  class="key check"
+                  [attr.aria-label]="i.t('wallCheck')"
+                  [disabled]="!entry()"
+                  (click)="check()"
+                >
+                  <app-icon kind="check" />
+                </button>
+              </div>
+              @if (canShow()) {
+                <button type="button" class="button secondary show-me" (click)="showMe()">
+                  {{ i.t('wallShowMe') }}
+                </button>
+              }
+            }
+          </div>
+        </div>
+      }
+    }
+    @case ('summary') {
+      <section #summary class="summary" tabindex="-1" aria-labelledby="summary-title">
+        <div class="star-burst" aria-hidden="true"><app-icon kind="star" /></div>
+        <h2 id="summary-title">{{ i.t('wallWorldDone') }}</h2>
+        <p>{{ t('wallSummary', { n: total }) }} {{ t('wallFirstTry', { n: firstTry() }) }}</p>
+        <p class="best">{{ i.t('wallBestStreak') }}: {{ i.format(store.save().bestStreak) }}</p>
+        <div class="summary-actions">
+          @if (nextLevel(); as upcoming) {
+            <button type="button" class="button primary" (click)="start(upcoming)">
+              {{ i.t('wallNextLevel') }} · {{ i.t(levelTitle(upcoming)) }}<app-icon kind="arrow" />
+            </button>
+          }
+          <button type="button" class="button secondary" (click)="start(level())">
+            {{ i.t('wallPlayAgain') }}
+          </button>
+          <button type="button" class="button secondary" (click)="chooseLevel()">
+            {{ i.t('wallChooseLevel') }}
+          </button>
+          <a class="button secondary" routerLink="/">{{ i.t('home') }}</a>
+        </div>
+      </section>
+    }
+  }
+</section>
