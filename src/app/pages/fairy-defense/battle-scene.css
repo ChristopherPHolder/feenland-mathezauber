@@ -79,6 +79,44 @@
   filter: drop-shadow(0 10px 9px #223b3c33);
   animation: float 3.8s ease-in-out infinite;
 }
+.battlefield:has(.projectile) .fairy {
+  animation: cast 0.55s ease-out;
+}
+.battlefield:has(.monster-position.transforming) .fairy {
+  animation: cheer 0.5s ease-in-out 2;
+}
+.fireflies {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.fireflies span {
+  position: absolute;
+  left: calc(6% + var(--i) * 13%);
+  top: calc(18% + var(--i) * 7%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff6a8;
+  box-shadow: 0 0 10px 4px #ffe66a99;
+  opacity: 0;
+  animation: firefly 6.5s ease-in-out calc(var(--i) * -0.9s) infinite;
+}
+.fireflies span:nth-child(even) {
+  animation-duration: 8s;
+  top: calc(60% - var(--i) * 6%);
+}
+.monster-position::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  width: 70%;
+  height: 14px;
+  border-radius: 50%;
+  background: #163b3d33;
+  animation: shadow 2.8s ease-in-out infinite;
+}
 .waiting-monster {
   position: absolute;
   right: 1%;
@@ -208,6 +246,39 @@
 }
 .wobble .monster {
   animation: wobble 0.5s ease-out;
+}
+@keyframes cast {
+  40% {
+    transform: translate(18px, -14px) rotate(8deg);
+  }
+}
+@keyframes cheer {
+  50% {
+    transform: translateY(-22px) rotate(-6deg);
+  }
+}
+@keyframes shadow {
+  50% {
+    transform: scaleX(0.85);
+    opacity: 0.6;
+  }
+}
+@keyframes firefly {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  60% {
+    transform: translate(26px, -34px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-12px, -70px);
+    opacity: 0;
+  }
 }
 @keyframes float {
   50% {

@@ -53,7 +53,7 @@ const BANNER_DELAY = 1800;
   imports: [RouterLink, Icon, CrocodileArt, PondScene, HatWardrobe],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
-  styleUrl: './crocodile-game.css',
+  styleUrls: ['./crocodile-game.css', './crocodile-motion.css'],
   host: { '(document:keydown)': 'onKey($event)' },
 })
 export class CrocodileGame {
@@ -75,11 +75,16 @@ export class CrocodileGame {
   });
   protected readonly saveFailed = signal(false);
   protected readonly wrongPick = signal<Comparison | null>(null);
+  /** The choice a child hovers or focuses: Kiki turns toward it before they commit. */
+  protected readonly peek = signal<Comparison | null>(null);
   protected readonly banner = signal<Banner | null>(null);
   protected readonly floats = signal<readonly { id: number; points: number }[]>([]);
   protected readonly newHat = signal<Hat | null>(null);
   protected readonly newBest = signal(false);
   protected readonly choices: readonly Comparison[] = ['>', '=', '<'];
+  protected readonly pose = computed(
+    () => this.round().chosen ?? (this.round().phase === 'ready' ? this.peek() : null),
+  );
   protected readonly question = computed(
     () => this.round().questions[Math.min(this.round().index, ROUND_LENGTH - 1)],
   );
@@ -161,6 +166,9 @@ export class CrocodileGame {
   protected label(choice: Comparison) {
     return this.t(choice === '>' ? 'eatsLeft' : choice === '<' ? 'eatsRight' : 'full');
   }
+  protected peekAt(choice: Comparison | null) {
+    this.peek.set(choice);
+  }
   protected play() {
     clearTimeout(this.timer);
     clearTimeout(this.bannerTimer);
@@ -230,6 +238,7 @@ export class CrocodileGame {
   private advance() {
     const round = this.round();
     this.floats.set([]);
+    this.peek.set(null);
     if (round.index + 1 < ROUND_LENGTH) {
       const index = round.index + 1;
       this.round.set({ ...round, index, attempts: 0, phase: 'ready', chosen: null });

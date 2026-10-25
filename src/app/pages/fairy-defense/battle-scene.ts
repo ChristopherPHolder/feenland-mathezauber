@@ -32,6 +32,7 @@ export class BattleScene {
     }
   });
   protected readonly hearts = [1, 2, 3];
+  protected readonly fireflies = [0, 1, 2, 3, 4, 5, 6];
   protected readonly heartsAndSpells = Array.from({ length: 10 }, (_, index) => index);
   protected readonly encounter = computed(
     () => this.battle().wave.encounters[this.battle().encounter],
