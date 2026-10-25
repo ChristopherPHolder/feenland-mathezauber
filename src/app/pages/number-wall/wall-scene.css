@@ -220,6 +220,30 @@
   scale: calc(1 + var(--p) * 0.45);
   transition: scale 0.2s linear;
 }
+.alert {
+  position: absolute;
+  top: -30px;
+  left: 6px;
+  font-size: 22px;
+  transform: scaleX(-1);
+  animation: alert-bounce 0.5s ease-in-out infinite alternate;
+}
+:host(.combo) .fairy::after {
+  content: '✨';
+  position: absolute;
+  left: -20px;
+  top: 16px;
+  font-size: 16px;
+  animation: twinkle 0.9s ease-in-out infinite;
+}
+:host(.combo) .fairy::before {
+  content: '✨';
+  position: absolute;
+  left: -34px;
+  top: 30px;
+  font-size: 12px;
+  animation: twinkle 0.9s ease-in-out -0.45s infinite;
+}
 .dust-cloud {
   position: absolute;
   left: -26px;
@@ -359,6 +383,25 @@
   100% {
     transform: translateY(-240px) scale(0.8);
     opacity: 0;
+  }
+}
+@keyframes alert-bounce {
+  from {
+    transform: scaleX(-1) translateY(0);
+  }
+  to {
+    transform: scaleX(-1) translateY(-8px);
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.7) rotate(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(20deg);
   }
 }
 @keyframes hover {

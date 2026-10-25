@@ -482,13 +482,29 @@ h1 {
   margin: 18px 8px 0;
 }
 .bar {
-  display: block;
-  height: 14px;
-  min-width: 6px;
-  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 24px;
+  min-width: 34px;
+  padding: 0 8px;
+  border-radius: 12px;
   background: #52b36b;
   box-shadow: 0 0 0 2px #fff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  transform-origin: left;
   transition: width 0.4s;
+  animation: grow 0.7s ease-out;
+}
+.bar.bigger {
+  background: var(--pink);
+}
+.bar.right {
+  justify-self: end;
+  transform-origin: right;
 }
 .bar.left {
   justify-self: end;
@@ -532,6 +548,13 @@ h1 {
 }
 .choice:hover {
   transform: translateY(-3px);
+}
+.choice:hover .choice-croc,
+.choice:focus-visible .choice-croc {
+  animation: bob 1s ease-in-out infinite;
+}
+.choice:active {
+  transform: translateY(1px) scale(0.97);
 }
 .choice[aria-disabled='true'] {
   cursor: default;

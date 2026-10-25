@@ -22,6 +22,11 @@
     opacity: 0;
   }
 }
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
 @keyframes surface {
   from {
     transform: translateY(30px) scale(0.6);

@@ -82,6 +82,9 @@
 .battlefield:has(.projectile) .fairy {
   animation: cast 0.55s ease-out;
 }
+.battlefield:has(.monster-position.wobble) .fairy {
+  animation: flinch 0.5s ease-out;
+}
 .battlefield:has(.monster-position.transforming) .fairy {
   animation: cheer 0.5s ease-in-out 2;
 }
@@ -250,6 +253,11 @@
 @keyframes cast {
   40% {
     transform: translate(18px, -14px) rotate(8deg);
+  }
+}
+@keyframes flinch {
+  30% {
+    transform: translateX(-12px) rotate(-7deg);
   }
 }
 @keyframes cheer {
