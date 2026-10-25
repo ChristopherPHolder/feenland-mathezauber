@@ -52,6 +52,18 @@
       @if (best() > 0) {
         <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
       }
+      <div class="bubble-option">
+        <label class="bubble-toggle">
+          <input
+            type="checkbox"
+            [checked]="timed()"
+            (change)="toggleTimer()"
+            aria-describedby="bubble-help"
+          />
+          <span>{{ t('bubbleTitle') }}</span>
+        </label>
+        <p id="bubble-help">{{ t('bubbleHelp') }}</p>
+      </div>
       <button class="button primary" type="button" (click)="play()">
         {{ t('start') }}<app-icon kind="arrow" />
       </button>
@@ -145,6 +157,27 @@
         }
       </p>
     </div>
+    @if (timed()) {
+      <section
+        class="bubble-race"
+        [class.urgent]="bubbleLeft() <= 0.3"
+        [class.popped]="bubblePopped()"
+        [attr.aria-label]="t('bubbleTitle')"
+      >
+        <div class="bubble-heading">
+          <strong>{{ t(bubblePopped() ? 'bubbleRest' : 'bubbleTitle') }}</strong>
+          <span class="bubble-seconds" role="timer" aria-live="off">{{
+            t('bubbleSeconds', { n: secondsLeft() })
+          }}</span>
+          <button type="button" (click)="toggleTimer()">{{ t('bubbleOff') }}</button>
+        </div>
+        <div class="bubble-track" aria-hidden="true">
+          <span class="bubble-water" [style.width.%]="bubbleLeft() * 100"></span>
+          <span class="racing-bubble" [style.left.%]="(1 - bubbleLeft()) * 100"><span></span></span>
+          <span class="bubble-finish"></span>
+        </div>
+      </section>
+    }
     <section
       class="panel board pond"
       [class.chomping]="round().phase === 'chomping'"

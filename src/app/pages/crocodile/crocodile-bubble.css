@@ -1,0 +1,118 @@
+.bubble-option {
+  margin: 24px auto 0;
+  max-width: 55ch;
+  padding: 16px;
+  background: #e5f3f7;
+  border-radius: 16px;
+  text-align: left;
+}
+.bubble-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 20px;
+}
+.bubble-toggle input {
+  width: 24px;
+  height: 24px;
+  accent-color: #1746ab;
+  flex: none;
+}
+.bubble-option p {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.bubble-race {
+  padding: 12px 20px 20px;
+  border-radius: 20px;
+  background: #e5f3f7;
+}
+.bubble-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.bubble-heading strong {
+  flex: 1;
+}
+.bubble-seconds {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.bubble-heading button {
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: #172555;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 8px;
+  font: inherit;
+}
+.bubble-track {
+  position: relative;
+  height: 12px;
+  margin: 16px 20px 0 0;
+  background: #b9d9e7;
+  border-radius: 12px;
+}
+.bubble-water {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #286d8b;
+}
+.racing-bubble {
+  position: absolute;
+  top: -12px;
+  width: 36px;
+  height: 36px;
+  transform: translateX(-50%);
+  border: 3px solid #286d8b;
+  border-radius: 50%;
+  background: #def7ff;
+  box-shadow: 0 4px 8px #214d5a22;
+}
+.racing-bubble span {
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+}
+.bubble-finish {
+  position: absolute;
+  right: -18px;
+  top: -10px;
+  width: 24px;
+  height: 32px;
+  border: 3px solid #427644;
+  border-radius: 50% 50% 30% 30%;
+  background: #c3e5a9;
+}
+.urgent .racing-bubble {
+  border-color: #a3124a;
+  background: #ffe3ee;
+}
+.urgent .bubble-water {
+  background: #a3124a;
+}
+.popped .racing-bubble {
+  background: transparent;
+  border-style: dashed;
+  transform: translateX(-50%) scale(1.15);
+}
+.popped .bubble-seconds {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .racing-bubble {
+    transition: none;
+  }
+}

@@ -101,3 +101,10 @@ Turned the comparison rounds into a game: a living pond with ripples, bubbles an
 - Chromium: a full German round at desktop and 375px phone widths with the pond, combo banners, golden and boss boards, outcome panel and wardrobe; no horizontal overflow.
 - Axe reported zero WCAG 2 A/AA violations on an active pond round.
 - The component style error budget rose from 8 kB to 12 kB for the richer game screen; the 4 kB warning is unchanged.
+
+### Optional crocodile bubble challenge (2026-10-25)
+
+- 104 unit tests pass, including bubble expiry and recovery on the same snack, fresh time for the next snack, pausing while eating or in a hidden tab, timer removal, and cleanup on leaving the game.
+- Production Angular build passes (existing component CSS budget warnings remain).
+- Chrome browser checks cover English, German, Spanish and French at 320, 390 and 1280px: no horizontal overflow; axe WCAG 2 A/AA and 2.1 AA scans report zero violations on the intro and timed game.
+- Desktop and phone screenshots inspected; real browser clock checks confirm 15-second expiry, playable recovery, 25 seconds for calculation snacks, and turning the timer off.
