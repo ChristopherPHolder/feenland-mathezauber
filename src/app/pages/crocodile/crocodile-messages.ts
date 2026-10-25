@@ -1,5 +1,13 @@
 import { Locale } from '../../core/messages';
 const en = {
+  bubbleTitle: 'Beat the bubble',
+  bubbleHelp:
+    'Optional: 15 seconds per snack, 25 for calculations. A pop resets your combo and counts as a missed first try. You can still solve it.',
+  bubblePop: 'Pop! Take your time. Use the help below, then feed Kiki.',
+  bubbleRest: 'Bubble break',
+  bubbleSeconds: '{n} s',
+  bubbleOff: 'Turn timer off',
+
   title: 'The Hungry Crocodile',
   level: 'Level {n} of {total}',
   trick: 'The crocodile is always hungry. It opens its mouth toward the bigger number!',
@@ -62,6 +70,14 @@ const en = {
 export type CrocodileMessageKey = keyof typeof en;
 type Messages = Record<CrocodileMessageKey, string>;
 const de: Messages = {
+  bubbleTitle: 'Schlag die Blase',
+  bubbleHelp:
+    'Optional: 15 Sekunden pro Häppchen, 25 zum Rechnen. Platzt die Blase, endet die Kombo und der erste Versuch zählt als verpasst. Du kannst weiterlösen.',
+  bubblePop: 'Plopp! Lass dir Zeit. Nutze die Hilfe und füttere Kiki.',
+  bubbleRest: 'Blasenpause',
+  bubbleSeconds: '{n} s',
+  bubbleOff: 'Zeit ausschalten',
+
   title: 'Das hungrige Krokodil',
   level: 'Stufe {n} von {total}',
   trick: 'Das Krokodil hat immer Hunger. Es öffnet sein Maul zur größeren Zahl!',
@@ -123,6 +139,14 @@ const de: Messages = {
   pondTitle: 'Kikis Teich',
 };
 const es: Messages = {
+  bubbleTitle: 'Gana a la burbuja',
+  bubbleHelp:
+    'Opcional: 15 segundos por bocado, 25 para cálculos. Si explota, se reinicia el combo y cuenta como un primer intento fallido. Puedes seguir resolviendo.',
+  bubblePop: '¡Pop! Tómate tu tiempo. Usa la ayuda y alimenta a Kiki.',
+  bubbleRest: 'Pausa de burbujas',
+  bubbleSeconds: '{n} s',
+  bubbleOff: 'Quitar el tiempo',
+
   title: 'El cocodrilo hambriento',
   level: 'Nivel {n} de {total}',
   trick: '¡El cocodrilo siempre tiene hambre. Abre la boca hacia el número más grande!',
@@ -184,6 +208,14 @@ const es: Messages = {
   pondTitle: 'El estanque de Kiki',
 };
 const fr: Messages = {
+  bubbleTitle: 'Bats la bulle',
+  bubbleHelp:
+    'Facultatif : 15 secondes par collation, 25 pour les calculs. Si elle éclate, le combo repart à zéro et le premier essai est manqué. Tu peux encore résoudre.',
+  bubblePop: 'Pop ! Prends ton temps. Utilise l’aide puis nourris Kiki.',
+  bubbleRest: 'Pause bulle',
+  bubbleSeconds: '{n} s',
+  bubbleOff: 'Désactiver le chrono',
+
   title: 'Le crocodile affamé',
   level: 'Niveau {n} sur {total}',
   trick: 'Le crocodile a toujours faim. Il ouvre la gueule vers le plus grand nombre !',
