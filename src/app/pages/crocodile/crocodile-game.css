@@ -623,6 +623,13 @@ h1 {
 }
 .stars app-icon.earned {
   color: #e39b10;
+  animation: pop 0.5s ease-out calc(var(--i, 1) * 0.3s) both;
+}
+.outcome-croc {
+  animation: bob 2.4s ease-in-out infinite;
+}
+.perfect .outcome-croc {
+  animation: dance 0.8s ease-in-out infinite;
 }
 .outcome-help {
   max-width: 48ch;
@@ -660,32 +667,6 @@ h1 {
   max-width: 400px;
   margin: 20px auto 0;
 }
-.confetti {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.confetti span {
-  position: absolute;
-  top: -16px;
-  left: calc(5% + var(--i) * 9.5%);
-  width: 10px;
-  height: 16px;
-  border-radius: 3px;
-  background: #e0457b;
-  animation: confetti 2.6s ease-in forwards;
-  animation-delay: calc(var(--i) * 0.12s);
-}
-.confetti span:nth-child(3n) {
-  background: #f4b740;
-}
-.confetti span:nth-child(3n + 1) {
-  background: #4aa3ff;
-}
-.confetti span:nth-child(4n) {
-  background: #52b36b;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;

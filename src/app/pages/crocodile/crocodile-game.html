@@ -85,7 +85,7 @@
       <p>{{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}</p>
       <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
         @for (star of starSlots; track star) {
-          <app-icon kind="star" [class.earned]="star <= stars()" />
+          <app-icon kind="star" [class.earned]="star <= stars()" [style.--i]="star" />
         }
       </div>
       <p class="outcome-help">
@@ -154,7 +154,7 @@
       [attr.data-snack-kind]="kind()"
       [attr.aria-label]="t('pondTitle')"
     >
-      <app-pond-scene [boss]="kind() === 'boss'" />
+      <app-pond-scene [boss]="kind() === 'boss'" [frenzy]="frenzy()" />
       @if (banner(); as callout) {
         <p class="banner" [class.boss-banner]="callout === 'bossSnack'" aria-hidden="true">
           {{ t(callout) }}

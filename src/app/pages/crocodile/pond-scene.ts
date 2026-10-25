@@ -24,7 +24,7 @@ import { Component, input } from '@angular/core';
     }
     <span class="fishy f1"></span>
     <span class="fishy f2"></span>`,
-  host: { 'aria-hidden': 'true' },
+  host: { 'aria-hidden': 'true', '[class.frenzy]': 'frenzy()' },
   styles: `
     :host {
       position: absolute;
@@ -253,6 +253,19 @@ import { Component, input } from '@angular/core';
         transform: translate(-60px, 10px);
       }
     }
+    :host(.frenzy) .ripple {
+      animation-duration: 1.6s;
+      border-color: #ffd166aa;
+    }
+    :host(.frenzy) .bubble {
+      animation-duration: 2s;
+    }
+    :host(.frenzy) .fishy {
+      animation-duration: 4s;
+    }
+    :host(.frenzy) .reed {
+      animation-duration: 1.2s;
+    }
     @media (max-width: 640px) {
       .reed {
         display: none;
@@ -267,4 +280,6 @@ import { Component, input } from '@angular/core';
 })
 export class PondScene {
   readonly boss = input(false);
+  /** During a feeding frenzy the whole pond speeds up. */
+  readonly frenzy = input(false);
 }

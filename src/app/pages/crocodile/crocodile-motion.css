@@ -1,4 +1,30 @@
 /* Motion */
+.confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.confetti span {
+  position: absolute;
+  top: -16px;
+  left: calc(5% + var(--i) * 9.5%);
+  width: 10px;
+  height: 16px;
+  border-radius: 3px;
+  background: #e0457b;
+  animation: confetti 2.6s ease-in forwards;
+  animation-delay: calc(var(--i) * 0.12s);
+}
+.confetti span:nth-child(3n) {
+  background: #f4b740;
+}
+.confetti span:nth-child(3n + 1) {
+  background: #4aa3ff;
+}
+.confetti span:nth-child(4n) {
+  background: #52b36b;
+}
+
 @keyframes shake {
   25% {
     transform: translateX(-6px);
@@ -20,6 +46,15 @@
   to {
     transform: translateX(var(--toward, 0)) scale(0.15) rotate(20deg);
     opacity: 0;
+  }
+}
+@keyframes dance {
+  0%,
+  100% {
+    transform: rotate(-8deg) translateY(0);
+  }
+  50% {
+    transform: rotate(8deg) translateY(-12px);
   }
 }
 @keyframes grow {

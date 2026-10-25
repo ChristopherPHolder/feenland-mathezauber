@@ -235,11 +235,19 @@
     }
     @case ('summary') {
       <section #summary class="summary" tabindex="-1" aria-labelledby="summary-title">
+        @if (rating() === 3) {
+          <div class="summary-confetti" aria-hidden="true">
+            @for (piece of confetti; track piece) {
+              <span [style.--i]="piece"></span>
+            }
+          </div>
+        }
         <div class="star-row" role="img" [attr.aria-label]="t('wallStars', { n: rating() })">
           @for (star of stars; track star) {
-            <app-icon kind="star" [class.earned]="rating() >= star" />
+            <app-icon kind="star" [class.earned]="rating() >= star" [style.--i]="star" />
           }
         </div>
+        <div class="summary-fairy" [class.party]="rating() === 3" aria-hidden="true">🧚</div>
         <h2 id="summary-title">
           {{ rating() === 3 ? i.t('wallThreeStars') : i.t('wallWorldDone') }}
         </h2>

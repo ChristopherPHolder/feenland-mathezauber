@@ -192,6 +192,17 @@ button.level-card:hover {
   transform: translateY(-2px);
   border-color: var(--pink);
 }
+button.level-card:hover .level-go {
+  animation: nudge 0.7s ease-in-out infinite;
+}
+button.level-card:active {
+  transform: translateY(1px) scale(0.98);
+}
+@keyframes nudge {
+  50% {
+    transform: translate(5px, -50%);
+  }
+}
 .level-card.starred {
   background: var(--success-ground);
 }
@@ -233,7 +244,68 @@ app-icon.earned {
   fill: #ffcf4d;
 }
 .star-row app-icon.earned {
-  animation: pop 0.6s ease-out;
+  animation: pop 0.6s ease-out calc(var(--i, 1) * 0.3s) both;
+}
+.summary {
+  position: relative;
+  overflow: hidden;
+}
+.summary-fairy {
+  font-size: 44px;
+  line-height: 1;
+  margin: 6px 0;
+  animation: fairy-hover 2.4s ease-in-out infinite;
+}
+.summary-fairy.party {
+  animation: fairy-party 0.7s ease-in-out infinite;
+}
+.summary-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.summary-confetti span {
+  position: absolute;
+  top: -16px;
+  left: calc(4% + var(--i) * 8%);
+  width: 10px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--pink);
+  animation: confetti-fall 2.8s ease-in calc(var(--i) * 0.15s) infinite;
+}
+.summary-confetti span:nth-child(3n) {
+  background: #f4b740;
+}
+.summary-confetti span:nth-child(3n + 1) {
+  background: #4aa3ff;
+}
+.summary-confetti span:nth-child(4n) {
+  background: #52b36b;
+}
+@keyframes fairy-hover {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes fairy-party {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-12deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(12deg) scale(1.15);
+  }
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(420px) rotate(380deg);
+    opacity: 0;
+  }
 }
 .level-go {
   position: absolute;
