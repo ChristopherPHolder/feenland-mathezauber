@@ -132,7 +132,26 @@ const catalog: readonly World[] = [
               ],
             },
           ]
-        : [],
+        : title === 'tens'
+          ? [
+              {
+                id: 'number-walls',
+                title: 'numberWalls',
+                description: 'numberWallDescription',
+                levels: [
+                  {
+                    id: 'number-wall',
+                    title: 'numberWall',
+                    description: 'numberWallDescription',
+                    implemented: true,
+                    prerequisites: [],
+                    skills: ['addition', 'missing-addend'],
+                    format: 'number-wall',
+                  },
+                ],
+              },
+            ]
+          : [],
   })),
 ];
 // Keep existing world IDs so bookmarks and saved progress remain valid.

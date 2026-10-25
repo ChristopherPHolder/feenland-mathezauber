@@ -71,6 +71,12 @@ export const routes: Routes = [
       import('./pages/fairy-defense/practice-defense').then((m) => m.PracticeDefense),
   },
   {
+    path: 'adventure/number-wall',
+    data: { focusedGame: true },
+    loadComponent: () =>
+      import('./pages/number-wall/number-wall.component').then((m) => m.NumberWallComponent),
+  },
+  {
     path: 'adventure/:id',
     canActivate: [
       (route) => {

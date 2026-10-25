@@ -55,7 +55,9 @@ export class App {
     this.navigation();
     const path = this.router.url.split('?')[0].split('#')[0];
     return (
-      path === '/adventure/defend-fairy-castle' || /^\/adventure\/practice-30-[1-9]$/.test(path)
+      path === '/adventure/defend-fairy-castle' ||
+      path === '/adventure/number-wall' ||
+      /^\/adventure\/practice-30-[1-9]$/.test(path)
     );
   });
   protected settingsReturnTarget() {

@@ -61,6 +61,7 @@ describe('Feenland navigation', () => {
           'missing-number-add-to-30',
           'missing-number-subtract-to-30',
           'defend-fairy-castle',
+          'number-wall',
         ],
         chapters: ['earned-chapter'],
         explored: ['missing-number'],
@@ -69,7 +70,7 @@ describe('Feenland navigation', () => {
     const h = await RouterTestingHarness.create('/');
     expect(h.routeNativeElement?.textContent).toContain(TestBed.inject(LocaleService).t('caught'));
     expect([...h.routeNativeElement!.querySelectorAll('dd')].map((e) => e.textContent)).toEqual([
-      '3',
+      '4',
       '1',
       '1',
     ]);
