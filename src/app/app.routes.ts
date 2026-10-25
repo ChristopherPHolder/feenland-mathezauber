@@ -93,6 +93,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/crocodile/crocodile-game').then((m) => m.CrocodileGame),
   },
   {
+    path: 'adventure/number-wall',
+    data: { focusedGame: true },
+    loadComponent: () =>
+      import('./pages/number-wall/number-wall.component').then((m) => m.NumberWallComponent),
+  },
+  {
     path: 'adventure/:id',
     canActivate: [
       (route) => {

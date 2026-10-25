@@ -56,6 +56,7 @@ export class App {
     const path = this.router.url.split('?')[0].split('#')[0];
     return (
       path === '/adventure/defend-fairy-castle' ||
+      path === '/adventure/number-wall' ||
       /^\/adventure\/(practice-30-[1-9]|crocodile-[1-6])$/.test(path)
     );
   });

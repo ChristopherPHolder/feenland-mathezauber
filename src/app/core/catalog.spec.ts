@@ -12,6 +12,7 @@ describe('expanding-world foundations', () => {
         'missing-number-add-to-30',
         'missing-number-subtract-to-30',
         'defend-fairy-castle',
+        'number-wall',
       ],
       chapters: ['missing-number-first-steps'],
       explored: ['missing-number'],

@@ -236,3 +236,56 @@ dd {
     font-size: 13px;
   }
 }
+.games {
+  margin-top: 32px;
+}
+.games h2 {
+  font-size: 23px;
+  margin: 0 0 16px;
+}
+.game-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+.game-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 28px;
+  border-radius: 24px;
+  background: var(--warm-ground);
+  box-shadow: 0 8px 30px #214d5a0c;
+}
+.game-emblem {
+  font-size: 44px;
+  line-height: 1;
+}
+.game-copy h3 {
+  font-size: 23px;
+  margin: 0 0 6px;
+}
+.game-copy p {
+  margin: 0;
+  line-height: 1.5;
+}
+.game-link {
+  min-width: 240px;
+}
+@media (max-width: 700px) {
+  .games {
+    margin-top: 28px;
+  }
+  .game-card {
+    grid-template-columns: auto 1fr;
+    padding: 20px;
+    gap: 14px;
+  }
+  .game-link {
+    grid-column: 1 / 3;
+    min-width: 0;
+  }
+}

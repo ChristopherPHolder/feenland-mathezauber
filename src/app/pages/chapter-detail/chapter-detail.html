@@ -71,7 +71,9 @@
                         ? 'fairyPlay'
                         : entry.level.format === 'crocodile'
                           ? 'crocodilePlay'
-                          : 'openLevel'
+                          : entry.level.format === 'number-wall'
+                            ? 'numberWallPlay'
+                            : 'openLevel'
                   )
                 }}<app-icon kind="arrow"
               /></a>

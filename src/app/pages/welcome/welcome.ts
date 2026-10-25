@@ -44,6 +44,21 @@ import { Icon } from '../../shared/icon';
         >
       </div>
     </div>
+    <section class="games" aria-labelledby="games-title">
+      <h2 id="games-title">{{ i.t('games') }}</h2>
+      <ul class="game-list">
+        <li class="game-card">
+          <span class="game-emblem" aria-hidden="true">🧱</span>
+          <div class="game-copy">
+            <h3>{{ i.t('numberWalls') }}</h3>
+            <p>{{ i.t('numberWallDescription') }}</p>
+          </div>
+          <a class="button primary game-link" routerLink="/adventure/number-wall"
+            >{{ i.t('numberWallPlay') }}<app-icon kind="arrow"
+          /></a>
+        </li>
+      </ul>
+    </section>
     <section class="journey" aria-labelledby="journey-title">
       <h2 id="journey-title">{{ i.t('journey') }}</h2>
       <dl>
