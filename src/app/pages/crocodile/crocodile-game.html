@@ -244,12 +244,16 @@
         <div class="bars" aria-hidden="true">
           <span
             class="bar left"
+            [class.bigger]="question().answer === '>'"
             [style.width.%]="(question().left.value / (stage()?.max ?? 20)) * 100"
-          ></span>
+            >{{ i.format(question().left.value) }}</span
+          >
           <span
             class="bar right"
+            [class.bigger]="question().answer === '<'"
             [style.width.%]="(question().right.value / (stage()?.max ?? 20)) * 100"
-          ></span>
+            >{{ i.format(question().right.value) }}</span
+          >
         </div>
       }
       <p class="instruction" role="status" aria-live="polite" aria-atomic="true">

@@ -66,6 +66,9 @@
     @if (!trollAsleep()) {
       <span class="dust-cloud" aria-hidden="true">💨</span>
     }
+    @if (danger()) {
+      <span class="alert" aria-hidden="true">❗</span>
+    }
     @if (trollAsleep()) {
       <span class="zzz" aria-hidden="true">💤</span>
     }

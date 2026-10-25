@@ -421,6 +421,9 @@ app-icon.earned {
   width: 30px;
   height: 30px;
 }
+.key:active:enabled {
+  transform: translateY(2px) scale(0.95);
+}
 .key.check {
   background: var(--pink);
   color: #fff;
