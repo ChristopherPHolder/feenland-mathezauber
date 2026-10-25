@@ -219,3 +219,39 @@ export function seededRandom(seed: number): Random {
     return state / 4294967296;
   };
 }
+
+/* Game pacing and rewards */
+export type Pace = 'relaxed' | 'steady' | 'quick';
+export const paces: readonly Pace[] = ['relaxed', 'steady', 'quick'];
+export const DUST_EVERY = 3;
+export const MAX_DUST = 3;
+export const FREEZE_MS = 8000;
+/** Seconds until the troll reaches the wall, or undefined when nobody is coming. */
+export function trollSeconds(pace: Pace, missingCount: number): number | undefined {
+  if (pace === 'relaxed') return undefined;
+  const base = pace === 'steady' ? 40 : 20;
+  return base + (missingCount - 1) * base * 0.5;
+}
+export interface WallOutcome {
+  readonly misses: number;
+  /** Troll progress (0..1) when the wall was finished; ignored when untimed. */
+  readonly trollProgress?: number;
+}
+/** 1 gem for building, +1 for no misses, +1 for beating the troll to the halfway mark. */
+export function gemsFor(outcome: WallOutcome): number {
+  let gems = 1;
+  if (outcome.misses === 0) gems++;
+  if (outcome.trollProgress !== undefined && outcome.trollProgress < 0.5) gems++;
+  return gems;
+}
+export function isFast(outcome: WallOutcome): boolean {
+  return outcome.trollProgress !== undefined && outcome.trollProgress < 0.5;
+}
+export function maxGems(timed: boolean): number {
+  return WALLS_PER_WORLD * (timed ? 3 : 2);
+}
+export type Rating = 1 | 2 | 3;
+export function ratingFor(gems: number, timed: boolean): Rating {
+  const ratio = gems / maxGems(timed);
+  return ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1;
+}
