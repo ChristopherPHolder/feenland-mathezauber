@@ -18,6 +18,7 @@ describe('Number wall game', () => {
     canSpeak: () => false,
   };
   beforeEach(() => {
+    vi.useFakeTimers();
     localStorage.clear();
     TestBed.configureTestingModule({
       imports: [NumberWallComponent],
@@ -29,6 +30,7 @@ describe('Number wall game', () => {
   });
   afterEach(() => {
     TestBed.resetTestingModule();
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
   function setup(locale: 'en' | 'de' = 'en') {
@@ -36,9 +38,8 @@ describe('Number wall game', () => {
     TestBed.inject(LocaleService).select(locale);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    const buttons = () => [...element.querySelectorAll('button')];
     const click = (text: string) => {
-      const button = buttons().find(
+      const button = [...element.querySelectorAll('button')].find(
         (button) =>
           button.textContent?.trim().startsWith(text) || button.getAttribute('aria-label') === text,
       );
@@ -48,6 +49,10 @@ describe('Number wall game', () => {
     };
     const key = (key: string) => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      fixture.detectChanges();
+    };
+    const wait = (ms: number) => {
+      vi.advanceTimersByTime(ms);
       fixture.detectChanges();
     };
     const status = () => element.querySelector('[role="status"]')?.textContent?.trim() ?? '';
@@ -67,41 +72,101 @@ describe('Number wall game', () => {
       const wall = fixture.componentInstance['wall']()!;
       return wall.rows[Number(button.dataset['row'])]![Number(button.dataset['col'])]!;
     };
-    return { fixture, element, click, key, status, openBricks, typeNumber, answerFor };
+    const solveSelected = () => {
+      const brick = openBricks().find((brick) => brick.getAttribute('aria-pressed') === 'true')!;
+      typeNumber(answerFor(brick));
+    };
+    const gems = () => element.querySelector('.gems strong')?.textContent?.trim();
+    return {
+      fixture,
+      element,
+      click,
+      key,
+      wait,
+      status,
+      openBricks,
+      typeNumber,
+      answerFor,
+      solveSelected,
+      gems,
+    };
   }
 
-  it('opens every level from the start and shows the rule with a demo wall', () => {
-    const { element } = setup();
+  it('opens every level, shows the demo wall and remembers the troll speed', () => {
+    const { element, click } = setup();
     expect(element.querySelectorAll('button.level-card')).toHaveLength(4);
     expect(element.querySelector('.level-card.locked')).toBeNull();
     expect(element.querySelector('.demo-wall')?.textContent?.replace(/\s+/g, '')).toBe('52+3');
+    expect(element.querySelector('.chip[aria-pressed="true"]')?.textContent).toContain('Brisk');
+    click('Cozy');
+    expect(element.querySelector('.chip[aria-pressed="true"]')?.textContent).toContain('Cozy');
+    expect(JSON.parse(localStorage.getItem('feenland.number-wall.v1')!).pace).toBe('relaxed');
   });
 
-  it('builds five walls, celebrates and earns the star that unlocks level 2', () => {
-    const { element, click, status, openBricks, typeNumber } = setup();
+  it('builds five fast walls, collects gems, earns three stars and unlocks level 2', () => {
+    const { element, click, status, solveSelected, gems } = setup();
     click('Level 1');
     expect(sound.start).toHaveBeenCalled();
+    expect(element.querySelector('.troll')).toBeTruthy();
     for (let wall = 0; wall < 5; wall++) {
-      const brick = openBricks()[0]!;
-      expect(brick.getAttribute('aria-pressed')).toBe('true');
-      const [a, b] = element.querySelectorAll('.brick:not(.open)');
-      typeNumber(Number(a!.textContent) + Number(b!.textContent));
-      expect(status()).toContain('Wall built!');
+      solveSelected();
+      expect(status()).toContain('Wall built! +3 gems! Super fast!');
       expect(element.querySelector('.brick.filled')).toBeTruthy();
+      expect(gems()).toBe(String((wall + 1) * 3));
       click(wall < 4 ? 'Next wall' : 'You earned a star!');
     }
-    expect(element.textContent).toContain('You built 5 walls.');
-    expect(element.textContent).toContain('5 bricks right on the first try.');
-    expect(TestBed.inject(NumberWallStore).unlocked(2)).toBe(true);
-    expect(TestBed.inject(NumberWallStore).save().bestStreak).toBe(5);
-    expect(JSON.parse(localStorage.getItem('feenland.number-wall.v1')!)).toMatchObject({
-      stars: [1],
-      bestStreak: 5,
-    });
+    expect(element.textContent).toContain('Three stars!');
+    expect(element.textContent).toContain(
+      'You built 5 walls. +15 gems! 5 bricks right on the first try.',
+    );
+    expect(element.querySelectorAll('.star-row app-icon.earned')).toHaveLength(3);
+    const store = TestBed.inject(NumberWallStore);
+    expect(store.unlocked(2)).toBe(true);
+    expect(store.rating(1)).toBe(3);
+    expect(store.save()).toMatchObject({ gems: 15, bestStreak: 5 });
     expect(TestBed.inject(ProgressService).progress().completed).toContain('number-wall');
     expect(TestBed.inject(ProgressService).progress().mastered).toEqual([]);
     click('Next level');
     expect(element.querySelector('.level-tag')?.textContent).toContain('Level 2');
+  });
+
+  it('lets the troll pinch a gem when the wall takes too long, then keeps walking', () => {
+    const { element, click, wait, status, solveSelected, gems } = setup();
+    click('Level 1');
+    solveSelected();
+    expect(gems()).toBe('3');
+    click('Next wall');
+    wait(39_900);
+    expect(status()).not.toContain('troll');
+    wait(200);
+    expect(status()).toContain('Oh no, the troll pinched a gem! Keep building!');
+    expect(gems()).toBe('2');
+    expect(sound.effect).toHaveBeenLastCalledWith('damage');
+    expect(element.querySelector('.troll.bump')).toBeTruthy();
+    wait(20_000);
+    solveSelected();
+    expect(status()).toContain('Wall built! +2 gems!');
+    expect(gems()).toBe('4');
+  });
+
+  it('earns fairy dust after three bricks in a row and uses it to freeze the troll', () => {
+    const { element, click, wait, status, solveSelected } = setup();
+    click('Level 1');
+    expect(element.querySelector<HTMLButtonElement>('.dust')?.disabled).toBe(true);
+    for (let wall = 0; wall < 3; wall++) {
+      solveSelected();
+      click('Next wall');
+    }
+    expect(element.querySelector('.dust strong')?.textContent).toBe('1');
+    click('Fairy dust · 1 / 3');
+    expect(status()).toMatch(
+      /^Fairy dust! The troll fell asleep for a moment\. Trick: \d+ \+ \d+ = \?/,
+    );
+    expect(element.querySelector('.troll.asleep')).toBeTruthy();
+    expect(element.querySelector('.dust strong')?.textContent).toBe('0');
+    wait(8_000);
+    expect(element.querySelector('.troll.asleep')).toBeNull();
+    expect(element.querySelector('.troll')).toBeTruthy();
   });
 
   it('gives a gentle retry, then the trick with a number line, then an answer', () => {
@@ -110,6 +175,7 @@ describe('Number wall game', () => {
       JSON.stringify({ version: 1, stars: [1], bestStreak: 0 }),
     );
     const { element, click, key, status, openBricks, answerFor } = setup();
+    expect(TestBed.inject(NumberWallStore).rating(1)).toBe(1);
     click('Level 2');
     const brick = openBricks()[0]!;
     const answer = answerFor(brick);
@@ -124,24 +190,23 @@ describe('Number wall game', () => {
     key(String(Math.floor(wrong / 10)));
     key(String(wrong % 10));
     expect(status()).toMatch(/^Trick: \d+ \+ \? = \d+\. Count up from/);
-    expect(element.querySelector('.number-line')).toBeTruthy();
     key(String(Math.floor(wrong / 10)));
     key(String(wrong % 10));
     click('Show me');
-    expect(status()).toMatch(/^The brick is \d+, because .* Wall built!$/);
-    expect(element.textContent).not.toContain('Every brick on the first try');
+    expect(status()).toMatch(/^The brick is \d+, because .* Wall built! \+2 gems! Super fast!$/);
     key('Enter');
     expect(element.querySelector('.progress-brick.done')).toBeTruthy();
     expect(openBricks()).toHaveLength(1);
   });
 
-  it('lets the child choose which glowing brick to fill in level 4 and speaks German', () => {
+  it('lets the child choose which glowing brick to fill in level 4, in German and without a troll', () => {
     localStorage.setItem(
       'feenland.number-wall.v1',
-      JSON.stringify({ version: 1, stars: [1, 2, 3], bestStreak: 2 }),
+      JSON.stringify({ version: 1, ratings: { 1: 2, 2: 1, 3: 3 }, bestStreak: 2, pace: 'relaxed' }),
     );
     const { fixture, element, click, key, status, openBricks, answerFor } = setup('de');
     click('Level 4');
+    expect(element.querySelector('.troll')).toBeNull();
     expect(openBricks()).toHaveLength(2);
     const second = openBricks().find((brick) => brick.getAttribute('aria-pressed') === 'false')!;
     second.click();

@@ -1,34 +1,50 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Service, signal } from '@angular/core';
-import { levels, WallLevel } from './number-wall';
+import { levels, Pace, paces, Rating, WallLevel } from './number-wall';
 export interface WallSave {
   readonly version: 1;
-  readonly stars: readonly WallLevel[];
+  /** Best star rating per level, 1–3; absent until the level's first world is built. */
+  readonly ratings: Readonly<Partial<Record<WallLevel, Rating>>>;
   readonly bestStreak: number;
+  readonly gems: number;
+  readonly pace: Pace;
 }
 const STORAGE_KEY = 'feenland.number-wall.v1';
-const empty: WallSave = { version: 1, stars: [], bestStreak: 0 };
-/** Stars and the best streak stay on the device, separately from earned catalog progress. */
+const empty: WallSave = { version: 1, ratings: {}, bestStreak: 0, gems: 0, pace: 'steady' };
+/** Stars, gems and the best streak stay on the device, separately from earned catalog progress. */
 @Service()
 export class NumberWallStore {
   private readonly document = inject(DOCUMENT);
   private readonly state = signal<WallSave>(this.load());
   readonly save = this.state.asReadonly();
+  rating(level: WallLevel): Rating | 0 {
+    return this.save().ratings[level] ?? 0;
+  }
   hasStar(level: WallLevel): boolean {
-    return this.save().stars.includes(level);
+    return this.rating(level) > 0;
   }
   /** Every level is open from the start; stars reward finishing a level, they never gate one. */
   unlocked(level: WallLevel): boolean {
     return levels.includes(level);
   }
-  earnStar(level: WallLevel) {
-    if (this.hasStar(level)) return;
-    this.state.update((save) => ({ ...save, stars: [...save.stars, level].sort() }));
+  starredLevels(): number {
+    return levels.filter((level) => this.hasStar(level)).length;
+  }
+  recordWorld(level: WallLevel, rating: Rating, gems: number) {
+    this.state.update((save) => ({
+      ...save,
+      ratings: { ...save.ratings, [level]: Math.max(save.ratings[level] ?? 0, rating) as Rating },
+      gems: save.gems + gems,
+    }));
     this.persist();
   }
   recordStreak(streak: number) {
     if (streak <= this.save().bestStreak) return;
     this.state.update((save) => ({ ...save, bestStreak: streak }));
+    this.persist();
+  }
+  setPace(pace: Pace) {
+    this.state.update((save) => ({ ...save, pace }));
     this.persist();
   }
   private persist() {
@@ -45,15 +61,24 @@ export class NumberWallStore {
       );
       if (!value || typeof value !== 'object' || !('version' in value) || value.version !== 1)
         return empty;
-      const stars =
-        'stars' in value && Array.isArray(value.stars)
-          ? [...new Set(value.stars.filter((s): s is WallLevel => [1, 2, 3, 4].includes(s)))]
-          : [];
-      const bestStreak =
-        'bestStreak' in value && typeof value.bestStreak === 'number' && value.bestStreak >= 0
-          ? Math.floor(value.bestStreak)
+      const record = value as Record<string, unknown>;
+      const ratings: Partial<Record<WallLevel, Rating>> = {};
+      // Earlier saves listed starred levels; each counts as one star.
+      if (Array.isArray(record['stars']))
+        for (const level of record['stars'])
+          if (levels.includes(level as WallLevel)) ratings[level as WallLevel] = 1;
+      const saved = record['ratings'];
+      if (saved && typeof saved === 'object')
+        for (const level of levels) {
+          const rating = (saved as Record<string, unknown>)[String(level)];
+          if (rating === 1 || rating === 2 || rating === 3) ratings[level] = rating;
+        }
+      const count = (key: string) =>
+        typeof record[key] === 'number' && (record[key] as number) >= 0
+          ? Math.floor(record[key] as number)
           : 0;
-      return { version: 1, stars: stars.sort(), bestStreak };
+      const pace = paces.find((pace) => pace === record['pace']) ?? empty.pace;
+      return { version: 1, ratings, bestStreak: count('bestStreak'), gems: count('gems'), pace };
     } catch {
       return empty;
     }

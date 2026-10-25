@@ -1,0 +1,69 @@
+<div class="fairy" aria-hidden="true">🧚</div>
+<div class="tower left" aria-hidden="true"></div>
+<div class="tower right" aria-hidden="true"></div>
+@if (wallsDone() >= total) {
+  <div class="flag" aria-hidden="true">🚩</div>
+}
+<div class="wall" [class.three-rows]="wall().rows.length === 3">
+  @for (row of rows(); track row.rowIndex) {
+    <div class="row">
+      @for (col of row.cols; track col) {
+        @if (plusBefore({ row: row.rowIndex, col })) {
+          <span class="plus" aria-hidden="true">+</span>
+        }
+        @if (isOpen({ row: row.rowIndex, col })) {
+          <button
+            type="button"
+            class="brick open"
+            [class.selected]="isSelected({ row: row.rowIndex, col })"
+            [class.wobble]="wobbling() && isSelected({ row: row.rowIndex, col })"
+            [attr.data-row]="row.rowIndex"
+            [attr.data-col]="col"
+            [attr.aria-pressed]="isSelected({ row: row.rowIndex, col })"
+            [attr.aria-label]="emptyLabel({ row: row.rowIndex, col })"
+            (click)="select.emit({ row: row.rowIndex, col })"
+          >
+            <span aria-hidden="true">{{
+              isSelected({ row: row.rowIndex, col }) && entry() ? entry() : '?'
+            }}</span>
+          </button>
+        } @else {
+          <div
+            class="brick"
+            [class.filled]="isFilled({ row: row.rowIndex, col })"
+            [class.golden]="isGolden({ row: row.rowIndex, col })"
+            [class.sparkle]="isJustFilled({ row: row.rowIndex, col })"
+            [attr.aria-label]="t('wallBrickValue', { n: value({ row: row.rowIndex, col }) })"
+            role="img"
+          >
+            <span aria-hidden="true">{{ i.format(value({ row: row.rowIndex, col })) }}</span>
+          </div>
+        }
+      }
+    </div>
+  }
+</div>
+@if (trollProgress() !== undefined) {
+  <div
+    class="troll"
+    [class.asleep]="trollAsleep()"
+    [class.bump]="trollBump()"
+    role="progressbar"
+    [attr.aria-valuemin]="0"
+    [attr.aria-valuemax]="100"
+    [attr.aria-valuenow]="trollPercent()"
+    [attr.aria-label]="t('wallTrollLabel')"
+  >
+    <span aria-hidden="true">🧌</span>
+    @if (trollAsleep()) {
+      <span class="zzz" aria-hidden="true">💤</span>
+    }
+  </div>
+}
+@if (built()) {
+  <div class="confetti" aria-hidden="true">
+    @for (piece of confetti; track $index) {
+      <span [style.--i]="$index">{{ piece }}</span>
+    }
+  </div>
+}
