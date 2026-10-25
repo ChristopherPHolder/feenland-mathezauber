@@ -58,6 +58,21 @@ const en = {
   hatGold: 'Golden crown',
   perfect: 'Perfect pond! {n} points.',
   pondTitle: 'Kiki’s pond',
+  modeTitle: 'How do you want to play?',
+  calm: 'Calm pond',
+  calmHelp: 'Just Kiki and you. Take all the time you like.',
+  race: 'Heron race',
+  raceHelp:
+    'A greedy heron swoops in for the snack. Feed Kiki before it lands! Quick snacks earn bonus points.',
+  heronComing: 'Here comes the heron! Feed Kiki quickly.',
+  stolen: 'Oh no! The heron snatched that snack. Next one!',
+  stolenCount: 'The heron snatched {n} snacks.',
+  quick: 'Quick snack! Bonus points!',
+  shoo: 'Shoo, heron! Kiki was faster.',
+  bestRace: 'Heron race best: {n}',
+  tapLeft: 'Feed Kiki the left side: {side}',
+  tapRight: 'Feed Kiki the right side: {side}',
+  tapEqual: 'Both sides are the same: Kiki is full',
 } as const;
 export type CrocodileMessageKey = keyof typeof en;
 type Messages = Record<CrocodileMessageKey, string>;
@@ -121,6 +136,21 @@ const de: Messages = {
   hatGold: 'Goldene Krone',
   perfect: 'Perfekter Teich! {n} Punkte.',
   pondTitle: 'Kikis Teich',
+  modeTitle: 'Wie möchtest du spielen?',
+  calm: 'Ruhiger Teich',
+  calmHelp: 'Nur Kiki und du. Lass dir so viel Zeit, wie du magst.',
+  race: 'Reiher-Rennen',
+  raceHelp:
+    'Ein gieriger Reiher fliegt zum Häppchen. Füttere Kiki, bevor er landet! Schnelle Häppchen bringen Bonuspunkte.',
+  heronComing: 'Da kommt der Reiher! Füttere Kiki schnell.',
+  stolen: 'Oh nein! Der Reiher hat das Häppchen geschnappt. Weiter zum nächsten!',
+  stolenCount: 'Der Reiher hat {n} Häppchen geschnappt.',
+  quick: 'Schnelles Häppchen! Bonuspunkte!',
+  shoo: 'Husch, Reiher! Kiki war schneller.',
+  bestRace: 'Rekord im Reiher-Rennen: {n}',
+  tapLeft: 'Füttere Kiki mit der linken Seite: {side}',
+  tapRight: 'Füttere Kiki mit der rechten Seite: {side}',
+  tapEqual: 'Beide Seiten sind gleich: Kiki ist satt',
 };
 const es: Messages = {
   title: 'El cocodrilo hambriento',
@@ -182,6 +212,21 @@ const es: Messages = {
   hatGold: 'Corona dorada',
   perfect: '¡Estanque perfecto! {n} puntos.',
   pondTitle: 'El estanque de Kiki',
+  modeTitle: '¿Cómo quieres jugar?',
+  calm: 'Estanque tranquilo',
+  calmHelp: 'Solo Kiki y tú. Tómate todo el tiempo que quieras.',
+  race: 'Carrera con la garza',
+  raceHelp:
+    'Una garza golosa baja a por el bocado. ¡Alimenta a Kiki antes de que aterrice! Los bocados rápidos dan puntos extra.',
+  heronComing: '¡Ahí viene la garza! Alimenta a Kiki rápido.',
+  stolen: '¡Oh, no! La garza se llevó ese bocado. ¡Al siguiente!',
+  stolenCount: 'La garza se llevó {n} bocados.',
+  quick: '¡Bocado rápido! ¡Puntos extra!',
+  shoo: '¡Fuera, garza! Kiki fue más rápida.',
+  bestRace: 'Récord con la garza: {n}',
+  tapLeft: 'Dale a Kiki el lado izquierdo: {side}',
+  tapRight: 'Dale a Kiki el lado derecho: {side}',
+  tapEqual: 'Los dos lados son iguales: Kiki está llena',
 };
 const fr: Messages = {
   title: 'Le crocodile affamé',
@@ -243,6 +288,21 @@ const fr: Messages = {
   hatGold: 'Couronne dorée',
   perfect: 'Mare parfaite ! {n} points.',
   pondTitle: 'La mare de Kiki',
+  modeTitle: 'Comment veux-tu jouer ?',
+  calm: 'Mare tranquille',
+  calmHelp: 'Juste Kiki et toi. Prends tout ton temps.',
+  race: 'Course du héron',
+  raceHelp:
+    'Un héron gourmand fonce sur la collation. Nourris Kiki avant qu’il se pose ! Les collations rapides donnent des points bonus.',
+  heronComing: 'Voilà le héron ! Nourris vite Kiki.',
+  stolen: 'Oh non ! Le héron a chipé cette collation. À la suivante !',
+  stolenCount: 'Le héron a chipé {n} collations.',
+  quick: 'Collation rapide ! Points bonus !',
+  shoo: 'Ouste, héron ! Kiki a été plus rapide.',
+  bestRace: 'Record de la course du héron : {n}',
+  tapLeft: 'Donne à Kiki le côté gauche : {side}',
+  tapRight: 'Donne à Kiki le côté droit : {side}',
+  tapEqual: 'Les deux côtés sont pareils : Kiki est rassasiée',
 };
 export const crocodileTranslations: Record<Locale, Messages> = { en, de, es, fr };
 export function crocodileText(

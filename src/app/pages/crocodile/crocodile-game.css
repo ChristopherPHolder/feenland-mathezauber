@@ -167,10 +167,6 @@ h1 {
   background: #f4b740;
   box-shadow: inset 0 2px 3px #fff5b7;
 }
-.snacks li.golden.eaten {
-  background: #ffd23f;
-  border-color: #c98a00;
-}
 .snacks li.boss.eaten {
   background: #4aa3ff;
   border-color: #1f5fa8;
@@ -225,10 +221,6 @@ h1 {
   color: #4a1a00;
   animation: shimmer 1.2s linear infinite;
 }
-.combo .streak {
-  margin-left: 8px;
-  font-weight: 400;
-}
 
 /* The pond */
 .board {
@@ -277,6 +269,11 @@ h1 {
 }
 .side {
   position: relative;
+  width: 100%;
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -301,6 +298,23 @@ h1 {
 }
 .side.winner {
   background: #ffe3ee;
+}
+.side[aria-disabled='true'],
+.slot-croc[aria-disabled='true'] {
+  cursor: default;
+}
+.side:hover:not([aria-disabled='true']) {
+  background: #fff9e9;
+}
+.side.shake {
+  animation: shake 0.4s;
+}
+.side.snatched {
+  transform: translateY(-40px) scale(0.6) rotate(8deg);
+  opacity: 0;
+  transition:
+    transform 0.7s ease-in,
+    opacity 0.7s ease-in;
 }
 .side.eaten {
   transform: scale(0.72) translateY(14px) rotate(-5deg);
@@ -403,6 +417,11 @@ h1 {
 .slot-croc {
   display: block;
   width: 170px;
+  padding: 0;
+  border: 0;
+  border-radius: 40px;
+  background: none;
+  cursor: pointer;
   animation: bob 2.6s ease-in-out infinite;
   transition: transform 0.5s ease-out;
 }
@@ -411,9 +430,6 @@ h1 {
 }
 .slot-croc.to-right {
   transform: translateX(42%);
-}
-.slot-croc.surfaced {
-  animation: surface 0.5s ease-out;
 }
 .slot-sign {
   font-size: 34px;
@@ -663,14 +679,6 @@ h1 {
     translate: 0 -6px;
   }
 }
-@keyframes surface {
-  from {
-    transform: translateY(30px) scale(0.6);
-  }
-  to {
-    transform: translateY(0) scale(1);
-  }
-}
 @keyframes pop {
   from {
     transform: scale(0.4);
@@ -872,4 +880,11 @@ h1 {
   .slot-croc.to-right {
     transform: none;
   }
+}
+
+.banner.heron-banner {
+  color: #3f6fa8;
+}
+.stolen .instruction {
+  background: #ffe3ee;
 }

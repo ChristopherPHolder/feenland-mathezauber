@@ -1,5 +1,5 @@
 import type { Progress } from '../../core/catalog';
-import { comparisonStages, ROUND_LENGTH } from './comparison';
+import { ComparisonStage, comparisonStages, ROUND_LENGTH } from './comparison';
 import type { CrocodileMessageKey } from './crocodile-messages';
 export type SnackKind = 'plain' | 'golden' | 'boss';
 export type HatId = 'party' | 'crown' | 'pirate' | 'wizard' | 'flower' | 'gold';
@@ -66,4 +66,24 @@ export function parseBestScores(value: unknown): Readonly<Record<string, number>
         score >= 0,
     ),
   ) as Record<string, number>;
+}
+export type PlayMode = 'calm' | 'race';
+export function parsePlayMode(value: unknown): PlayMode {
+  return value === 'race' ? 'race' : 'calm';
+}
+/** How long the heron takes to reach a snack: longer when there is maths to do, longer for the big fish. */
+export function heronFlight(stage: ComparisonStage | undefined, kind: SnackKind): number {
+  const base = {
+    numbers20: 7000,
+    numbers100: 9000,
+    sums: 11000,
+    differences: 11000,
+    twoSides: 14000,
+    mixed: 13000,
+  }[stage?.skill ?? 'numbers20'];
+  return base + (kind === 'boss' ? 3000 : 0);
+}
+/** Bonus for feeding Kiki while the heron is still far away: 0 to 20 points in steps of 5. */
+export function quickBonus(remaining: number): number {
+  return Math.max(0, Math.min(20, Math.round(remaining * 4) * 5));
 }

@@ -101,3 +101,11 @@ Turned the comparison rounds into a game: a living pond with ripples, bubbles an
 - Chromium: a full German round at desktop and 375px phone widths with the pond, combo banners, golden and boss boards, outcome panel and wardrobe; no horizontal overflow.
 - Axe reported zero WCAG 2 A/AA violations on an active pond round.
 - The component style error budget rose from 8 kB to 12 kB for the richer game screen; the 4 kB warning is unchanged.
+
+
+## Hungry Crocodile heron race — 25 October 2026
+
+Time pressure as gameplay rather than a clock: in the new heron race mode a greedy heron flies in from the top right toward the snack over 7 to 17 seconds depending on the level and the big fish. Feeding Kiki first shoos it away and earns up to 20 bonus points by distance; letting it land snatches the snack (one mistake, combo reset, no points) and the round moves on. The flight pauses while the tab is hidden. The calm pond stays the default; the choice is remembered and each mode keeps its own best score. The lily pads and Kiki are now buttons too, so a child can tap the bigger side directly.
+
+- Production build and all 96 tests pass, including a race round with one snatched snack and one quick bonus, pad tapping, and the mode preference.
+- Chromium: heron flight, snatch and shoo animations, quick-bonus callout and tapped pads at desktop and 375px phone widths; no overflow. Axe: zero WCAG 2 A/AA violations during a race round.

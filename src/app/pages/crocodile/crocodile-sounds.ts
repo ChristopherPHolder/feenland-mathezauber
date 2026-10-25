@@ -1,7 +1,19 @@
 import { DestroyRef, inject, Injectable } from '@angular/core';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
 export type CrocodileSound =
-  'start' | 'chomp' | 'wrong' | 'win' | 'splash' | 'combo' | 'frenzy' | 'golden' | 'boss' | 'hat';
+  | 'start'
+  | 'chomp'
+  | 'wrong'
+  | 'win'
+  | 'splash'
+  | 'combo'
+  | 'frenzy'
+  | 'golden'
+  | 'boss'
+  | 'hat'
+  | 'swoop'
+  | 'steal'
+  | 'shoo';
 /** Component-scoped so leaving the game releases the audio context. Shares the effects preference. */
 @Injectable()
 export class CrocodileSounds {
@@ -35,6 +47,9 @@ export class CrocodileSounds {
       golden: [1047, 1319, 1568],
       boss: [110, 98, 87, 110],
       hat: [784, 988, 1175, 1568],
+      swoop: [440, 494],
+      steal: [392, 311, 262],
+      shoo: [988, 1319],
     };
     const step = kind === 'chomp' || kind === 'splash' ? 0.1 : kind === 'boss' ? 0.22 : 0.13;
     const length = kind === 'chomp' ? 0.16 : kind === 'boss' ? 0.4 : 0.3;

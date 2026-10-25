@@ -11,7 +11,8 @@ import { Locale } from '../../core/messages';
 import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
 import { evaluate } from './comparison.fixture';
-import { SnackKind, snackPoints } from './crocodile-score';
+import { heronFlight, SnackKind, snackPoints } from './crocodile-score';
+import { comparisonStages } from './comparison';
 
 const labels = {
   '>': 'Greater than. The crocodile eats the left side.',
@@ -53,7 +54,7 @@ describe('the hungry crocodile game', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain(crocodileTranslations.en.trick);
     expect(element.textContent).toContain('Level 1 of 6');
-    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
     fixture.detectChanges();
     expect(TestBed.inject(ProgressService).progress().explored).toContain('numbers');
     expect(element.querySelectorAll('.choice').length).toBe(3);
@@ -115,7 +116,7 @@ describe('the hungry crocodile game', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
     fixture.detectChanges();
     for (let n = 0; n < 10; n++) {
       const question = current(element);
@@ -151,6 +152,64 @@ describe('the hungry crocodile game', () => {
     expect(progress.completed).toContain('crocodile-1');
     expect(progress.mastered).not.toContain('crocodile-1');
     expect(progress.stars?.['crocodile-1']).toBe(1);
+  });
+  it('races the heron: a slow snack is snatched, a quick one earns bonus points', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.race-mode')!.click();
+    fixture.detectChanges();
+    expect(localStorage.getItem('feenland.crocodile-mode')).toBe('race');
+    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.banner')?.textContent).toContain('heron');
+    expect(element.querySelector('app-heron.flying')).not.toBeNull();
+    vi.advanceTimersByTime(heronFlight(comparisonStages[0], 'plain') + 10);
+    fixture.detectChanges();
+    expect(element.querySelector('.instruction')!.textContent).toContain('snatched');
+    expect(element.querySelector('app-heron.stole')).not.toBeNull();
+    if (current(element).answer !== '=')
+      expect(element.querySelector('.side.snatched')).not.toBeNull();
+    vi.advanceTimersByTime(1400);
+    fixture.detectChanges();
+    expect(element.textContent).toContain('1 of 10 snacks');
+    // Feeding Kiki right away beats the heron: full quick bonus on top of the base points.
+    const kind = element.querySelector<HTMLElement>('.board')!.dataset['snackKind'] as SnackKind;
+    pick(element, current(element).answer);
+    fixture.detectChanges();
+    expect(element.querySelector('.points-float')?.textContent).toBe(
+      `+${snackPoints(kind, 1) + 20}`,
+    );
+    expect(element.querySelector('.instruction')!.textContent).toContain('Shoo, heron!');
+    expect(element.querySelector('app-heron.shooed')).not.toBeNull();
+    vi.advanceTimersByTime(1400);
+    fixture.detectChanges();
+    for (let n = 2; n < 10; n++) {
+      pick(element, current(element).answer);
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1400);
+      fixture.detectChanges();
+    }
+    expect(element.textContent).toContain('The heron snatched 1 snacks.');
+    expect(element.textContent).toContain('Mistakes: 1');
+    expect(
+      JSON.parse(localStorage.getItem('feenland.crocodile-scores.v1')!).best['crocodile-1/race'],
+    ).toBeGreaterThan(0);
+    expect(TestBed.inject(ProgressService).progress().stars?.['crocodile-1']).toBe(2);
+  });
+  it('feeds Kiki by tapping a lily pad or Kiki herself in the calm pond', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron')).toBeNull();
+    const question = current(element);
+    const target = question.answer === '>' ? 'left' : question.answer === '<' ? 'right' : 'center';
+    element.querySelector<HTMLButtonElement>(`[data-side="${target}"]`)!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.slot-sign')?.textContent?.trim()).toBe(question.answer);
+    expect(element.querySelector('.points-float')?.textContent).toBe('+10');
   });
   it('has identical crocodile message keys for every language', () => {
     for (const locale of Object.keys(crocodileTranslations) as Locale[])
