@@ -9,6 +9,22 @@ export interface Campaign {
   readonly version: 1;
   readonly results: readonly WaveResult[];
 }
+function isValidResult(item: unknown): item is WaveResult {
+  return (
+    !!item &&
+    typeof item === 'object' &&
+    'wave' in item &&
+    typeof item.wave === 'number' &&
+    Number.isInteger(item.wave) &&
+    item.wave >= 1 &&
+    item.wave <= TOTAL_WAVES &&
+    'independent' in item &&
+    typeof item.independent === 'number' &&
+    Number.isInteger(item.independent) &&
+    item.independent >= 0 &&
+    item.independent <= waveSize(item.wave)
+  );
+}
 export function parseCampaign(value: unknown): Campaign {
   const empty: Campaign = { version: 1, results: [] };
   if (
@@ -20,25 +36,12 @@ export function parseCampaign(value: unknown): Campaign {
     !Array.isArray(value.results)
   )
     return empty;
-  const results: WaveResult[] = [];
-  // Accept only a contiguous, valid prefix. Corrupt or future saves never unlock unseen waves.
-  for (const item of value.results as unknown[]) {
-    if (
-      !item ||
-      typeof item !== 'object' ||
-      !('wave' in item) ||
-      item.wave !== results.length + 1 ||
-      !('independent' in item) ||
-      typeof item.independent !== 'number' ||
-      !Number.isInteger(item.independent) ||
-      item.independent < 0 ||
-      item.independent > waveSize(results.length + 1) ||
-      results.length >= TOTAL_WAVES
-    )
-      break;
-    results.push({ wave: results.length + 1, independent: item.independent });
-  }
-  return { version: 1, results };
+  // Every wave is playable in any order, so keep each valid result once and drop the rest.
+  const results = new Map<number, WaveResult>();
+  for (const item of value.results as unknown[])
+    if (isValidResult(item) && !results.has(item.wave))
+      results.set(item.wave, { wave: item.wave, independent: item.independent });
+  return { version: 1, results: [...results.values()].sort((a, b) => a.wave - b.wave) };
 }
 export function campaignStars(campaign: Campaign): number {
   if (campaign.results.length < TOTAL_WAVES) return 0;
@@ -52,19 +55,18 @@ export class CampaignStore {
   private readonly document = inject(DOCUMENT);
   readonly saveFailed = signal(false);
   readonly state = signal<Campaign>(this.restore());
-  readonly unlocked = computed(() => Math.min(TOTAL_WAVES, this.state().results.length + 1));
+  /** Wave numbers with a saved result, in ascending order. */
+  readonly completed = computed(() => this.state().results.map((result) => result.wave));
+  /** The first wave without a saved result; wave 1 once everything is done. */
+  readonly nextWave = computed(() => {
+    const done = new Set(this.completed());
+    for (let wave = 1; wave <= TOTAL_WAVES; wave++) if (!done.has(wave)) return wave;
+    return 1;
+  });
   readonly finished = computed(() => this.state().results.length === TOTAL_WAVES);
   readonly stars = computed(() => campaignStars(this.state()));
   complete(result: WaveResult) {
-    if (
-      !Number.isInteger(result.wave) ||
-      result.wave < 1 ||
-      result.wave > this.unlocked() ||
-      !Number.isInteger(result.independent) ||
-      result.independent < 0 ||
-      result.independent > waveSize(result.wave)
-    )
-      return;
+    if (!isValidResult(result)) return;
     this.state.update((state) => ({
       version: 1,
       results: [
@@ -72,7 +74,7 @@ export class CampaignStore {
         {
           ...result,
           independent: Math.max(
-            state.results[result.wave - 1]?.independent ?? 0,
+            state.results.find((entry) => entry.wave === result.wave)?.independent ?? 0,
             result.independent,
           ),
         },
