@@ -37,7 +37,7 @@ const en = {
   rules:
     'Take your time. Three wrong spells cost one heart. You have three hearts, and you can always try again.',
   play: 'Play',
-  back: 'Back to chapter',
+  back: 'All games',
   pause: 'Pause',
   resume: 'Keep playing',
   restart: 'Restart this wave',
@@ -120,7 +120,7 @@ export const gameMessages: Record<Locale, GameMessages> = {
     rules:
       'Lass dir Zeit. Drei falsche Zauber kosten ein Herz. Du hast drei Herzen und kannst es immer wieder versuchen.',
     play: 'Spielen',
-    back: 'Zurück zum Kapitel',
+    back: 'Alle Spiele',
     pause: 'Pause',
     resume: 'Weiterspielen',
     restart: 'Welle neu starten',
@@ -200,7 +200,7 @@ export const gameMessages: Record<Locale, GameMessages> = {
     rules:
       'Tómate tu tiempo. Tres hechizos incorrectos cuestan un corazón. Tienes tres corazones y siempre puedes volver a intentarlo.',
     play: 'Jugar',
-    back: 'Volver al capítulo',
+    back: 'Todos los juegos',
     pause: 'Pausa',
     resume: 'Seguir jugando',
     restart: 'Reiniciar esta oleada',
@@ -280,7 +280,7 @@ export const gameMessages: Record<Locale, GameMessages> = {
     rules:
       'Prends ton temps. Trois sorts incorrects coûtent un cœur. Tu as trois cœurs et tu peux toujours réessayer.',
     play: 'Jouer',
-    back: 'Retour au chapitre',
+    back: 'Tous les jeux',
     pause: 'Pause',
     resume: 'Continuer à jouer',
     restart: 'Recommencer cette vague',

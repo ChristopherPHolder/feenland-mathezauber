@@ -7,15 +7,16 @@ export interface Level {
   readonly description: MessageKey;
   readonly id: string;
   readonly title: MessageKey;
-  readonly prerequisites: readonly string[];
   readonly skills: readonly string[];
   readonly format: string;
   readonly playtest?: boolean;
 }
+/** A chapter is one game: its levels are the game's selectable levels. */
 export interface Chapter {
   readonly title: MessageKey;
   readonly description: MessageKey;
   readonly id: string;
+  readonly emblem: string;
   readonly levels: readonly Level[];
 }
 export interface World {
@@ -27,7 +28,7 @@ export interface World {
   readonly color: string;
   readonly ground: string;
 }
-// World and chapter IDs are part of saved progress and bookmarks; keep them stable.
+// World, chapter and level IDs are part of saved progress and bookmarks; keep them stable.
 export const worlds: readonly World[] = [
   {
     id: 'numbers',
@@ -39,14 +40,14 @@ export const worlds: readonly World[] = [
     chapters: [
       {
         id: 'friends-of-ten',
-        title: 'friendsOfTen',
-        description: 'friendsOfTenDescription',
+        title: 'fairyCastle',
+        description: 'fairyGameDescription',
+        emblem: '🏰',
         levels: [
           {
             id: 'defend-fairy-castle',
             title: 'fairyCastle',
             description: 'fairyBattleDescription',
-            prerequisites: [],
             skills: ['make-ten'],
             format: 'fairy-defense',
           },
@@ -56,6 +57,7 @@ export const worlds: readonly World[] = [
         id: 'compare-crocodile',
         title: 'crocodileChapter',
         description: 'crocodileChapterHelp',
+        emblem: '🐊',
         levels: comparisonLevels,
       },
     ],
@@ -72,12 +74,12 @@ export const worlds: readonly World[] = [
         id: 'number-walls',
         title: 'numberWalls',
         description: 'numberWallDescription',
+        emblem: '🧱',
         levels: [
           {
             id: 'number-wall',
             title: 'numberWall',
             description: 'numberWallDescription',
-            prerequisites: [],
             skills: ['addition', 'missing-addend'],
             format: 'number-wall',
           },
@@ -97,6 +99,7 @@ export const worlds: readonly World[] = [
         id: 'math-to-30',
         title: 'practicePath',
         description: 'practiceHelp',
+        emblem: '🔍',
         levels: practiceLevels,
       },
     ],
@@ -111,23 +114,34 @@ export interface Progress {
   readonly explored: readonly string[];
 }
 export const emptyProgress: Progress = { version: 1, mastered: [], chapters: [], explored: [] };
-export function levelState(level: Level, progress: Progress): 'locked' | 'available' | 'completed' {
-  if (progress.mastered.includes(level.id) || progress.completed?.includes(level.id))
-    return 'completed';
-  return level.prerequisites.every((id) => progress.mastered.includes(id)) ? 'available' : 'locked';
+/**
+ * Every level is open from the first visit. A level is `completed` once a result was
+ * recorded for it; nothing is ever locked, so the only other state is `open`.
+ */
+export type ContentState = 'open' | 'completed';
+export function levelState(level: Level, progress: Progress): ContentState {
+  return progress.mastered.includes(level.id) || progress.completed?.includes(level.id)
+    ? 'completed'
+    : 'open';
 }
+/** Best stars recorded for a level, 0 when it has never been played. */
+export function levelStars(level: Level, progress: Progress): number {
+  return progress.stars?.[level.id] ?? 0;
+}
+/** The recommendation: the first unplayed level, else the first played level not yet mastered. */
 export function nextLevel(catalog: readonly World[], progress: Progress): Level | undefined {
   const levels = catalog
     .flatMap((world) => world.chapters)
     .flatMap((chapter) => chapter.levels)
     .filter((level) => !level.playtest);
   return (
-    levels.find((level) => levelState(level, progress) === 'available') ??
-    levels.find(
-      (level) =>
-        levelState(level, progress) === 'completed' && !progress.mastered.includes(level.id),
-    )
+    levels.find((level) => levelState(level, progress) === 'open') ??
+    levels.find((level) => !progress.mastered.includes(level.id))
   );
+}
+/** The level a game's Play button opens: its first unmastered level, else its first level. */
+export function entryLevel(chapter: Chapter, progress: Progress): Level | undefined {
+  return chapter.levels.find((level) => !progress.mastered.includes(level.id)) ?? chapter.levels[0];
 }
 export function parseProgress(value: unknown): Progress {
   if (!value || typeof value !== 'object' || !('version' in value) || value.version !== 1)
@@ -167,35 +181,6 @@ export const WORLD_CATALOG = new InjectionToken<readonly World[]>('World catalog
   providedIn: 'root',
   factory: () => worlds,
 });
-export type ContentState = ReturnType<typeof levelState>;
-export function worldState(world: World, progress: Progress): ContentState {
-  return contentState(
-    world.chapters.flatMap((chapter) => chapter.levels),
-    progress,
-  );
-}
-export function chapterState(chapter: Chapter, progress: Progress): ContentState {
-  return contentState(chapter.levels, progress);
-}
-function contentState(levels: readonly Level[], progress: Progress): ContentState {
-  const states = levels.map((level) => levelState(level, progress));
-  if (levels.every((level) => progress.mastered.includes(level.id))) return 'completed';
-  // An earned level remains a way back into a world even when its new levels are locked.
-  if (states.some((state) => state === 'available' || state === 'completed')) return 'available';
-  return 'locked';
-}
-export function worldRequirements(world: World, progress: Progress) {
-  return world.chapters
-    .flatMap((chapter) => chapter.levels)
-    .filter((level) => levelState(level, progress) === 'locked')
-    .map((level) => ({
-      level,
-      prerequisites: [
-        ...new Set(level.prerequisites.filter((id) => !progress.mastered.includes(id))),
-      ],
-    }));
-}
-
 export function findLevel(catalog: readonly World[], id: string | null) {
   for (const world of catalog)
     for (const chapter of world.chapters) {
@@ -203,13 +188,4 @@ export function findLevel(catalog: readonly World[], id: string | null) {
       if (level) return { world, chapter, level };
     }
   return undefined;
-}
-export function findChapter(
-  catalog: readonly World[],
-  worldId: string | null,
-  chapterId: string | null,
-) {
-  const world = catalog.find((world) => world.id === worldId);
-  const chapter = world?.chapters.find((chapter) => chapter.id === chapterId);
-  return world && chapter ? { world, chapter } : undefined;
 }

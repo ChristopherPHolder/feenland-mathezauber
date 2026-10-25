@@ -12,58 +12,8 @@
   flex-direction: column;
   gap: 16px;
 }
-.game-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-h1 {
-  font-size: clamp(26px, 4vw, 38px);
-  margin: 0;
-}
-.level-line {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 16px;
-}
-.top-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: none;
-}
-.icon-button {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border: 0;
-  border-radius: 50%;
-  background: #fff;
-  color: var(--ink);
-  box-shadow: 0 4px 15px #214d5a0a;
-}
-.icon-button svg {
-  width: 26px;
-  height: 26px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.exit-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 46px;
-  padding: 10px 16px;
-  border-radius: var(--radius-panel);
-  background: #fff;
-  text-decoration: none;
-  font-size: 15px;
-  box-shadow: 0 4px 15px #214d5a0a;
+app-game-header {
+  margin-bottom: 4px;
 }
 .panel {
   background: var(--cream);
@@ -73,6 +23,34 @@ h1 {
 }
 .intro {
   text-align: center;
+}
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 18px;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid #6ea274;
+  background: #fff;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--warm-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
 }
 .intro h2 {
   font-size: clamp(22px, 3vw, 30px);
@@ -732,13 +710,6 @@ h1 {
   }
   .game {
     gap: 12px;
-  }
-  .game-top {
-    flex-direction: column;
-  }
-  .top-actions {
-    width: 100%;
-    justify-content: space-between;
   }
   .panel {
     padding: 20px 16px;

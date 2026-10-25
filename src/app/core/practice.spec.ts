@@ -4,7 +4,6 @@ describe('practice progression', () => {
   it('offers nine directly selectable stages with valid equations at every difficulty', () => {
     expect(practiceLevels).toHaveLength(9);
     for (const level of practiceLevels) {
-      expect(level.prerequisites).toEqual([]);
       const config = level.practice!;
       for (const difficulty of ['easy', 'medium', 'hard'] as const) {
         const pool = questionPool(config, difficulty);

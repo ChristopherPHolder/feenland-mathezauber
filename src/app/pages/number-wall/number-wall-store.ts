@@ -23,10 +23,6 @@ export class NumberWallStore {
   hasStar(level: WallLevel): boolean {
     return this.rating(level) > 0;
   }
-  /** Every level is open from the start; stars reward finishing a level, they never gate one. */
-  unlocked(level: WallLevel): boolean {
-    return levels.includes(level);
-  }
   starredLevels(): number {
     return levels.filter((level) => this.hasStar(level)).length;
   }

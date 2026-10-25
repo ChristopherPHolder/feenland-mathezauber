@@ -17,8 +17,13 @@ export class LocaleService {
   constructor() {
     this.apply();
   }
-  t(key: MessageKey): string {
-    return this.messages()[key];
+  /** A localized message; `{name}` placeholders take `values`, with numbers formatted for the locale. */
+  t(key: MessageKey, values: Record<string, string | number> = {}): string {
+    return Object.entries(values).reduce(
+      (text, [name, value]) =>
+        text.replaceAll(`{${name}}`, typeof value === 'number' ? this.format(value) : value),
+      this.messages()[key],
+    );
   }
   format(value: number): string {
     return new Intl.NumberFormat(this.locale()).format(value);

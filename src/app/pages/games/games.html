@@ -1,0 +1,143 @@
+<section class="games-page" aria-labelledby="games-title">
+  <header class="games-intro">
+    <div>
+      <h1 id="games-title">{{ i.t('gamesTitle') }}</h1>
+      <p class="lead">{{ i.t('gamesHelp') }}</p>
+    </div>
+    <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
+  </header>
+  @for (game of games(); track game.chapter.id) {
+    @let chapter = game.chapter;
+    <section
+      class="game"
+      [id]="chapter.id"
+      [attr.data-game]="chapter.id"
+      [style.--world-color]="game.world.color"
+      [style.--world-ground]="game.world.ground"
+      [attr.aria-labelledby]="'title-' + chapter.id"
+    >
+      <!-- The world id keeps old /worlds/:id links landing on that world's first game. -->
+      <span class="world-anchor" [id]="game.world.id" aria-hidden="true"></span>
+      <header class="game-head">
+        <span class="game-emblem" aria-hidden="true">{{ chapter.emblem }}</span>
+        <div class="game-copy">
+          <p class="world-name">{{ game.world.emblem }} {{ i.t(game.world.title) }}</p>
+          <h2 [id]="'title-' + chapter.id">{{ i.t(chapter.title) }}</h2>
+          <p>{{ i.t(chapter.description) }}</p>
+        </div>
+      </header>
+      @switch (chapter.levels[0]?.format) {
+        @case ('fairy-defense') {
+          @let castle = chapter.levels[0];
+          <ul class="level-list castle">
+            <li>
+              <a
+                class="level-card hero-card"
+                [id]="castle.id"
+                [class.recommended]="castle.id === nextId()"
+                [routerLink]="['/adventure', castle.id]"
+              >
+                <span class="level-number">{{
+                  i.t('castleWaves', { n: campaign.completed().length, total: totalWaves })
+                }}</span>
+                <span class="level-name">{{
+                  campaign.finished()
+                    ? i.t('playAgain')
+                    : i.t('continueWave', { n: campaign.nextWave() })
+                }}</span>
+                <span class="level-help">{{ i.t(castle.description) }}</span>
+                <span class="level-foot">
+                  <app-star-rating [stars]="stars(castle)" />
+                  @if (mastered(castle)) {
+                    <span class="level-state"
+                      ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
+                    >
+                  }
+                  @if (castle.id === nextId()) {
+                    <span class="level-badge">{{ i.t('recommended') }}</span>
+                  }
+                </span>
+                <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
+              </a>
+            </li>
+          </ul>
+        }
+        @case ('number-wall') {
+          @let wall = chapter.levels[0];
+          <ol class="level-list">
+            @for (level of wallLevels; track level) {
+              <li>
+                <a
+                  class="level-card"
+                  [id]="level === 1 ? wall.id : wall.id + '-' + level"
+                  [class.recommended]="level === 1 && wall.id === nextId()"
+                  [class.mastered]="walls.rating(level) === 3"
+                  [routerLink]="['/adventure', wall.id]"
+                  [queryParams]="{ level: level }"
+                >
+                  <span class="level-number">{{ i.t('levelLabel', { n: level }) }}</span>
+                  <span class="level-name">{{ i.t(wallTitle(level)) }}</span>
+                  <span class="level-help">{{ i.t(wallHelp(level)) }}</span>
+                  <span class="level-foot">
+                    <app-star-rating [stars]="walls.rating(level)" />
+                    @if (level === 1 && wall.id === nextId()) {
+                      <span class="level-badge">{{ i.t('recommended') }}</span>
+                    }
+                  </span>
+                  <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
+                </a>
+              </li>
+            }
+          </ol>
+        }
+        @default {
+          <ol class="level-list">
+            @for (level of chapter.levels; track level.id; let index = $index) {
+              <li>
+                <a
+                  class="level-card"
+                  [id]="level.id"
+                  [class.recommended]="level.id === nextId()"
+                  [class.mastered]="mastered(level)"
+                  [routerLink]="['/adventure', level.id]"
+                >
+                  <span class="level-number">{{ i.t('levelLabel', { n: index + 1 }) }}</span>
+                  @if (example(level); as example) {
+                    <span class="level-example">{{ example }}</span>
+                  }
+                  <span class="level-name">{{ i.t(level.title) }}</span>
+                  <span class="level-help">
+                    @if (level.practice; as practice) {
+                      {{ i.t('upTo') }} {{ i.format(practice.max) }}
+                    } @else {
+                      {{ i.t(level.description) }}
+                    }
+                  </span>
+                  <span class="level-foot">
+                    <app-star-rating [stars]="stars(level)" />
+                    @if (best(level) > 0) {
+                      <span class="level-state">{{ i.t('bestPoints', { n: best(level) }) }}</span>
+                    } @else if (mastered(level)) {
+                      <span class="level-state"
+                        ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
+                      >
+                    } @else if (completed(level)) {
+                      <span class="level-state"
+                        ><app-icon kind="check" />{{ i.t('completedLabel') }}</span
+                      >
+                    }
+                    @if (level.id === nextId()) {
+                      <span class="level-badge">{{ i.t('recommended') }}</span>
+                    }
+                  </span>
+                  <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
+                </a>
+              </li>
+            }
+          </ol>
+        }
+      }
+    </section>
+  }
+  <p class="games-end">{{ i.t('invitation') }}</p>
+</section>

@@ -121,7 +121,6 @@ describe('Number wall game', () => {
     );
     expect(element.querySelectorAll('.star-row app-icon.earned')).toHaveLength(3);
     const store = TestBed.inject(NumberWallStore);
-    expect(store.unlocked(2)).toBe(true);
     expect(store.rating(1)).toBe(3);
     expect(store.save()).toMatchObject({ gems: 15, bestStreak: 5 });
     expect(TestBed.inject(ProgressService).progress().completed).toContain('number-wall');

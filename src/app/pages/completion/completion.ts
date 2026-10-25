@@ -3,7 +3,7 @@ import { Component, computed, inject } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CompletionService } from '../../core/completion';
-import { findLevel, levelState, nextLevel, WORLD_CATALOG } from '../../core/catalog';
+import { findLevel, nextLevel, WORLD_CATALOG } from '../../core/catalog';
 import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
 import { Icon } from '../../shared/icon';
@@ -26,26 +26,19 @@ export class Completion {
   protected g(key: GameMessageKey, values: Record<string, number> = {}) {
     return gameText(this.i.locale(), key, values);
   }
+  /** The following level of the same game first, then the catalog-wide recommendation. */
   protected readonly next = computed(() => {
     const result = this.result();
     const context = this.context();
-    if (context?.level.practice && result) {
-      const following = context.chapter.levels.filter(
-        (level) => (level.practice?.stage ?? 0) > context.level.practice!.stage,
-      );
-      return following.find((level) => !this.p.progress().mastered.includes(level.id));
-    }
-    if (context?.level.format === 'crocodile' && result) {
+    if (!result) return undefined;
+    if (context) {
       const progress = this.p.progress();
       const following = context.chapter.levels
         .slice(context.chapter.levels.indexOf(context.level) + 1)
-        .find(
-          (level) =>
-            !progress.mastered.includes(level.id) && levelState(level, progress) === 'available',
-        );
+        .find((level) => !progress.mastered.includes(level.id));
       if (following) return following;
     }
-    return result ? nextLevel(this.catalog, this.p.progress()) : undefined;
+    return nextLevel(this.catalog, this.p.progress());
   });
   protected readonly chapterEarned = computed(() => {
     const context = this.context();

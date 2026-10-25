@@ -1,4 +1,4 @@
-import { findLevel, levelState, Progress, World } from './catalog';
+import { findLevel, Progress, World } from './catalog';
 export interface LevelResult {
   readonly levelId: string;
   readonly completed: true;
@@ -27,12 +27,7 @@ export function applyResult(
 ): Progress | undefined {
   if (!isLevelResult(result)) return undefined;
   const context = findLevel(catalog, result.levelId);
-  if (
-    !context ||
-    context.level.playtest ||
-    !['available', 'completed'].includes(levelState(context.level, progress))
-  )
-    return undefined;
+  if (!context || context.level.playtest) return undefined;
   const mastered = result.mastered
     ? [...new Set([...progress.mastered, result.levelId])]
     : progress.mastered;

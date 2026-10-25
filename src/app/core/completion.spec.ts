@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../app.routes';
-import { emptyProgress, findLevel, nextLevel, World, worlds } from './catalog';
+import { emptyProgress, nextLevel, World, worlds } from './catalog';
 import { ProgressService } from './progress';
 import { CompletionService } from './completion';
 import { applyResult, LevelResult } from './results';
@@ -24,18 +24,18 @@ describe('Explicit learning results', () => {
     expect(replay.mastered).toEqual([wall]);
     expect(replay.chapters).toEqual(mastered.chapters);
   });
-  it('rejects unknown, locked and malformed results', () => {
+  it('rejects unknown, playtest and malformed results', () => {
     const tens = worlds.find((world) => world.id === 'tens')!;
-    const gated: readonly World[] = [
+    const playtest: readonly World[] = [
       {
         ...tens,
         chapters: tens.chapters.map((chapter) => ({
           ...chapter,
-          levels: chapter.levels.map((level) => ({ ...level, prerequisites: ['other'] })),
+          levels: chapter.levels.map((level) => ({ ...level, playtest: true })),
         })),
       },
     ];
-    expect(applyResult(gated, emptyProgress, earned)).toBeUndefined();
+    expect(applyResult(playtest, emptyProgress, earned)).toBeUndefined();
     for (const result of [
       { ...earned, levelId: 'unknown' },
       { ...earned, stars: 4 },
@@ -62,15 +62,13 @@ describe('Completion flow', () => {
     expect(
       h.routeNativeElement?.querySelector('a[href="/adventure/defend-fairy-castle"]'),
     ).toBeTruthy();
-    const chapter = findLevel(worlds, wall)!.chapter.id;
-    expect(
-      h.routeNativeElement?.querySelector(`a[href="/worlds/tens/chapters/${chapter}#${wall}"]`),
-    ).toBeTruthy();
+    expect(h.routeNativeElement?.querySelector(`a[href="/games#${wall}"]`)).toBeTruthy();
+    expect(h.routeNativeElement?.querySelector(`a[href="/adventure/${wall}"]`)).toBeTruthy();
     expect(JSON.parse(localStorage.getItem('feenland.progress')!).mastered).toEqual([wall]);
   });
   it('does not award from completion URLs and restores only a receipt for recorded progress', async () => {
     const h = await RouterTestingHarness.create('/complete/' + wall);
-    expect(TestBed.inject(Router).url).toBe('/worlds');
+    expect(TestBed.inject(Router).url).toBe('/games');
     const c = TestBed.inject(CompletionService);
     expect(c.finish(earned)).toBe(true);
     await h.navigateByUrl('/complete/' + wall);

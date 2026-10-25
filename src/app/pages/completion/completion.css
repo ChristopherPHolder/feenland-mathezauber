@@ -36,12 +36,22 @@ h2 {
   gap: 12px;
   align-items: center;
 }
-.button {
-  margin-top: 16px;
+.actions {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
 }
 .caught {
-  margin: 24px 0;
+  margin: 8px 0;
   font-size: 22px;
+}
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  justify-self: start;
+  font-weight: 600;
 }
 @media (max-width: 700px) {
   .completion-page {
@@ -55,6 +65,9 @@ h2 {
     max-width: 260px;
     justify-self: center;
   }
+  .actions {
+    max-width: none;
+  }
 }
 @media (max-height: 550px) {
   .celebration img {
@@ -64,7 +77,6 @@ h2 {
     justify-self: center;
   }
 }
-
 .castle-stars {
   display: flex;
   gap: 12px;

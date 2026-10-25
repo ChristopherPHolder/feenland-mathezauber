@@ -122,7 +122,11 @@ p {
 nav {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 6px;
+  padding: 5px;
+  border-radius: var(--radius-button);
+  background: #ffffffb3;
+  box-shadow: 0 4px 15px #214d5a0a;
 }
 nav a {
   display: flex;
@@ -131,15 +135,20 @@ nav a {
   min-height: 46px;
   padding: 10px 16px;
   text-decoration: none;
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-button);
   font-size: 15px;
+  font-weight: 600;
+}
+nav a app-icon {
+  width: 22px;
+  height: 22px;
 }
 nav a.active {
   background: #ffe3ee;
   color: #a3124a;
 }
 nav a:hover {
-  background: #fffdf5;
+  background: var(--cream);
 }
 .settings-link {
   min-width: 46px;
@@ -267,17 +276,19 @@ dialog::backdrop {
     font-size: 15px;
   }
   nav {
-    gap: 4px;
+    gap: 2px;
   }
   nav a {
-    padding: 10px;
-    font-size: 13px;
+    padding: 10px 12px;
+    font-size: 14px;
   }
-  nav > a:first-child {
-    display: none;
-  }
-  nav > a:nth-child(2) app-icon {
-    display: none;
+  nav > a:first-child span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   footer {
     padding: 24px 20px;

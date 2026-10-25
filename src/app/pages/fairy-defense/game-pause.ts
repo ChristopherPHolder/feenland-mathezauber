@@ -24,12 +24,8 @@ export class GamePause {
   protected readonly i = inject(LocaleService);
   protected readonly store = inject(PlaytestStore);
   protected readonly soundKeys: readonly (keyof AudioSettings)[] = ['music', 'effects', 'speech'];
-  readonly chapterLink = input<readonly string[]>([
-    '/worlds',
-    'numbers',
-    'chapters',
-    'friends-of-ten',
-  ]);
+  /** The games-hub section the exit link lands on. */
+  readonly gamesAnchor = input('friends-of-ten');
   protected readonly languages = [
     { id: 'en', name: 'English' },
     { id: 'de', name: 'Deutsch' },
