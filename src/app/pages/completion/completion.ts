@@ -3,7 +3,7 @@ import { Component, computed, inject } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CompletionService } from '../../core/completion';
-import { findLevel, nextLevel, WORLD_CATALOG } from '../../core/catalog';
+import { findLevel, levelState, nextLevel, WORLD_CATALOG } from '../../core/catalog';
 import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
 import { Icon } from '../../shared/icon';
@@ -36,6 +36,16 @@ export class Completion {
       return following.find(
         (level) => !this.p.progressFor(result.source).mastered.includes(level.id),
       );
+    }
+    if (context?.level.format === 'crocodile' && result) {
+      const progress = this.p.progressFor(result.source);
+      const following = context.chapter.levels
+        .slice(context.chapter.levels.indexOf(context.level) + 1)
+        .find(
+          (level) =>
+            !progress.mastered.includes(level.id) && levelState(level, progress) === 'available',
+        );
+      if (following) return following;
     }
     const catalog =
       result?.source === 'demo'

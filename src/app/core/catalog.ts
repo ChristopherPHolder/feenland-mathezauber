@@ -1,5 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { practiceLevels, PracticeConfig } from './practice';
+import { comparisonLevels } from '../pages/crocodile/comparison';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
@@ -130,6 +131,12 @@ const catalog: readonly World[] = [
                   format: 'fairy-defense',
                 },
               ],
+            },
+            {
+              id: 'compare-crocodile',
+              title: 'crocodileChapter',
+              description: 'crocodileChapterHelp',
+              levels: comparisonLevels,
             },
           ]
         : title === 'tens'

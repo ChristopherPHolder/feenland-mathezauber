@@ -1,0 +1,172 @@
+<section class="game" aria-labelledby="crocodile-title">
+  <header class="game-top">
+    <div>
+      <h1 id="crocodile-title">{{ t('title') }}</h1>
+      @if (stage(); as stage) {
+        <p class="level-line">
+          {{ t('level', { n: stage.stage, total: total }) }} · {{ i.t(levelKey(stage.stage)) }}
+        </p>
+      }
+    </div>
+    <div class="top-actions">
+      <button
+        class="icon-button"
+        type="button"
+        [attr.aria-pressed]="sounds.enabled"
+        [attr.aria-label]="t(sounds.enabled ? 'soundOn' : 'soundOff')"
+        (click)="sounds.toggle()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9v6h4l5 4V5L8 9z" />
+          @if (sounds.enabled) {
+            <path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" />
+          } @else {
+            <path d="m16 9 5 6m0-6-5 6" />
+          }
+        </svg>
+      </button>
+      <a class="exit-link" [routerLink]="chapterLink"><app-icon kind="back" />{{ t('back') }}</a>
+    </div>
+  </header>
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="trick-title">
+      <h2 id="trick-title">{{ t('trick') }}</h2>
+      <div class="demo" aria-hidden="true">
+        <div class="demo-row">
+          <span class="demo-number">3</span>
+          <span class="demo-croc"><app-crocodile facing="right" /></span>
+          <span class="demo-number big">8</span>
+        </div>
+        <div class="demo-row">
+          <span class="demo-number">6</span>
+          <span class="demo-croc"><app-crocodile kind="front" /></span>
+          <span class="demo-number">6</span>
+        </div>
+      </div>
+      <p>{{ t('trickExample') }}</p>
+      <p>{{ t('trickEqual') }}</p>
+      @if (stage(); as stage) {
+        <p class="example">{{ i.t(helpKey(stage.stage)) }}</p>
+      }
+      <button class="button primary" type="button" (click)="play()">
+        {{ t('start') }}<app-icon kind="arrow" />
+      </button>
+    </section>
+  } @else if (round().phase === 'complete') {
+    <section #outcome class="panel outcome" tabindex="-1" [attr.aria-label]="t('done')">
+      <span class="outcome-croc"><app-crocodile kind="front" /></span>
+      <h2>{{ t('done') }}</h2>
+      <p>{{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}</p>
+      <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+        @for (star of starSlots; track star) {
+          <app-icon kind="star" [class.earned]="star <= stars()" />
+        }
+      </div>
+      <p class="outcome-help">
+        {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        @if (stars() >= 2 && stage()?.stage === total) {
+          {{ t('lastLevel') }}
+        }
+      </p>
+      @if (saveFailed()) {
+        <p class="save-note" role="alert">{{ t('save') }}</p>
+      }
+      <div class="outcome-actions">
+        @if (nextLink(); as next) {
+          <a class="button primary" [routerLink]="next">{{ t('next') }}<app-icon kind="arrow" /></a>
+          <button class="button secondary" type="button" (click)="celebrate()">
+            {{ t('celebrate') }}
+          </button>
+        } @else {
+          <button class="button primary" type="button" (click)="celebrate()">
+            {{ t('celebrate') }}<app-icon kind="arrow" />
+          </button>
+        }
+        <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+      </div>
+    </section>
+  } @else {
+    <div class="snack-bar">
+      <ol class="snacks" [attr.aria-label]="t('snacks', { n: round().index })">
+        @for (snack of snacks; track snack) {
+          <li [class.eaten]="snack < round().index" aria-hidden="true"></li>
+        }
+      </ol>
+      <p class="snack-count">
+        {{ t('snacks', { n: round().index }) }}
+        @if (round().streak >= 3 && round().phase === 'chomping') {
+          <strong>{{ t('streak', { n: round().streak }) }}</strong>
+        }
+      </p>
+    </div>
+    <section class="panel board" [class.chomping]="round().phase === 'chomping'">
+      <div class="sides" [class.needs-maths]="needsMaths()">
+        <div class="side" [class.winner]="round().chosen === '>'">
+          <span class="side-text">{{ question().left.text }}</span>
+          @if (showHint() && needsMaths()) {
+            <span class="side-value">= {{ i.format(question().left.value) }}</span>
+          }
+        </div>
+        <div class="slot" aria-hidden="true">
+          @if (round().chosen; as chosen) {
+            <span class="slot-croc">
+              @if (chosen === '=') {
+                <app-crocodile kind="front" />
+              } @else {
+                <app-crocodile [facing]="chosen === '>' ? 'left' : 'right'" [chomping]="true" />
+              }
+            </span>
+            <span class="slot-sign">{{ chosen }}</span>
+          } @else {
+            <span class="slot-empty">?</span>
+          }
+        </div>
+        <div class="side" [class.winner]="round().chosen === '<'">
+          <span class="side-text">{{ question().right.text }}</span>
+          @if (showHint() && needsMaths()) {
+            <span class="side-value">= {{ i.format(question().right.value) }}</span>
+          }
+        </div>
+      </div>
+      @if (showHint()) {
+        <div class="bars" aria-hidden="true">
+          <span
+            class="bar left"
+            [style.width.%]="(question().left.value / (stage()?.max ?? 20)) * 100"
+          ></span>
+          <span
+            class="bar right"
+            [style.width.%]="(question().right.value / (stage()?.max ?? 20)) * 100"
+          ></span>
+        </div>
+      }
+      <p class="instruction" role="status" aria-live="polite" aria-atomic="true">
+        {{ message() }}
+      </p>
+    </section>
+    <fieldset class="choices" [attr.aria-busy]="round().phase !== 'ready'">
+      <legend class="sr-only">{{ t('chooseLabel') }}</legend>
+      @for (choice of choices; track choice) {
+        <button
+          class="choice"
+          type="button"
+          [class.shake]="wrongPick() === choice"
+          [class.picked]="round().chosen === choice"
+          [attr.aria-disabled]="round().phase !== 'ready'"
+          [attr.aria-label]="label(choice)"
+          (click)="choose(choice)"
+        >
+          <span class="choice-croc">
+            @if (choice === '=') {
+              <app-crocodile kind="front" />
+            } @else {
+              <app-crocodile [facing]="choice === '>' ? 'left' : 'right'" />
+            }
+          </span>
+          <span class="choice-sign">{{ choice }}</span>
+        </button>
+      }
+    </fieldset>
+  }
+</section>
