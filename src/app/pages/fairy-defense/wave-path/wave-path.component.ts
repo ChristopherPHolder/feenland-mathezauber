@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { Icon } from '../../../shared/icon';
 import { LocaleService } from '../../../core/locale';
 import { gameText, GameMessageKey } from '../game-messages';
@@ -6,85 +6,72 @@ import { TOTAL_WAVES } from '../waves';
 @Component({
   selector: 'app-wave-path',
   imports: [Icon],
-  template: `<details>
-    <summary>
-      {{ t('chooseWave') }} <span>{{ t('savedWaves', { n: completed() }) }}</span>
-    </summary>
-    <ol class="wave-path" [attr.aria-label]="t('waveMenu')">
+  template: `<h2 id="wave-path-title">{{ t('chooseWave') }}</h2>
+    <p class="wave-status">{{ t('savedWaves', { n: completed().length }) }}</p>
+    <ol class="wave-path" aria-labelledby="wave-path-title">
       @for (wave of waves; track wave) {
         <li>
           <button
-            [disabled]="wave > unlocked()"
-            [class.done]="wave <= completed()"
+            type="button"
+            [class.done]="done().has(wave)"
             [class.boss]="wave % 5 === 0"
+            [class.next]="wave === next()"
             [attr.aria-label]="
-              t(
-                wave > unlocked()
-                  ? 'lockedWave'
-                  : wave <= completed()
-                    ? 'completedWave'
-                    : 'waveButton',
-                { n: wave }
-              ) + (wave % 5 === 0 ? ' · ' + t('bossWave') : '')
+              t(done().has(wave) ? 'completedWave' : 'waveButton', { n: wave }) +
+              (wave % 5 === 0 ? ' · ' + t('bossWave') : '') +
+              (wave === next() ? ' · ' + t('nextUp') : '')
             "
             (click)="selectWave.emit(wave)"
           >
             <span>{{ wave }}</span
-            ><app-icon
-              [kind]="
-                wave > unlocked()
-                  ? 'lock'
-                  : wave <= completed()
-                    ? 'check'
-                    : wave % 5 === 0
-                      ? 'cup'
-                      : 'gem'
-              "
-            />
+            ><app-icon [kind]="done().has(wave) ? 'check' : wave % 5 === 0 ? 'cup' : 'gem'" />
           </button>
         </li>
       }
-    </ol>
-  </details>`,
+    </ol>`,
   styles: `
     :host {
       display: block;
       background: #fffdf5;
-      padding: 16px 28px;
+      padding: 20px 28px;
     }
-    summary {
-      cursor: pointer;
-      min-height: 44px;
-      line-height: 1.5;
-      padding: 10px 0;
-      font-size: 18px;
+    h2 {
+      font-size: 22px;
+      line-height: 1.3;
+      margin: 0;
     }
-    summary span {
+    .wave-status {
       font-size: 14px;
       color: #4c6079;
-      margin-left: 16px;
+      margin: 4px 0 0;
     }
     .wave-path {
       display: grid;
       grid-template-columns: repeat(10, minmax(0, 1fr));
       gap: 12px;
       list-style: none;
-      padding: 12px 0;
+      padding: 14px 0 0;
       margin: 0;
     }
     .wave-path button {
       width: 100%;
-      min-height: 64px;
+      min-height: 68px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 5px;
       padding: 10px;
-      border: 1px solid #75857a;
-      border-radius: 14px;
+      border: 2px solid #75857a;
+      border-radius: 16px;
       color: #172555;
       background: #fff9e9;
-      font-size: 20px;
+      font-size: 22px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .wave-path button:hover {
+      background: #fff1cb;
     }
     .wave-path app-icon {
       width: 18px;
@@ -92,38 +79,38 @@ import { TOTAL_WAVES } from '../waves';
     }
     .wave-path .done {
       background: #dfefe3;
+      border-color: #28604b;
     }
     .wave-path .boss {
-      border: 2px solid #87502c;
+      border-color: #87502c;
     }
-    .wave-path button:disabled {
-      background: #eeece4;
-      color: #56615c;
-      cursor: default;
+    .wave-path .next {
+      border-color: #c91860;
+      box-shadow: 0 0 0 3px #c9186033;
     }
     @media (max-width: 700px) {
       :host {
-        padding: 12px 16px;
+        padding: 16px;
       }
       .wave-path {
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 8px;
       }
-      summary span {
-        display: block;
-        margin: 4px 0 0;
-      }
       .wave-path button {
         min-height: 60px;
+        font-size: 20px;
       }
     }
   `,
 })
 export class WavePathComponent {
-  readonly unlocked = input(1);
-  readonly completed = input(0);
+  /** Wave numbers that already have a saved result. */
+  readonly completed = input<readonly number[]>([]);
+  /** The wave the child is expected to play next; highlighted, never gated. */
+  readonly next = input(1);
   readonly selectWave = output<number>();
   protected readonly waves = Array.from({ length: TOTAL_WAVES }, (_, i) => i + 1);
+  protected readonly done = computed(() => new Set(this.completed()));
   private readonly i = inject(LocaleService);
   protected t(key: GameMessageKey, values: Record<string, number> = {}) {
     return gameText(this.i.locale(), key, values);

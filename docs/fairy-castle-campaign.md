@@ -22,7 +22,7 @@ There are 76 successful spells in a complete campaign. This is intended for mult
 
 ## Saving and replay
 
-Completing a wave immediately saves its result locally and unlocks the next wave. Return later to start that next unfinished wave with three hearts. Leaving mid-wave restarts that wave, preserving earlier completed waves. The wave path lists all twenty waves; completed waves remain available to replay and future waves remain locked. Pause includes a wave-path option.
+Completing a wave immediately saves its result locally. Play highlights the first unfinished wave, and returning later starts there with three hearts. Leaving mid-wave restarts that wave, preserving completed waves. The wave path is always open and lists all twenty waves as tappable buttons; nothing is locked, completed waves show a check and can be replayed, and bosses show a cup. Saved results may therefore have gaps; stars still require all twenty. Pause includes a wave-path option.
 
 Campaign saves use `feenland.castle-campaign.v1`. Audio and tutorial preferences retain the original `feenland.playtest.*` keys for compatibility. The original two-monster playtest checkpoint does not count as completed campaign content. Corrupt/future saves are ignored safely; valid contiguous prefixes are retained. When storage is unavailable, play continues in memory with a visible save warning.
 

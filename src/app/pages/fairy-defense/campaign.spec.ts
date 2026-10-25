@@ -82,35 +82,45 @@ describe('saved campaign', () => {
     TestBed.configureTestingModule({});
   });
   afterEach(() => TestBed.resetTestingModule());
-  it('unlocks only sequential waves and restores completed boundaries', () => {
+  it('lets any wave be played in any order and points to the first unfinished one', () => {
     const store = TestBed.inject(CampaignStore);
+    expect(store.nextWave()).toBe(1);
     store.complete({ wave: 2, independent: 2 });
-    expect(store.unlocked()).toBe(1);
+    expect(store.completed()).toEqual([2]);
+    expect(store.nextWave()).toBe(1);
     store.complete({ wave: 1, independent: 0 });
-    expect(store.unlocked()).toBe(2);
+    expect(store.completed()).toEqual([1, 2]);
+    expect(store.nextWave()).toBe(3);
+    store.complete({ wave: 20, independent: 5 });
+    expect(store.completed()).toEqual([1, 2, 20]);
+    for (const invalid of [0, 21, 1.5, NaN]) store.complete({ wave: invalid, independent: 0 });
+    expect(store.completed()).toEqual([1, 2, 20]);
     const saved = localStorage.getItem('feenland.castle-campaign.v1');
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
-    expect(TestBed.inject(CampaignStore).unlocked()).toBe(2);
+    expect(TestBed.inject(CampaignStore).completed()).toEqual([1, 2, 20]);
+    expect(TestBed.inject(CampaignStore).nextWave()).toBe(3);
     expect(saved).not.toBeNull();
   });
-  it('rejects corrupt, future, gapped and invalid results without losing valid prefixes', () => {
-    for (const value of [
-      null,
-      {},
-      { version: 2, results: [] },
-      { version: 1, results: [{ wave: 2, independent: 0 }] },
-    ])
+  it('drops corrupt, future and invalid results while keeping every valid saved wave', () => {
+    for (const value of [null, {}, { version: 2, results: [] }])
       expect(parseCampaign(value).results).toEqual([]);
     expect(
       parseCampaign({
         version: 1,
         results: [
-          { wave: 1, independent: 0 },
+          { wave: 5, independent: 1 },
           { wave: 2, independent: 99 },
+          { wave: 21, independent: 0 },
+          { wave: 1, independent: 0 },
+          { wave: 1, independent: 2 },
+          'junk',
         ],
       }).results,
-    ).toHaveLength(1);
+    ).toEqual([
+      { wave: 1, independent: 0 },
+      { wave: 5, independent: 1 },
+    ]);
   });
   it('awards stars only after all 20 and keeps best results when replayed', () => {
     const store = TestBed.inject(CampaignStore);
@@ -143,7 +153,7 @@ describe('saved campaign', () => {
     };
     try {
       store.complete({ wave: 1, independent: 0 });
-      expect(store.unlocked()).toBe(2);
+      expect(store.nextWave()).toBe(2);
       expect(store.saveFailed()).toBe(true);
     } finally {
       Storage.prototype.setItem = original;
