@@ -162,6 +162,24 @@ describe('Wave 1 playable integration', () => {
     fixture.detectChanges();
     expect(element.querySelectorAll('.wave-path button')).toHaveLength(20);
   });
+  it('starts the initially selected castle card and starts it again after returning to the menu', () => {
+    const { fixture, element, click } = setup();
+    const openCastle = () => {
+      element.querySelector<HTMLLabelElement>('.level-card')!.click();
+      fixture.detectChanges();
+      expect(element.querySelector('.start-curtain')).toBeNull();
+      expect(element.querySelector('.spell-bar')).toBeTruthy();
+      expect(element.querySelector('.level-picker')).toBeNull();
+    };
+    openCastle();
+    click('Pause');
+    click('Choose a wave');
+    openCastle();
+    click('Cast spell 1');
+    vi.advanceTimersByTime(2650);
+    fixture.detectChanges();
+    expect(element.querySelector('.number-badge')?.textContent?.trim()).toBe('8');
+  });
   it('starts a practice stage with one tap on its card', () => {
     const { fixture, element, click } = setup();
     const cards = element.querySelectorAll<HTMLInputElement>('.level-card input');
