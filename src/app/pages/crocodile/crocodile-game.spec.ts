@@ -152,6 +152,33 @@ describe('the hungry crocodile game', () => {
     expect(progress.mastered).not.toContain('crocodile-1');
     expect(progress.stars?.['crocodile-1']).toBe(1);
   });
+  it('starts neutral, previews each direction and returns to neutral after a snack', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    fixture.detectChanges();
+    vi.advanceTimersByTime(20);
+    fixture.detectChanges();
+    expect(document.activeElement).not.toBe(element.querySelector('.choice'));
+    expect(element.querySelector('.slot .front')).not.toBeNull();
+    const left = element.querySelector<HTMLButtonElement>('.choice')!;
+    left.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .profile.flip.open')).not.toBeNull();
+    left.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .front')).not.toBeNull();
+    const right = element.querySelectorAll('.choice')[2];
+    right.dispatchEvent(new Event('pointerenter'));
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .profile.open:not(.flip)')).not.toBeNull();
+    pick(element, current(element).answer);
+    fixture.detectChanges();
+    vi.advanceTimersByTime(1400);
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .front')).not.toBeNull();
+  });
   it('has identical crocodile message keys for every language', () => {
     for (const locale of Object.keys(crocodileTranslations) as Locale[])
       expect(Object.keys(crocodileTranslations[locale]).sort()).toEqual(

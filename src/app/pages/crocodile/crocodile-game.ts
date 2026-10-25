@@ -53,7 +53,7 @@ const BANNER_DELAY = 1800;
   imports: [RouterLink, Icon, CrocodileArt, PondScene, HatWardrobe],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
-  styleUrls: ['./crocodile-game.css', './crocodile-motion.css'],
+  styleUrls: ['./crocodile-game.css', './crocodile-motion.css', './crocodile-responsive.css'],
   host: { '(document:keydown)': 'onKey($event)' },
 })
 export class CrocodileGame {
@@ -183,7 +183,7 @@ export class CrocodileGame {
     this.sounds.play('start');
     requestAnimationFrame(() =>
       this.host.nativeElement
-        .querySelector<HTMLButtonElement>('.choice')
+        .querySelector<HTMLElement>('.choices')
         ?.focus({ preventScroll: true }),
     );
   }
