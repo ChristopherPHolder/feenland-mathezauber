@@ -8,6 +8,7 @@ import { emptyProgress } from '../../core/catalog';
 import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
 import { Locale } from '../../core/messages';
+import { BUBBLE_PACE_KEY } from './bubble-pace';
 import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
 import { evaluate } from './comparison.fixture';
@@ -184,8 +185,8 @@ describe('the hungry crocodile game', () => {
     await vi.advanceTimersByTimeAsync(20);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector<HTMLInputElement>('.bubble-toggle input')!.checked).toBe(false);
-    element.querySelector<HTMLInputElement>('.bubble-toggle input')!.click();
+    expect(element.querySelector<HTMLInputElement>('input[value=normal]')!.checked).toBe(false);
+    element.querySelector<HTMLInputElement>('input[value=normal]')!.click();
     element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
     await vi.advanceTimersByTimeAsync(20);
     await fixture.whenStable();
@@ -222,7 +223,7 @@ describe('the hungry crocodile game', () => {
     await vi.advanceTimersByTimeAsync(20);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLInputElement>('.bubble-toggle input')!.click();
+    element.querySelector<HTMLInputElement>('input[value=normal]')!.click();
     element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
     await vi.advanceTimersByTimeAsync(20);
     await fixture.whenStable();
@@ -247,6 +248,89 @@ describe('the hungry crocodile game', () => {
     fixture.destroy();
     hidden.mockRestore();
     expect(() => vi.advanceTimersByTime(30000)).not.toThrow();
+  });
+  it.each([
+    ['relaxed', 30, 45],
+    ['normal', 15, 25],
+    ['fast', 8, 15],
+  ] as const)(
+    'remembers %s across visits and uses its deadline for numbers and sums',
+    async (pace, seconds, mathsSeconds) => {
+      const fixture = TestBed.createComponent(CrocodileGame);
+      await vi.advanceTimersByTimeAsync(20);
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      element.querySelector<HTMLInputElement>(`input[value=${pace}]`)!.click();
+      await vi.advanceTimersByTimeAsync(20);
+      await fixture.whenStable();
+      expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe(pace);
+      fixture.destroy();
+      const restored = TestBed.createComponent(CrocodileGame);
+      await vi.advanceTimersByTimeAsync(20);
+      await restored.whenStable();
+      const game = restored.nativeElement as HTMLElement;
+      expect(game.querySelector<HTMLInputElement>(`input[value=${pace}]`)!.checked).toBe(true);
+      game.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+      await vi.advanceTimersByTimeAsync(20);
+      await restored.whenStable();
+      expect(game.querySelector('.bubble-seconds')!.textContent).toContain(`${seconds} s`);
+      vi.advanceTimersByTime((seconds - 1) * 1000);
+      await vi.advanceTimersByTimeAsync(20);
+      await restored.whenStable();
+      expect(game.querySelector('.bubble-race.popped')).toBeNull();
+      vi.advanceTimersByTime(1200);
+      await vi.advanceTimersByTimeAsync(20);
+      await restored.whenStable();
+      expect(game.querySelector('.bubble-race.popped')).not.toBeNull();
+      game.querySelector<HTMLButtonElement>('.bubble-heading button')!.click();
+      await vi.advanceTimersByTimeAsync(20);
+      await restored.whenStable();
+      expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe('off');
+      expect(document.activeElement).toBe(game.querySelector('.choices'));
+      restored.destroy();
+      localStorage.setItem(BUBBLE_PACE_KEY, pace);
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [CrocodileGame],
+        providers: [
+          provideRouter([]),
+          {
+            provide: ActivatedRoute,
+            useValue: { paramMap: of(convertToParamMap({ id: 'crocodile-3' })) },
+          },
+        ],
+      });
+      const maths = TestBed.createComponent(CrocodileGame);
+      await vi.advanceTimersByTimeAsync(20);
+      await maths.whenStable();
+      const mathsGame = maths.nativeElement as HTMLElement;
+      mathsGame.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+      await vi.advanceTimersByTimeAsync(20);
+      await maths.whenStable();
+      expect(mathsGame.querySelector('.bubble-seconds')!.textContent).toContain(
+        `${mathsSeconds} s`,
+      );
+    },
+  );
+  it('recovers from an invalid saved pace and remains usable when storage is blocked', async () => {
+    localStorage.setItem(BUBBLE_PACE_KEY, 'turbo');
+    const fixture = TestBed.createComponent(CrocodileGame);
+    await vi.advanceTimersByTimeAsync(20);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector<HTMLInputElement>('input[value=off]')!.checked).toBe(true);
+    const save = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    try {
+      element.querySelector<HTMLInputElement>('input[value=fast]')!.click();
+      element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+      await vi.advanceTimersByTimeAsync(20);
+      await fixture.whenStable();
+      expect(element.querySelector('.bubble-seconds')!.textContent).toContain('8 s');
+    } finally {
+      save.mockRestore();
+    }
   });
   it('has identical crocodile message keys for every language', () => {
     for (const locale of Object.keys(crocodileTranslations) as Locale[])

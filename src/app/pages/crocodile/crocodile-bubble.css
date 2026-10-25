@@ -1,29 +1,98 @@
 .bubble-option {
-  margin: 24px auto 0;
-  max-width: 55ch;
-  padding: 16px;
-  background: #e5f3f7;
-  border-radius: 16px;
+  margin: 28px auto 0;
+  max-width: 680px;
+  padding: 0;
+  border: 0;
   text-align: left;
+  min-width: 0;
 }
-.bubble-toggle {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-height: 44px;
-  cursor: pointer;
+.bubble-option legend {
+  padding: 0;
+  font-size: 24px;
   font-weight: 600;
-  font-size: 20px;
 }
-.bubble-toggle input {
-  width: 24px;
-  height: 24px;
-  accent-color: #1746ab;
-  flex: none;
-}
-.bubble-option p {
-  font-size: 15px;
+.intro .bubble-option p {
+  margin: 8px 0 16px;
   line-height: 1.5;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border: 2px solid #9ab8bd;
+  border-radius: 16px;
+  background: #fff;
+  color: #172555;
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice:hover {
+  background: #edf7fb;
+  border-color: #286d8b;
+}
+.pace-choice.selected {
+  background: #e1f2df;
+  border-color: #326a3a;
+}
+.pace-choice:focus-within {
+  outline: 3px solid #1746ab;
+  outline-offset: 4px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #326a3a;
+}
+.pace-choice strong {
+  font-size: 18px;
+}
+.pace-choice span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.pace-picture {
+  width: 64px;
+  height: 40px;
+  margin-top: 8px;
+  fill: none;
+  stroke: #286d8b;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.selected .pace-picture {
+  stroke: #326a3a;
+}
+.intro .bubble-option .pace-rule {
+  margin: 14px 0 0;
+  font-size: 15px;
+  color: #344a64;
+}
+.active-pace {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 14px;
+  font-weight: 400;
+}
+@media (max-width: 600px) {
+  .pace-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .bubble-option legend {
+    font-size: 22px;
+  }
 }
 .bubble-race {
   padding: 12px 20px 20px;
