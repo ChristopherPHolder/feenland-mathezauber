@@ -24,6 +24,23 @@ import type { HatId } from './crocodile-score';
           <ng-container *ngTemplateOutlet="hatArt" />
         </svg:g>
       </svg>
+    } @else if (kind() === 'waiting') {
+      <svg viewBox="0 0 160 100" aria-hidden="true" class="waiting">
+        <circle cx="52" cy="34" r="15" class="skin" />
+        <circle cx="108" cy="34" r="15" class="skin" />
+        <rect x="26" y="36" width="108" height="58" rx="29" class="skin" />
+        <circle cx="52" cy="32" r="8" fill="#fff" />
+        <circle cx="108" cy="32" r="8" fill="#fff" />
+        <circle cx="52" cy="36" r="4" class="ink" />
+        <circle cx="108" cy="36" r="4" class="ink" />
+        <path d="M42 24 Q52 20 62 24M98 24 Q108 20 118 24" class="brow" />
+        <circle cx="68" cy="58" r="3" class="dark" />
+        <circle cx="92" cy="58" r="3" class="dark" />
+        <path d="M56 76 Q80 80 104 76" class="smile" />
+        <svg:g class="hat" transform="translate(80 22) scale(1.1)">
+          <ng-container *ngTemplateOutlet="hatArt" />
+        </svg:g>
+      </svg>
     } @else if (kind() === 'hat') {
       <svg viewBox="-24 -34 48 46" aria-hidden="true" class="only-hat">
         <svg:g class="hat" transform="translate(0 2)">
@@ -148,6 +165,12 @@ import type { HatId } from './crocodile-score';
       stroke: #fff;
       stroke-width: 2.5;
     }
+    .brow {
+      fill: none;
+      stroke: #3a8f55;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
     .flip {
       transform: scaleX(-1);
     }
@@ -194,7 +217,7 @@ import type { HatId } from './crocodile-score';
   host: { '[class.hat-only]': "kind() === 'hat'" },
 })
 export class CrocodileArt {
-  readonly kind = input<'profile' | 'front' | 'hat'>('profile');
+  readonly kind = input<'profile' | 'front' | 'waiting' | 'hat'>('profile');
   readonly facing = input<'left' | 'right'>('right');
   readonly open = input(true);
   readonly chomping = input(false);

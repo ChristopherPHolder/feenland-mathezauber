@@ -133,7 +133,7 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
       }
       to {
         left: 4%;
-        top: 14%;
+        top: -4%;
       }
     }
     @keyframes fly-right {
@@ -143,7 +143,7 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
       }
       to {
         left: 62%;
-        top: 14%;
+        top: -4%;
       }
     }
     @keyframes fly-center {
@@ -153,13 +153,13 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
       }
       to {
         left: 34%;
-        top: 10%;
+        top: -6%;
       }
     }
     @keyframes snatch-left {
       0% {
         left: 4%;
-        top: 14%;
+        top: -4%;
       }
       30% {
         left: 6%;
@@ -173,7 +173,7 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
     @keyframes snatch-right {
       0% {
         left: 62%;
-        top: 14%;
+        top: -4%;
       }
       30% {
         left: 64%;
@@ -187,7 +187,7 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
     @keyframes snatch-center {
       0% {
         left: 34%;
-        top: 10%;
+        top: -6%;
       }
       30% {
         left: 36%;

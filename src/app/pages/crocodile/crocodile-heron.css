@@ -1,99 +1,102 @@
-.bubble-option {
-  margin: 28px auto 0;
-  max-width: 680px;
-  padding: 0;
-  border: 0;
-  text-align: left;
-  min-width: 0;
-}
-.bubble-option legend {
-  padding: 0;
-  font-size: 24px;
-  font-weight: 600;
-}
-.intro .bubble-option p {
-  margin: 8px 0 16px;
-  line-height: 1.5;
-}
-.pace-options {
+/* The heron's flight strip: a visible countdown above the pond, with the way to send it home */
+.heron-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-.pace-choice {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 4px;
-  padding: 14px 8px;
-  border: 2px solid #9ab8bd;
-  border-radius: var(--radius-surface)
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 8px 6px 16px;
+  border-radius: var(--radius-button);
   background: var(--paper);
-  color: var(--ink);
-  cursor: pointer;
-  text-align: center;
+  box-shadow: var(--shadow-rest);
 }
-.pace-choice:hover {
-  background: var(--ground);
-  border-color: var(--lagoon);
-}
-.pace-choice.selected {
-  background: #e1f2df;
-  border-color: var(--success-strong);
-}
-.pace-choice:focus-within {
-  outline: 3px solid var(--focus);
-  outline-offset: 4px;
-}
-.pace-choice input {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  margin: 0;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--success-strong);
-}
-.pace-choice strong {
-  font-size: 18px;
-}
-.pace-choice span {
+.heron-label {
   font-size: 14px;
-  line-height: 1.4;
+  font-weight: 600;
+  color: var(--lagoon);
 }
-.pace-picture {
-  width: 64px;
-  height: 40px;
-  margin-top: 8px;
-  fill: none;
-  stroke: var(--lagoon);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.heron-track {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--sky-soft);
 }
-.selected .pace-picture {
-  stroke: var(--success-strong);
+.heron-water {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--lagoon);
+  transform-origin: left;
 }
-.intro .bubble-option .pace-rule {
-  margin: 14px 0 0;
+.heron-pad {
+  position: absolute;
+  left: -4px;
+  top: -7px;
+  width: 24px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--leaf);
+  box-shadow: inset 0 -3px 0 var(--success);
+}
+.heron-flyer {
+  position: absolute;
+  top: -17px;
+  left: calc(100% - 46px);
+  width: 46px;
+}
+.flying .heron-water {
+  animation: heron-water var(--flight, 8000ms) linear forwards;
+}
+.flying .heron-flyer {
+  animation: heron-fly var(--flight, 8000ms) linear forwards;
+}
+.paused .heron-water,
+.paused .heron-flyer {
+  animation-play-state: paused;
+}
+.urgent .heron-water {
+  background: var(--pink-deep);
+}
+.heron-seconds {
+  min-width: 3.2ch;
+  text-align: right;
   font-size: 15px;
-  color: #344a64;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
-
-/* Sending the heron away mid-round */
+.heron-track.urgent + .heron-seconds {
+  color: var(--pink-deep);
+}
 .heron-off {
-  min-height: 44px;
-  padding: 8px 14px;
-  border: 0;
-  border-radius: var(--radius-pill)
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 2px solid var(--sky-soft);
+  border-radius: var(--radius-pill);
   background: var(--paper);
   color: var(--ink);
   font: inherit;
   font-size: 14px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  box-shadow: var(--shadow-rest);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.heron-off:hover {
+  border-color: var(--lagoon);
+}
+@keyframes heron-water {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes heron-fly {
+  from {
+    left: calc(100% - 46px);
+  }
+  to {
+    left: 4px;
+  }
 }
 
 /* Lily pads and Kiki are buttons: tap the bigger side, or Kiki for equal */
@@ -133,13 +136,31 @@
   color: var(--pink-deep);
 }
 .banner.heron-banner {
-  color: #3f6fa8;
+  color: var(--sky-deep);
 }
 .stolen .instruction {
   background: var(--pink-ground);
 }
+@media (max-width: 640px) {
+  .heron-strip {
+    gap: 8px;
+    min-height: 48px;
+    padding: 4px 6px 4px 12px;
+  }
+  .heron-label {
+    font-size: 13px;
+  }
+  .heron-off {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .side.snatched {
     transition: none;
+  }
+  .heron-water,
+  .heron-flyer {
+    animation: none;
   }
 }

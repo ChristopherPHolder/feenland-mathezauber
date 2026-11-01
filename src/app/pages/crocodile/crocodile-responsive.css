@@ -1,3 +1,73 @@
+/* While a round is on, phones and tablets give the pond the whole screen and keep the answers
+   pinned at the bottom, where a thumb rests. */
+@media (max-width: 1024px) {
+  .game.playing {
+    min-height: calc(100dvh - 48px);
+  }
+  .playing .board {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .playing .sides {
+    flex: 1 1 auto;
+  }
+  .playing .choices {
+    flex: none;
+  }
+}
+
+/* Tablets in portrait: scale the pond up with the height */
+@media (min-width: 641px) and (max-width: 1024px) and (min-height: 900px) {
+  .playing .sides {
+    grid-template-columns: minmax(0, 1fr) 220px minmax(0, 1fr);
+  }
+  .playing .side {
+    min-height: 180px;
+    padding: 20px 12px;
+    box-shadow:
+      0 0 0 9px var(--leaf-bright),
+      0 12px 24px #0f4c5c33;
+  }
+  .playing .tile {
+    min-width: 72px;
+    height: 88px;
+    font-size: 48px;
+  }
+  .playing .plain .tile {
+    min-width: 110px;
+    height: 110px;
+    font-size: 66px;
+  }
+  .playing .operator {
+    width: 44px;
+    height: 44px;
+    font-size: 30px;
+  }
+  .playing .slot {
+    min-height: 200px;
+  }
+  .playing .slot-croc {
+    max-width: 220px;
+  }
+  .playing .instruction {
+    font-size: 22px;
+  }
+  .playing .choices {
+    gap: 16px;
+  }
+  .playing .choice {
+    min-height: 190px;
+  }
+  .playing .choice-croc {
+    width: 150px;
+  }
+  .playing .choice-sign {
+    font-size: 40px;
+  }
+}
+
 @media (max-width: 640px) {
   :host {
     padding: 12px 12px 24px;
@@ -5,23 +75,37 @@
   .game {
     gap: 12px;
   }
+  .game.playing {
+    min-height: calc(100dvh - 36px);
+  }
   .panel {
     padding: 20px 16px;
   }
   .board {
     padding: 22px 12px 14px;
   }
-  .demo-row {
-    grid-template-columns: 54px 96px 54px;
-  }
-  .demo-number {
-    font-size: 30px;
-  }
-  .demo-croc {
-    width: 96px;
-  }
   .hud {
-    gap: 6px 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .snack-bar {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .snacks {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .score,
+  .combo {
+    justify-content: center;
+    text-align: center;
+  }
+  .score {
+    padding: 6px 10px;
   }
   .score strong {
     font-size: 22px;
@@ -37,10 +121,10 @@
   .side {
     min-height: 98px;
     padding: 10px 6px;
-    border-radius: var(--radius-pill)
+    border-radius: var(--radius-pill);
     box-shadow:
       0 0 0 5px var(--leaf-bright),
-      0 8px 16px #0f4c5c33;;
+      0 8px 16px #0f4c5c33;
   }
   .expression {
     gap: 4px;
@@ -66,7 +150,7 @@
     font-size: 24px;
     box-shadow:
       0 4px 0 #e2dcc4,
-      0 6px 14px #214d5a12;;
+      0 6px 14px #214d5a12;
   }
   .plain .tile,
   .boss .plain .tile {
@@ -79,10 +163,6 @@
     height: 24px;
     flex: none;
     font-size: 21px;
-  }
-  .side-value {
-    font-size: 18px;
-    padding: 3px 12px;
   }
   .slot {
     min-height: 96px;
@@ -116,6 +196,9 @@
     min-height: 112px;
     padding: 10px 4px 8px;
   }
+  .playing .choice {
+    min-height: 140px;
+  }
   .choice-croc {
     width: 84px;
   }
@@ -123,14 +206,51 @@
     font-size: 28px;
   }
   .snacks li {
-    width: 20px;
-    height: 15px;
+    width: 18px;
+    height: 14px;
   }
   .snacks li.boss {
-    width: 26px;
-    height: 18px;
+    width: 24px;
+    height: 17px;
+  }
+  .snack-count {
+    font-size: 13px;
+    white-space: nowrap;
   }
 }
+
+/* Phones that are tall enough: bigger tiles and Kiki in the grown pond */
+@media (max-width: 640px) and (min-height: 760px) {
+  .playing .side {
+    min-height: 118px;
+  }
+  .playing .tile {
+    min-width: 40px;
+    height: 66px;
+    font-size: 30px;
+  }
+  .playing .plain .tile,
+  .playing .boss .plain .tile {
+    min-width: 84px;
+    height: 84px;
+    font-size: 48px;
+  }
+  .playing .operator {
+    width: 30px;
+    height: 30px;
+    font-size: 24px;
+  }
+  .playing .slot-croc {
+    width: 116px;
+  }
+  .playing .choice {
+    min-height: 150px;
+  }
+  .playing .choice-croc {
+    width: 96px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
@@ -145,7 +265,7 @@
   }
 }
 
-/* Leave room for the answers and correction hints in short tablet landscapes. */
+/* Leave room for the answers in short tablet landscapes. */
 @media (min-width: 641px) and (max-height: 760px) {
   :host {
     padding-top: 12px;
@@ -153,6 +273,9 @@
   }
   .game {
     gap: 12px;
+  }
+  .game.playing {
+    min-height: calc(100dvh - 28px);
   }
   .board {
     padding: 20px 20px 14px;

@@ -126,11 +126,14 @@ describe('the hungry crocodile game', () => {
         fixture.detectChanges();
         expect(element.querySelector('.instruction')!.textContent).toContain('Try again');
         expect(element.querySelector('.slot-sign')).toBeNull();
-        expect(element.querySelector('.bars')).not.toBeNull();
         vi.advanceTimersByTime(900);
         fixture.detectChanges();
-        expect(element.querySelector('.instruction')!.textContent).toContain(
-          `left side makes ${question.left}`,
+        // The retry never gives the worked-out values away.
+        expect(element.querySelector('.bars')).toBeNull();
+        expect(element.querySelector('.side-value')).toBeNull();
+        expect(element.querySelector('.instruction')!.textContent).toContain('look again');
+        expect(element.querySelector('.instruction')!.textContent).not.toContain(
+          String(question.left),
         );
         pick(element, wrong[1]);
         fixture.detectChanges();
@@ -162,14 +165,14 @@ describe('the hungry crocodile game', () => {
     vi.advanceTimersByTime(20);
     fixture.detectChanges();
     expect(document.activeElement).not.toBe(element.querySelector('.choice'));
-    expect(element.querySelector('.slot .front')).not.toBeNull();
+    expect(element.querySelector('.slot .waiting')).not.toBeNull();
     const left = element.querySelector<HTMLButtonElement>('.choice')!;
     left.dispatchEvent(new Event('focus'));
     fixture.detectChanges();
     expect(element.querySelector('.slot .profile.flip.open')).not.toBeNull();
     left.dispatchEvent(new Event('blur'));
     fixture.detectChanges();
-    expect(element.querySelector('.slot .front')).not.toBeNull();
+    expect(element.querySelector('.slot .waiting')).not.toBeNull();
     const right = element.querySelectorAll('.choice')[2];
     right.dispatchEvent(new Event('pointerenter'));
     fixture.detectChanges();
@@ -178,7 +181,7 @@ describe('the hungry crocodile game', () => {
     fixture.detectChanges();
     vi.advanceTimersByTime(1400);
     fixture.detectChanges();
-    expect(element.querySelector('.slot .front')).not.toBeNull();
+    expect(element.querySelector('.slot .waiting')).not.toBeNull();
   });
   it('races the heron at the chosen pace: a slow snack is snatched, a quick one earns a bonus', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
@@ -236,7 +239,7 @@ describe('the hungry crocodile game', () => {
     element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
     fixture.detectChanges();
     expect(
-      element.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+      element.querySelector<HTMLElement>('app-heron.in-pond')!.style.getPropertyValue('--flight'),
     ).toBe('30000ms');
     const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
     document.dispatchEvent(new Event('visibilitychange'));
@@ -283,7 +286,7 @@ describe('the hungry crocodile game', () => {
     mathsGame.querySelector<HTMLButtonElement>('.intro .primary')!.click();
     maths.detectChanges();
     expect(
-      mathsGame.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+      mathsGame.querySelector<HTMLElement>('app-heron.in-pond')!.style.getPropertyValue('--flight'),
     ).toBe('15000ms');
   });
   it('recovers from an invalid saved pace and remains usable when storage is blocked', () => {
@@ -300,7 +303,7 @@ describe('the hungry crocodile game', () => {
       element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
       fixture.detectChanges();
       expect(
-        element.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+        element.querySelector<HTMLElement>('app-heron.in-pond')!.style.getPropertyValue('--flight'),
       ).toBe('8000ms');
     } finally {
       save.mockRestore();
