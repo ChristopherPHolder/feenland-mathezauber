@@ -11,18 +11,18 @@
   width: 10px;
   height: 16px;
   border-radius: 3px;
-  background: #e0457b;
+  background: var(--confetti-pink);
   animation: confetti 2.6s ease-in forwards;
   animation-delay: calc(var(--i) * 0.12s);
 }
 .confetti span:nth-child(3n) {
-  background: #f4b740;
+  background: var(--sun);
 }
 .confetti span:nth-child(3n + 1) {
-  background: #4aa3ff;
+  background: var(--sky);
 }
 .confetti span:nth-child(4n) {
-  background: #52b36b;
+  background: var(--leaf);
 }
 
 @keyframes shake {
@@ -83,7 +83,7 @@
 @keyframes bump {
   30% {
     transform: scale(1.35);
-    color: #a3124a;
+    color: var(--pink-deep);
   }
 }
 @keyframes float-up {

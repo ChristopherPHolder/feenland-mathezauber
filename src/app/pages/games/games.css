@@ -92,11 +92,11 @@
   min-height: 150px;
   padding: 18px 64px 18px 20px;
   border: 3px solid transparent;
-  border-radius: 20px;
+  border-radius: var(--radius-pill)
   background: var(--cream);
   color: var(--ink);
   text-decoration: none;
-  box-shadow: 0 4px 15px #214d5a0a;
+  box-shadow: var(--shadow-rest);
   transition:
     transform 0.15s,
     border-color 0.15s;
@@ -157,13 +157,13 @@
 .level-state app-icon {
   width: 20px;
   height: 20px;
-  color: #9a5b00;
+  color: var(--amber-ink);
 }
 .level-badge {
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-chip)
   background: var(--world-color);
-  color: #fff;
+  color: var(--paper);
   font-size: 13px;
   font-weight: 600;
 }
@@ -178,8 +178,8 @@
   display: grid;
   place-items: center;
   background: var(--pink);
-  color: #fff;
-  box-shadow: 0 6px 16px #b722511c;
+  color: var(--paper);
+  box-shadow: var(--shadow-primary);
 }
 .level-go app-icon {
   width: 24px;
@@ -219,7 +219,7 @@
     width: 56px;
     height: 56px;
     font-size: 36px;
-    border-radius: 18px;
+    border-radius: var(--radius-tile)
   }
   .game-copy h2 {
     font-size: 24px;

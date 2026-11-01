@@ -3,11 +3,11 @@ dialog {
   max-height: 90dvh;
   overflow: auto;
   border: 0;
-  border-radius: 24px;
+  border-radius: var(--radius-panel)
   padding: 28px;
-  background: #fffdf5;
-  color: #172555;
-  box-shadow: 0 16px 60px #10284155;
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: 0 16px 60px #10284155;;
 }
 dialog::backdrop {
   background: #102841aa;
@@ -41,7 +41,7 @@ dialog .button {
 .sound-settings input {
   width: 24px;
   height: 24px;
-  accent-color: #c91860;
+  accent-color: var(--pink);
 }
 .language-label {
   display: flex;
@@ -57,7 +57,7 @@ dialog .button {
   padding: 8px;
   border: 1px solid #728078;
   border-radius: 8px;
-  background: #fff;
+  background: var(--paper);
 }
 .exit-link {
   display: block;

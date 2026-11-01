@@ -1,17 +1,17 @@
 :host {
   display: block;
-  background: #183b38;
+  background: var(--forest-night);
   min-height: 100dvh;
   padding: 16px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left));
-  color: #172555;
+  color: var(--ink);
 }
 .game {
   max-width: 1280px;
   margin: auto;
-  background: #fff9e9;
-  border-radius: 24px;
+  background: var(--parchment);
+  border-radius: var(--radius-panel)
   overflow: hidden;
-  box-shadow: 0 16px 50px #041b3355;
+  box-shadow: var(--shadow-castle);
 }
 
 .game-header {
@@ -31,10 +31,10 @@
 .story-panel {
   max-width: 530px;
   text-align: center;
-  background: #fff9e9;
+  background: var(--parchment);
   padding: 28px 36px;
   border-radius: 22px;
-  box-shadow: 0 12px 36px #08272b55;
+  box-shadow: 0 12px 36px #08272b55;;
 }
 .story-panel h2 {
   font-size: clamp(26px, 3vw, 37px);
@@ -47,7 +47,7 @@
 }
 .story-panel .rule-copy {
   font-size: 14px;
-  color: #4d573f;
+  color: var(--moss-ink);
 }
 .story-panel .button {
   margin-top: 10px;
@@ -55,10 +55,10 @@
 }
 .playtest-note {
   font-size: 13px;
-  color: #4d573f;
+  color: var(--moss-ink);
 }
 .outcome > app-icon {
-  color: #916619;
+  color: var(--bronze);
   width: 40px;
   height: 40px;
   margin-bottom: 10px;
@@ -81,7 +81,7 @@
 }
 .learning-dock {
   padding: 14px 20px;
-  background: #fffdf5;
+  background: var(--cream);
 }
 .ten-frame-wrap {
   display: flex;
@@ -97,8 +97,8 @@
   height: 44px;
   border: 0;
   border-radius: 50%;
-  background: #f0eddb;
-  color: #172555;
+  background: var(--sand);
+  color: var(--ink);
 }
 .hint-button svg {
   width: 26px;
@@ -132,20 +132,20 @@
   grid-template-columns: repeat(5, 24px);
   gap: 7px;
   padding: 10px 12px;
-  background: #f0eddb;
-  border-radius: 12px;
+  background: var(--sand);
+  border-radius: var(--radius-chip)
 }
 .dot {
   width: 24px;
   height: 24px;
   border: 2px dashed #79673e;
   border-radius: 50%;
-  background: #fffdf5;
+  background: var(--cream);
 }
 .dot.filled {
   border: 2px solid #80551f;
   background: #e8b54d;
-  box-shadow: inset 0 2px 3px #fff5b7;
+  box-shadow: inset 0 2px 3px #fff5b7;;
 }
 .game-foot {
   display: flex;
@@ -158,7 +158,7 @@
 }
 .game-foot span {
   max-width: 65ch;
-  color: #4d573f;
+  color: var(--moss-ink);
 }
 .game-foot a {
   flex: none;
@@ -170,7 +170,7 @@
   line-height: 1.5;
   padding: 10px 28px;
   margin: 0;
-  background: #f0e5c9;
+  background: var(--parchment-deep);
 }
 .is-paused * {
   animation-play-state: paused !important;
@@ -183,11 +183,11 @@
 @media (max-width: 600px) {
   :host {
     padding: 0;
-    background: #fff9e9;
+    background: var(--parchment);
   }
   .game {
     border-radius: 0;
-    box-shadow: none;
+    box-shadow: none;;
   }
 
   .learning-dock {
@@ -283,13 +283,13 @@
   }
   .game {
     border-radius: 0;
-    box-shadow: none;
+    box-shadow: none;;
   }
 }
 
 .level-picker {
-  background: #fff9e9;
-  color: #172555;
+  background: var(--parchment);
+  color: var(--ink);
   padding: 20px 28px;
   border-top: 1px solid #e6dfc8;
 }
@@ -311,19 +311,19 @@
   min-height: 128px;
   padding: 14px 16px;
   border: 2px solid #75857a;
-  border-radius: 16px;
-  background: #fffdf5;
-  color: #172555;
+  border-radius: var(--radius-surface)
+  background: var(--cream);
+  color: var(--ink);
   line-height: 1.3;
   cursor: pointer;
 }
 .level-card:hover {
-  background: #fff1cb;
+  background: var(--warm-ground);
 }
 .level-card.selected {
-  border-color: #c91860;
-  background: #fff1cb;
-  box-shadow: 0 0 0 3px #c9186033;
+  border-color: var(--pink);
+  background: var(--warm-ground);
+  box-shadow: 0 0 0 3px #c9186033;;
 }
 .level-card:has(:focus-visible) {
   outline: 3px solid var(--focus);
@@ -343,8 +343,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #172555;
-  color: #fffdf5;
+  background: var(--ink);
+  color: var(--cream);
   font-weight: 700;
   font-size: 18px;
 }
@@ -362,12 +362,12 @@
 }
 .level-detail {
   font-size: 14px;
-  color: #4c6079;
+  color: var(--muted);
 }
 .level-switch {
   margin: 0;
   padding: 16px 28px;
-  background: #fff9e9;
+  background: var(--parchment);
 }
 .level-switch a {
   display: inline-block;
@@ -375,8 +375,8 @@
   padding: 10px 0;
 }
 .practice-settings {
-  background: #fffdf5;
-  color: #172555;
+  background: var(--cream);
+  color: var(--ink);
   padding: 12px 28px 20px;
   border-top: 1px solid #e6dfc8;
 }
@@ -396,8 +396,8 @@
   font: inherit;
   padding: 8px;
   margin: 12px 0;
-  color: #172555;
-  background: white;
+  color: var(--ink);
+  background: var(--paper);
 }
 .practice-options {
   display: flex;
@@ -405,8 +405,8 @@
   flex-wrap: wrap;
 }
 .practice-options fieldset {
-  border: 1px solid #4c6079;
-  border-radius: 12px;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius-chip)
   padding: 12px 20px;
 }
 .practice-options label {
@@ -418,7 +418,7 @@
 .practice-options input {
   width: 22px;
   height: 22px;
-  accent-color: #c91860;
+  accent-color: var(--pink);
 }
 @media (max-width: 600px) {
   .level-picker,
@@ -442,5 +442,5 @@
   margin: 0;
   text-align: center;
   font-size: 16px;
-  color: #172555;
+  color: var(--ink);
 }

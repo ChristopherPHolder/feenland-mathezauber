@@ -62,7 +62,7 @@ import { Icon } from './icon';
       text-decoration: none;
       font-weight: 600;
       font-size: 15px;
-      box-shadow: 0 4px 15px #214d5a0a;
+      box-shadow: var(--shadow-rest);
     }
     .games-link app-icon {
       width: 22px;

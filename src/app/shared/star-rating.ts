@@ -17,15 +17,15 @@ import { Icon } from './icon';
     .stars {
       display: inline-flex;
       gap: 3px;
-      color: #b9b3a2;
+      color: var(--star-empty);
     }
     app-icon {
       width: 22px;
       height: 22px;
     }
     app-icon.earned {
-      color: #c58d00;
-      fill: #ffcf4d;
+      color: var(--star-ink);
+      fill: var(--star-fill);
     }
   `,
 })
