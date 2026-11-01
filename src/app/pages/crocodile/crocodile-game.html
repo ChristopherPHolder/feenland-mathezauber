@@ -1,4 +1,8 @@
-<section class="game" aria-labelledby="game-title">
+<section
+  class="game"
+  [class.playing]="started() && round().phase !== 'complete'"
+  aria-labelledby="game-title"
+>
   <app-game-header
     [title]="t('title')"
     [detail]="
@@ -188,12 +192,35 @@
           <span class="streak">{{ t('streak', { n: round().streak }) }}</span>
         }
       </p>
-      @if (timed()) {
+    </div>
+    @if (timed()) {
+      <section class="heron-strip" [attr.aria-label]="t('heronLabel')">
+        <span class="heron-label">{{ t('heronLabel') }}</span>
+        @if (heron(); as flight) {
+          <div
+            class="heron-track"
+            [class.flying]="flight.state === 'flying'"
+            [class.paused]="flight.paused"
+            [class.urgent]="flight.state === 'flying' && secondsLeft() <= 3"
+            [style.--flight.ms]="flight.duration"
+            aria-hidden="true"
+          >
+            <span class="heron-water"></span>
+            <span class="heron-pad"></span>
+            <span class="heron-flyer"><app-heron [flapping]="flight.state === 'flying'" /></span>
+          </div>
+          <span class="heron-seconds" role="timer" aria-live="off">
+            {{ t('heronSeconds', { n: secondsLeft() }) }}
+          </span>
+        } @else {
+          <div class="heron-track" aria-hidden="true"></div>
+          <span class="heron-seconds"></span>
+        }
         <button type="button" class="heron-off" (click)="selectPace('off')">
           {{ t('bubbleOff') }}
         </button>
-      }
-    </div>
+      </section>
+    }
     <section
       class="panel board pond"
       [class.chomping]="round().phase === 'chomping'"
@@ -219,7 +246,7 @@
           class="banner"
           [class.boss-banner]="callout === 'bossSnack'"
           [class.heron-banner]="callout === 'heronComing'"
-          aria-hidden="true"
+          role="status"
         >
           {{ t(callout) }}
         </p>
@@ -251,9 +278,6 @@
               }
             }
           </span>
-          @if (showHint() && needsMaths()) {
-            <span class="side-value">= {{ i.format(question().left.value) }}</span>
-          }
           <span class="splash" aria-hidden="true"></span>
         </button>
         <div class="slot">
@@ -272,7 +296,9 @@
             [class.peek-right]="!round().chosen && pose() === '<'"
             [class.peek-up]="!round().chosen && pose() === '='"
           >
-            @if (pose() === null || pose() === '=') {
+            @if (pose() === null) {
+              <app-crocodile kind="waiting" [hat]="hat()" />
+            } @else if (pose() === '=') {
               <app-crocodile kind="front" [hat]="hat()" />
             } @else {
               <app-crocodile
@@ -315,30 +341,11 @@
               }
             }
           </span>
-          @if (showHint() && needsMaths()) {
-            <span class="side-value">= {{ i.format(question().right.value) }}</span>
-          }
           <span class="splash" aria-hidden="true"></span>
         </button>
       </div>
       @for (float of floats(); track float.id) {
         <span class="points-float" aria-hidden="true">+{{ i.format(float.points) }}</span>
-      }
-      @if (showHint()) {
-        <div class="bars" aria-hidden="true">
-          <span
-            class="bar left"
-            [class.bigger]="question().answer === '>'"
-            [style.width.%]="(question().left.value / (stage()?.max ?? 20)) * 100"
-            >{{ i.format(question().left.value) }}</span
-          >
-          <span
-            class="bar right"
-            [class.bigger]="question().answer === '<'"
-            [style.width.%]="(question().right.value / (stage()?.max ?? 20)) * 100"
-            >{{ i.format(question().right.value) }}</span
-          >
-        </div>
       }
       <p class="instruction" role="status" aria-live="polite" aria-atomic="true">
         {{ message() }}

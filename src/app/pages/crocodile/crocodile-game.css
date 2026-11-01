@@ -21,99 +21,27 @@ app-game-header {
   padding: 28px;
   box-shadow: var(--shadow-panel);
 }
-.intro {
-  text-align: center;
-}
-.level-strip {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin: 0 auto 18px;
-}
-.level-pill {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: 2px solid #6ea274;
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 20px;
-  font-weight: 600;
-  text-decoration: none;
-}
-.level-pill:hover {
-  background: var(--warm-ground);
-}
-.level-pill[aria-current='page'] {
-  background: var(--pink);
-  border-color: var(--pink);
-  color: var(--paper);
-}
-.intro h2 {
-  font-size: clamp(22px, 3vw, 30px);
-  line-height: 1.25;
-  margin: 0 0 20px;
-}
-.intro p {
-  max-width: 60ch;
-  margin: 10px auto;
-}
-.example {
-  font-weight: 600;
-}
 .best-line {
   color: var(--pink-deep);
   font-weight: 600;
 }
-.intro .button {
-  margin: 20px auto 0;
-  max-width: 360px;
-}
-.demo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  margin: 0 auto 16px;
-}
-.demo-row {
-  display: grid;
-  grid-template-columns: 70px 120px 70px;
-  align-items: center;
-  gap: 8px;
-}
-.demo-number {
-  font-size: 38px;
-  font-weight: 600;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-.demo-number.big {
-  color: var(--pink);
-}
-.demo-croc {
-  display: block;
-  width: 120px;
-}
 
-/* HUD: snacks, points and combo */
+/* HUD: snacks, points and combo in fixed slots, so nothing reflows as the score grows */
 .hud {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
+  gap: 8px 12px;
 }
 .snack-bar {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 .snacks {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   list-style: none;
   margin: 0;
@@ -143,7 +71,7 @@ app-game-header {
 .snacks li.eaten {
   border: 2px solid var(--success);
   background: var(--sun);
-  box-shadow: inset 0 2px 3px #fff5b7;;
+  box-shadow: inset 0 2px 3px #fff5b7;
 }
 .snacks li.golden.eaten {
   background: var(--gold);
@@ -164,7 +92,7 @@ app-game-header {
   gap: 8px;
   margin: 0;
   padding: 6px 16px;
-  border-radius: var(--radius-pill)
+  border-radius: var(--radius-pill);
   background: var(--paper);
   box-shadow: var(--shadow-rest);
 }
@@ -173,6 +101,7 @@ app-game-header {
   color: var(--muted);
 }
 .score strong {
+  min-width: 2ch;
   font-size: 26px;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
@@ -183,11 +112,12 @@ app-game-header {
 .combo {
   margin: 0;
   padding: 6px 14px;
-  border-radius: var(--radius-pill)
+  border-radius: var(--radius-pill);
   background: var(--paper);
   color: var(--muted);
   font-size: 15px;
   font-weight: 600;
+  white-space: nowrap;
   box-shadow: var(--shadow-rest);
   transition:
     background 0.3s,
@@ -213,7 +143,12 @@ app-game-header {
   position: relative;
   overflow: hidden;
   padding: 26px 20px 18px;
-  background: linear-gradient(180deg, var(--croc-pond-top) 0%, var(--croc-pond-mid) 70%, var(--croc-pond-deep) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--croc-pond-top) 0%,
+    var(--croc-pond-mid) 70%,
+    var(--croc-pond-deep) 100%
+  );
   transition: background 0.5s;
 }
 .board.golden {
@@ -225,7 +160,7 @@ app-game-header {
 .board.frenzy {
   box-shadow:
     0 0 0 4px var(--gold),
-    0 8px 30px #c98a0055;;
+    0 8px 30px #c98a0055;
 }
 .banner {
   position: relative;
@@ -234,7 +169,7 @@ app-game-header {
   width: fit-content;
   max-width: 100%;
   padding: 8px 18px;
-  border-radius: var(--radius-pill)
+  border-radius: var(--radius-pill);
   background: var(--paper);
   color: var(--pink-deep);
   font-weight: 600;
@@ -263,21 +198,20 @@ app-game-header {
   min-height: 132px;
   justify-content: center;
   padding: 16px 12px;
-  border-radius: var(--radius-panel)
+  border-radius: var(--radius-panel);
   background: var(--paper);
-  box-shadow:
-    var(--shadow-pond-ring);
+  box-shadow: var(--shadow-pond-ring);
   transition: background 0.3s;
 }
 .golden .side {
   box-shadow:
     0 0 0 8px var(--sun),
-    0 10px 20px #0f4c5c33;;
+    0 10px 20px #0f4c5c33;
 }
 .boss .side {
   box-shadow:
     0 0 0 10px var(--sky-deep),
-    0 10px 20px #0f4c5c33;;
+    0 10px 20px #0f4c5c33;
 }
 .side.winner {
   background: var(--pink-ground);
@@ -336,10 +270,9 @@ app-game-header {
   min-width: clamp(48px, 6.25vw, 64px);
   height: 76px;
   padding: 0 10px;
-  border-radius: var(--radius-tile)
+  border-radius: var(--radius-tile);
   background: var(--paper);
-  box-shadow:
-    var(--shadow-tile);
+  box-shadow: var(--shadow-tile);
   font-size: clamp(30px, 4.1vw, 42px);
   font-weight: 600;
   line-height: 1;
@@ -373,16 +306,7 @@ app-game-header {
 .winner .tile {
   box-shadow:
     0 5px 0 #b9dcc1,
-    0 8px 18px #214d5a12;;
-}
-.side-value {
-  margin-top: 6px;
-  padding: 4px 16px;
-  border-radius: var(--radius-pill)
-  background: var(--pink-ground);
-  font-size: 24px;
-  color: var(--pink-deep);
-  font-weight: 600;
+    0 8px 18px #214d5a12;
 }
 .slot {
   display: grid;
@@ -441,7 +365,7 @@ app-game-header {
   top: 36%;
   z-index: 3;
   padding: 4px 14px;
-  border-radius: var(--radius-surface)
+  border-radius: var(--radius-surface);
   background: var(--paper);
   color: var(--pink-deep);
   font-size: 28px;
@@ -452,43 +376,6 @@ app-game-header {
 }
 .golden .points-float {
   color: #a86b00;
-}
-.bars {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 18px 8px 0;
-}
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  height: 24px;
-  min-width: 34px;
-  padding: 0 8px;
-  border-radius: var(--radius-chip)
-  background: var(--leaf);
-  box-shadow: 0 0 0 2px var(--paper);;
-  color: var(--paper);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1;
-  transform-origin: left;
-  transition: width 0.4s;
-  animation: grow 0.7s ease-out;
-}
-.bar.bigger {
-  background: var(--pink);
-}
-.bar.right {
-  justify-self: end;
-  transform-origin: right;
-}
-.bar.left {
-  justify-self: end;
-  background: var(--sun);
 }
 .instruction {
   position: relative;
@@ -514,6 +401,7 @@ app-game-header {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   min-height: 132px;
   padding: 12px 8px 10px;
@@ -528,14 +416,14 @@ app-game-header {
 }
 /* Keep the hit target still while the pointer is pressed or near an edge. */
 .choice:hover {
-  box-shadow: 0 9px 20px #214d5a26;;
+  box-shadow: 0 9px 20px #214d5a26;
 }
 .choice:hover .choice-croc,
 .choice:focus-visible .choice-croc {
   animation: bob 1s ease-in-out infinite;
 }
 .choice:active {
-  box-shadow: inset 0 2px 6px #214d5a26;;
+  box-shadow: inset 0 2px 6px #214d5a26;
 }
 .choice[aria-disabled='true'] {
   cursor: default;
@@ -576,6 +464,10 @@ app-game-header {
   display: block;
   width: 150px;
   margin: 0 auto;
+  animation: bob 2.4s ease-in-out infinite;
+}
+.perfect .outcome-croc {
+  animation: dance 0.8s ease-in-out infinite;
 }
 .score-line {
   display: flex;
@@ -606,12 +498,6 @@ app-game-header {
   color: var(--star-earned-big);
   animation: pop 0.5s ease-out calc(var(--i, 1) * 0.3s) both;
 }
-.outcome-croc {
-  animation: bob 2.4s ease-in-out infinite;
-}
-.perfect .outcome-croc {
-  animation: dance 0.8s ease-in-out infinite;
-}
 .outcome-help {
   max-width: 48ch;
   margin: 0 auto 8px;
@@ -625,7 +511,7 @@ app-game-header {
   max-width: 100%;
   margin: 12px auto;
   padding: 10px 18px;
-  border-radius: var(--radius-pill)
+  border-radius: var(--radius-pill);
   background: var(--pink-ground);
   color: var(--pink-deep);
   font-weight: 600;
@@ -639,7 +525,7 @@ app-game-header {
 .save-note {
   background: var(--warm-ground);
   padding: 14px;
-  border-radius: var(--radius-chip)
+  border-radius: var(--radius-chip);
 }
 .outcome-actions {
   display: flex;

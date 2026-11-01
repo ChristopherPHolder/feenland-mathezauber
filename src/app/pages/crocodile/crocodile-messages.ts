@@ -12,7 +12,9 @@ const en = {
 
   bubbleHelp:
     'The heron flies in for the snack. Feed Kiki before it lands! Quick snacks earn bonus points; a snatched snack is gone and the combo starts over.',
-  bubbleOff: 'Send the heron away',
+  bubbleOff: 'No heron',
+  heronLabel: 'Heron',
+  heronSeconds: '{n} s',
 
   title: 'The Hungry Crocodile',
   level: 'Level {n} of {total}',
@@ -27,9 +29,9 @@ const en = {
   full: 'Equal. The crocodile is full.',
   correctBigger: 'Yum! {big} is bigger than {small}. {left} {sign} {right}.',
   correctEqual: 'Both sides make {value}. The crocodile is full. {left} = {right}.',
-  wrong: 'Hmm, not that way. The crocodile wants the bigger side. Try again!',
-  wrongEqual: 'Look closely! Both sides are the same, so the crocodile is full. Try again!',
-  hint: 'Help: the left side makes {left} and the right side makes {right}.',
+  wrong: 'Kiki shakes her head. Which side is bigger? Try again!',
+  wrongEqual: 'Kiki shakes her head. Look closely at both sides. Try again!',
+  hint: 'Take your time and look again. Which side does the crocodile eat?',
   snacks: '{n} of {total} snacks',
   streak: '{n} in a row!',
   done: 'Round complete!',
@@ -95,7 +97,9 @@ const de: Messages = {
 
   bubbleHelp:
     'Der Reiher fliegt zum Häppchen. Füttere Kiki, bevor er landet! Schnelle Häppchen bringen Bonuspunkte; ein geschnapptes Häppchen ist weg und die Kombo beginnt neu.',
-  bubbleOff: 'Reiher wegschicken',
+  bubbleOff: 'Kein Reiher',
+  heronLabel: 'Reiher',
+  heronSeconds: '{n} s',
 
   title: 'Das hungrige Krokodil',
   level: 'Stufe {n} von {total}',
@@ -110,10 +114,9 @@ const de: Messages = {
   full: 'Gleich. Das Krokodil ist satt.',
   correctBigger: 'Mampf! {big} ist größer als {small}. {left} {sign} {right}.',
   correctEqual: 'Beide Seiten ergeben {value}. Das Krokodil ist satt. {left} = {right}.',
-  wrong: 'Hmm, nicht so herum. Das Krokodil will die größere Seite. Versuch es noch einmal!',
-  wrongEqual:
-    'Schau genau hin! Beide Seiten sind gleich, also ist das Krokodil satt. Versuch es noch einmal!',
-  hint: 'Hilfe: Die linke Seite ergibt {left} und die rechte Seite ergibt {right}.',
+  wrong: 'Kiki schüttelt den Kopf. Welche Seite ist größer? Versuch es noch einmal!',
+  wrongEqual: 'Kiki schüttelt den Kopf. Schau dir beide Seiten genau an. Versuch es noch einmal!',
+  hint: 'Lass dir Zeit und schau noch einmal hin. Welche Seite frisst das Krokodil?',
   snacks: '{n} von {total} Häppchen',
   streak: '{n} am Stück!',
   done: 'Runde geschafft!',
@@ -176,7 +179,9 @@ const es: Messages = {
 
   bubbleHelp:
     'La garza vuela hacia el bocado. ¡Alimenta a Kiki antes de que aterrice! Los bocados rápidos dan puntos extra; un bocado robado se pierde y el combo vuelve a empezar.',
-  bubbleOff: 'Ahuyentar a la garza',
+  bubbleOff: 'Sin garza',
+  heronLabel: 'Garza',
+  heronSeconds: '{n} s',
 
   title: 'El cocodrilo hambriento',
   level: 'Nivel {n} de {total}',
@@ -191,10 +196,9 @@ const es: Messages = {
   full: 'Igual. El cocodrilo está lleno.',
   correctBigger: '¡Ñam! {big} es más grande que {small}. {left} {sign} {right}.',
   correctEqual: 'Los dos lados dan {value}. El cocodrilo está lleno. {left} = {right}.',
-  wrong: 'Mmm, por ahí no. El cocodrilo quiere el lado más grande. ¡Inténtalo otra vez!',
-  wrongEqual:
-    '¡Mira bien! Los dos lados son iguales, así que el cocodrilo está lleno. ¡Inténtalo otra vez!',
-  hint: 'Ayuda: el lado izquierdo da {left} y el lado derecho da {right}.',
+  wrong: 'Kiki niega con la cabeza. ¿Qué lado es más grande? ¡Inténtalo otra vez!',
+  wrongEqual: 'Kiki niega con la cabeza. Mira bien los dos lados. ¡Inténtalo otra vez!',
+  hint: 'Tómate tu tiempo y mira otra vez. ¿Qué lado se come el cocodrilo?',
   snacks: '{n} de {total} bocados',
   streak: '¡{n} seguidos!',
   done: '¡Ronda completada!',
@@ -258,7 +262,9 @@ const fr: Messages = {
 
   bubbleHelp:
     'Le héron fonce sur la collation. Nourris Kiki avant qu’il se pose ! Les collations rapides donnent des points bonus ; une collation chipée est perdue et le combo repart à zéro.',
-  bubbleOff: 'Chasser le héron',
+  bubbleOff: 'Sans héron',
+  heronLabel: 'Héron',
+  heronSeconds: '{n} s',
 
   title: 'Le crocodile affamé',
   level: 'Niveau {n} sur {total}',
@@ -273,10 +279,9 @@ const fr: Messages = {
   full: 'Égal. Le crocodile est rassasié.',
   correctBigger: 'Miam ! {big} est plus grand que {small}. {left} {sign} {right}.',
   correctEqual: 'Les deux côtés font {value}. Le crocodile est rassasié. {left} = {right}.',
-  wrong: 'Hmm, pas par là. Le crocodile veut le plus grand côté. Essaie encore !',
-  wrongEqual:
-    'Regarde bien ! Les deux côtés sont pareils, alors le crocodile est rassasié. Essaie encore !',
-  hint: 'Aide : le côté gauche fait {left} et le côté droit fait {right}.',
+  wrong: 'Kiki secoue la tête. Quel côté est le plus grand ? Essaie encore !',
+  wrongEqual: 'Kiki secoue la tête. Regarde bien les deux côtés. Essaie encore !',
+  hint: 'Prends ton temps et regarde encore. Quel côté le crocodile mange-t-il ?',
   snacks: '{n} collations sur {total}',
   streak: '{n} d’affilée !',
   done: 'Manche terminée !',

@@ -75,6 +75,7 @@ const BOSS_EXTRA = 3000;
   templateUrl: './crocodile-game.html',
   styleUrls: [
     './crocodile-game.css',
+    './crocodile-intro.css',
     './crocodile-motion.css',
     './crocodile-responsive.css',
     './crocodile-heron.css',
@@ -110,6 +111,8 @@ export class CrocodileGame {
     this.paces.find((pace) => pace.id === this.pace())!,
   );
   protected readonly heron = signal<HeronFlight | null>(null);
+  /** Whole seconds until the heron lands, shown beside its flight strip. */
+  protected readonly secondsLeft = signal(0);
   protected readonly saveFailed = signal(false);
   protected readonly wrongPick = signal<Comparison | null>(null);
   /** The choice a child hovers or focuses: Kiki turns toward it before they commit. */
@@ -148,7 +151,6 @@ export class CrocodileGame {
     const seconds = this.needsMaths() ? pace.mathsSeconds : pace.seconds;
     return seconds * 1000 + (this.kind() === 'boss' ? BOSS_EXTRA : 0);
   });
-  protected readonly showHint = computed(() => this.round().attempts > 0);
   protected readonly nextLink = computed(() => {
     const stage = this.stage();
     return stage && stage.stage < TOTAL_STAGES
@@ -179,13 +181,10 @@ export class CrocodileGame {
       const shoo = this.heron()?.state === 'shooed' ? ' ' + this.t('shoo') : '';
       return praise + ' ' + this.t('points', { n: points }) + shoo;
     }
+    // A retry never shows the worked-out values: the child does the sums, the banner says the rest.
     if (this.wrongPick()) return this.t(answer === '=' ? 'wrongEqual' : 'wrong');
-    if (round.attempts > 0) return this.t('hint', { left: left.value, right: right.value });
-    const callout = this.banner();
-    const prompt = this.t(this.needsMaths() ? 'computeFirst' : 'question');
-    return callout === 'goldenSnack' || callout === 'bossSnack' || callout === 'heronComing'
-      ? this.t(callout) + ' ' + prompt
-      : prompt;
+    if (round.attempts > 0) return this.t('hint');
+    return this.t(this.needsMaths() ? 'computeFirst' : 'question');
   });
   private readonly outcome = viewChild<ElementRef<HTMLElement>>('outcome');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -193,6 +192,7 @@ export class CrocodileGame {
   private shake?: ReturnType<typeof setTimeout>;
   private bannerTimer?: ReturnType<typeof setTimeout>;
   private heronTimer?: ReturnType<typeof setTimeout>;
+  private tick?: ReturnType<typeof setInterval>;
   private heronDue = 0;
   private heronRemaining = 0;
   private floatId = 0;
@@ -205,6 +205,7 @@ export class CrocodileGame {
       clearTimeout(this.shake);
       clearTimeout(this.bannerTimer);
       clearTimeout(this.heronTimer);
+      clearInterval(this.tick);
     });
   }
   protected t(key: CrocodileMessageKey, values: Record<string, string | number> = {}) {
@@ -330,12 +331,22 @@ export class CrocodileGame {
   private armHeron() {
     this.heronDue = Date.now() + this.heronRemaining;
     this.heronTimer = setTimeout(() => this.steal(), this.heronRemaining);
+    const countdown = () =>
+      this.secondsLeft.set(Math.max(0, Math.ceil((this.heronDue - Date.now()) / 1000)));
+    countdown();
+    clearInterval(this.tick);
+    this.tick = setInterval(countdown, 250);
+  }
+  private stopTick() {
+    clearInterval(this.tick);
+    this.tick = undefined;
   }
   /** Returns the quick bonus for beating the heron, or 0 when it is not racing. */
   private shooHeron(): number {
     const heron = this.heron();
     if (!heron || heron.state !== 'flying') return 0;
     clearTimeout(this.heronTimer);
+    this.stopTick();
     const remaining = Math.max(0, this.heronDue - Date.now()) / heron.duration;
     this.heron.set({ ...heron, state: 'shooed', paused: false });
     this.sounds.play('shoo');
@@ -347,6 +358,8 @@ export class CrocodileGame {
     if (round.phase !== 'ready' || !heron) return;
     this.wrongPick.set(null);
     this.peek.set(null);
+    this.stopTick();
+    this.secondsLeft.set(0);
     this.heron.set({ ...heron, state: 'stole', paused: false });
     this.round.set({
       ...round,
@@ -361,6 +374,7 @@ export class CrocodileGame {
   private stopHeron() {
     clearTimeout(this.heronTimer);
     this.heronTimer = undefined;
+    this.stopTick();
     this.heron.set(null);
   }
   protected visibilityChanged() {
@@ -368,6 +382,7 @@ export class CrocodileGame {
     if (!heron || heron.state !== 'flying' || this.round().phase !== 'ready') return;
     if (this.document.hidden && !heron.paused) {
       clearTimeout(this.heronTimer);
+      this.stopTick();
       this.heronRemaining = Math.max(0, this.heronDue - Date.now());
       this.heron.set({ ...heron, paused: true });
     } else if (!this.document.hidden && heron.paused) {
