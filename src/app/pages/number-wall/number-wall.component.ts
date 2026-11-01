@@ -78,6 +78,7 @@ export class NumberWallComponent {
   protected readonly levels = levels;
   protected readonly paces = paces;
   protected readonly stars = [1, 2, 3] as const;
+  protected readonly confetti = Array.from({ length: 12 }, (_, index) => index);
   protected readonly total = WALLS_PER_WORLD;
   protected readonly maxDust = MAX_DUST;
   protected readonly phase = signal<'intro' | 'playing' | 'summary'>('intro');

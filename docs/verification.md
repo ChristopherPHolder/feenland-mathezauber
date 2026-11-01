@@ -102,10 +102,24 @@ Turned the comparison rounds into a game: a living pond with ripples, bubbles an
 - Axe reported zero WCAG 2 A/AA violations on an active pond round.
 - The component style error budget rose from 8 kB to 12 kB for the richer game screen; the 4 kB warning is unchanged.
 
+### Optional crocodile bubble challenge (2026-10-25)
 
-## Hungry Crocodile heron race — 25 October 2026
+- 104 unit tests pass, including bubble expiry and recovery on the same snack, fresh time for the next snack, pausing while eating or in a hidden tab, timer removal, and cleanup on leaving the game.
+- Production Angular build passes (existing component CSS budget warnings remain).
+- Chrome browser checks cover English, German, Spanish and French at 320, 390 and 1280px: no horizontal overflow; axe WCAG 2 A/AA and 2.1 AA scans report zero violations on the intro and timed game.
+- Desktop and phone screenshots inspected; real browser clock checks confirm 15-second expiry, playable recovery, 25 seconds for calculation snacks, and turning the timer off.
 
-Time pressure as gameplay rather than a clock: in the new heron race mode a greedy heron flies in from the top right toward the snack over 7 to 17 seconds depending on the level and the big fish. Feeding Kiki first shoos it away and earns up to 20 bonus points by distance; letting it land snatches the snack (one mistake, combo reset, no points) and the round moves on. The flight pauses while the tab is hidden. The calm pond stays the default; the choice is remembered and each mode keeps its own best score. The lily pads and Kiki are now buttons too, so a child can tap the bigger side directly.
 
-- Production build and all 96 tests pass, including a race round with one snatched snack and one quick bonus, pad tapping, and the mode preference.
-- Chromium: heron flight, snatch and shoo animations, quick-bonus callout and tapped pads at desktop and 375px phone widths; no overflow. Axe: zero WCAG 2 A/AA violations during a race round.
+### Remembered crocodile paces (2026-10-25)
+
+- 108 tests pass. Added coverage for every timed pace, restoration across component visits, number/calculation deadlines, saving No rush, keyboard focus after disabling, invalid saved values, and blocked storage writes.
+- Production build passes with existing component CSS budget warnings.
+- Chrome: actual reload preserves Relaxed and No rush; native arrow-key selection chooses Fast. All four languages at 320, 390 and 1280px have no horizontal overflow and zero axe WCAG 2 A/AA or 2.1 AA violations on intro and play (24 scans). Desktop and phone screenshots inspected.
+
+
+## Hungry Crocodile heron race — 1 November 2026
+
+The bubble timer became gameplay: the chosen pace now sets how fast a greedy heron flies in across the pond toward the snack (the same seconds per pace, longer for sums, plus three seconds for the big fish). Feeding Kiki first shoos it away with up to 20 bonus points by distance; letting it land snatches the snack, resets the combo, counts as one mistake and moves the round on. No seconds are shown during play. The heron pauses in a hidden tab, can be sent away mid-round, and heron rounds keep a separate best score. The lily pads and Kiki herself are buttons now, so the bigger side can be tapped directly.
+
+- Production build and all 106 tests pass, including a heron round with one snatched snack and one quick bonus, pace memory with the longer maths time, pausing in a hidden tab, sending the heron away, invalid saved paces, blocked storage, and pad tapping.
+- Chromium: heron flight, snatch and shoo animations, the quick-bonus callout and tapped pads at desktop and 375px phone widths; no overflow. Axe: zero WCAG 2 A/AA violations during a heron round.

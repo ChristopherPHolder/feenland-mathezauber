@@ -49,13 +49,53 @@
       @if (stage(); as stage) {
         <p class="example">{{ i.t(helpKey(stage.stage)) }}</p>
       }
-      <app-play-mode-picker
-        [mode]="mode()"
-        [hat]="hat()"
-        [bestCalm]="bestCalm()"
-        [bestRace]="bestRace()"
-        (modeChange)="setMode($event)"
-      />
+      @if (best() > 0) {
+        <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+      }
+      <fieldset class="bubble-option" aria-describedby="bubble-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="bubble-help">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id) {
+            <label
+              class="pace-choice"
+              [class.selected]="pace() === option.id"
+              [attr.data-pace]="option.id"
+            >
+              <input
+                type="radio"
+                name="bubble-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <svg class="pace-picture" viewBox="0 0 64 40" aria-hidden="true">
+                @if (option.id === 'off') {
+                  <path d="M8 25c8-8 16 8 24 0s16 8 24 0M12 32c8-6 12 6 20 0s12 6 20 0" />
+                  <path d="M28 15c-4-7 8-7 8 0s-12 7-8 0" />
+                } @else {
+                  <circle cx="40" cy="20" r="14" />
+                  <path d="M34 14q1-3 5-3" />
+                  <path d="M8 20h12" />
+                  @if (option.id === 'normal' || option.id === 'fast') {
+                    <path d="M12 12h10" />
+                  }
+                  @if (option.id === 'fast') {
+                    <path d="M10 28h12M2 12h3M2 28h3" />
+                  }
+                }
+              </svg>
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceUnlimited')
+                  : t('paceDuration', { n: needsMaths() ? option.mathsSeconds : option.seconds })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'bubbleHelp' : 'paceCalmHelp') }}</p>
+      </fieldset>
       <button class="button primary" type="button" (click)="play()">
         {{ t('start') }}<app-icon kind="arrow" />
       </button>
@@ -88,13 +128,13 @@
       </p>
       <p>
         {{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}
-        @if (mode() === 'race') {
+        @if (timed()) {
           {{ t('stolenCount', { n: round().stolen }) }}
         }
       </p>
       <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
         @for (star of starSlots; track star) {
-          <app-icon kind="star" [class.earned]="star <= stars()" />
+          <app-icon kind="star" [class.earned]="star <= stars()" [style.--i]="star" />
         }
       </div>
       <p class="outcome-help">
@@ -153,6 +193,11 @@
           <span class="streak">{{ t('streak', { n: round().streak }) }}</span>
         }
       </p>
+      @if (timed()) {
+        <button type="button" class="heron-off" (click)="selectPace('off')">
+          {{ t('bubbleOff') }}
+        </button>
+      }
     </div>
     <section
       class="panel board pond"
@@ -160,12 +205,12 @@
       [class.boss]="kind() === 'boss'"
       [class.golden]="kind() === 'golden'"
       [class.frenzy]="frenzy()"
-      [class.race]="mode() === 'race'"
+      [class.race]="timed()"
       [class.stolen]="round().phase === 'stolen'"
       [attr.data-snack-kind]="kind()"
       [attr.aria-label]="t('pondTitle')"
     >
-      <app-pond-scene [boss]="kind() === 'boss'" />
+      <app-pond-scene [boss]="kind() === 'boss'" [frenzy]="frenzy()" />
       @if (heron(); as flight) {
         <app-heron
           [state]="flight.state"
@@ -228,13 +273,16 @@
             [class.to-left]="round().chosen === '>'"
             [class.to-right]="round().chosen === '<'"
             [class.surfaced]="round().chosen === '='"
+            [class.peek-left]="!round().chosen && pose() === '>'"
+            [class.peek-right]="!round().chosen && pose() === '<'"
+            [class.peek-up]="!round().chosen && pose() === '='"
           >
-            @if (round().chosen === '=') {
+            @if (pose() === null || pose() === '=') {
               <app-crocodile kind="front" [hat]="hat()" />
             } @else {
               <app-crocodile
-                [facing]="round().chosen === '>' ? 'left' : 'right'"
-                [open]="round().chosen !== null"
+                [facing]="pose() === '>' ? 'left' : 'right'"
+                [open]="pose() !== null"
                 [chomping]="round().chosen !== null"
                 [hat]="hat()"
               />
@@ -285,19 +333,23 @@
         <div class="bars" aria-hidden="true">
           <span
             class="bar left"
+            [class.bigger]="question().answer === '>'"
             [style.width.%]="(question().left.value / (stage()?.max ?? 20)) * 100"
-          ></span>
+            >{{ i.format(question().left.value) }}</span
+          >
           <span
             class="bar right"
+            [class.bigger]="question().answer === '<'"
             [style.width.%]="(question().right.value / (stage()?.max ?? 20)) * 100"
-          ></span>
+            >{{ i.format(question().right.value) }}</span
+          >
         </div>
       }
       <p class="instruction" role="status" aria-live="polite" aria-atomic="true">
         {{ message() }}
       </p>
     </section>
-    <fieldset class="choices" [attr.aria-busy]="round().phase !== 'ready'">
+    <fieldset class="choices" tabindex="-1" [attr.aria-busy]="round().phase !== 'ready'">
       <legend class="sr-only">{{ t('chooseLabel') }}</legend>
       @for (choice of choices; track choice) {
         <button
@@ -308,6 +360,10 @@
           [attr.aria-disabled]="round().phase !== 'ready'"
           [attr.aria-label]="label(choice)"
           (click)="choose(choice)"
+          (pointerenter)="peekAt(choice)"
+          (pointerleave)="peekAt(null)"
+          (focus)="peekAt(choice)"
+          (blur)="peekAt(null)"
         >
           <span class="choice-croc">
             @if (choice === '=') {

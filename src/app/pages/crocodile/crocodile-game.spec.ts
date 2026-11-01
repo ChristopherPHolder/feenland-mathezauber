@@ -8,11 +8,11 @@ import { emptyProgress } from '../../core/catalog';
 import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
 import { Locale } from '../../core/messages';
+import { BUBBLE_PACE_KEY } from './bubble-pace';
 import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
 import { evaluate } from './comparison.fixture';
-import { heronFlight, SnackKind, snackPoints } from './crocodile-score';
-import { comparisonStages } from './comparison';
+import { SnackKind, snackPoints } from './crocodile-score';
 
 const labels = {
   '>': 'Greater than. The crocodile eats the left side.',
@@ -54,7 +54,7 @@ describe('the hungry crocodile game', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain(crocodileTranslations.en.trick);
     expect(element.textContent).toContain('Level 1 of 6');
-    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
     fixture.detectChanges();
     expect(TestBed.inject(ProgressService).progress().explored).toContain('numbers');
     expect(element.querySelectorAll('.choice').length).toBe(3);
@@ -116,7 +116,7 @@ describe('the hungry crocodile game', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
     fixture.detectChanges();
     for (let n = 0; n < 10; n++) {
       const question = current(element);
@@ -153,18 +153,48 @@ describe('the hungry crocodile game', () => {
     expect(progress.mastered).not.toContain('crocodile-1');
     expect(progress.stars?.['crocodile-1']).toBe(1);
   });
-  it('races the heron: a slow snack is snatched, a quick one earns bonus points', () => {
+  it('starts neutral, previews each direction and returns to neutral after a snack', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLButtonElement>('.race-mode')!.click();
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
     fixture.detectChanges();
-    expect(localStorage.getItem('feenland.crocodile-mode')).toBe('race');
-    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
+    vi.advanceTimersByTime(20);
+    fixture.detectChanges();
+    expect(document.activeElement).not.toBe(element.querySelector('.choice'));
+    expect(element.querySelector('.slot .front')).not.toBeNull();
+    const left = element.querySelector<HTMLButtonElement>('.choice')!;
+    left.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .profile.flip.open')).not.toBeNull();
+    left.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .front')).not.toBeNull();
+    const right = element.querySelectorAll('.choice')[2];
+    right.dispatchEvent(new Event('pointerenter'));
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .profile.open:not(.flip)')).not.toBeNull();
+    pick(element, current(element).answer);
+    fixture.detectChanges();
+    vi.advanceTimersByTime(1400);
+    fixture.detectChanges();
+    expect(element.querySelector('.slot .front')).not.toBeNull();
+  });
+  it('races the heron at the chosen pace: a slow snack is snatched, a quick one earns a bonus', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector<HTMLInputElement>('input[value=normal]')!.checked).toBe(false);
+    element.querySelector<HTMLInputElement>('input[value=normal]')!.click();
+    fixture.detectChanges();
+    expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe('normal');
+    element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
     fixture.detectChanges();
     expect(element.querySelector('.banner')?.textContent).toContain('heron');
-    expect(element.querySelector('app-heron.flying')).not.toBeNull();
-    vi.advanceTimersByTime(heronFlight(comparisonStages[0], 'plain') + 10);
+    const heron = element.querySelector<HTMLElement>('app-heron.flying')!;
+    expect(heron).not.toBeNull();
+    expect(heron.style.getPropertyValue('--flight')).toBe('15000ms');
+    vi.advanceTimersByTime(15000);
     fixture.detectChanges();
     expect(element.querySelector('.instruction')!.textContent).toContain('snatched');
     expect(element.querySelector('app-heron.stole')).not.toBeNull();
@@ -172,7 +202,7 @@ describe('the hungry crocodile game', () => {
       expect(element.querySelector('.side.snatched')).not.toBeNull();
     vi.advanceTimersByTime(1400);
     fixture.detectChanges();
-    expect(element.textContent).toContain('1 of 10 snacks');
+    expect(element.querySelector('.snack-count')!.textContent).toContain('1 of 10');
     // Feeding Kiki right away beats the heron: full quick bonus on top of the base points.
     const kind = element.querySelector<HTMLElement>('.board')!.dataset['snackKind'] as SnackKind;
     pick(element, current(element).answer);
@@ -197,11 +227,90 @@ describe('the hungry crocodile game', () => {
     ).toBeGreaterThan(0);
     expect(TestBed.inject(ProgressService).progress().stars?.['crocodile-1']).toBe(2);
   });
+  it('remembers the pace, pauses the heron in a hidden tab and can send it away mid-round', () => {
+    localStorage.setItem(BUBBLE_PACE_KEY, 'relaxed');
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector<HTMLInputElement>('input[value=relaxed]')!.checked).toBe(true);
+    element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+    fixture.detectChanges();
+    expect(
+      element.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+    ).toBe('30000ms');
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    document.dispatchEvent(new Event('visibilitychange'));
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.paused')).not.toBeNull();
+    vi.advanceTimersByTime(60000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.stole')).toBeNull();
+    hidden.mockReturnValue(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.paused')).toBeNull();
+    vi.advanceTimersByTime(30000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.stole')).not.toBeNull();
+    hidden.mockRestore();
+    vi.advanceTimersByTime(1400);
+    fixture.detectChanges();
+    element.querySelector<HTMLButtonElement>('.heron-off')!.click();
+    fixture.detectChanges();
+    expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe('off');
+    expect(element.querySelector('app-heron')).toBeNull();
+    vi.advanceTimersByTime(60000);
+    fixture.detectChanges();
+    expect(element.querySelector('.snack-count')!.textContent).toContain('1 of 10');
+    fixture.destroy();
+    expect(() => vi.advanceTimersByTime(60000)).not.toThrow();
+    // Sums get the longer maths time of the same pace.
+    localStorage.setItem(BUBBLE_PACE_KEY, 'fast');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [CrocodileGame],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: of(convertToParamMap({ id: 'crocodile-3' })) },
+        },
+      ],
+    });
+    const maths = TestBed.createComponent(CrocodileGame);
+    maths.detectChanges();
+    const mathsGame = maths.nativeElement as HTMLElement;
+    mathsGame.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+    maths.detectChanges();
+    expect(
+      mathsGame.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+    ).toBe('15000ms');
+  });
+  it('recovers from an invalid saved pace and remains usable when storage is blocked', () => {
+    localStorage.setItem(BUBBLE_PACE_KEY, 'turbo');
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector<HTMLInputElement>('input[value=off]')!.checked).toBe(true);
+    const save = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    try {
+      element.querySelector<HTMLInputElement>('input[value=fast]')!.click();
+      element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+      fixture.detectChanges();
+      expect(
+        element.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+      ).toBe('8000ms');
+    } finally {
+      save.mockRestore();
+    }
+  });
   it('feeds Kiki by tapping a lily pad or Kiki herself in the calm pond', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLButtonElement>('.intro .button.primary')!.click();
+    element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
     fixture.detectChanges();
     expect(element.querySelector('app-heron')).toBeNull();
     const question = current(element);

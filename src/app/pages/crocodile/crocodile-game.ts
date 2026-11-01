@@ -28,6 +28,7 @@ import {
   Side,
   TOTAL_STAGES,
 } from './comparison';
+import { BUBBLE_PACES, BubblePace, readBubblePace, saveBubblePace } from './bubble-pace';
 import { CrocodileArt } from './crocodile-art';
 import { crocodileText, CrocodileMessageKey } from './crocodile-messages';
 import {
@@ -35,9 +36,6 @@ import {
   earnedHats,
   goldenSnacks,
   Hat,
-  heronFlight,
-  parsePlayMode,
-  PlayMode,
   quickBonus,
   snackKind,
   snackPoints,
@@ -46,7 +44,6 @@ import { CrocodileScores } from './crocodile-scores';
 import { CrocodileSounds } from './crocodile-sounds';
 import { HatWardrobe } from './hat-wardrobe';
 import { Heron } from './heron';
-import { PlayModePicker } from './play-mode-picker';
 import { PondScene } from './pond-scene';
 interface Round {
   readonly questions: readonly ComparisonQuestion[];
@@ -69,13 +66,18 @@ interface HeronFlight {
 type Banner = 'comboOn' | 'frenzy' | 'goldenSnack' | 'bossSnack' | 'heronComing' | 'quick';
 const CHOMP_DELAY = 1400;
 const BANNER_DELAY = 1800;
-const MODE_KEY = 'feenland.crocodile-mode';
+const BOSS_EXTRA = 3000;
 @Component({
   selector: 'app-crocodile-game',
-  imports: [RouterLink, Icon, CrocodileArt, PondScene, HatWardrobe, PlayModePicker, Heron],
+  imports: [RouterLink, Icon, CrocodileArt, PondScene, HatWardrobe, Heron],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
-  styleUrl: './crocodile-game.css',
+  styleUrls: [
+    './crocodile-game.css',
+    './crocodile-motion.css',
+    './crocodile-responsive.css',
+    './crocodile-heron.css',
+  ],
   host: {
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
@@ -94,20 +96,31 @@ export class CrocodileGame {
   protected readonly roundLength = ROUND_LENGTH;
   protected readonly stage = computed(() => comparisonStage(this.params()?.get('id')));
   protected readonly levelId = computed(() => `crocodile-${this.stage()?.stage ?? 1}`);
-  protected readonly mode = signal<PlayMode>(this.restoreMode());
   protected readonly round = linkedSignal<Round>(() => this.fresh());
   protected readonly started = linkedSignal<boolean>(() => {
     this.stage();
     return false;
   });
+  /** The pace sets how fast the heron flies; "off" is the calm pond with no heron at all. */
+  protected readonly paces = BUBBLE_PACES;
+  protected readonly pace = signal<BubblePace>(readBubblePace());
+  protected readonly timed = computed(() => this.pace() !== 'off');
+  protected readonly selectedPace = computed(() =>
+    this.paces.find((pace) => pace.id === this.pace())!,
+  );
+  protected readonly heron = signal<HeronFlight | null>(null);
   protected readonly saveFailed = signal(false);
   protected readonly wrongPick = signal<Comparison | null>(null);
+  /** The choice a child hovers or focuses: Kiki turns toward it before they commit. */
+  protected readonly peek = signal<Comparison | null>(null);
   protected readonly banner = signal<Banner | null>(null);
   protected readonly floats = signal<readonly { id: number; points: number }[]>([]);
   protected readonly newHat = signal<Hat | null>(null);
   protected readonly newBest = signal(false);
-  protected readonly heron = signal<HeronFlight | null>(null);
   protected readonly choices: readonly Comparison[] = ['>', '=', '<'];
+  protected readonly pose = computed(
+    () => this.round().chosen ?? (this.round().phase === 'ready' ? this.peek() : null),
+  );
   protected readonly question = computed(
     () => this.round().questions[Math.min(this.round().index, ROUND_LENGTH - 1)],
   );
@@ -120,14 +133,19 @@ export class CrocodileGame {
   /** Kiki wears the newest hat she has earned; the wardrobe shows the whole collection. */
   protected readonly ownedHats = computed(() => earnedHats(this.p.progress()));
   protected readonly hat = computed(() => this.ownedHats().at(-1)?.id ?? 'none');
-  protected readonly bestCalm = computed(() => this.scores.best()[this.levelId()] ?? 0);
-  protected readonly bestRace = computed(() => this.scores.best()[this.levelId() + '/race'] ?? 0);
-  protected readonly best = computed(() =>
-    this.mode() === 'race' ? this.bestRace() : this.bestCalm(),
+  protected readonly bestKey = computed(() =>
+    this.timed() ? this.levelId() + '/race' : this.levelId(),
   );
+  protected readonly best = computed(() => this.scores.best()[this.bestKey()] ?? 0);
   protected readonly needsMaths = computed(() => {
     const question = this.question();
     return question.left.text.includes(' ') || question.right.text.includes(' ');
+  });
+  /** Seconds per snack from the chosen pace, in milliseconds; the big fish gets a little extra. */
+  protected readonly flightTime = computed(() => {
+    const pace = this.selectedPace();
+    const seconds = this.needsMaths() ? pace.mathsSeconds : pace.seconds;
+    return seconds * 1000 + (this.kind() === 'boss' ? BOSS_EXTRA : 0);
   });
   protected readonly showHint = computed(() => this.round().attempts > 0);
   protected readonly nextLink = computed(() => {
@@ -199,13 +217,20 @@ export class CrocodileGame {
   protected label(choice: Comparison) {
     return this.t(choice === '>' ? 'eatsLeft' : choice === '<' ? 'eatsRight' : 'full');
   }
-  protected setMode(mode: PlayMode) {
-    this.mode.set(mode);
-    try {
-      this.document.defaultView?.localStorage.setItem(MODE_KEY, mode);
-    } catch {
-      /* The choice still applies for this visit. */
-    }
+  protected peekAt(choice: Comparison | null) {
+    this.peek.set(choice);
+  }
+  protected selectPace(pace: BubblePace) {
+    this.pace.set(pace);
+    saveBubblePace(pace);
+    if (!this.started()) return;
+    if (pace === 'off') this.stopHeron();
+    else if (!this.heron() && this.round().phase === 'ready') this.launchHeron();
+    requestAnimationFrame(() =>
+      this.host.nativeElement
+        .querySelector<HTMLElement>('.choices')
+        ?.focus({ preventScroll: true }),
+    );
   }
   protected play() {
     clearTimeout(this.timer);
@@ -220,11 +245,11 @@ export class CrocodileGame {
     this.newBest.set(false);
     this.started.set(true);
     this.sounds.play('start');
-    if (this.mode() === 'race') this.callout('heronComing');
+    if (this.timed()) this.callout('heronComing');
     this.launchHeron();
     requestAnimationFrame(() =>
       this.host.nativeElement
-        .querySelector<HTMLButtonElement>('.choice')
+        .querySelector<HTMLElement>('.choices')
         ?.focus({ preventScroll: true }),
     );
   }
@@ -285,9 +310,9 @@ export class CrocodileGame {
     this.bannerTimer = setTimeout(() => this.banner.set(null), BANNER_DELAY);
   }
   private launchHeron() {
-    if (this.mode() !== 'race' || this.round().phase !== 'ready') return;
+    if (!this.timed() || this.round().phase !== 'ready') return;
     const answer = this.question().answer;
-    const duration = heronFlight(this.stage(), this.kind());
+    const duration = this.flightTime();
     this.heron.set({
       target: answer === '>' ? 'left' : answer === '<' ? 'right' : 'center',
       duration,
@@ -316,6 +341,7 @@ export class CrocodileGame {
     const heron = this.heron();
     if (round.phase !== 'ready' || !heron) return;
     this.wrongPick.set(null);
+    this.peek.set(null);
     this.heron.set({ ...heron, state: 'stole', paused: false });
     this.round.set({
       ...round,
@@ -347,6 +373,7 @@ export class CrocodileGame {
   private advance() {
     const round = this.round();
     this.floats.set([]);
+    this.peek.set(null);
     this.stopHeron();
     if (round.index + 1 < ROUND_LENGTH) {
       const index = round.index + 1;
@@ -360,12 +387,7 @@ export class CrocodileGame {
     const hatsBefore = this.ownedHats();
     this.round.set({ ...round, phase: 'complete' });
     this.saveFailed.set(!this.record());
-    this.newBest.set(
-      this.scores.record(
-        this.mode() === 'race' ? this.levelId() + '/race' : this.levelId(),
-        round.score,
-      ),
-    );
+    this.newBest.set(this.scores.record(this.bestKey(), round.score));
     const unlocked = this.ownedHats().find((hat) => !hatsBefore.includes(hat)) ?? null;
     this.newHat.set(unlocked);
     this.sounds.play(unlocked ? 'hat' : 'win');
@@ -398,13 +420,6 @@ export class CrocodileGame {
     if (!choice) return;
     event.preventDefault();
     this.choose(choice);
-  }
-  private restoreMode(): PlayMode {
-    try {
-      return parsePlayMode(this.document.defaultView?.localStorage.getItem(MODE_KEY));
-    } catch {
-      return 'calm';
-    }
   }
   private fresh(): Round {
     const stage = this.stage();

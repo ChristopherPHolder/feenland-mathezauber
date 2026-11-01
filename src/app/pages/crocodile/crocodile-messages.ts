@@ -1,5 +1,19 @@
 import { Locale } from '../../core/messages';
 const en = {
+  paceTitle: 'How fast does the heron fly?',
+  paceHelp: 'No heron at all, or a greedy heron that swoops in for every snack? You choose!',
+  paceOff: 'No rush',
+  paceRelaxed: 'Relaxed',
+  paceNormal: 'Normal',
+  paceFast: 'Fast',
+  paceUnlimited: 'All the time you need',
+  paceDuration: '{n} s per snack',
+  paceCalmHelp: 'Feed Kiki at your own pace. No ticking clock.',
+
+  bubbleHelp:
+    'The heron flies in for the snack. Feed Kiki before it lands! Quick snacks earn bonus points; a snatched snack is gone and the combo starts over.',
+  bubbleOff: 'Send the heron away',
+
   title: 'The Hungry Crocodile',
   level: 'Level {n} of {total}',
   trick: 'The crocodile is always hungry. It opens its mouth toward the bigger number!',
@@ -58,18 +72,11 @@ const en = {
   hatGold: 'Golden crown',
   perfect: 'Perfect pond! {n} points.',
   pondTitle: 'Kiki’s pond',
-  modeTitle: 'How do you want to play?',
-  calm: 'Calm pond',
-  calmHelp: 'Just Kiki and you. Take all the time you like.',
-  race: 'Heron race',
-  raceHelp:
-    'A greedy heron swoops in for the snack. Feed Kiki before it lands! Quick snacks earn bonus points.',
   heronComing: 'Here comes the heron! Feed Kiki quickly.',
   stolen: 'Oh no! The heron snatched that snack. Next one!',
   stolenCount: 'The heron snatched {n} snacks.',
   quick: 'Quick snack! Bonus points!',
   shoo: 'Shoo, heron! Kiki was faster.',
-  bestRace: 'Heron race best: {n}',
   tapLeft: 'Feed Kiki the left side: {side}',
   tapRight: 'Feed Kiki the right side: {side}',
   tapEqual: 'Both sides are the same: Kiki is full',
@@ -77,6 +84,21 @@ const en = {
 export type CrocodileMessageKey = keyof typeof en;
 type Messages = Record<CrocodileMessageKey, string>;
 const de: Messages = {
+  paceTitle: 'Wie schnell fliegt der Reiher?',
+  paceHelp:
+    'Gar kein Reiher oder ein gieriger Reiher, der jedes Häppchen holen will? Du entscheidest!',
+  paceOff: 'Ohne Zeit',
+  paceRelaxed: 'Entspannt',
+  paceNormal: 'Normal',
+  paceFast: 'Schnell',
+  paceUnlimited: 'So viel Zeit du brauchst',
+  paceDuration: '{n} s pro Häppchen',
+  paceCalmHelp: 'Füttere Kiki in deinem Tempo. Ohne tickende Uhr.',
+
+  bubbleHelp:
+    'Der Reiher fliegt zum Häppchen. Füttere Kiki, bevor er landet! Schnelle Häppchen bringen Bonuspunkte; ein geschnapptes Häppchen ist weg und die Kombo beginnt neu.',
+  bubbleOff: 'Reiher wegschicken',
+
   title: 'Das hungrige Krokodil',
   level: 'Stufe {n} von {total}',
   trick: 'Das Krokodil hat immer Hunger. Es öffnet sein Maul zur größeren Zahl!',
@@ -136,23 +158,30 @@ const de: Messages = {
   hatGold: 'Goldene Krone',
   perfect: 'Perfekter Teich! {n} Punkte.',
   pondTitle: 'Kikis Teich',
-  modeTitle: 'Wie möchtest du spielen?',
-  calm: 'Ruhiger Teich',
-  calmHelp: 'Nur Kiki und du. Lass dir so viel Zeit, wie du magst.',
-  race: 'Reiher-Rennen',
-  raceHelp:
-    'Ein gieriger Reiher fliegt zum Häppchen. Füttere Kiki, bevor er landet! Schnelle Häppchen bringen Bonuspunkte.',
   heronComing: 'Da kommt der Reiher! Füttere Kiki schnell.',
   stolen: 'Oh nein! Der Reiher hat das Häppchen geschnappt. Weiter zum nächsten!',
   stolenCount: 'Der Reiher hat {n} Häppchen geschnappt.',
   quick: 'Schnelles Häppchen! Bonuspunkte!',
   shoo: 'Husch, Reiher! Kiki war schneller.',
-  bestRace: 'Rekord im Reiher-Rennen: {n}',
   tapLeft: 'Füttere Kiki mit der linken Seite: {side}',
   tapRight: 'Füttere Kiki mit der rechten Seite: {side}',
   tapEqual: 'Beide Seiten sind gleich: Kiki ist satt',
 };
 const es: Messages = {
+  paceTitle: '¿Qué tan rápido vuela la garza?',
+  paceHelp: '¿Sin garza, o con una garza golosa que viene a por cada bocado? ¡Tú eliges!',
+  paceOff: 'Sin prisa',
+  paceRelaxed: 'Tranquilo',
+  paceNormal: 'Normal',
+  paceFast: 'Rápido',
+  paceUnlimited: 'Todo el tiempo que necesites',
+  paceDuration: '{n} s por bocado',
+  paceCalmHelp: 'Alimenta a Kiki a tu ritmo. Sin reloj.',
+
+  bubbleHelp:
+    'La garza vuela hacia el bocado. ¡Alimenta a Kiki antes de que aterrice! Los bocados rápidos dan puntos extra; un bocado robado se pierde y el combo vuelve a empezar.',
+  bubbleOff: 'Ahuyentar a la garza',
+
   title: 'El cocodrilo hambriento',
   level: 'Nivel {n} de {total}',
   trick: '¡El cocodrilo siempre tiene hambre. Abre la boca hacia el número más grande!',
@@ -212,23 +241,31 @@ const es: Messages = {
   hatGold: 'Corona dorada',
   perfect: '¡Estanque perfecto! {n} puntos.',
   pondTitle: 'El estanque de Kiki',
-  modeTitle: '¿Cómo quieres jugar?',
-  calm: 'Estanque tranquilo',
-  calmHelp: 'Solo Kiki y tú. Tómate todo el tiempo que quieras.',
-  race: 'Carrera con la garza',
-  raceHelp:
-    'Una garza golosa baja a por el bocado. ¡Alimenta a Kiki antes de que aterrice! Los bocados rápidos dan puntos extra.',
   heronComing: '¡Ahí viene la garza! Alimenta a Kiki rápido.',
   stolen: '¡Oh, no! La garza se llevó ese bocado. ¡Al siguiente!',
   stolenCount: 'La garza se llevó {n} bocados.',
   quick: '¡Bocado rápido! ¡Puntos extra!',
   shoo: '¡Fuera, garza! Kiki fue más rápida.',
-  bestRace: 'Récord con la garza: {n}',
   tapLeft: 'Dale a Kiki el lado izquierdo: {side}',
   tapRight: 'Dale a Kiki el lado derecho: {side}',
   tapEqual: 'Los dos lados son iguales: Kiki está llena',
 };
 const fr: Messages = {
+  paceTitle: 'À quelle vitesse vole le héron ?',
+  paceHelp:
+    'Pas de héron, ou un héron gourmand qui fonce sur chaque collation ? À toi de choisir !',
+  paceOff: 'Sans chrono',
+  paceRelaxed: 'Détente',
+  paceNormal: 'Normal',
+  paceFast: 'Rapide',
+  paceUnlimited: 'Tout le temps nécessaire',
+  paceDuration: '{n} s par collation',
+  paceCalmHelp: 'Nourris Kiki à ton rythme. Sans chrono.',
+
+  bubbleHelp:
+    'Le héron fonce sur la collation. Nourris Kiki avant qu’il se pose ! Les collations rapides donnent des points bonus ; une collation chipée est perdue et le combo repart à zéro.',
+  bubbleOff: 'Chasser le héron',
+
   title: 'Le crocodile affamé',
   level: 'Niveau {n} sur {total}',
   trick: 'Le crocodile a toujours faim. Il ouvre la gueule vers le plus grand nombre !',
@@ -288,18 +325,11 @@ const fr: Messages = {
   hatGold: 'Couronne dorée',
   perfect: 'Mare parfaite ! {n} points.',
   pondTitle: 'La mare de Kiki',
-  modeTitle: 'Comment veux-tu jouer ?',
-  calm: 'Mare tranquille',
-  calmHelp: 'Juste Kiki et toi. Prends tout ton temps.',
-  race: 'Course du héron',
-  raceHelp:
-    'Un héron gourmand fonce sur la collation. Nourris Kiki avant qu’il se pose ! Les collations rapides donnent des points bonus.',
   heronComing: 'Voilà le héron ! Nourris vite Kiki.',
   stolen: 'Oh non ! Le héron a chipé cette collation. À la suivante !',
   stolenCount: 'Le héron a chipé {n} collations.',
   quick: 'Collation rapide ! Points bonus !',
   shoo: 'Ouste, héron ! Kiki a été plus rapide.',
-  bestRace: 'Record de la course du héron : {n}',
   tapLeft: 'Donne à Kiki le côté gauche : {side}',
   tapRight: 'Donne à Kiki le côté droit : {side}',
   tapEqual: 'Les deux côtés sont pareils : Kiki est rassasiée',
