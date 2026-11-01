@@ -99,6 +99,15 @@ import type { HatId } from './crocodile-score';
           <svg:circle cx="0" cy="-4" r="2.4" fill="#4aa3ff" />
           <svg:circle cx="8" cy="-2" r="2" fill="#e0457b" />
         }
+        @case ('top') {
+          <svg:path d="M-17 4 L17 4" stroke="#172555" stroke-width="5" stroke-linecap="round" />
+          <svg:rect x="-10" y="-22" width="20" height="25" rx="2" fill="#172555" />
+          <svg:rect x="-10" y="-6" width="20" height="5" fill="#e0457b" />
+          <svg:path
+            d="M0 -17 l1.6 3.4 3.6 .3 -2.8 2.4 .9 3.6 -3.3 -2 -3.3 2 .9 -3.6 -2.8 -2.4 3.6 -.3z"
+            fill="#f4b740"
+          />
+        }
       }
     </ng-template>`,
   imports: [NgTemplateOutlet],

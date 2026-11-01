@@ -51,6 +51,14 @@ describe('crocodile comparison rounds', () => {
             expect(left.text).toMatch(/[+−]/);
             expect(right.text).toMatch(/[+−]/);
           }
+          if (config.skill === 'times') {
+            expect(left.text).toContain('×');
+            for (const side of [left, right])
+              for (const factor of side.text.includes('×')
+                ? side.text.match(/\d+/g)!.map(Number)
+                : [])
+                expect(factor).toBeLessThanOrEqual(10);
+          }
           if (config.skill === 'mixed') {
             expect(`${left.text}${right.text}`).toMatch(/[+−]/);
             for (const side of [left, right])
@@ -68,11 +76,13 @@ describe('crocodile comparison rounds', () => {
       'crocodile-4',
       'crocodile-5',
       'crocodile-6',
+      'crocodile-7',
     ]);
     expect(comparisonLevels[0].prerequisites).toEqual([]);
     expect(comparisonLevels.every((level) => level.prerequisites.length === 0)).toBe(true);
     expect(comparisonStage('crocodile-5')?.skill).toBe('twoSides');
-    expect(comparisonStage('crocodile-7')).toBeUndefined();
+    expect(comparisonStage('crocodile-7')?.skill).toBe('times');
+    expect(comparisonStage('crocodile-8')).toBeUndefined();
     expect(comparisonStage('practice-30-1')).toBeUndefined();
   });
   it('awards stars gently and opens the next level from two stars', () => {

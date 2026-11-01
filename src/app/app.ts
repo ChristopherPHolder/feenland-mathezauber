@@ -57,7 +57,7 @@ export class App {
     return (
       path === '/adventure/defend-fairy-castle' ||
       path === '/adventure/number-wall' ||
-      /^\/adventure\/(practice-30-[1-9]|crocodile-[1-6])$/.test(path)
+      /^\/adventure\/(practice-30-([1-9]|1[01])|crocodile-[1-7])$/.test(path)
     );
   });
   protected settingsReturnTarget() {

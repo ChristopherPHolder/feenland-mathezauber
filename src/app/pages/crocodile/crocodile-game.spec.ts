@@ -53,7 +53,7 @@ describe('the hungry crocodile game', () => {
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain(crocodileTranslations.en.trick);
-    expect(element.textContent).toContain('Level 1 of 6');
+    expect(element.textContent).toContain('Level 1 of 7');
     element.querySelector<HTMLButtonElement>('.intro button')!.click();
     fixture.detectChanges();
     expect(TestBed.inject(ProgressService).progress().explored).toContain('numbers');
@@ -346,16 +346,16 @@ describe('crocodile navigation', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
   afterEach(() => TestBed.resetTestingModule());
-  it('lists six open levels and sends unknown deep links home', async () => {
+  it('lists seven open levels and sends unknown deep links home', async () => {
     const h = await RouterTestingHarness.create('/worlds/numbers/chapters/compare-crocodile');
-    expect(h.routeNativeElement?.querySelectorAll('.level-stop').length).toBe(6);
+    expect(h.routeNativeElement?.querySelectorAll('.level-stop').length).toBe(7);
     expect(h.routeNativeElement?.querySelectorAll('a[href^="/adventure/crocodile-"]').length).toBe(
-      6,
+      7,
     );
     expect(h.routeNativeElement?.textContent).toContain(
       TestBed.inject(LocaleService).t('crocodilePlay'),
     );
-    await h.navigateByUrl('/adventure/crocodile-7');
+    await h.navigateByUrl('/adventure/crocodile-8');
     expect(TestBed.inject(Router).url).toBe('/');
     await h.navigateByUrl('/adventure/crocodile-1');
     expect(TestBed.inject(Router).url).toBe('/adventure/crocodile-1');

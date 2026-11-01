@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createRound, practiceLevels, questionPool } from './practice';
 describe('practice progression', () => {
-  it('offers nine directly selectable stages with valid equations at every difficulty', () => {
-    expect(practiceLevels).toHaveLength(9);
+  it('offers eleven directly selectable stages with valid equations at every difficulty', () => {
+    expect(practiceLevels).toHaveLength(11);
     for (const level of practiceLevels) {
       expect(level.prerequisites).toEqual([]);
       const config = level.practice!;
@@ -14,8 +14,15 @@ describe('practice progression', () => {
           const values = equation.match(/\d+/g)!.map(Number);
           expect(values.every((n) => n >= 0 && n <= config.max)).toBe(true);
           const [left, right] = equation.split(' = ');
-          const [a, b] = left!.split(/ [＋+−] /).map(Number);
-          const result = b === undefined ? a : left!.includes('−') ? a! - b : a! + b;
+          const [a, b] = left!.split(/ [＋+−×] /).map(Number);
+          const result =
+            b === undefined
+              ? a
+              : left!.includes('−')
+                ? a! - b
+                : left!.includes('×')
+                  ? a! * b
+                  : a! + b;
           const [c, d] = right!.split(' + ').map(Number);
           expect(result).toBe(d === undefined ? c : c! + d);
         }
@@ -33,6 +40,21 @@ describe('practice progression', () => {
           expect((values[0]! % 10) + (values[1]! % 10) >= 10).toBe(stage === 5);
         }
       }
+    }
+  });
+  it('keeps the multiplication stages to times tables with products up to 30', () => {
+    for (const stage of [10, 11]) {
+      const config = practiceLevels[stage - 1]!.practice!;
+      expect(config.max).toBe(30);
+      for (const difficulty of ['easy', 'medium', 'hard'] as const)
+        for (const q of questionPool(config, difficulty)) {
+          expect(q.text).toContain('×');
+          expect(q.text.endsWith('□')).toBe(stage === 10);
+          const [a, b, product] = q.text.replace('□', String(q.answer)).match(/\d+/g)!.map(Number);
+          expect(a! * b!).toBe(product);
+          expect(Math.min(a!, b!)).toBeGreaterThanOrEqual(difficulty === 'hard' ? 3 : 2);
+          if (difficulty === 'easy') expect(product).toBeLessThanOrEqual(20);
+        }
     }
   });
 });
