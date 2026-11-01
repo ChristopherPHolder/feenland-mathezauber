@@ -121,7 +121,12 @@
           <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
         }
       </p>
-      <p>{{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}</p>
+      <p>
+        {{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}
+        @if (timed()) {
+          {{ t('stolenCount', { n: round().stolen }) }}
+        }
+      </p>
       <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
         @for (star of starSlots; track star) {
           <app-icon kind="star" [class.earned]="star <= stars()" [style.--i]="star" />
@@ -183,51 +188,54 @@
           <span class="streak">{{ t('streak', { n: round().streak }) }}</span>
         }
       </p>
+      @if (timed()) {
+        <button type="button" class="heron-off" (click)="selectPace('off')">
+          {{ t('bubbleOff') }}
+        </button>
+      }
     </div>
-    @if (timed()) {
-      <section
-        class="bubble-race"
-        [class.urgent]="bubbleLeft() <= 0.3"
-        [class.popped]="bubblePopped()"
-        [attr.aria-label]="t('bubbleTitle')"
-      >
-        <div class="bubble-heading">
-          <strong
-            >{{ t(bubblePopped() ? 'bubbleRest' : 'bubbleTitle') }}
-            <span class="active-pace">{{ t(selectedPace().label) }}</span></strong
-          >
-          <span class="bubble-seconds" role="timer" aria-live="off">{{
-            t('bubbleSeconds', { n: secondsLeft() })
-          }}</span>
-          <button type="button" (click)="selectPace('off')">{{ t('bubbleOff') }}</button>
-        </div>
-        <div class="bubble-track" aria-hidden="true">
-          <span class="bubble-water" [style.width.%]="bubbleLeft() * 100"></span>
-          <span class="racing-bubble" [style.left.%]="(1 - bubbleLeft()) * 100"><span></span></span>
-          <span class="bubble-finish"></span>
-        </div>
-      </section>
-    }
     <section
       class="panel board pond"
       [class.chomping]="round().phase === 'chomping'"
       [class.boss]="kind() === 'boss'"
       [class.golden]="kind() === 'golden'"
       [class.frenzy]="frenzy()"
+      [class.race]="timed()"
+      [class.stolen]="round().phase === 'stolen'"
       [attr.data-snack-kind]="kind()"
       [attr.aria-label]="t('pondTitle')"
     >
       <app-pond-scene [boss]="kind() === 'boss'" [frenzy]="frenzy()" />
+      @if (heron(); as flight) {
+        <app-heron
+          [state]="flight.state"
+          [target]="flight.target"
+          [paused]="flight.paused"
+          [duration]="flight.duration"
+        />
+      }
       @if (banner(); as callout) {
-        <p class="banner" [class.boss-banner]="callout === 'bossSnack'" aria-hidden="true">
+        <p
+          class="banner"
+          [class.boss-banner]="callout === 'bossSnack'"
+          [class.heron-banner]="callout === 'heronComing'"
+          aria-hidden="true"
+        >
           {{ t(callout) }}
         </p>
       }
       <div class="sides" [class.needs-maths]="needsMaths()">
-        <div
+        <button
+          type="button"
           class="side pad"
+          data-side="left"
           [class.winner]="round().chosen === '>'"
           [class.eaten]="round().chosen === '>'"
+          [class.snatched]="round().phase === 'stolen' && heron()?.target === 'left'"
+          [class.shake]="wrongPick() === '>'"
+          [attr.aria-disabled]="round().phase !== 'ready'"
+          [attr.aria-label]="t('tapLeft', { side: question().left.text })"
+          (click)="tap('left')"
         >
           <span class="side-text sr-only">{{ question().left.text }}</span>
           <span
@@ -247,10 +255,16 @@
             <span class="side-value">= {{ i.format(question().left.value) }}</span>
           }
           <span class="splash" aria-hidden="true"></span>
-        </div>
-        <div class="slot" aria-hidden="true">
-          <span
+        </button>
+        <div class="slot">
+          <button
+            type="button"
             class="slot-croc"
+            data-side="center"
+            [attr.aria-disabled]="round().phase !== 'ready'"
+            [attr.aria-label]="t('tapEqual')"
+            [class.shake]="wrongPick() === '='"
+            (click)="tap('center')"
             [class.to-left]="round().chosen === '>'"
             [class.to-right]="round().chosen === '<'"
             [class.surfaced]="round().chosen === '='"
@@ -268,17 +282,24 @@
                 [hat]="hat()"
               />
             }
-          </span>
+          </button>
           @if (round().chosen; as chosen) {
-            <span class="slot-sign">{{ chosen }}</span>
+            <span class="slot-sign" aria-hidden="true">{{ chosen }}</span>
           } @else {
-            <span class="slot-empty">?</span>
+            <span class="slot-empty" aria-hidden="true">?</span>
           }
         </div>
-        <div
+        <button
+          type="button"
           class="side pad"
+          data-side="right"
           [class.winner]="round().chosen === '<'"
           [class.eaten]="round().chosen === '<'"
+          [class.snatched]="round().phase === 'stolen' && heron()?.target === 'right'"
+          [class.shake]="wrongPick() === '<'"
+          [attr.aria-disabled]="round().phase !== 'ready'"
+          [attr.aria-label]="t('tapRight', { side: question().right.text })"
+          (click)="tap('right')"
         >
           <span class="side-text sr-only">{{ question().right.text }}</span>
           <span
@@ -298,7 +319,7 @@
             <span class="side-value">= {{ i.format(question().right.value) }}</span>
           }
           <span class="splash" aria-hidden="true"></span>
-        </div>
+        </button>
       </div>
       @for (float of floats(); track float.id) {
         <span class="points-float" aria-hidden="true">+{{ i.format(float.points) }}</span>

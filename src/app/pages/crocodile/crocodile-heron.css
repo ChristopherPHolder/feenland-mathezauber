@@ -1,0 +1,145 @@
+.bubble-option {
+  margin: 28px auto 0;
+  max-width: 680px;
+  padding: 0;
+  border: 0;
+  text-align: left;
+  min-width: 0;
+}
+.bubble-option legend {
+  padding: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+.intro .bubble-option p {
+  margin: 8px 0 16px;
+  line-height: 1.5;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border: 2px solid #9ab8bd;
+  border-radius: 16px;
+  background: #fff;
+  color: #172555;
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice:hover {
+  background: #edf7fb;
+  border-color: #286d8b;
+}
+.pace-choice.selected {
+  background: #e1f2df;
+  border-color: #326a3a;
+}
+.pace-choice:focus-within {
+  outline: 3px solid #1746ab;
+  outline-offset: 4px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #326a3a;
+}
+.pace-choice strong {
+  font-size: 18px;
+}
+.pace-choice span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.pace-picture {
+  width: 64px;
+  height: 40px;
+  margin-top: 8px;
+  fill: none;
+  stroke: #286d8b;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.selected .pace-picture {
+  stroke: #326a3a;
+}
+.intro .bubble-option .pace-rule {
+  margin: 14px 0 0;
+  font-size: 15px;
+  color: #344a64;
+}
+
+/* Sending the heron away mid-round */
+.heron-off {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  box-shadow: 0 4px 15px #214d5a0a;
+}
+
+/* Lily pads and Kiki are buttons: tap the bigger side, or Kiki for equal */
+.side {
+  width: 100%;
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+.side[aria-disabled='true'],
+.slot-croc[aria-disabled='true'] {
+  cursor: default;
+}
+.side:hover:not([aria-disabled='true']) {
+  background: #fff9e9;
+}
+.side.shake {
+  animation: shake 0.4s;
+}
+.side.snatched {
+  transform: translateY(-40px) scale(0.6) rotate(8deg);
+  opacity: 0;
+  transition:
+    transform 0.7s ease-in,
+    opacity 0.7s ease-in;
+}
+.slot-croc {
+  padding: 0;
+  border: 0;
+  border-radius: 40px;
+  background: none;
+  cursor: pointer;
+}
+.race .slot-empty {
+  background: #ffe3ee;
+  color: #a3124a;
+}
+.banner.heron-banner {
+  color: #3f6fa8;
+}
+.stolen .instruction {
+  background: #ffe3ee;
+}
+@media (prefers-reduced-motion: reduce) {
+  .side.snatched {
+    transition: none;
+  }
+}

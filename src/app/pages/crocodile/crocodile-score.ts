@@ -68,3 +68,7 @@ export function parseBestScores(value: unknown): Readonly<Record<string, number>
     ),
   ) as Record<string, number>;
 }
+/** Bonus for feeding Kiki while the heron is still far away: 0 to 20 points in steps of 5. */
+export function quickBonus(remaining: number): number {
+  return Math.max(0, Math.min(20, Math.round(remaining * 4) * 5));
+}

@@ -180,143 +180,116 @@ describe('the hungry crocodile game', () => {
     fixture.detectChanges();
     expect(element.querySelector('.slot .front')).not.toBeNull();
   });
-  it('keeps the timer optional and lets a popped bubble recover on the same snack', async () => {
+  it('races the heron at the chosen pace: a slow snack is snatched, a quick one earns a bonus', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
+    fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector<HTMLInputElement>('input[value=normal]')!.checked).toBe(false);
     element.querySelector<HTMLInputElement>('input[value=normal]')!.click();
+    fixture.detectChanges();
+    expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe('normal');
     element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    expect(element.querySelector('.bubble-seconds')!.textContent).toContain('15 s');
-    vi.advanceTimersByTime(15100);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    expect(element.querySelector('.bubble-race.popped')).not.toBeNull();
-    expect(element.querySelector('.instruction')!.textContent).toContain('Pop!');
-    expect(element.querySelector('.bars')).not.toBeNull();
-    vi.advanceTimersByTime(30000);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    expect(element.querySelector('.snack-count')!.textContent).toContain('0 of 10');
-    pick(element, current(element).answer);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(element.querySelector('.banner')?.textContent).toContain('heron');
+    const heron = element.querySelector<HTMLElement>('app-heron.flying')!;
+    expect(heron).not.toBeNull();
+    expect(heron.style.getPropertyValue('--flight')).toBe('15000ms');
+    vi.advanceTimersByTime(15000);
+    fixture.detectChanges();
+    expect(element.querySelector('.instruction')!.textContent).toContain('snatched');
+    expect(element.querySelector('app-heron.stole')).not.toBeNull();
+    if (current(element).answer !== '=')
+      expect(element.querySelector('.side.snatched')).not.toBeNull();
     vi.advanceTimersByTime(1400);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    expect(element.querySelector('.bubble-race.popped')).toBeNull();
-    expect(element.querySelector('.bubble-seconds')!.textContent).toContain('15 s');
-    element.querySelector<HTMLButtonElement>('.bubble-heading button')!.click();
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    expect(element.querySelector('.bubble-race')).toBeNull();
-    vi.advanceTimersByTime(30000);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
+    fixture.detectChanges();
     expect(element.querySelector('.snack-count')!.textContent).toContain('1 of 10');
+    // Feeding Kiki right away beats the heron: full quick bonus on top of the base points.
+    const kind = element.querySelector<HTMLElement>('.board')!.dataset['snackKind'] as SnackKind;
+    pick(element, current(element).answer);
+    fixture.detectChanges();
+    expect(element.querySelector('.points-float')?.textContent).toBe(
+      `+${snackPoints(kind, 1) + 20}`,
+    );
+    expect(element.querySelector('.instruction')!.textContent).toContain('Shoo, heron!');
+    expect(element.querySelector('app-heron.shooed')).not.toBeNull();
+    vi.advanceTimersByTime(1400);
+    fixture.detectChanges();
+    for (let n = 2; n < 10; n++) {
+      pick(element, current(element).answer);
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1400);
+      fixture.detectChanges();
+    }
+    expect(element.textContent).toContain('The heron snatched 1 snacks.');
+    expect(element.textContent).toContain('Mistakes: 1');
+    expect(
+      JSON.parse(localStorage.getItem('feenland.crocodile-scores.v1')!).best['crocodile-1/race'],
+    ).toBeGreaterThan(0);
+    expect(TestBed.inject(ProgressService).progress().stars?.['crocodile-1']).toBe(2);
   });
-  it('freezes the bubble during chomping and cleans up when leaving the game', async () => {
+  it('remembers the pace, pauses the heron in a hidden tab and can send it away mid-round', () => {
+    localStorage.setItem(BUBBLE_PACE_KEY, 'relaxed');
     const fixture = TestBed.createComponent(CrocodileGame);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
+    fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLInputElement>('input[value=normal]')!.click();
+    expect(element.querySelector<HTMLInputElement>('input[value=relaxed]')!.checked).toBe(true);
     element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(
+      element.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+    ).toBe('30000ms');
     const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
-    vi.advanceTimersByTime(30000);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    expect(element.querySelector('.bubble-seconds')!.textContent).toContain('15 s');
+    document.dispatchEvent(new Event('visibilitychange'));
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.paused')).not.toBeNull();
+    vi.advanceTimersByTime(60000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.stole')).toBeNull();
     hidden.mockReturnValue(false);
     document.dispatchEvent(new Event('visibilitychange'));
-    vi.advanceTimersByTime(5000);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    pick(element, current(element).answer);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    const remaining = element.querySelector('.bubble-seconds')!.textContent;
-    vi.advanceTimersByTime(1000);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
-    expect(element.querySelector('.bubble-seconds')!.textContent).toBe(remaining);
-    fixture.destroy();
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.paused')).toBeNull();
+    vi.advanceTimersByTime(30000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron.stole')).not.toBeNull();
     hidden.mockRestore();
-    expect(() => vi.advanceTimersByTime(30000)).not.toThrow();
+    vi.advanceTimersByTime(1400);
+    fixture.detectChanges();
+    element.querySelector<HTMLButtonElement>('.heron-off')!.click();
+    fixture.detectChanges();
+    expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe('off');
+    expect(element.querySelector('app-heron')).toBeNull();
+    vi.advanceTimersByTime(60000);
+    fixture.detectChanges();
+    expect(element.querySelector('.snack-count')!.textContent).toContain('1 of 10');
+    fixture.destroy();
+    expect(() => vi.advanceTimersByTime(60000)).not.toThrow();
+    // Sums get the longer maths time of the same pace.
+    localStorage.setItem(BUBBLE_PACE_KEY, 'fast');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [CrocodileGame],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: of(convertToParamMap({ id: 'crocodile-3' })) },
+        },
+      ],
+    });
+    const maths = TestBed.createComponent(CrocodileGame);
+    maths.detectChanges();
+    const mathsGame = maths.nativeElement as HTMLElement;
+    mathsGame.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+    maths.detectChanges();
+    expect(
+      mathsGame.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+    ).toBe('15000ms');
   });
-  it.each([
-    ['relaxed', 30, 45],
-    ['normal', 15, 25],
-    ['fast', 8, 15],
-  ] as const)(
-    'remembers %s across visits and uses its deadline for numbers and sums',
-    async (pace, seconds, mathsSeconds) => {
-      const fixture = TestBed.createComponent(CrocodileGame);
-      await vi.advanceTimersByTimeAsync(20);
-      await fixture.whenStable();
-      const element = fixture.nativeElement as HTMLElement;
-      element.querySelector<HTMLInputElement>(`input[value=${pace}]`)!.click();
-      await vi.advanceTimersByTimeAsync(20);
-      await fixture.whenStable();
-      expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe(pace);
-      fixture.destroy();
-      const restored = TestBed.createComponent(CrocodileGame);
-      await vi.advanceTimersByTimeAsync(20);
-      await restored.whenStable();
-      const game = restored.nativeElement as HTMLElement;
-      expect(game.querySelector<HTMLInputElement>(`input[value=${pace}]`)!.checked).toBe(true);
-      game.querySelector<HTMLButtonElement>('.intro .primary')!.click();
-      await vi.advanceTimersByTimeAsync(20);
-      await restored.whenStable();
-      expect(game.querySelector('.bubble-seconds')!.textContent).toContain(`${seconds} s`);
-      vi.advanceTimersByTime((seconds - 1) * 1000);
-      await vi.advanceTimersByTimeAsync(20);
-      await restored.whenStable();
-      expect(game.querySelector('.bubble-race.popped')).toBeNull();
-      vi.advanceTimersByTime(1200);
-      await vi.advanceTimersByTimeAsync(20);
-      await restored.whenStable();
-      expect(game.querySelector('.bubble-race.popped')).not.toBeNull();
-      game.querySelector<HTMLButtonElement>('.bubble-heading button')!.click();
-      await vi.advanceTimersByTimeAsync(20);
-      await restored.whenStable();
-      expect(localStorage.getItem(BUBBLE_PACE_KEY)).toBe('off');
-      expect(document.activeElement).toBe(game.querySelector('.choices'));
-      restored.destroy();
-      localStorage.setItem(BUBBLE_PACE_KEY, pace);
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        imports: [CrocodileGame],
-        providers: [
-          provideRouter([]),
-          {
-            provide: ActivatedRoute,
-            useValue: { paramMap: of(convertToParamMap({ id: 'crocodile-3' })) },
-          },
-        ],
-      });
-      const maths = TestBed.createComponent(CrocodileGame);
-      await vi.advanceTimersByTimeAsync(20);
-      await maths.whenStable();
-      const mathsGame = maths.nativeElement as HTMLElement;
-      mathsGame.querySelector<HTMLButtonElement>('.intro .primary')!.click();
-      await vi.advanceTimersByTimeAsync(20);
-      await maths.whenStable();
-      expect(mathsGame.querySelector('.bubble-seconds')!.textContent).toContain(
-        `${mathsSeconds} s`,
-      );
-    },
-  );
-  it('recovers from an invalid saved pace and remains usable when storage is blocked', async () => {
+  it('recovers from an invalid saved pace and remains usable when storage is blocked', () => {
     localStorage.setItem(BUBBLE_PACE_KEY, 'turbo');
     const fixture = TestBed.createComponent(CrocodileGame);
-    await vi.advanceTimersByTimeAsync(20);
-    await fixture.whenStable();
+    fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector<HTMLInputElement>('input[value=off]')!.checked).toBe(true);
     const save = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
@@ -325,12 +298,27 @@ describe('the hungry crocodile game', () => {
     try {
       element.querySelector<HTMLInputElement>('input[value=fast]')!.click();
       element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
-      await vi.advanceTimersByTimeAsync(20);
-      await fixture.whenStable();
-      expect(element.querySelector('.bubble-seconds')!.textContent).toContain('8 s');
+      fixture.detectChanges();
+      expect(
+        element.querySelector<HTMLElement>('app-heron')!.style.getPropertyValue('--flight'),
+      ).toBe('8000ms');
     } finally {
       save.mockRestore();
     }
+  });
+  it('feeds Kiki by tapping a lily pad or Kiki herself in the calm pond', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron')).toBeNull();
+    const question = current(element);
+    const target = question.answer === '>' ? 'left' : question.answer === '<' ? 'right' : 'center';
+    element.querySelector<HTMLButtonElement>(`[data-side="${target}"]`)!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.slot-sign')?.textContent?.trim()).toBe(question.answer);
+    expect(element.querySelector('.points-float')?.textContent).toBe('+10');
   });
   it('has identical crocodile message keys for every language', () => {
     for (const locale of Object.keys(crocodileTranslations) as Locale[])
