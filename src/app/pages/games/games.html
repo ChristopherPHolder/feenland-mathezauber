@@ -27,41 +27,6 @@
         </div>
       </header>
       @switch (chapter.levels[0]?.format) {
-        @case ('fairy-defense') {
-          @let castle = chapter.levels[0];
-          <ul class="level-list castle">
-            <li>
-              <a
-                class="level-card hero-card"
-                [id]="castle.id"
-                [class.recommended]="castle.id === nextId()"
-                [routerLink]="['/adventure', castle.id]"
-              >
-                <span class="level-number">{{
-                  i.t('castleWaves', { n: campaign.completed().length, total: totalWaves })
-                }}</span>
-                <span class="level-name">{{
-                  campaign.finished()
-                    ? i.t('playAgain')
-                    : i.t('continueWave', { n: campaign.nextWave() })
-                }}</span>
-                <span class="level-help">{{ i.t(castle.description) }}</span>
-                <span class="level-foot">
-                  <app-star-rating [stars]="stars(castle)" />
-                  @if (mastered(castle)) {
-                    <span class="level-state"
-                      ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
-                    >
-                  }
-                  @if (castle.id === nextId()) {
-                    <span class="level-badge">{{ i.t('recommended') }}</span>
-                  }
-                </span>
-                <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
-              </a>
-            </li>
-          </ul>
-        }
         @case ('number-wall') {
           @let wall = chapter.levels[0];
           <ol class="level-list">
@@ -93,46 +58,81 @@
         @default {
           <ol class="level-list">
             @for (level of chapter.levels; track level.id; let index = $index) {
-              <li>
-                <a
-                  class="level-card"
-                  [id]="level.id"
-                  [class.recommended]="level.id === nextId()"
-                  [class.mastered]="mastered(level)"
-                  [routerLink]="['/adventure', level.id]"
-                >
-                  <span class="level-number">{{ i.t('levelLabel', { n: index + 1 }) }}</span>
-                  @if (example(level); as example) {
-                    <span class="level-example">{{ example }}</span>
-                  }
-                  <span class="level-name">{{ i.t(level.title) }}</span>
-                  <span class="level-help">
-                    @if (level.practice; as practice) {
-                      {{ i.t('upTo') }} {{ i.format(practice.max) }}
-                    } @else {
-                      {{ i.t(level.description) }}
+              @if (level.format === 'fairy-defense') {
+                <li class="hero-item">
+                  <a
+                    class="level-card hero-card"
+                    [id]="level.id"
+                    [class.recommended]="level.id === nextId()"
+                    [routerLink]="['/adventure', level.id]"
+                  >
+                    <span class="level-number">{{
+                      i.t('castleWaves', { n: campaign.completed().length, total: totalWaves })
+                    }}</span>
+                    <span class="level-name">{{
+                      campaign.finished()
+                        ? i.t('playAgain')
+                        : i.t('continueWave', { n: campaign.nextWave() })
+                    }}</span>
+                    <span class="level-help">{{ i.t(level.description) }}</span>
+                    <span class="level-foot">
+                      <app-star-rating [stars]="stars(level)" />
+                      @if (mastered(level)) {
+                        <span class="level-state"
+                          ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
+                        >
+                      }
+                      @if (level.id === nextId()) {
+                        <span class="level-badge">{{ i.t('recommended') }}</span>
+                      }
+                    </span>
+                    <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
+                  </a>
+                </li>
+              } @else {
+                <li>
+                  <a
+                    class="level-card"
+                    [id]="level.id"
+                    [class.recommended]="level.id === nextId()"
+                    [class.mastered]="mastered(level)"
+                    [routerLink]="['/adventure', level.id]"
+                  >
+                    <span class="level-number">{{
+                      i.t('levelLabel', { n: level.practice?.stage ?? index + 1 })
+                    }}</span>
+                    @if (example(level); as example) {
+                      <span class="level-example">{{ example }}</span>
                     }
-                  </span>
-                  <span class="level-foot">
-                    <app-star-rating [stars]="stars(level)" />
-                    @if (best(level) > 0) {
-                      <span class="level-state">{{ i.t('bestPoints', { n: best(level) }) }}</span>
-                    } @else if (mastered(level)) {
-                      <span class="level-state"
-                        ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
-                      >
-                    } @else if (completed(level)) {
-                      <span class="level-state"
-                        ><app-icon kind="check" />{{ i.t('completedLabel') }}</span
-                      >
-                    }
-                    @if (level.id === nextId()) {
-                      <span class="level-badge">{{ i.t('recommended') }}</span>
-                    }
-                  </span>
-                  <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
-                </a>
-              </li>
+                    <span class="level-name">{{ i.t(level.title) }}</span>
+                    <span class="level-help">
+                      @if (level.practice; as practice) {
+                        {{ i.t('upTo') }} {{ i.format(practice.max) }}
+                      } @else {
+                        {{ i.t(level.description) }}
+                      }
+                    </span>
+                    <span class="level-foot">
+                      <app-star-rating [stars]="stars(level)" />
+                      @if (best(level) > 0) {
+                        <span class="level-state">{{ i.t('bestPoints', { n: best(level) }) }}</span>
+                      } @else if (mastered(level)) {
+                        <span class="level-state"
+                          ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
+                        >
+                      } @else if (completed(level)) {
+                        <span class="level-state"
+                          ><app-icon kind="check" />{{ i.t('completedLabel') }}</span
+                        >
+                      }
+                      @if (level.id === nextId()) {
+                        <span class="level-badge">{{ i.t('recommended') }}</span>
+                      }
+                    </span>
+                    <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
+                  </a>
+                </li>
+              }
             }
           </ol>
         }

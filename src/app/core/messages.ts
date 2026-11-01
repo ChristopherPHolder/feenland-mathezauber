@@ -74,7 +74,6 @@ export const en = {
     'Use your keyboard or touch to explore. Animation follows your device’s reduced-motion preference.',
   numbersPreview: 'Numbers, counting, number bonds, and place value.',
   tensPreview: 'Addition and mental addition shortcuts.',
-  missingPreview: 'Missing numbers, inverse operations, and number puzzles.',
   home: 'Home',
   games: 'Games',
   allGames: 'All games',
@@ -320,7 +319,6 @@ export const translations: Record<Locale, Messages> = {
     tens: 'Additionsinsel',
     tensPreview: 'Addition und Kopfrechentricks zum Addieren.',
     missing: 'Rätselschloss',
-    missingPreview: 'Fehlende Zahlen, Umkehroperationen und Zahlenrätsel.',
     numberWalls: 'Zaubermauern',
     numberWall: 'Zaubermauer bauen',
     numberWallDescription:
@@ -515,7 +513,6 @@ export const translations: Record<Locale, Messages> = {
     tens: 'Isla de la Suma',
     tensPreview: 'Sumas y trucos de cálculo mental para sumar.',
     missing: 'Castillo del Misterio',
-    missingPreview: 'Números que faltan, operaciones inversas y acertijos numéricos.',
     numberWalls: 'Muros mágicos',
     numberWall: 'Construye el muro mágico',
     numberWallDescription:
@@ -711,7 +708,6 @@ export const translations: Record<Locale, Messages> = {
     tens: 'Île de l’addition',
     tensPreview: 'Addition et astuces de calcul mental pour additionner.',
     missing: 'Château des mystères',
-    missingPreview: 'Nombres manquants, opérations inverses et énigmes numériques.',
     numberWalls: 'Murs magiques',
     numberWall: 'Construis le mur magique',
     numberWallDescription:

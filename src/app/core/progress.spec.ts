@@ -16,7 +16,7 @@ describe('Recoverable device progress', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({});
       const p = TestBed.inject(ProgressService);
-      p.explore('missing-number');
+      p.explore('tens');
       expect(localStorage.getItem('feenland.progress.recovery')).toBe(original);
       expect(JSON.parse(localStorage.getItem('feenland.progress')!).version).toBe(1);
     }
@@ -34,9 +34,9 @@ describe('Recoverable device progress', () => {
       if (key.endsWith('.recovery')) throw Error('storage full');
       originalSet.call(this, key, value);
     });
-    p.explore('missing-number');
+    p.explore('tens');
     expect(localStorage.getItem('feenland.progress')).toBe(original);
-    expect(p.progress().explored).toEqual(['missing-number']);
+    expect(p.progress().explored).toEqual(['tens']);
     expect(p.saveFailed()).toBe(true);
     spy.mockRestore();
   });

@@ -28,7 +28,7 @@ describe('Feenland navigation', () => {
     const h = await RouterTestingHarness.create('/settings');
     const i = TestBed.inject(LocaleService);
     const p = TestBed.inject(ProgressService);
-    p.explore('missing-number');
+    p.explore('tens');
     const before = JSON.stringify(p.progress());
     for (const locale of ['de', 'en', 'es', 'fr'] as const) {
       const button = h.routeNativeElement?.querySelector<HTMLButtonElement>(
@@ -55,7 +55,7 @@ describe('Feenland navigation', () => {
         version: 1,
         mastered,
         chapters: ['earned-chapter'],
-        explored: ['missing-number'],
+        explored: ['tens'],
       }),
     );
     const h = await RouterTestingHarness.create('/');

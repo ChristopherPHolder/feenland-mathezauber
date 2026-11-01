@@ -30,7 +30,7 @@ Switching levels never requires leaving the game:
 
 - **The Hungry Crocodile** has a level strip 1–6 on its intro; the current level is marked with `aria-current="page"`.
 - **Magic walls** lists its four levels on the intro and also accepts `?level=n` (`/adventure/number-wall?level=3`) so the hub can open a level directly.
-- **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the nine practice stages.
+- **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the eleven path-to-30 stages. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
 - Finishing a round offers Next level, Play again and All games.
 
 ## Where the data comes from
