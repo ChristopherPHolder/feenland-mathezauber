@@ -6,6 +6,11 @@
 >
   <img class="forest" ngSrc="/images/fairy-defense/forest.webp" fill priority alt="" />
   <div class="scene-shade" aria-hidden="true"></div>
+  <div class="fireflies" aria-hidden="true">
+    @for (fly of fireflies; track fly) {
+      <span [style.--i]="fly"></span>
+    }
+  </div>
   <div class="battle-hud">
     <div class="wave">
       <span>{{ stageLabel() || t('wave', { n: battle().wave.number }) }}</span>

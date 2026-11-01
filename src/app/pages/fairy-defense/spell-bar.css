@@ -23,6 +23,21 @@
 .spell:hover:enabled {
   transform: translateY(-5px);
 }
+.spell:hover:enabled .gem-art,
+.spell:focus-visible:enabled .gem-art {
+  animation: wiggle 0.5s ease-in-out;
+}
+.spell:active:enabled {
+  transform: translateY(2px) scale(0.95);
+}
+@keyframes wiggle {
+  25% {
+    transform: rotate(-8deg) scale(1.08);
+  }
+  75% {
+    transform: rotate(8deg) scale(1.08);
+  }
+}
 .spell:disabled {
   cursor: default;
 }

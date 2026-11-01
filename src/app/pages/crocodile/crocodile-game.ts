@@ -28,6 +28,7 @@ import {
   Side,
   TOTAL_STAGES,
 } from './comparison';
+import { BUBBLE_PACES, BubblePace, readBubblePace, saveBubblePace } from './bubble-pace';
 import { CrocodileArt } from './crocodile-art';
 import { crocodileText, CrocodileMessageKey } from './crocodile-messages';
 import { comboFor, earnedHats, goldenSnacks, Hat, snackKind, snackPoints } from './crocodile-score';
@@ -54,7 +55,12 @@ const BANNER_DELAY = 1800;
   imports: [RouterLink, Icon, GameHeader, CrocodileArt, PondScene, HatWardrobe],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
-  styleUrl: './crocodile-game.css',
+  styleUrls: [
+    './crocodile-game.css',
+    './crocodile-motion.css',
+    './crocodile-responsive.css',
+    './crocodile-bubble.css',
+  ],
   host: { '(document:keydown)': 'onKey($event)' },
 })
 export class CrocodileGame {
@@ -74,13 +80,33 @@ export class CrocodileGame {
     this.stage();
     return false;
   });
+  protected readonly paces = BUBBLE_PACES;
+  protected readonly pace = signal<BubblePace>(readBubblePace());
+  protected readonly timed = computed(() => this.pace() !== 'off');
+  protected readonly selectedPace = computed(() =>
+    this.paces.find((pace) => pace.id === this.pace())!,
+  );
+  protected readonly bubbleLeft = signal(1);
+  protected readonly bubblePopped = signal(false);
+  protected readonly bubbleSeconds = computed(() => {
+    const pace = this.selectedPace();
+    return this.needsMaths() ? pace.mathsSeconds : pace.seconds;
+  });
+  protected readonly secondsLeft = computed(() =>
+    Math.ceil(this.bubbleLeft() * this.bubbleSeconds()),
+  );
   protected readonly saveFailed = signal(false);
   protected readonly wrongPick = signal<Comparison | null>(null);
+  /** The choice a child hovers or focuses: Kiki turns toward it before they commit. */
+  protected readonly peek = signal<Comparison | null>(null);
   protected readonly banner = signal<Banner | null>(null);
   protected readonly floats = signal<readonly { id: number; points: number }[]>([]);
   protected readonly newHat = signal<Hat | null>(null);
   protected readonly newBest = signal(false);
   protected readonly choices: readonly Comparison[] = ['>', '=', '<'];
+  protected readonly pose = computed(
+    () => this.round().chosen ?? (this.round().phase === 'ready' ? this.peek() : null),
+  );
   protected readonly question = computed(
     () => this.round().questions[Math.min(this.round().index, ROUND_LENGTH - 1)],
   );
@@ -127,6 +153,7 @@ export class CrocodileGame {
             });
       return praise + ' ' + this.t('points', { n: points });
     }
+    if (this.timed() && this.bubblePopped()) return this.t('bubblePop');
     if (this.wrongPick()) return this.t(answer === '=' ? 'wrongEqual' : 'wrong');
     if (round.attempts > 0) return this.t('hint', { left: left.value, right: right.value });
     const callout = this.banner();
@@ -144,6 +171,39 @@ export class CrocodileGame {
   constructor() {
     effect(() => {
       if (this.started()) this.p.explore('numbers');
+    });
+    effect((onCleanup) => {
+      const round = this.round();
+      const active = this.timed() && this.started() && round.phase === 'ready';
+      // A miss updates the round too; keep the same deadline until the next snack.
+      if (!active) return;
+      let last = Date.now();
+      const resetClock = () => {
+        last = Date.now();
+      };
+      document.addEventListener('visibilitychange', resetClock);
+      const tick = setInterval(() => {
+        const now = Date.now();
+        const elapsed = document.hidden ? 0 : now - last;
+        last = now;
+        if (this.bubblePopped()) return;
+        const left = Math.max(0, this.bubbleLeft() - elapsed / (this.bubbleSeconds() * 1000));
+        this.bubbleLeft.set(left);
+        if (left === 0) {
+          this.bubblePopped.set(true);
+          this.wrongPick.set(null);
+          this.round.update((current) => ({
+            ...current,
+            attempts: current.attempts + 1,
+            streak: 0,
+            mistakes: current.mistakes + (current.attempts === 0 ? 1 : 0),
+          }));
+        }
+      }, 100);
+      onCleanup(() => {
+        clearInterval(tick);
+        document.removeEventListener('visibilitychange', resetClock);
+      });
     });
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.timer);
@@ -166,7 +226,24 @@ export class CrocodileGame {
   protected label(choice: Comparison) {
     return this.t(choice === '>' ? 'eatsLeft' : choice === '<' ? 'eatsRight' : 'full');
   }
+  protected peekAt(choice: Comparison | null) {
+    this.peek.set(choice);
+  }
+  protected selectPace(pace: BubblePace) {
+    this.pace.set(pace);
+    saveBubblePace(pace);
+    this.bubbleLeft.set(1);
+    this.bubblePopped.set(false);
+    if (this.started())
+      requestAnimationFrame(() =>
+        this.host.nativeElement
+          .querySelector<HTMLElement>('.choices')
+          ?.focus({ preventScroll: true }),
+      );
+  }
   protected play() {
+    this.bubbleLeft.set(1);
+    this.bubblePopped.set(false);
     clearTimeout(this.timer);
     clearTimeout(this.bannerTimer);
     this.round.set(this.fresh());
@@ -180,7 +257,7 @@ export class CrocodileGame {
     this.sounds.play('start');
     requestAnimationFrame(() =>
       this.host.nativeElement
-        .querySelector<HTMLButtonElement>('.choice')
+        .querySelector<HTMLElement>('.choices')
         ?.focus({ preventScroll: true }),
     );
   }
@@ -235,8 +312,11 @@ export class CrocodileGame {
   private advance() {
     const round = this.round();
     this.floats.set([]);
+    this.peek.set(null);
     if (round.index + 1 < ROUND_LENGTH) {
       const index = round.index + 1;
+      this.bubbleLeft.set(1);
+      this.bubblePopped.set(false);
       this.round.set({ ...round, index, attempts: 0, phase: 'ready', chosen: null });
       const kind = snackKind(index, round.golden);
       if (kind === 'boss') this.callout('bossSnack');

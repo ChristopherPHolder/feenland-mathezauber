@@ -19,6 +19,8 @@ import { wallText } from './wall-text';
     '[class.celebrating]': 'built()',
     '[style.--built]': 'wallsDone()',
     '[style.--p]': 'trollProgress() ?? 0',
+    '[class.danger]': 'danger()',
+    '[class.combo]': 'combo()',
   },
 })
 export class WallScene {
@@ -34,6 +36,7 @@ export class WallScene {
   readonly trollProgress = input<number | undefined>(undefined);
   readonly trollAsleep = input(false);
   readonly trollBump = input(false);
+  readonly combo = input(false);
   readonly select = output<BrickId>();
   protected readonly i = inject(LocaleService);
   protected readonly total = WALLS_PER_WORLD;
@@ -43,6 +46,7 @@ export class WallScene {
       .reverse(),
   );
   protected readonly confetti = ['✦', '★', '✦', '✧', '★', '✦'];
+  protected readonly gems = [0, 1, 2];
   /** The left brick of the pair that makes (or completes) the glowing brick. */
   private readonly pair = computed<BrickId | undefined>(() => {
     const brick = this.selected();
@@ -56,7 +60,18 @@ export class WallScene {
     const pair = this.pair();
     return !!pair && pair.row === brick.row && pair.col + 1 === brick.col;
   }
+  /** Both bricks of that pair pulse together so the child sees what to add. */
+  protected isPair(brick: BrickId): boolean {
+    const pair = this.pair();
+    return (
+      !!pair && pair.row === brick.row && (pair.col === brick.col || pair.col + 1 === brick.col)
+    );
+  }
   protected readonly trollPercent = computed(() => Math.round((this.trollProgress() ?? 0) * 100));
+  /** The troll is nearly at the wall and awake. */
+  protected readonly danger = computed(
+    () => (this.trollProgress() ?? 0) > 0.7 && !this.trollAsleep(),
+  );
   protected isOpen(brick: BrickId): boolean {
     return isMissing(this.wall(), brick) && !this.isFilled(brick);
   }
