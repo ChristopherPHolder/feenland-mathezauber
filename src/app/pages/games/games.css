@@ -82,8 +82,8 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
-.level-list.castle {
-  grid-template-columns: 1fr;
+.hero-item {
+  grid-column: 1 / -1;
 }
 .level-card {
   position: relative;

@@ -51,6 +51,8 @@ export const worlds: readonly World[] = [
             skills: ['make-ten'],
             format: 'fairy-defense',
           },
+          // The path to 30 stages are castle battles with their own question sets.
+          ...practiceLevels,
         ],
       },
       {
@@ -84,23 +86,6 @@ export const worlds: readonly World[] = [
             format: 'number-wall',
           },
         ],
-      },
-    ],
-  },
-  {
-    id: 'missing-number',
-    title: 'missing',
-    description: 'missingPreview',
-    emblem: '🔍',
-    color: '#75512c',
-    ground: '#fff1cb',
-    chapters: [
-      {
-        id: 'math-to-30',
-        title: 'practicePath',
-        description: 'practiceHelp',
-        emblem: '🔍',
-        levels: practiceLevels,
       },
     ],
   },
