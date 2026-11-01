@@ -27,7 +27,18 @@ import { Component, input } from '@angular/core';
 })
 export class Icon {
   readonly kind = input<
-    'check' | 'star' | 'book' | 'cup' | 'gem' | 'gear' | 'arrow' | 'back' | 'lock'
+    | 'check'
+    | 'star'
+    | 'book'
+    | 'cup'
+    | 'gem'
+    | 'gear'
+    | 'arrow'
+    | 'back'
+    | 'lock'
+    | 'home'
+    | 'play'
+    | 'grid'
   >('star');
   protected readonly paths = {
     check: 'm5 12 4 4 10-10',
@@ -39,5 +50,8 @@ export class Icon {
     arrow: 'm9 5 7 7-7 7',
     back: 'M20 12H4m7-7-7 7 7 7',
     lock: 'M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4',
+    home: 'm3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+    play: 'M7 4v16l13-8z',
+    grid: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z',
   };
 }

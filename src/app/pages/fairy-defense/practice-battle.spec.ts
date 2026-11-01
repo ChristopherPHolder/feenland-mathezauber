@@ -139,7 +139,7 @@ describe('tower defense math progression', () => {
     fixture.componentRef.setInput('practiceConfig', practiceLevels[7].practice);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Stage 8 / 9');
+    expect(element.textContent).toContain('Stage 8 / 11');
     expect(element.querySelector<HTMLInputElement>('input[value="hard"]')!.checked).toBe(true);
     element.querySelector<HTMLButtonElement>('.start-curtain button')!.click();
     fixture.detectChanges();

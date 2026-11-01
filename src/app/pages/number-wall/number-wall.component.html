@@ -1,26 +1,10 @@
-<section class="game" aria-labelledby="wall-title">
-  <header class="top-bar">
-    <a class="home-link" routerLink="/" [attr.aria-label]="i.t('home')"
-      ><app-icon kind="back" /><span>{{ i.t('home') }}</span></a
-    >
-    <h1 id="wall-title">{{ i.t('numberWalls') }}</h1>
-    <button
-      type="button"
-      class="sound-button"
-      [attr.aria-pressed]="soundOn()"
-      [attr.aria-label]="i.t(soundOn() ? 'wallSoundOn' : 'wallSoundOff')"
-      (click)="toggleSound()"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 9v6h4l5 4V5L8 9z" />
-        @if (soundOn()) {
-          <path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" />
-        } @else {
-          <path d="m16 9 5 6m0-6-5 6" />
-        }
-      </svg>
-    </button>
-  </header>
+<section class="game" aria-labelledby="game-title">
+  <app-game-header
+    [title]="i.t('numberWalls')"
+    anchor="number-walls"
+    [sound]="soundOn()"
+    (soundToggle)="toggleSound()"
+  />
 
   @switch (phase()) {
     @case ('intro') {
@@ -271,7 +255,9 @@
           <button type="button" class="button secondary" (click)="chooseLevel()">
             {{ i.t('wallChooseLevel') }}
           </button>
-          <a class="button secondary" routerLink="/">{{ i.t('home') }}</a>
+          <a class="button secondary" routerLink="/games" fragment="number-walls"
+            ><app-icon kind="grid" />{{ i.t('allGames') }}</a
+          >
         </div>
       </section>
     }

@@ -34,28 +34,30 @@
             <li><app-icon kind="cup" />{{ i.t('chapterAward') }}</li>
           }
         </ul>
-        @if (castle()) {
-          <a class="button primary" routerLink="/adventure/defend-fairy-castle">{{ g('again') }}</a>
-        } @else {
-          @if (next(); as next) {
-            <a class="button primary" [routerLink]="['/adventure', next.id]"
-              >{{ i.t('nextLevel') }}<app-icon kind="arrow"
+        <div class="actions">
+          @if (castle()) {
+            <a class="button primary" routerLink="/adventure/defend-fairy-castle"
+              >{{ g('again') }}<app-icon kind="arrow"
             /></a>
           } @else {
-            <p class="caught">
-              <strong>{{ i.t('caught') }}</strong>
-            </p>
-            <a class="button primary" routerLink="/worlds">{{ i.t('worlds') }}</a>
+            @if (next(); as next) {
+              <a class="button primary" [routerLink]="['/adventure', next.id]"
+                >{{ i.t('nextLevel') }}<app-icon kind="arrow"
+              /></a>
+            } @else {
+              <p class="caught">
+                <strong>{{ i.t('caught') }}</strong>
+              </p>
+            }
+            <a class="button secondary" [routerLink]="['/adventure', result.levelId]">{{
+              i.t('playAgain')
+            }}</a>
           }
-        }
-        @if (context(); as context) {
-          <a
-            class="button secondary"
-            [routerLink]="['/worlds', context.world.id, 'chapters', context.chapter.id]"
-            [fragment]="context.level.id"
-            >{{ i.t('backChapter') }}</a
+          <a class="button secondary" routerLink="/games" [fragment]="result.levelId"
+            ><app-icon kind="grid" />{{ i.t('allGames') }}</a
           >
-        }
+          <a class="home-link" routerLink="/"><app-icon kind="home" />{{ i.t('home') }}</a>
+        </div>
       </div>
     </div>
   }

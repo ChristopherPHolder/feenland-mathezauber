@@ -1,52 +1,34 @@
 import { inject } from '@angular/core';
-import { WORLD_CATALOG, worldState, levelState, chapterState, findChapter } from './core/catalog';
-import { CompletionService } from './core/completion';
-import { ProgressService } from './core/progress';
 import { Router, Routes } from '@angular/router';
+import { CompletionService } from './core/completion';
+/**
+ * Every game and every level is reachable directly: nothing here checks progress.
+ * The only guard protects the completion receipt from being faked through a URL.
+ */
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./pages/welcome/welcome').then((m) => m.Welcome),
   },
+  { path: 'games', loadComponent: () => import('./pages/games/games').then((m) => m.Games) },
   {
     path: 'settings',
     loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
   },
-  {
-    path: 'worlds/:worldId/chapters/:chapterId',
-    canActivate: [
-      (route) => {
-        const context = findChapter(
-          inject(WORLD_CATALOG),
-          route.paramMap.get('worldId'),
-          route.paramMap.get('chapterId'),
-        );
-        return context &&
-          ['available', 'completed'].includes(
-            chapterState(context.chapter, inject(ProgressService).progress()),
-          )
-          ? true
-          : inject(Router).createUrlTree(['/worlds']);
-      },
-    ],
-    loadComponent: () =>
-      import('./pages/chapter-detail/chapter-detail').then((m) => m.ChapterDetail),
-  },
+  // Older bookmarks of the world map, a world or a chapter land on that game in the hub.
+  { path: 'worlds', pathMatch: 'full', redirectTo: 'games' },
   {
     path: 'worlds/:id',
-    canActivate: [
-      (route) => {
-        const world = inject(WORLD_CATALOG).find((world) => world.id === route.paramMap.get('id'));
-        return world &&
-          ['available', 'completed'].includes(worldState(world, inject(ProgressService).progress()))
-          ? true
-          : inject(Router).createUrlTree(['/worlds']);
-      },
-    ],
-    loadComponent: () => import('./pages/world-detail/world-detail').then((m) => m.WorldDetail),
+    pathMatch: 'full',
+    redirectTo: ({ params }) =>
+      inject(Router).createUrlTree(['/games'], { fragment: params['id'] }),
   },
-  { path: 'worlds', loadComponent: () => import('./pages/worlds/worlds').then((m) => m.Worlds) },
+  {
+    path: 'worlds/:worldId/chapters/:chapterId',
+    redirectTo: ({ params }) =>
+      inject(Router).createUrlTree(['/games'], { fragment: params['chapterId'] }),
+  },
   {
     path: 'adventure/defend-fairy-castle',
     data: { focusedGame: true },
@@ -57,7 +39,7 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^practice-30-[1-9]$/.test(segments[1].path)
+      /^practice-30-([1-9]|1[01])$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
@@ -68,22 +50,10 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^crocodile-[1-6]$/.test(segments[1].path)
+      /^crocodile-[1-7]$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
-    canActivate: [
-      (route) => {
-        const level = inject(WORLD_CATALOG)
-          .flatMap((world) => world.chapters)
-          .flatMap((chapter) => chapter.levels)
-          .find((level) => level.id === route.paramMap.get('id'));
-        return level &&
-          ['available', 'completed'].includes(levelState(level, inject(ProgressService).progress()))
-          ? true
-          : inject(Router).createUrlTree(['/worlds', 'numbers', 'chapters', 'compare-crocodile']);
-      },
-    ],
     loadComponent: () => import('./pages/crocodile/crocodile-game').then((m) => m.CrocodileGame),
   },
   {
@@ -99,7 +69,7 @@ export const routes: Routes = [
         const result = inject(CompletionService).result();
         return result?.levelId === route.paramMap.get('id')
           ? true
-          : inject(Router).createUrlTree(['/worlds']);
+          : inject(Router).createUrlTree(['/games']);
       },
     ],
     loadComponent: () => import('./pages/completion/completion').then((m) => m.Completion),

@@ -2,7 +2,7 @@ import type { Progress } from '../../core/catalog';
 import { comparisonStages, ROUND_LENGTH } from './comparison';
 import type { CrocodileMessageKey } from './crocodile-messages';
 export type SnackKind = 'plain' | 'golden' | 'boss';
-export type HatId = 'party' | 'crown' | 'pirate' | 'wizard' | 'flower' | 'gold';
+export type HatId = 'party' | 'crown' | 'pirate' | 'wizard' | 'flower' | 'gold' | 'top';
 export interface Hat {
   readonly id: HatId;
   readonly stage: number;
@@ -16,6 +16,7 @@ export const hats: readonly Hat[] = [
   { id: 'wizard', stage: 4, name: 'hatWizard' },
   { id: 'flower', stage: 5, name: 'hatFlower' },
   { id: 'gold', stage: 6, name: 'hatGold' },
+  { id: 'top', stage: 7, name: 'hatTop' },
 ];
 export const GOLDEN_SNACKS = 2;
 const basePoints: Record<SnackKind, number> = { plain: 10, golden: 30, boss: 50 };

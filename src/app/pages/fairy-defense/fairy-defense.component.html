@@ -4,10 +4,31 @@
   [class.is-complete]="battle().phase === 'complete'"
   aria-labelledby="game-title"
 >
-  <h1 class="sr-only" id="game-title">{{ t('title') }}</h1>
+  @if (playing()) {
+    <h1 class="sr-only" id="game-title">{{ t('title') }}</h1>
+  } @else {
+    <app-game-header
+      class="game-header"
+      [title]="training() ? i.t(training()!.skill) : t('title')"
+      [detail]="
+        training()
+          ? i.t('stage') +
+            ' ' +
+            training()!.stage +
+            ' / ' +
+            stages.length +
+            ' · ' +
+            i.t('upTo') +
+            ' ' +
+            training()!.max
+          : t('playtest')
+      "
+      [anchor]="gamesAnchor()"
+    />
+  }
   <app-battle-scene
     [battle]="battle()"
-    [stageLabel]="training() ? i.t('stage') + ' ' + training()!.stage + ' / 9' : ''"
+    [stageLabel]="training() ? i.t('stage') + ' ' + training()!.stage + ' / ' + stages.length : ''"
     [paused]="paused()"
     [started]="started()"
     [fit]="playing()"
@@ -22,8 +43,8 @@
           }
           @if (training(); as config) {
             <p>
-              {{ i.t('stage') }} {{ config.stage }} / 9 · {{ i.t(config.skill) }} ·
-              {{ i.t('upTo') }} {{ config.max }}
+              {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} ·
+              {{ i.t(config.skill) }} · {{ i.t('upTo') }} {{ config.max }}
             </p>
             <p>{{ config.example }}</p>
           } @else {
@@ -88,7 +109,7 @@
           } @else {
             <button class="button primary" (click)="celebrate()">{{ t('celebrate') }}</button>
           }
-          <a class="exit-link" [routerLink]="chapterLink()">{{ t('back') }}</a>
+          <a class="exit-link" routerLink="/games" [fragment]="gamesAnchor()">{{ t('back') }}</a>
         </section>
       </div>
     }
@@ -97,7 +118,8 @@
     <div class="learning-dock">
       @if (training(); as config) {
         <p class="training-position">
-          {{ i.t('stage') }} {{ config.stage }} / 9 · {{ i.t(config.skill) }} · {{ i.t('upTo') }}
+          {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} · {{ i.t(config.skill) }} ·
+          {{ i.t('upTo') }}
           {{ config.max }}
         </p>
       }
@@ -192,9 +214,7 @@
       </section>
     } @else {
       <p class="level-switch">
-        <a [routerLink]="['/worlds', 'missing-number', 'chapters', 'math-to-30']">{{
-          i.t('chooseLevel')
-        }}</a>
+        <a routerLink="/games" fragment="math-to-30">{{ i.t('chooseLevel') }}</a>
       </p>
     }
     <details class="practice-settings">
@@ -240,7 +260,7 @@
   @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
     <div class="game-foot">
       <span>{{ t('playtestHelp') }}</span
-      ><a [routerLink]="chapterLink()">{{ t('back') }}</a>
+      ><a routerLink="/games" [fragment]="gamesAnchor()">{{ t('back') }}</a>
     </div>
   }
   @if (store.saveFailed() || campaign.saveFailed()) {
@@ -248,7 +268,7 @@
   }
 </section>
 <app-game-pause
-  [chapterLink]="chapterLink()"
+  [gamesAnchor]="gamesAnchor()"
   [started]="started()"
   [instruction]="message()"
   [canExplain]="battle().phase === 'ready'"

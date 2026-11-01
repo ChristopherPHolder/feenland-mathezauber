@@ -16,6 +16,7 @@ import { CompletionService } from '../../core/completion';
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
+import { GameHeader } from '../../shared/game-header';
 import { Icon } from '../../shared/icon';
 import {
   Comparison,
@@ -69,7 +70,7 @@ const BANNER_DELAY = 1800;
 const BOSS_EXTRA = 3000;
 @Component({
   selector: 'app-crocodile-game',
-  imports: [RouterLink, Icon, CrocodileArt, PondScene, HatWardrobe, Heron],
+  imports: [RouterLink, Icon, GameHeader, CrocodileArt, PondScene, HatWardrobe, Heron],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
   styleUrls: [
@@ -154,7 +155,11 @@ export class CrocodileGame {
       ? ['/adventure', `crocodile-${stage.stage + 1}`]
       : null;
   });
-  protected readonly chapterLink = ['/worlds', 'numbers', 'chapters', 'compare-crocodile'];
+  /** Every crocodile level is one tap away from the intro, in any order. */
+  protected readonly levelLinks = Array.from({ length: TOTAL_STAGES }, (_, index) => ({
+    stage: index + 1,
+    route: ['/adventure', `crocodile-${index + 1}`],
+  }));
   protected readonly message = computed(() => {
     const round = this.round();
     const { left, right, answer } = this.question();

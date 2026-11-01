@@ -2,11 +2,11 @@ import type { Level } from '../../core/catalog';
 import type { MessageKey } from '../../core/messages';
 export type Comparison = '<' | '=' | '>';
 export type ComparisonSkill =
-  'numbers20' | 'numbers100' | 'sums' | 'differences' | 'twoSides' | 'mixed';
+  'numbers20' | 'numbers100' | 'sums' | 'differences' | 'twoSides' | 'mixed' | 'times';
 export interface ComparisonStage {
   readonly stage: number;
   readonly skill: ComparisonSkill;
-  readonly max: 20 | 100;
+  readonly max: 20 | 30 | 100;
   readonly example: string;
 }
 export interface Side {
@@ -26,6 +26,7 @@ export const comparisonStages: readonly ComparisonStage[] = [
   { stage: 4, skill: 'differences', max: 20, example: '19 − 8 ○ 10' },
   { stage: 5, skill: 'twoSides', max: 20, example: '5 + 7 ○ 6 + 6' },
   { stage: 6, skill: 'mixed', max: 100, example: '40 + 8 ○ 50' },
+  { stage: 7, skill: 'times', max: 30, example: '4 × 5 ○ 3 × 7' },
 ];
 export const TOTAL_STAGES = comparisonStages.length;
 /** Every level stays open so a child can pick any crocodile; stars still reward mastery. */
@@ -33,7 +34,6 @@ export const comparisonLevels: readonly Level[] = comparisonStages.map((config) 
   id: `crocodile-${config.stage}`,
   title: `crocodile${config.stage}` as MessageKey,
   description: `crocodile${config.stage}Help` as MessageKey,
-  prerequisites: [],
   skills: ['compare-numbers', config.skill],
   format: 'crocodile',
 }));
@@ -77,6 +77,15 @@ function tensDifference(random: Random, value: number): Side {
   const tens = int(random, 1, Math.floor((100 - value) / 10)) * 10;
   return { text: `${value + tens} − ${tens}`, value };
 }
+/** Times-table facts from the 2 to 10 rows; values with none (primes, 1) stay plain numbers. */
+function product(random: Random, value: number): Side {
+  const factors: number[] = [];
+  for (let a = 2; a <= 10; a++)
+    if (value % a === 0 && value / a >= 2 && value / a <= 10) factors.push(a);
+  if (!factors.length) return number(value);
+  const a = pick(random, factors);
+  return { text: `${a} × ${value / a}`, value };
+}
 function side(random: Random, skill: ComparisonSkill, position: 'left' | 'right', value: number) {
   switch (skill) {
     case 'sums':
@@ -103,6 +112,8 @@ function side(random: Random, skill: ComparisonSkill, position: 'left' | 'right'
           ? tensDifference(random, value)
           : number(value);
     }
+    case 'times':
+      return position === 'left' || random() < 0.6 ? product(random, value) : number(value);
     default:
       return number(value);
   }
@@ -137,6 +148,7 @@ function question(
     numbers20: [0, 20],
     numbers100: [0, 100],
     mixed: [0, 100],
+    times: [4, 30],
   }[config.skill];
   const leftValue = int(random, low, high);
   const rightValue =
@@ -145,6 +157,8 @@ function question(
   const left = side(random, config.skill, 'left', leftValue);
   const right = side(random, config.skill, 'right', rightValue);
   if (config.skill === 'mixed' && !left.text.includes(' ') && !right.text.includes(' '))
+    return undefined;
+  if (config.skill === 'times' && (!left.text.includes('×') || left.text === right.text))
     return undefined;
   return { left, right, answer: compare(left.value, right.value) };
 }

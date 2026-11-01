@@ -116,6 +116,11 @@ Turned the comparison rounds into a game: a living pond with ripples, bubbles an
 - Production build passes with existing component CSS budget warnings.
 - Chrome: actual reload preserves Relaxed and No rush; native arrow-key selection chooses Fast. All four languages at 320, 390 and 1280px have no horizontal overflow and zero axe WCAG 2 A/AA or 2.1 AA violations on intro and play (24 scans). Desktop and phone screenshots inspected.
 
+### Games hub and open navigation (2026-11-01)
+
+- The Worlds → World → Chapter drill-down is replaced by one games hub (`/games`) listing every game and every level as a direct play link; old `/worlds/...` links redirect to the matching hub section. Route guards, prerequisites, the locked state and the unlock dialogs are removed, so any game or level opens at any time.
+- 101 tests pass across 18 files. New coverage: every catalog level rendered as a play link for a new player, deep links to any level in any order without recording progress, the number-wall `?level=n` entry, legacy world and chapter redirects with anchors, stars and mastery on hub cards, and catalog growth adding a hub section and a Home card. Production build passes with the pre-existing component CSS budget warnings.
+- Chrome: Home, hub, crocodile, magic walls, castle and Settings in en/de/es/fr at 320, 390 and 1280px: 72 axe scans (WCAG 2 A/AA and 2.1 AA) with zero violations, no horizontal overflow, no page errors. Desktop and 375px phone screenshots inspected; a chapter bookmark lands on its hub section with the section at the top of the viewport.
 
 ## Hungry Crocodile heron race — 1 November 2026
 

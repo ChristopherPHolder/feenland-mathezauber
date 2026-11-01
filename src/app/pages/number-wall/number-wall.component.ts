@@ -8,11 +8,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DOCUMENT, NgOptimizedImage } from '@angular/common';
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
+import { GameHeader } from '../../shared/game-header';
 import { Icon } from '../../shared/icon';
 import { GameAudio } from '../fairy-defense/game-audio';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
@@ -59,7 +60,7 @@ type Feedback =
 const TICK_MS = 100;
 @Component({
   selector: 'app-number-wall',
-  imports: [RouterLink, Icon, WallScene, NgOptimizedImage],
+  imports: [RouterLink, Icon, GameHeader, WallScene, NgOptimizedImage],
   providers: [GameAudio],
   templateUrl: './number-wall.component.html',
   styleUrl: './number-wall.component.css',
@@ -175,6 +176,11 @@ export class NumberWallComponent {
   private readonly summaryPanel = viewChild<ElementRef<HTMLElement>>('summary');
   private readonly scene = viewChild(WallScene, { read: ElementRef<HTMLElement> });
   constructor() {
+    // The games hub links straight into a level with `?level=n`; anything else shows the intro.
+    const requested = Number(
+      inject(ActivatedRoute, { optional: true })?.snapshot.queryParamMap.get('level'),
+    );
+    if (levels.includes(requested as WallLevel)) this.start(requested as WallLevel);
     effect(() => this.audio.updateVoice(this.i.locale()));
     effect(() => {
       if (this.built()) this.nextButton()?.nativeElement.focus();
@@ -200,7 +206,6 @@ export class NumberWallComponent {
     this.store.setPace(pace);
   }
   protected start(level: WallLevel) {
-    if (!this.store.unlocked(level)) return;
     this.audio.start();
     this.level.set(level);
     this.walls.set(generateWorld(level));
