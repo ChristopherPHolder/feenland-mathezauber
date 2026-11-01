@@ -80,7 +80,9 @@ describe('Games hub', () => {
       i.t('starsOf', { n: 0 }),
     );
     // Every level stays a link, played or not.
-    expect(page.querySelectorAll('#compare-crocodile a.level-card').length).toBe(6);
+    expect(page.querySelectorAll('#compare-crocodile a.level-card').length).toBe(
+      worlds[0].chapters[1].levels.length,
+    );
   });
   it('grows with the catalog without template changes', async () => {
     const numbers = worlds[0];
