@@ -25,7 +25,7 @@
   top: 10%;
   width: 72px;
   height: 24px;
-  border-radius: 24px;
+  border-radius: var(--radius-panel)
   background: #ffffffd9;
   animation: drift 46s linear infinite;
 }
@@ -80,7 +80,7 @@
   width: 46px;
   height: calc(24% + var(--built) * 8%);
   background: #e8d9b6;
-  border: 3px solid #b19a68;
+  border: 3px solid var(--brick-border);
   border-bottom: 0;
   border-radius: 6px 6px 0 0;
   transition: height 0.6s ease-out;
@@ -139,19 +139,19 @@
   place-items: center;
   width: var(--brick-w);
   height: var(--brick-h);
-  border: 3px solid #b19a68;
-  border-radius: 12px;
-  background: linear-gradient(#fffdf5, #f1e6c6);
+  border: 3px solid var(--brick-border);
+  border-radius: var(--radius-chip)
+  background: linear-gradient(var(--cream), #f1e6c6);
   color: var(--ink);
   font-size: clamp(26px, 6vw, 36px);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  box-shadow: inset 0 -4px 0 #d9c795;
+  box-shadow: inset 0 -4px 0 #d9c795;;
 }
 .brick.open {
   border-style: dashed;
   border-color: var(--pink);
-  background: #fff;
+  background: var(--paper);
   color: var(--pink);
   animation: glow 1.6s ease-in-out infinite;
   padding: 0;
@@ -160,21 +160,21 @@
 .brick.open.selected {
   border-style: solid;
   border-width: 4px;
-  background: #ffe3ee;
+  background: var(--pink-ground);
   animation: none;
-  box-shadow: 0 0 0 6px #c918602e;
+  box-shadow: 0 0 0 6px #c918602e;;
 }
 .brick.filled {
   background: linear-gradient(#f0fbea, #cfeec3);
-  border-color: #3f8a4b;
+  border-color: var(--brick-filled);
 }
 .brick.pair {
   animation: pair-pulse 1.2s ease-in-out infinite;
 }
 .brick.golden {
   background: linear-gradient(#fff6d2, #ffd66b);
-  border-color: #c58d00;
-  box-shadow: 0 0 14px #ffc93c;
+  border-color: var(--star-ink);
+  box-shadow: 0 0 14px #ffc93c;;
 }
 .brick.sparkle {
   position: relative;
@@ -188,7 +188,7 @@
   bottom: -7px;
   height: 10px;
   border-radius: 50%;
-  background: #ffffffcc;
+  background: var(--paper-veil);
   animation: puff 0.6s ease-out forwards;
 }
 .brick.sparkle::after {
@@ -327,12 +327,12 @@
   100% {
     box-shadow:
       inset 0 -4px 0 #d9c795,
-      0 0 0 0 #3f8a4b00;
+      0 0 0 0 #3f8a4b00;;
   }
   50% {
     box-shadow:
       inset 0 -4px 0 #d9c795,
-      0 0 0 6px #3f8a4b55;
+      0 0 0 6px #3f8a4b55;;
   }
 }
 @keyframes drop {
@@ -443,10 +443,10 @@
 @keyframes glow {
   0%,
   100% {
-    box-shadow: 0 0 0 0 #c9186055;
+    box-shadow: 0 0 0 0 #c9186055;;
   }
   50% {
-    box-shadow: 0 0 0 8px #c9186000;
+    box-shadow: 0 0 0 8px #c9186000;;
   }
 }
 @keyframes pop {

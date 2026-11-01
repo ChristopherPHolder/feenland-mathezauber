@@ -1,0 +1,107 @@
+/* Feenland Mathezauber — generated from design/tokens.json by npm run tokens. Do not edit. */
+@font-face {
+  font-family: Fredoka;
+  src: url('/fonts/fredoka-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Fredoka;
+  src: url('/fonts/fredoka-semibold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --font-sans: Fredoka, 'Trebuchet MS', sans-serif;
+  /* color */
+  --ink: #172555;
+  --muted: #4c6079;
+  --ground: #edf7fb;
+  --cream: #fffdf5;
+  --paper: #ffffff;
+  --paper-veil: #ffffffcc;
+  --pink: #c91860;
+  --pink-hover: #ab114f;
+  --pink-deep: #a3124a;
+  --pink-ground: #ffe3ee;
+  --pink-tint: #f5c9de;
+  --pink-shadow: #b722511c;
+  --focus: #1746ab;
+  --success: #3a8f55;
+  --success-strong: #326a3a;
+  --success-ground: #dfefe3;
+  --success-tint: #eaf7ec;
+  --leaf: #52b36b;
+  --leaf-bright: #5fbf6f;
+  --warm-ground: #fff1cb;
+  --sun: #f4b740;
+  --gold: #ffd23f;
+  --gold-deep: #c98a00;
+  --star-ink: #c58d00;
+  --star-fill: #ffcf4d;
+  --star-empty: #b9b3a2;
+  --star-earned-big: #e39b10;
+  --amber-ink: #9a5b00;
+  --sky: #4aa3ff;
+  --sky-deep: #1f5fa8;
+  --sky-soft: #9fd6f2;
+  --lagoon: #286d8b;
+  --lagoon-ground: #e5f3f7;
+  --violet: #7950b0;
+  --confetti-pink: #e0457b;
+  --shake: #e0953a;
+  --parchment: #fff9e9;
+  --parchment-deep: #f0e5c9;
+  --sand: #f0eddb;
+  --earth: #604b27;
+  --moss-ink: #4d573f;
+  --bronze: #916619;
+  --forest-night: #183b38;
+  --meadow: #abd9c0;
+  --brick-border: #b19a68;
+  --brick-filled: #3f8a4b;
+  --world-numbers: #28604b;
+  --world-tens: #315d84;
+  --world-tens-ground: #dfeefa;
+  --world-missing: #75512c;
+  --croc-pond-top: #d4eef9;
+  --croc-pond-mid: #a9d8ee;
+  --croc-pond-deep: #8fc9e6;
+  --croc-ground: #e3f3e6;
+  --wall-sky: #bfe3f7;
+  --wall-grass: #d8efd2;
+  --logo-star: #f5c55b;
+  --logo-leaf: #92cb8a;
+  --logo-plus: #f29abd;
+  --scrim: #17255588;
+  /* spacing */
+  --space-tiny: 4px;
+  --space-small: 8px;
+  --space-compact: 12px;
+  --space-medium: 16px;
+  --space-roomy: 20px;
+  --space-large: 24px;
+  --space-panel: 28px;
+  --space-block: 32px;
+  --space-section: 40px;
+  --space-hero: 48px;
+  /* radius */
+  --radius-chip: 12px;
+  --radius-surface: 16px;
+  --radius-tile: 18px;
+  --radius-pill: 20px;
+  --radius-panel: 24px;
+  --radius-button: 30px;
+  --radius-round: 50%;
+  /* shadow */
+  --shadow-rest: 0 4px 15px #214d5a0a;
+  --shadow-panel: 0 8px 30px #214d5a0c;
+  --shadow-raised: 0 6px 16px #214d5a12;
+  --shadow-float: 0 6px 16px #214d5a22;
+  --shadow-primary: 0 6px 16px #b722511c;
+  --shadow-tile: 0 5px 0 #e2dcc4, 0 8px 18px #214d5a12;
+  --shadow-pond-ring: 0 0 0 8px #5fbf6f, 0 10px 20px #0f4c5c33;
+  --shadow-castle: 0 16px 50px #041b3355;
+}

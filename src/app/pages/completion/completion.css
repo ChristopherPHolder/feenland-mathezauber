@@ -89,7 +89,7 @@ h2 {
 }
 .castle-stars .earned {
   color: #8c5b13;
-  background: #fff1cb;
+  background: var(--warm-ground);
   border-radius: 10px;
   padding: 4px;
 }

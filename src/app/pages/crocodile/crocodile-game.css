@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100dvh;
-  background: #e3f3e6;
+  background: var(--croc-ground);
   padding: 16px max(16px, env(safe-area-inset-right)) 32px max(16px, env(safe-area-inset-left));
   color: var(--ink);
 }
@@ -19,7 +19,7 @@ app-game-header {
   background: var(--cream);
   border-radius: var(--radius-panel);
   padding: 28px;
-  box-shadow: 0 8px 30px #214d5a0c;
+  box-shadow: var(--shadow-panel);
 }
 .intro {
   text-align: center;
@@ -38,7 +38,7 @@ app-game-header {
   height: 46px;
   border-radius: 50%;
   border: 2px solid #6ea274;
-  background: #fff;
+  background: var(--paper);
   color: var(--ink);
   font-size: 20px;
   font-weight: 600;
@@ -50,7 +50,7 @@ app-game-header {
 .level-pill[aria-current='page'] {
   background: var(--pink);
   border-color: var(--pink);
-  color: #fff;
+  color: var(--paper);
 }
 .intro h2 {
   font-size: clamp(22px, 3vw, 30px);
@@ -65,7 +65,7 @@ app-game-header {
   font-weight: 600;
 }
 .best-line {
-  color: #a3124a;
+  color: var(--pink-deep);
   font-weight: 600;
 }
 .intro .button {
@@ -124,7 +124,7 @@ app-game-header {
   height: 18px;
   border-radius: 60% 40% 40% 60%;
   border: 2px dashed #6ea274;
-  background: #fff;
+  background: var(--paper);
   transition: transform 0.2s;
 }
 .snacks li.current {
@@ -132,26 +132,26 @@ app-game-header {
   border-style: solid;
 }
 .snacks li.golden {
-  border-color: #c98a00;
+  border-color: var(--gold-deep);
   background: #fff3c4;
 }
 .snacks li.boss {
   width: 32px;
   height: 22px;
-  border-color: #1f5fa8;
+  border-color: var(--sky-deep);
 }
 .snacks li.eaten {
-  border: 2px solid #3a8f55;
-  background: #f4b740;
-  box-shadow: inset 0 2px 3px #fff5b7;
+  border: 2px solid var(--success);
+  background: var(--sun);
+  box-shadow: inset 0 2px 3px #fff5b7;;
 }
 .snacks li.golden.eaten {
-  background: #ffd23f;
-  border-color: #c98a00;
+  background: var(--gold);
+  border-color: var(--gold-deep);
 }
 .snacks li.boss.eaten {
-  background: #4aa3ff;
-  border-color: #1f5fa8;
+  background: var(--sky);
+  border-color: var(--sky-deep);
 }
 .snack-count {
   margin: 0;
@@ -164,9 +164,9 @@ app-game-header {
   gap: 8px;
   margin: 0;
   padding: 6px 16px;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 4px 15px #214d5a0a;
+  border-radius: var(--radius-pill)
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
 }
 .score-label {
   font-size: 14px;
@@ -183,22 +183,22 @@ app-game-header {
 .combo {
   margin: 0;
   padding: 6px 14px;
-  border-radius: 20px;
-  background: #fff;
+  border-radius: var(--radius-pill)
+  background: var(--paper);
   color: var(--muted);
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 4px 15px #214d5a0a;
+  box-shadow: var(--shadow-rest);
   transition:
     background 0.3s,
     color 0.3s;
 }
 .combo.hot {
-  background: #ffe3ee;
-  color: #a3124a;
+  background: var(--pink-ground);
+  color: var(--pink-deep);
 }
 .combo.frenzy {
-  background: linear-gradient(90deg, #ffd23f, #ff8fb6, #ffd23f);
+  background: linear-gradient(90deg, var(--gold), #ff8fb6, var(--gold));
   background-size: 200% 100%;
   color: #4a1a00;
   animation: shimmer 1.2s linear infinite;
@@ -213,7 +213,7 @@ app-game-header {
   position: relative;
   overflow: hidden;
   padding: 26px 20px 18px;
-  background: linear-gradient(180deg, #d4eef9 0%, #a9d8ee 70%, #8fc9e6 100%);
+  background: linear-gradient(180deg, var(--croc-pond-top) 0%, var(--croc-pond-mid) 70%, var(--croc-pond-deep) 100%);
   transition: background 0.5s;
 }
 .board.golden {
@@ -224,8 +224,8 @@ app-game-header {
 }
 .board.frenzy {
   box-shadow:
-    0 0 0 4px #ffd23f,
-    0 8px 30px #c98a0055;
+    0 0 0 4px var(--gold),
+    0 8px 30px #c98a0055;;
 }
 .banner {
   position: relative;
@@ -234,16 +234,16 @@ app-game-header {
   width: fit-content;
   max-width: 100%;
   padding: 8px 18px;
-  border-radius: 20px;
-  background: #fff;
-  color: #a3124a;
+  border-radius: var(--radius-pill)
+  background: var(--paper);
+  color: var(--pink-deep);
   font-weight: 600;
   font-size: 17px;
-  box-shadow: 0 6px 16px #214d5a22;
+  box-shadow: var(--shadow-float);
   animation: pop 0.4s ease-out;
 }
 .banner.boss-banner {
-  color: #1f5fa8;
+  color: var(--sky-deep);
 }
 .sides {
   position: relative;
@@ -263,25 +263,24 @@ app-game-header {
   min-height: 132px;
   justify-content: center;
   padding: 16px 12px;
-  border-radius: 24px;
-  background: #fff;
+  border-radius: var(--radius-panel)
+  background: var(--paper);
   box-shadow:
-    0 0 0 8px #5fbf6f,
-    0 10px 20px #0f4c5c33;
+    var(--shadow-pond-ring);
   transition: background 0.3s;
 }
 .golden .side {
   box-shadow:
-    0 0 0 8px #f4b740,
-    0 10px 20px #0f4c5c33;
+    0 0 0 8px var(--sun),
+    0 10px 20px #0f4c5c33;;
 }
 .boss .side {
   box-shadow:
-    0 0 0 10px #1f5fa8,
-    0 10px 20px #0f4c5c33;
+    0 0 0 10px var(--sky-deep),
+    0 10px 20px #0f4c5c33;;
 }
 .side.winner {
-  background: #ffe3ee;
+  background: var(--pink-ground);
 }
 .side.eaten {
   transform: scale(0.72) translateY(14px) rotate(-5deg);
@@ -317,7 +316,7 @@ app-game-header {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 3px solid #ffffff;
+  border: 3px solid var(--paper);
   opacity: 0;
   pointer-events: none;
 }
@@ -337,11 +336,10 @@ app-game-header {
   min-width: clamp(48px, 6.25vw, 64px);
   height: 76px;
   padding: 0 10px;
-  border-radius: 18px;
-  background: #fff;
+  border-radius: var(--radius-tile)
+  background: var(--paper);
   box-shadow:
-    0 5px 0 #e2dcc4,
-    0 8px 18px #214d5a12;
+    var(--shadow-tile);
   font-size: clamp(30px, 4.1vw, 42px);
   font-weight: 600;
   line-height: 1;
@@ -363,27 +361,27 @@ app-game-header {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #f4b740;
+  background: var(--sun);
   color: var(--ink);
   font-size: 28px;
   font-weight: 600;
   line-height: 1;
 }
 .operator.minus {
-  background: #9fd6f2;
+  background: var(--sky-soft);
 }
 .winner .tile {
   box-shadow:
     0 5px 0 #b9dcc1,
-    0 8px 18px #214d5a12;
+    0 8px 18px #214d5a12;;
 }
 .side-value {
   margin-top: 6px;
   padding: 4px 16px;
-  border-radius: 20px;
-  background: #ffe3ee;
+  border-radius: var(--radius-pill)
+  background: var(--pink-ground);
   font-size: 24px;
-  color: #a3124a;
+  color: var(--pink-deep);
   font-weight: 600;
 }
 .slot {
@@ -397,10 +395,10 @@ app-game-header {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #ffffffcc;
+  background: var(--paper-veil);
   font-size: 26px;
   font-weight: 600;
-  color: #3a8f55;
+  color: var(--success);
 }
 .slot-croc {
   display: block;
@@ -431,8 +429,8 @@ app-game-header {
   font-size: 34px;
   font-weight: 600;
   line-height: 1;
-  color: #a3124a;
-  background: #ffffffcc;
+  color: var(--pink-deep);
+  background: var(--paper-veil);
   padding: 2px 12px;
   border-radius: 14px;
   animation: pop 0.3s ease-out;
@@ -443,12 +441,12 @@ app-game-header {
   top: 36%;
   z-index: 3;
   padding: 4px 14px;
-  border-radius: 16px;
-  background: #fff;
-  color: #a3124a;
+  border-radius: var(--radius-surface)
+  background: var(--paper);
+  color: var(--pink-deep);
   font-size: 28px;
   font-weight: 600;
-  box-shadow: 0 6px 16px #214d5a22;
+  box-shadow: var(--shadow-float);
   animation: float-up 1.3s ease-out forwards;
   pointer-events: none;
 }
@@ -470,10 +468,10 @@ app-game-header {
   height: 24px;
   min-width: 34px;
   padding: 0 8px;
-  border-radius: 12px;
-  background: #52b36b;
-  box-shadow: 0 0 0 2px #fff;
-  color: #fff;
+  border-radius: var(--radius-chip)
+  background: var(--leaf);
+  box-shadow: 0 0 0 2px var(--paper);;
+  color: var(--paper);
   font-size: 15px;
   font-weight: 600;
   line-height: 1;
@@ -490,7 +488,7 @@ app-game-header {
 }
 .bar.left {
   justify-self: end;
-  background: #f4b740;
+  background: var(--sun);
 }
 .instruction {
   position: relative;
@@ -502,7 +500,7 @@ app-game-header {
   min-height: 2.9em;
   padding: 8px 12px;
   border-radius: 14px;
-  background: #ffffffcc;
+  background: var(--paper-veil);
 }
 .choices {
   display: grid;
@@ -521,33 +519,33 @@ app-game-header {
   padding: 12px 8px 10px;
   border: 3px solid transparent;
   border-radius: var(--radius-panel);
-  background: #fff;
+  background: var(--paper);
   color: var(--ink);
-  box-shadow: 0 6px 16px #214d5a12;
+  box-shadow: var(--shadow-raised);
   transition:
     box-shadow 0.15s,
     border-color 0.15s;
 }
 /* Keep the hit target still while the pointer is pressed or near an edge. */
 .choice:hover {
-  box-shadow: 0 9px 20px #214d5a26;
+  box-shadow: 0 9px 20px #214d5a26;;
 }
 .choice:hover .choice-croc,
 .choice:focus-visible .choice-croc {
   animation: bob 1s ease-in-out infinite;
 }
 .choice:active {
-  box-shadow: inset 0 2px 6px #214d5a26;
+  box-shadow: inset 0 2px 6px #214d5a26;;
 }
 .choice[aria-disabled='true'] {
   cursor: default;
 }
 .choice.picked {
-  border-color: #3a8f55;
-  background: #eaf7ec;
+  border-color: var(--success);
+  background: var(--success-tint);
 }
 .choice.shake {
-  border-color: #e0953a;
+  border-color: var(--shake);
   animation: shake 0.4s;
 }
 .choice-croc {
@@ -589,7 +587,7 @@ app-game-header {
   margin: 0 0 8px;
 }
 .new-best {
-  color: #a3124a;
+  color: var(--pink-deep);
   font-weight: 600;
   animation: pop 0.5s ease-out;
 }
@@ -605,7 +603,7 @@ app-game-header {
   color: #c9c2a8;
 }
 .stars app-icon.earned {
-  color: #e39b10;
+  color: var(--star-earned-big);
   animation: pop 0.5s ease-out calc(var(--i, 1) * 0.3s) both;
 }
 .outcome-croc {
@@ -627,9 +625,9 @@ app-game-header {
   max-width: 100%;
   margin: 12px auto;
   padding: 10px 18px;
-  border-radius: 20px;
-  background: #ffe3ee;
-  color: #a3124a;
+  border-radius: var(--radius-pill)
+  background: var(--pink-ground);
+  color: var(--pink-deep);
   font-weight: 600;
   animation: pop 0.5s ease-out;
 }
@@ -641,7 +639,7 @@ app-game-header {
 .save-note {
   background: var(--warm-ground);
   padding: 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-chip)
 }
 .outcome-actions {
   display: flex;

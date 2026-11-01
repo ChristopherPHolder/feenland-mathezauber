@@ -5,7 +5,7 @@
   padding: 8px 24px 18px;
   margin: 0;
   border: 0;
-  background: #f0e5c9;
+  background: var(--parchment-deep);
   min-width: 0;
 }
 
@@ -17,7 +17,7 @@
   min-width: 44px;
   min-height: 98px;
   padding: 0 0 4px;
-  border-radius: 16px;
+  border-radius: var(--radius-surface)
   transition: transform 0.18s ease-out;
 }
 .spell:hover:enabled {
@@ -67,14 +67,14 @@
   display: block;
   position: relative;
   margin: -10px auto 0;
-  border-radius: 30px;
-  background: #fffdf5;
-  color: #172555;
+  border-radius: var(--radius-button)
+  background: var(--cream);
+  color: var(--ink);
   font-size: 25px;
   font-weight: 600;
   width: 42px;
   line-height: 38px;
-  box-shadow: 0 3px 8px #624d2522;
+  box-shadow: 0 3px 8px #624d2522;;
 }
 .spell-quantity {
   display: flex;
@@ -86,7 +86,7 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #604b27;
+  background: var(--earth);
 }
 @media (min-width: 1000px) {
   .spell-bar {

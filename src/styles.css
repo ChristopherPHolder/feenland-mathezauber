@@ -1,36 +1,9 @@
-@font-face {
-  font-family: Fredoka;
-  src: url('/fonts/fredoka-regular.ttf') format('truetype');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: Fredoka;
-  src: url('/fonts/fredoka-semibold.ttf') format('truetype');
-  font-weight: 600;
-  font-display: swap;
-}
 :root {
-  font-family: Fredoka, 'Trebuchet MS', sans-serif;
-  color: #172555;
-  background: #edf7fb;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--ground);
   font-weight: 400;
   color-scheme: light;
-  --ink: #172555;
-  --ground: #edf7fb;
-  --focus: #1746ab;
-  --success-ground: #dfefe3;
-  --warm-ground: #fff1cb;
-  --radius-surface: 16px;
-  --radius-panel: 24px;
-  --radius-button: 30px;
-  --space-small: 8px;
-  --space-medium: 16px;
-  --space-large: 24px;
-  --space-section: 40px;
-  --pink: #c91860;
-  --cream: #fffdf5;
-  --muted: #4c6079;
 }
 * {
   box-sizing: border-box;
@@ -67,11 +40,11 @@ main:focus {
   outline: none;
 }
 ::selection {
-  background: #f5c9de;
-  color: #172555;
+  background: var(--pink-tint);
+  color: var(--ink);
 }
 html {
-  scrollbar-color: #839eb0 #edf7fb;
+  scrollbar-color: #839eb0 var(--ground);
 }
 h1,
 h2,
@@ -126,7 +99,7 @@ nav {
   padding: 5px;
   border-radius: var(--radius-button);
   background: #ffffffb3;
-  box-shadow: 0 4px 15px #214d5a0a;
+  box-shadow: var(--shadow-rest);
 }
 nav a {
   display: flex;
@@ -144,8 +117,8 @@ nav a app-icon {
   height: 22px;
 }
 nav a.active {
-  background: #ffe3ee;
-  color: #a3124a;
+  background: var(--pink-ground);
+  color: var(--pink-deep);
 }
 nav a:hover {
   background: var(--cream);
@@ -186,16 +159,16 @@ footer {
 }
 .primary {
   background: var(--pink);
-  color: #fff;
-  box-shadow: 0 6px 16px #b722511c;
+  color: var(--paper);
+  box-shadow: var(--shadow-primary);
 }
 .primary:hover {
-  background: #ab114f;
+  background: var(--pink-hover);
 }
 .secondary {
-  background: white;
-  color: #172555;
-  box-shadow: 0 4px 15px #214d5a0a;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
 }
 .secondary:hover {
   background: #fff7df;
@@ -235,9 +208,9 @@ footer {
   min-height: 56px;
   padding: 16px;
   border: 1px solid #cedce2;
-  border-radius: 12px;
-  background: white;
-  color: #172555;
+  border-radius: var(--radius-chip)
+  background: var(--paper);
+  color: var(--ink);
   text-align: left;
 }
 .languages button[aria-pressed='true'] {
@@ -252,11 +225,11 @@ dialog {
   border-radius: var(--radius-panel);
   max-width: min(480px, calc(100% - 32px));
   padding: 32px;
-  color: #172555;
+  color: var(--ink);
   background: var(--cream);
 }
 dialog::backdrop {
-  background: #17255588;
+  background: var(--scrim);
 }
 .save-warning {
   max-width: 700px;

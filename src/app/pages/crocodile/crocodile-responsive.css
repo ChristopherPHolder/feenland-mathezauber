@@ -37,10 +37,10 @@
   .side {
     min-height: 98px;
     padding: 10px 6px;
-    border-radius: 20px;
+    border-radius: var(--radius-pill)
     box-shadow:
-      0 0 0 5px #5fbf6f,
-      0 8px 16px #0f4c5c33;
+      0 0 0 5px var(--leaf-bright),
+      0 8px 16px #0f4c5c33;;
   }
   .expression {
     gap: 4px;
@@ -66,7 +66,7 @@
     font-size: 24px;
     box-shadow:
       0 4px 0 #e2dcc4,
-      0 6px 14px #214d5a12;
+      0 6px 14px #214d5a12;;
   }
   .plain .tile,
   .boss .plain .tile {

@@ -3,7 +3,7 @@
   height: clamp(300px, 42vw, 480px);
   isolation: isolate;
   overflow: hidden;
-  background: #abd9c0;
+  background: var(--meadow);
 }
 .forest {
   object-fit: cover;
@@ -29,11 +29,11 @@
 }
 .wave {
   background: #152f4a;
-  color: #fff;
+  color: var(--paper);
   padding: 10px 16px;
   border-radius: 14px;
   font-size: 16px;
-  box-shadow: 0 4px 12px #092e3333;
+  box-shadow: 0 4px 12px #092e3333;;
 }
 .encounter-track {
   display: flex;
@@ -52,9 +52,9 @@
 .hearts {
   display: flex;
   gap: 5px;
-  background: #fff9e9;
+  background: var(--parchment);
   padding: 9px 11px;
-  border-radius: 30px;
+  border-radius: var(--radius-button)
 }
 .hearts svg {
   width: 29px;
@@ -102,7 +102,7 @@
   height: 8px;
   border-radius: 50%;
   background: #fff6a8;
-  box-shadow: 0 0 10px 4px #ffe66a99;
+  box-shadow: 0 0 10px 4px #ffe66a99;;
   opacity: 0;
   animation: firefly 6.5s ease-in-out calc(var(--i) * -0.9s) infinite;
 }
@@ -154,7 +154,7 @@
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  background: #fffdf5;
+  background: var(--cream);
   border: 3px solid #d8a84a;
   border-radius: 14px;
   font-size: clamp(28px, 4vw, 44px);
@@ -162,14 +162,14 @@
   line-height: 1;
   padding: 8px 18px;
   z-index: 1;
-  box-shadow: 0 5px 15px #4e301d33;
+  box-shadow: 0 5px 15px #4e301d33;;
 }
 .steps {
   display: flex;
   gap: 9px;
   margin: 0 0 0;
   padding: 6px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill)
   background: #fff8e9;
 }
 .steps span {
@@ -194,12 +194,12 @@
   top: -10px;
   white-space: nowrap;
   padding: 10px 18px;
-  border-radius: 16px;
+  border-radius: var(--radius-surface)
   background: #fff4c6;
   color: #623815;
   font-size: clamp(20px, 3vw, 34px);
   font-weight: 600;
-  box-shadow: 0 5px 22px #e8ac4655;
+  box-shadow: 0 5px 22px #e8ac4655;;
   z-index: 3;
 }
 .sparkles {
@@ -242,7 +242,7 @@
   bottom: 5%;
   width: 24%;
   height: 70%;
-  border: 5px solid #c91860;
+  border: 5px solid var(--pink);
   border-radius: 50%;
   pointer-events: none;
   animation: ripple 0.75s ease-out forwards;
@@ -437,8 +437,8 @@
   display: flex;
   gap: 6px;
   padding: 6px 10px;
-  border-radius: 18px;
-  background: #fff9e9;
+  border-radius: var(--radius-tile)
+  background: var(--parchment);
   color: #744288;
 }
 .shield-layers app-icon {
@@ -482,7 +482,7 @@
   height: 44px;
   border: 0;
   border-radius: 50%;
-  background: #172555;
+  background: var(--ink);
   color: white;
   display: grid;
   place-items: center;

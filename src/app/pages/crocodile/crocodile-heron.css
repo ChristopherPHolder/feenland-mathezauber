@@ -28,22 +28,22 @@
   gap: 4px;
   padding: 14px 8px;
   border: 2px solid #9ab8bd;
-  border-radius: 16px;
-  background: #fff;
-  color: #172555;
+  border-radius: var(--radius-surface)
+  background: var(--paper);
+  color: var(--ink);
   cursor: pointer;
   text-align: center;
 }
 .pace-choice:hover {
-  background: #edf7fb;
-  border-color: #286d8b;
+  background: var(--ground);
+  border-color: var(--lagoon);
 }
 .pace-choice.selected {
   background: #e1f2df;
-  border-color: #326a3a;
+  border-color: var(--success-strong);
 }
 .pace-choice:focus-within {
-  outline: 3px solid #1746ab;
+  outline: 3px solid var(--focus);
   outline-offset: 4px;
 }
 .pace-choice input {
@@ -53,7 +53,7 @@
   margin: 0;
   width: 18px;
   height: 18px;
-  accent-color: #326a3a;
+  accent-color: var(--success-strong);
 }
 .pace-choice strong {
   font-size: 18px;
@@ -67,13 +67,13 @@
   height: 40px;
   margin-top: 8px;
   fill: none;
-  stroke: #286d8b;
+  stroke: var(--lagoon);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .selected .pace-picture {
-  stroke: #326a3a;
+  stroke: var(--success-strong);
 }
 .intro .bubble-option .pace-rule {
   margin: 14px 0 0;
@@ -86,14 +86,14 @@
   min-height: 44px;
   padding: 8px 14px;
   border: 0;
-  border-radius: 20px;
-  background: #fff;
+  border-radius: var(--radius-pill)
+  background: var(--paper);
   color: var(--ink);
   font: inherit;
   font-size: 14px;
   text-decoration: underline;
   text-underline-offset: 3px;
-  box-shadow: 0 4px 15px #214d5a0a;
+  box-shadow: var(--shadow-rest);
 }
 
 /* Lily pads and Kiki are buttons: tap the bigger side, or Kiki for equal */
@@ -109,7 +109,7 @@
   cursor: default;
 }
 .side:hover:not([aria-disabled='true']) {
-  background: #fff9e9;
+  background: var(--parchment);
 }
 .side.shake {
   animation: shake 0.4s;
@@ -129,14 +129,14 @@
   cursor: pointer;
 }
 .race .slot-empty {
-  background: #ffe3ee;
-  color: #a3124a;
+  background: var(--pink-ground);
+  color: var(--pink-deep);
 }
 .banner.heron-banner {
   color: #3f6fa8;
 }
 .stolen .instruction {
-  background: #ffe3ee;
+  background: var(--pink-ground);
 }
 @media (prefers-reduced-motion: reduce) {
   .side.snatched {
