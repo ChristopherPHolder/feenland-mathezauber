@@ -2,7 +2,14 @@ import type { Level } from './catalog';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Pace = 'relaxed' | 'steady' | 'quick';
 export type Skill =
-  'placeValue' | 'addition' | 'crossing' | 'subtractionSkill' | 'startingNumber' | 'mixed';
+  | 'placeValue'
+  | 'addition'
+  | 'crossing'
+  | 'subtractionSkill'
+  | 'startingNumber'
+  | 'mixed'
+  | 'times'
+  | 'missingFactor';
 export interface PracticeConfig {
   readonly stage: number;
   readonly skill: Skill;
@@ -23,6 +30,8 @@ const stages: readonly [Skill, 10 | 20 | 30, string][] = [
   ['subtractionSkill', 30, '25 − □ = 19'],
   ['startingNumber', 30, '□ − 8 = 12'],
   ['mixed', 30, '7 + □ = 16'],
+  ['times', 30, '3 × 4 = □'],
+  ['missingFactor', 30, '3 × □ = 12'],
 ];
 export const practiceLevels: readonly Level[] = stages.map(([skill, max, example], index) => ({
   id: `practice-30-${index + 1}`,
@@ -49,6 +58,10 @@ export function questionPool(config: PracticeConfig, difficulty: Difficulty): re
       }
       continue;
     }
+    if (skill === 'times' || skill === 'missingFactor') {
+      questions.push(...timesQuestions(skill, config.max, difficulty));
+      continue;
+    }
     for (let a = 1; a < config.max; a++)
       for (let b = 1; a + b <= config.max; b++) {
         const crosses = (a % 10) + (b % 10) >= 10;
@@ -66,6 +79,23 @@ export function questionPool(config: PracticeConfig, difficulty: Difficulty): re
         }
       }
   }
+  return questions;
+}
+/** Products stay within the range; easy keeps to the ×2, ×5 and ×10 rows, hard skips ×2. */
+function timesQuestions(skill: Skill, max: number, difficulty: Difficulty): Question[] {
+  const questions: Question[] = [];
+  for (let a = 2; a <= 10; a++)
+    for (let b = 2; b <= 10 && a * b <= max; b++) {
+      if (difficulty === 'easy' && (a * b > 20 || ![2, 5, 10].includes(a))) continue;
+      if (difficulty === 'hard' && (a < 3 || b < 3)) continue;
+      questions.push(
+        skill === 'times'
+          ? { text: `${a} × ${b} = □`, answer: a * b }
+          : difficulty === 'easy' || (a + b) % 2 === 0
+            ? { text: `${a} × □ = ${a * b}`, answer: b }
+            : { text: `□ × ${b} = ${a * b}`, answer: a },
+      );
+    }
   return questions;
 }
 export function createRound(

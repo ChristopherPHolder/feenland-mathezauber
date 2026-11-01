@@ -12,7 +12,15 @@
       [title]="training() ? i.t(training()!.skill) : t('title')"
       [detail]="
         training()
-          ? i.t('stage') + ' ' + training()!.stage + ' / 9 · ' + i.t('upTo') + ' ' + training()!.max
+          ? i.t('stage') +
+            ' ' +
+            training()!.stage +
+            ' / ' +
+            stages.length +
+            ' · ' +
+            i.t('upTo') +
+            ' ' +
+            training()!.max
           : t('playtest')
       "
       [anchor]="gamesAnchor()"
@@ -20,7 +28,7 @@
   }
   <app-battle-scene
     [battle]="battle()"
-    [stageLabel]="training() ? i.t('stage') + ' ' + training()!.stage + ' / 9' : ''"
+    [stageLabel]="training() ? i.t('stage') + ' ' + training()!.stage + ' / ' + stages.length : ''"
     [paused]="paused()"
     [started]="started()"
     [fit]="playing()"
@@ -35,8 +43,8 @@
           }
           @if (training(); as config) {
             <p>
-              {{ i.t('stage') }} {{ config.stage }} / 9 · {{ i.t(config.skill) }} ·
-              {{ i.t('upTo') }} {{ config.max }}
+              {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} ·
+              {{ i.t(config.skill) }} · {{ i.t('upTo') }} {{ config.max }}
             </p>
             <p>{{ config.example }}</p>
           } @else {
@@ -110,7 +118,8 @@
     <div class="learning-dock">
       @if (training(); as config) {
         <p class="training-position">
-          {{ i.t('stage') }} {{ config.stage }} / 9 · {{ i.t(config.skill) }} · {{ i.t('upTo') }}
+          {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} · {{ i.t(config.skill) }} ·
+          {{ i.t('upTo') }}
           {{ config.max }}
         </p>
       }

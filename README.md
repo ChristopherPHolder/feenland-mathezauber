@@ -44,7 +44,7 @@ See [navigation](docs/navigation.md) for the screens, the games hub and how a ga
 
 English, German, Spanish and French are detected from browser preferences and selectable in Settings. Progress and preferences stay on the device; no accounts or analytics.
 
-The Hungry Crocodile lives in the Numbers world under its own chapter. Each of its six levels is a ten-question comparison round with greater, less and equal choices drawn as a crocodile that eats the bigger side. Level results are real practice results: finishing records completion and stars, and two stars master the level. Every level is open from the start and can be switched from the level strip on the game's intro.
+The Hungry Crocodile lives in the Numbers world under its own chapter. Each of its seven levels is a ten-question comparison round with greater, less and equal choices drawn as a crocodile that eats the bigger side. Level results are real practice results: finishing records completion and stars, and two stars master the level. Every level is open from the start and can be switched from the level strip on the game's intro.
 
 To inspect the full flow, choose All games → any level card → play, then finish a round to reach the completion screen. Next adventure follows the catalog order and eventually reaches the caught-up state. All games inside a game returns to that game's section of the hub, and Settings returns to the screen you came from. Older `/worlds/...` links redirect into the hub.
 
