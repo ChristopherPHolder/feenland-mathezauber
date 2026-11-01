@@ -74,6 +74,7 @@ const en = {
   hatWizard: 'Wizard hat',
   hatFlower: 'Flower wreath',
   hatGold: 'Golden crown',
+  hatTop: 'Magic top hat',
   perfect: 'Perfect pond! {n} points.',
   pondTitle: 'Kiki’s pond',
 } as const;
@@ -155,6 +156,7 @@ const de: Messages = {
   hatWizard: 'Zauberhut',
   hatFlower: 'Blumenkranz',
   hatGold: 'Goldene Krone',
+  hatTop: 'Zylinder',
   perfect: 'Perfekter Teich! {n} Punkte.',
   pondTitle: 'Kikis Teich',
 };
@@ -234,6 +236,7 @@ const es: Messages = {
   hatWizard: 'Sombrero de mago',
   hatFlower: 'Corona de flores',
   hatGold: 'Corona dorada',
+  hatTop: 'Chistera mágica',
   perfect: '¡Estanque perfecto! {n} puntos.',
   pondTitle: 'El estanque de Kiki',
 };
@@ -313,6 +316,7 @@ const fr: Messages = {
   hatWizard: 'Chapeau de magicien',
   hatFlower: 'Couronne de fleurs',
   hatGold: 'Couronne dorée',
+  hatTop: 'Chapeau de magicien',
   perfect: 'Mare parfaite ! {n} points.',
   pondTitle: 'La mare de Kiki',
 };

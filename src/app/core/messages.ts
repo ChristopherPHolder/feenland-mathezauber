@@ -6,6 +6,8 @@ export const en = {
   crossing: 'Addition across tens',
   subtractionSkill: 'Missing numbers: subtraction',
   startingNumber: 'Find the starting number',
+  times: 'Times tables',
+  missingFactor: 'Missing numbers: times',
   mixed: 'Mixed magic',
   stage: 'Stage',
   upTo: 'Numbers up to',
@@ -36,7 +38,7 @@ export const en = {
 
   crocodileChapter: 'The Hungry Crocodile',
   crocodileChapterHelp:
-    'Learn the crocodile trick for greater, less and equal. Then compare numbers and sums up to 100.',
+    'Learn the crocodile trick for greater, less and equal. Then compare numbers, sums and times tables.',
   crocodilePlay: 'Feed the crocodile',
   crocodile1: 'Numbers up to 20',
   crocodile1Help: 'Compare two numbers up to 20, like 5 ○ 12.',
@@ -50,6 +52,8 @@ export const en = {
   crocodile5Help: 'Calculate both sides before you compare, like 5 + 7 ○ 6 + 6.',
   crocodile6: 'The big number buffet',
   crocodile6Help: 'Numbers and sums up to 100 for a very hungry crocodile, like 40 + 8 ○ 50.',
+  crocodile7: 'Times-table treats',
+  crocodile7Help: 'Multiply first, then compare, with products up to 30, like 4 × 5 ○ 3 × 7.',
   friendsOfTen: 'Friends of Ten',
   friendsOfTenDescription: 'Discover the number friends that make ten.',
   fairyCastle: 'Defend the Fairy Castle',
@@ -203,7 +207,7 @@ export const translations: Record<Locale, Messages> = {
   de: {
     crocodileChapter: 'Das hungrige Krokodil',
     crocodileChapterHelp:
-      'Lerne den Krokodil-Trick für größer, kleiner und gleich. Dann vergleiche Zahlen und Rechnungen bis 100.',
+      'Lerne den Krokodil-Trick für größer, kleiner und gleich. Dann vergleiche Zahlen, Rechnungen und Einmaleins.',
     crocodilePlay: 'Krokodil füttern',
     crocodile1: 'Zahlen bis 20',
     crocodile1Help: 'Vergleiche zwei Zahlen bis 20, zum Beispiel 5 ○ 12.',
@@ -219,6 +223,9 @@ export const translations: Record<Locale, Messages> = {
     crocodile6: 'Das große Zahlenbuffet',
     crocodile6Help:
       'Zahlen und Rechnungen bis 100 für ein sehr hungriges Krokodil, zum Beispiel 40 + 8 ○ 50.',
+    crocodile7: 'Einmaleins-Leckerbissen',
+    crocodile7Help:
+      'Erst malnehmen, dann vergleichen, mit Ergebnissen bis 30, zum Beispiel 4 × 5 ○ 3 × 7.',
     practicePath: 'Dein Weg bis 30',
     practiceHelp: 'Wähle eine Stufe. Folge dem empfohlenen Weg oder übe gezielt.',
     placeValue: 'Zehner und Einer',
@@ -226,6 +233,8 @@ export const translations: Record<Locale, Messages> = {
     crossing: 'Plus über den Zehner',
     subtractionSkill: 'Fehlende Zahlen: Minus',
     startingNumber: 'Finde die Startzahl',
+    times: 'Einmaleins',
+    missingFactor: 'Fehlende Zahlen: Mal',
     mixed: 'Gemischter Zauber',
     stage: 'Stufe',
     upTo: 'Zahlen bis',
@@ -404,7 +413,7 @@ export const translations: Record<Locale, Messages> = {
   es: {
     crocodileChapter: 'El cocodrilo hambriento',
     crocodileChapterHelp:
-      'Aprende el truco del cocodrilo para mayor, menor e igual. Luego compara números y cuentas hasta 100.',
+      'Aprende el truco del cocodrilo para mayor, menor e igual. Luego compara números, cuentas y tablas de multiplicar.',
     crocodilePlay: 'Alimentar al cocodrilo',
     crocodile1: 'Números hasta 20',
     crocodile1Help: 'Compara dos números hasta 20, como 5 ○ 12.',
@@ -419,6 +428,9 @@ export const translations: Record<Locale, Messages> = {
     crocodile6: 'El gran banquete de números',
     crocodile6Help:
       'Números y cuentas hasta 100 para un cocodrilo muy hambriento, como 40 + 8 ○ 50.',
+    crocodile7: 'Golosinas de multiplicar',
+    crocodile7Help:
+      'Primero multiplica y luego compara, con resultados hasta 30, como 4 × 5 ○ 3 × 7.',
     practicePath: 'Tu camino hasta 30',
     practiceHelp: 'Elige una etapa. Sigue el camino recomendado o practica una habilidad.',
     placeValue: 'Decenas y unidades',
@@ -426,6 +438,8 @@ export const translations: Record<Locale, Messages> = {
     crossing: 'Sumar cruzando decenas',
     subtractionSkill: 'Números que faltan: resta',
     startingNumber: 'Encuentra el número inicial',
+    times: 'Tablas de multiplicar',
+    missingFactor: 'Números que faltan: por',
     mixed: 'Magia variada',
     stage: 'Etapa',
     upTo: 'Números hasta',
@@ -603,7 +617,7 @@ export const translations: Record<Locale, Messages> = {
   fr: {
     crocodileChapter: 'Le crocodile affamé',
     crocodileChapterHelp:
-      'Apprends l’astuce du crocodile pour plus grand, plus petit et égal. Puis compare des nombres et des calculs jusqu’à 100.',
+      'Apprends l’astuce du crocodile pour plus grand, plus petit et égal. Puis compare des nombres, des calculs et des tables de multiplication.',
     crocodilePlay: 'Nourrir le crocodile',
     crocodile1: 'Nombres jusqu’à 20',
     crocodile1Help: 'Compare deux nombres jusqu’à 20, comme 5 ○ 12.',
@@ -618,6 +632,9 @@ export const translations: Record<Locale, Messages> = {
     crocodile6: 'Le grand buffet des nombres',
     crocodile6Help:
       'Des nombres et des calculs jusqu’à 100 pour un crocodile très affamé, comme 40 + 8 ○ 50.',
+    crocodile7: 'Friandises multipliées',
+    crocodile7Help:
+      'Multiplie d’abord, puis compare, avec des résultats jusqu’à 30, comme 4 × 5 ○ 3 × 7.',
     practicePath: 'Ton chemin jusqu’à 30',
     practiceHelp: 'Choisis une étape. Suis le chemin conseillé ou travaille une compétence.',
     placeValue: 'Dizaines et unités',
@@ -625,6 +642,8 @@ export const translations: Record<Locale, Messages> = {
     crossing: 'Addition avec passage de dizaine',
     subtractionSkill: 'Nombres manquants : soustraction',
     startingNumber: 'Trouve le nombre de départ',
+    times: 'Tables de multiplication',
+    missingFactor: 'Nombres manquants : fois',
     mixed: 'Magie variée',
     stage: 'Étape',
     upTo: 'Nombres jusqu’à',

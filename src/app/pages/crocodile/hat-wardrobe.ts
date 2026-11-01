@@ -39,7 +39,7 @@ import { Hat, hats } from './crocodile-score';
     }
     .hat-list {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 8px;
       list-style: none;
       margin: 0;
@@ -101,7 +101,7 @@ import { Hat, hats } from './crocodile-score';
     }
     @media (max-width: 640px) {
       .hat-list {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
     }
   `,
