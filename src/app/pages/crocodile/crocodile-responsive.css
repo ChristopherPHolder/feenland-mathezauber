@@ -5,13 +5,6 @@
   .game {
     gap: 12px;
   }
-  .game-top {
-    flex-direction: column;
-  }
-  .top-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
   .panel {
     padding: 20px 16px;
   }

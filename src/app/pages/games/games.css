@@ -1,0 +1,241 @@
+:host {
+  display: block;
+}
+.games-page {
+  max-width: 1240px;
+  margin: auto;
+  padding: 16px 40px 48px;
+}
+.games-intro {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 28px;
+}
+.games-intro h1 {
+  margin: 0 0 12px;
+}
+.games-intro p {
+  max-width: 42ch;
+  margin: 0;
+}
+.games-intro img {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  justify-self: end;
+  border-radius: 48% 48% 24px 24px;
+}
+.game {
+  position: relative;
+  margin-bottom: 28px;
+  padding: 24px 28px 28px;
+  border-radius: var(--radius-panel);
+  background: var(--world-ground);
+  scroll-margin-top: 16px;
+}
+.world-anchor {
+  position: absolute;
+  top: 0;
+}
+.game-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.game-emblem {
+  font-size: 48px;
+  line-height: 1;
+  flex: none;
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: #ffffffb3;
+}
+.game-copy {
+  min-width: 0;
+}
+.world-name {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--world-color);
+}
+.game-copy h2 {
+  font-size: 28px;
+  line-height: 1.15;
+  margin: 0 0 6px;
+}
+.game-copy p {
+  margin: 0;
+  max-width: 65ch;
+}
+.level-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.level-list.castle {
+  grid-template-columns: 1fr;
+}
+.level-card {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  min-height: 150px;
+  padding: 18px 64px 18px 20px;
+  border: 3px solid transparent;
+  border-radius: 20px;
+  background: var(--cream);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 0 4px 15px #214d5a0a;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+  scroll-margin-top: 16px;
+}
+.level-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--pink);
+}
+.level-card.recommended {
+  border-color: var(--world-color);
+}
+.level-card.mastered {
+  background: #e9f5ec;
+}
+.hero-card {
+  min-height: 0;
+}
+.level-number {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+.level-example {
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.level-name {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.level-help {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.level-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.level-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.level-state app-icon {
+  width: 20px;
+  height: 20px;
+  color: #9a5b00;
+}
+.level-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--world-color);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.level-go {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--pink);
+  color: #fff;
+  box-shadow: 0 6px 16px #b722511c;
+}
+.level-go app-icon {
+  width: 24px;
+  height: 24px;
+}
+.games-end {
+  text-align: center;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+@media (max-width: 1000px) {
+  .level-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .games-page {
+    padding: 8px 20px 32px;
+  }
+  .games-intro {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .games-intro img {
+    max-width: 240px;
+    justify-self: center;
+  }
+  .game {
+    padding: 20px 16px 20px;
+    margin-bottom: 20px;
+  }
+  .game-head {
+    gap: 12px;
+  }
+  .game-emblem {
+    width: 56px;
+    height: 56px;
+    font-size: 36px;
+    border-radius: 18px;
+  }
+  .game-copy h2 {
+    font-size: 24px;
+  }
+  .level-list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .level-card {
+    min-height: 0;
+    padding: 16px 60px 16px 16px;
+  }
+}
+@media (max-height: 550px) and (min-width: 641px) {
+  .games-intro img {
+    max-height: 160px;
+    width: auto;
+  }
+}

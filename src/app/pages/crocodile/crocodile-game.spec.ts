@@ -347,13 +347,13 @@ describe('crocodile navigation', () => {
   });
   afterEach(() => TestBed.resetTestingModule());
   it('lists seven open levels and sends unknown deep links home', async () => {
-    const h = await RouterTestingHarness.create('/worlds/numbers/chapters/compare-crocodile');
-    expect(h.routeNativeElement?.querySelectorAll('.level-stop').length).toBe(7);
-    expect(h.routeNativeElement?.querySelectorAll('a[href^="/adventure/crocodile-"]').length).toBe(
-      7,
-    );
-    expect(h.routeNativeElement?.textContent).toContain(
-      TestBed.inject(LocaleService).t('crocodilePlay'),
+    const h = await RouterTestingHarness.create('/games#compare-crocodile');
+    expect(
+      h.routeNativeElement?.querySelectorAll('#compare-crocodile a[href^="/adventure/crocodile-"]')
+        .length,
+    ).toBe(7);
+    expect(h.routeNativeElement?.querySelector('#compare-crocodile')?.textContent).toContain(
+      TestBed.inject(LocaleService).t('crocodileChapter'),
     );
     await h.navigateByUrl('/adventure/crocodile-8');
     expect(TestBed.inject(Router).url).toBe('/');

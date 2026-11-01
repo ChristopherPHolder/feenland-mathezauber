@@ -17,36 +17,9 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-.top-bar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+app-game-header {
+  margin-bottom: 10px;
 }
-.top-bar h1 {
-  font-size: clamp(22px, 3vw, 30px);
-  margin: 0;
-  text-align: center;
-}
-.home-link,
-.sound-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 8px 14px;
-  border: 0;
-  border-radius: var(--radius-button);
-  background: #ffffffcc;
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 15px;
-}
-.sound-button svg,
 .key svg {
   width: 26px;
   height: 26px;
@@ -55,9 +28,6 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-.sound-button[aria-pressed='false'] {
-  color: var(--muted);
 }
 
 /* Intro */
@@ -555,12 +525,6 @@ app-icon.earned {
   }
 }
 @media (max-width: 480px) {
-  .home-link span {
-    display: none;
-  }
-  .top-bar h1 {
-    font-size: 20px;
-  }
   .hud {
     grid-template-columns: 1fr;
   }

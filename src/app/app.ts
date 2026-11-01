@@ -1,7 +1,7 @@
 import { toSignal } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { NgOptimizedImage } from '@angular/common';
-import { Component, computed, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
@@ -16,11 +16,10 @@ import { Icon } from './shared/icon';
           <span class="brand-name">Feenland <span>Mathezauber</span></span>
         </a>
         <nav [attr.aria-label]="i.t('home')">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{
-            i.t('home')
-          }}</a
-          ><a routerLink="/worlds" routerLinkActive="active"
-            ><app-icon kind="book" />{{ i.t('worlds') }}</a
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+            ><app-icon kind="home" /><span>{{ i.t('home') }}</span></a
+          ><a routerLink="/games" routerLinkActive="active"
+            ><app-icon kind="grid" /><span>{{ i.t('games') }}</span></a
           ><a
             class="settings-link"
             routerLink="/settings"
@@ -48,18 +47,18 @@ export class App {
   protected readonly i = inject(LocaleService);
   protected readonly p = inject(ProgressService);
   private readonly router = inject(Router);
-  private readonly navigation = toSignal(
-    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)),
+  /** Game routes declare `focusedGame` so the shell steps aside and the game fills the screen. */
+  protected readonly focusedGame = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => {
+        let route = this.router.routerState.snapshot.root;
+        while (route.firstChild) route = route.firstChild;
+        return route.data['focusedGame'] === true;
+      }),
+    ),
+    { initialValue: false },
   );
-  protected readonly focusedGame = computed(() => {
-    this.navigation();
-    const path = this.router.url.split('?')[0].split('#')[0];
-    return (
-      path === '/adventure/defend-fairy-castle' ||
-      path === '/adventure/number-wall' ||
-      /^\/adventure\/(practice-30-([1-9]|1[01])|crocodile-[1-7])$/.test(path)
-    );
-  });
   protected settingsReturnTarget() {
     return this.router.url.startsWith('/settings') ? '/' : this.router.url;
   }

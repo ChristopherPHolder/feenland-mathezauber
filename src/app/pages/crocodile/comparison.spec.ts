@@ -78,8 +78,6 @@ describe('crocodile comparison rounds', () => {
       'crocodile-6',
       'crocodile-7',
     ]);
-    expect(comparisonLevels[0].prerequisites).toEqual([]);
-    expect(comparisonLevels.every((level) => level.prerequisites.length === 0)).toBe(true);
     expect(comparisonStage('crocodile-5')?.skill).toBe('twoSides');
     expect(comparisonStage('crocodile-7')?.skill).toBe('times');
     expect(comparisonStage('crocodile-8')).toBeUndefined();

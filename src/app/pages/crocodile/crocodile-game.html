@@ -1,36 +1,31 @@
-<section class="game" aria-labelledby="crocodile-title">
-  <header class="game-top">
-    <div>
-      <h1 id="crocodile-title">{{ t('title') }}</h1>
-      @if (stage(); as stage) {
-        <p class="level-line">
-          {{ t('level', { n: stage.stage, total: total }) }} · {{ i.t(levelKey(stage.stage)) }}
-        </p>
-      }
-    </div>
-    <div class="top-actions">
-      <button
-        class="icon-button"
-        type="button"
-        [attr.aria-pressed]="sounds.enabled"
-        [attr.aria-label]="t(sounds.enabled ? 'soundOn' : 'soundOff')"
-        (click)="sounds.toggle()"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 9v6h4l5 4V5L8 9z" />
-          @if (sounds.enabled) {
-            <path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" />
-          } @else {
-            <path d="m16 9 5 6m0-6-5 6" />
-          }
-        </svg>
-      </button>
-      <a class="exit-link" [routerLink]="chapterLink"><app-icon kind="back" />{{ t('back') }}</a>
-    </div>
-  </header>
+<section class="game" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="
+      stage()
+        ? t('level', { n: stage()!.stage, total: total }) + ' · ' + i.t(levelKey(stage()!.stage))
+        : ''
+    "
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
 
   @if (!started()) {
     <section class="panel intro" aria-labelledby="trick-title">
+      <nav class="level-strip" [attr.aria-label]="i.t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage()?.stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.stage, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.stage }}</a
+          >
+        }
+      </nav>
       <h2 id="trick-title">{{ t('trick') }}</h2>
       <div class="demo" aria-hidden="true">
         <div class="demo-row">

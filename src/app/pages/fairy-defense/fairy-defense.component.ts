@@ -23,6 +23,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
+import { GameHeader } from '../../shared/game-header';
 import { Icon } from '../../shared/icon';
 import { advance, cast, freshBattle, resolveSpell, revealHint } from './battle';
 import { GameAudio } from './game-audio';
@@ -30,7 +31,16 @@ import { gameText, GameMessageKey } from './game-messages';
 import { AudioSettings, PlaytestStore } from './playtest-store';
 @Component({
   selector: 'app-fairy-defense',
-  imports: [FormField, BattleScene, SpellBar, GamePause, WavePathComponent, RouterLink, Icon],
+  imports: [
+    FormField,
+    BattleScene,
+    SpellBar,
+    GamePause,
+    WavePathComponent,
+    RouterLink,
+    Icon,
+    GameHeader,
+  ],
   providers: [GameAudio],
   templateUrl: './fairy-defense.component.html',
   styleUrl: './fairy-defense.component.css',
@@ -86,11 +96,11 @@ export class FairyDefenseComponent {
     () => this.battle().wave.encounters[this.battle().encounter],
   );
   protected readonly dots = Array.from({ length: 10 }, (_, index) => index);
-  protected readonly chapterLink = computed(() =>
-    this.training()
-      ? ['/worlds', 'missing-number', 'chapters', 'math-to-30']
-      : ['/worlds', 'numbers', 'chapters', 'friends-of-ten'],
-  );
+  /** Where the games hub lands when leaving: this game's section, or the practice stage. */
+  protected readonly gamesAnchor = computed(() => {
+    const training = this.training();
+    return training ? `practice-30-${training.stage}` : 'friends-of-ten';
+  });
   private readonly dialog = viewChild.required(GamePause);
   private readonly spellBar = viewChild(SpellBar);
   private readonly outcome = viewChild<ElementRef<HTMLElement>>('outcome');

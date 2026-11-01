@@ -83,23 +83,14 @@ Use 16px destination/path surfaces, 24px panels/dialogs, and 30px action pills. 
 
 Buttons use shared `.button`, `.primary` and `.secondary` styles. Links navigate; buttons open dialogs, choose a language or submit a demo result. Keep the primary next step prominent; secondary actions return or explore alternatives. Hover raises buttons by 2px; keyboard focus is visible. No hover/drag-only behavior.
 
-`ContentStatus` provides a localized label and SVG icon for the same four states on worlds, chapters, levels and preview dialogs:
+Nothing in the catalog is locked, so there is no locked state and no unlock dialog. Level cards on the hub show two things from progress: a `StarRating` (three star slots, the earned ones filled, announced as "n of 3 stars") and a short status (Mastery earned, or Completed). The recommended level carries a "Your next step" badge in the world's colour. A level card is one link; the whole card is the tap target and ends in a pink play button.
 
-| State       | Meaning                                                  | Icon | Interaction                                                    |
-| ----------- | -------------------------------------------------------- | ---- | -------------------------------------------------------------- |
-| Coming Soon | No implemented activity                                  | Star | Learning preview; never launches unfinished content            |
-| Locked      | Implemented but no accessible entry level                | Lock | Names a sufficient prerequisite path                           |
-| Available   | An open or replayable entry exists                       | Book | Opens the next navigation screen                               |
-| Completed   | Level completed; world/chapter published levels mastered | Cup  | Still opens for replay; future content may reopen availability |
+Home cards and hub sections render keyed catalog configuration, with icons and text before action links. A current Completed state is distinct from a permanently earned chapter award. Earned markers use saved IDs; Home uses semantic `dl`/`dt`/`dd` cumulative counts. Never invent stars or use a whole-game fraction/percentage. Completion displays supplied results and only awarded stars; demo results and chapter awards are explicitly labeled and stored separately.
 
-Available content need not be actual mathematical gameplay: current challenges are explicitly labeled previews. Shared `ContentPreview` handles chapter/level dialogs; map previews additionally preserve alternative entry groups. Native `showModal()` contains keyboard interaction; opening focuses Close, Escape dismisses, and closing restores the trigger. Dialogs have a named title, description and scrollable content bounded by the viewport. Do not disable locked/forthcoming preview controls.
-
-World/chapter/level paths render keyed content configuration, with icons and text before action links. A current Completed state is distinct from a permanently earned chapter award. Earned markers use saved IDs; Home uses semantic `dl`/`dt`/`dd` cumulative counts. Never invent stars or use a whole-game fraction/percentage. Completion displays supplied results and only awarded stars; demo results and chapter awards are explicitly labeled and stored separately.
-
-The shared header has Home, Worlds and an unobtrusive Settings gear. Back links retain chapter/level anchors; Settings retains a validated local return destination. Language buttons use native language names and `aria-pressed`, and update the document language immediately. No unsupported audio switches or destructive actions are shown.
+The shared header is a pill with Home, Games and an unobtrusive Settings gear; on narrow phones the wordmark collapses to its logo and Home to its icon. Inside a game the shared `GameHeader` replaces it: an All games link back to that game's section of the hub, the title, and an optional sound toggle. Links back from games and completion carry chapter/level anchors; Settings retains a validated local return destination. Language buttons use native language names and `aria-pressed`, and update the document language immediately. No unsupported audio switches or destructive actions are shown.
 
 ## Do's and Don'ts
 
 Use English, German, Spanish and French message keys for every player-facing string, including previews, prerequisites, result feedback and statuses. Keep content IDs independent of language. Respect the system reduced-motion preference: all authored transitions/animations become zero-duration. Current completion uses restrained static celebration rather than mandatory animation.
 
-Use the same fairy and authored SVG icons; keep actions touch-friendly and focusable. Preserve earned IDs as content grows. Do not imply a permanent world ending, fabricate learning rewards, hide unfinished states behind disabled buttons, or rely on color alone.
+Use the same fairy and authored SVG icons; keep actions touch-friendly and focusable. Preserve earned IDs as content grows. Do not imply a permanent world ending, fabricate learning rewards, lock a game or level behind progress, or rely on color alone.
