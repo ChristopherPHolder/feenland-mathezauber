@@ -61,6 +61,12 @@ app-race-scene {
   grid-area: scene;
   min-height: 0;
 }
+app-race-overview {
+  grid-area: scene;
+  align-self: start;
+  z-index: 2;
+  margin: 8px;
+}
 .quiz {
   grid-area: quiz;
   min-height: 0;

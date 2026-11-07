@@ -45,7 +45,7 @@
               </button>
             }
           </div>
-          <p class="help">{{ pace() === 'off' ? t('paceOffHelp') : t('stumbleHelp') }}</p>
+          <p class="help">{{ t('stumbleHelp') }}</p>
         </fieldset>
         <div class="races">
           <h2 class="choose-title">{{ t('chooseRace') }}</h2>
@@ -102,11 +102,9 @@
             <span aria-hidden="true">🌈</span><span class="sr-only">{{ t('streak') }}: </span
             ><strong>{{ i.format(race().streak) }}</strong>
           </p>
-          @if (timed()) {
-            <p class="clock">
-              <span aria-hidden="true">⏱</span><strong>{{ i.format(seconds()) }} s</strong>
-            </p>
-          }
+          <p class="clock">
+            <span aria-hidden="true">⏱</span><strong>{{ i.format(seconds()) }} s</strong>
+          </p>
         </div>
         <app-race-scene
           role="img"
@@ -117,10 +115,15 @@
           [running]="racing() && !countdown()"
           [stumbling]="stumbling()"
           [rainbow]="rainbow()"
-          [boost]="boost()"
-          [speed]="playerSpeed()"
           [finished]="crossed()"
           [countdown]="countdown()"
+        />
+        <app-race-overview
+          [racers]="race().racers"
+          [names]="names()"
+          [labels]="labels()"
+          [placeLabels]="placeLabels()"
+          [title]="t('standings')"
         />
         <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
         @if (phase() === 'finished') {
@@ -141,13 +144,11 @@
               <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
               <p class="summary-line">
                 {{
-                  timed()
-                    ? t('summary', {
-                        correct: race().correct,
-                        mistakes: race().mistakes,
-                        seconds: seconds(),
-                      })
-                    : t('summaryNoRush', { correct: race().correct, mistakes: race().mistakes })
+                  t('summary', {
+                    correct: race().correct,
+                    mistakes: race().mistakes,
+                    seconds: seconds(),
+                  })
                 }}
               </p>
               <p class="summary-sparkles">

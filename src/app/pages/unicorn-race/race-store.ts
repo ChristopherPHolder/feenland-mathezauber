@@ -5,7 +5,7 @@ import { RaceLevel, raceLevels } from './race-questions';
 export type Cup = 'gold' | 'silver' | 'bronze';
 export interface RaceRecord {
   readonly cup: Cup;
-  /** Fastest race in milliseconds; absent for turn-based races. */
+  /** Fastest race in milliseconds; absent for races saved before every race was timed. */
   readonly bestMs?: number;
 }
 export interface RaceSave {
@@ -15,7 +15,7 @@ export interface RaceSave {
   readonly pace: Pace;
 }
 const STORAGE_KEY = 'feenland.unicorn-race.v1';
-const empty: RaceSave = { version: 1, records: {}, sparkles: 0, pace: 'off' };
+const empty: RaceSave = { version: 1, records: {}, sparkles: 0, pace: 'normal' };
 const CUP_RANK: Readonly<Record<Cup, number>> = { gold: 3, silver: 2, bronze: 1 };
 export function cupFor(place: 1 | 2 | 3 | 4): Cup {
   return place === 1 ? 'gold' : place === 2 ? 'silver' : 'bronze';

@@ -102,13 +102,8 @@ describe('Unicorn race game', () => {
     const { element } = setup();
     expect(element.querySelector('h1')?.textContent).toContain('Unicorn Rainbow Race');
     const chips = [...element.querySelectorAll('.chip')];
-    expect(chips.map((chip) => chip.textContent?.trim())).toEqual([
-      'No rush',
-      'Relaxed',
-      'Normal',
-      'Fast',
-    ]);
-    expect(chips[0].getAttribute('aria-pressed')).toBe('true');
+    expect(chips.map((chip) => chip.textContent?.trim())).toEqual(['Relaxed', 'Normal', 'Fast']);
+    expect(chips[1].getAttribute('aria-pressed')).toBe('true');
     const cards = [...element.querySelectorAll<HTMLAnchorElement>('.level-card')];
     expect(cards).toHaveLength(5);
     expect(cards[0].getAttribute('aria-current')).toBe('page');
@@ -152,7 +147,7 @@ describe('Unicorn race game', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: String(index + 1), bubbles: true }));
     expect(component.race().correct).toBe(1);
   });
-  it('finishes a no-rush race, records stars and the cup, and offers the next race', () => {
+  it('finishes a race, records stars, the cup and the time, and offers the next race', () => {
     const { element, component, wait, answerRight, start } = setup();
     start();
     for (let n = 0; n < 14 && !component.race().done; n++) {
@@ -175,6 +170,7 @@ describe('Unicorn race game', () => {
     expect(progress.stars?.['unicorn-race-1']).toBe(3);
     expect(TestBed.inject(CompletionService).result()?.levelId).toBe('unicorn-race-1');
     expect(TestBed.inject(RaceStore).record(1)?.cup).toBe('gold');
+    expect(TestBed.inject(RaceStore).record(1)?.bestMs).toBeGreaterThan(0);
     expect(TestBed.inject(RaceStore).save().sparkles).toBeGreaterThan(100);
   });
   it('can be raced again right after a last-moment finish', () => {
@@ -209,15 +205,25 @@ describe('Unicorn race game', () => {
     expect(TestBed.inject(RaceStore).save().sparkles).toBe(sparkles);
     expect(sounds.play.mock.calls.filter(([kind]) => kind === 'win')).toHaveLength(1);
   });
-  it('remembers the chosen pace and runs the rivals on a clock in a timed race', () => {
-    const { component, click, wait, start } = setup();
+  it('keeps everyone running from the start and shows the standings over the track', () => {
+    const { element, component, click, wait, start } = setup();
     click('Fast');
     expect(TestBed.inject(RaceStore).save().pace).toBe('fast');
     start();
     wait(3000);
     const cloud = component.race().racers.find((racer) => racer.id === 'cloud')!;
+    const player = component.race().racers.find((racer) => racer.id === 'player')!;
     expect(cloud.position).toBeGreaterThan(5);
+    expect(player.position).toBeGreaterThan(1);
     expect(component.race().elapsedMs).toBeGreaterThanOrEqual(3000);
+    const standings = [...element.querySelectorAll('app-race-overview .entry')];
+    expect(standings).toHaveLength(4);
+    expect(standings[0].textContent).toContain('1st');
+    expect(standings[0].textContent).toContain('Cloud');
+    expect(standings[3].textContent).toContain('Lumi');
+    expect(element.querySelector('app-race-overview ol')?.getAttribute('aria-label')).toBe(
+      'Who is ahead',
+    );
   });
   it('speaks German on the intro and during the race', () => {
     const { element, status, start } = setup('de');
