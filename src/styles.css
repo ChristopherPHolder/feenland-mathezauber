@@ -208,7 +208,7 @@ footer {
   min-height: 56px;
   padding: 16px;
   border: 1px solid #cedce2;
-  border-radius: var(--radius-chip)
+  border-radius: var(--radius-chip);
   background: var(--paper);
   color: var(--ink);
   text-align: left;

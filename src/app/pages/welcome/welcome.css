@@ -120,7 +120,7 @@ h1 span {
   grid-template-columns: auto 1fr;
   gap: 8px 18px;
   padding: 22px 24px;
-  border-radius: var(--radius-panel)
+  border-radius: var(--radius-panel);
   background: var(--world-ground);
   box-shadow: var(--shadow-panel);
 }
@@ -131,7 +131,7 @@ h1 span {
   height: 64px;
   display: grid;
   place-items: center;
-  border-radius: var(--radius-pill)
+  border-radius: var(--radius-pill);
   background: #ffffffb3;
 }
 .game-copy {
@@ -181,7 +181,7 @@ h1 span {
 /* Journey */
 .journey {
   background: var(--cream);
-  border-radius: var(--radius-panel)
+  border-radius: var(--radius-panel);
   padding: 25px 36px;
   margin-top: 32px;
   box-shadow: var(--shadow-panel);
@@ -283,7 +283,7 @@ dd {
     width: 52px;
     height: 52px;
     font-size: 32px;
-    border-radius: var(--radius-surface)
+    border-radius: var(--radius-surface);
   }
   .game-link {
     flex-basis: 100%;

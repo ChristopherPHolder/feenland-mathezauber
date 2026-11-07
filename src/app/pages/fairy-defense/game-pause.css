@@ -3,11 +3,11 @@ dialog {
   max-height: 90dvh;
   overflow: auto;
   border: 0;
-  border-radius: var(--radius-panel)
+  border-radius: var(--radius-panel);
   padding: 28px;
   background: var(--cream);
   color: var(--ink);
-  box-shadow: 0 16px 60px #10284155;;
+  box-shadow: 0 16px 60px #10284155;
 }
 dialog::backdrop {
   background: #102841aa;

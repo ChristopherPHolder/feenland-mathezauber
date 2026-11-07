@@ -14,7 +14,7 @@ import { wallText } from './wall-text';
 @Component({
   selector: 'app-wall-scene',
   templateUrl: './wall-scene.html',
-  styleUrl: './wall-scene.css',
+  styleUrls: ['./wall-scene.css', './wall-scene-motion.css'],
   host: {
     '[class.celebrating]': 'built()',
     '[style.--built]': 'wallsDone()',

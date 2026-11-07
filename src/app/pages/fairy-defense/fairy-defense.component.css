@@ -9,7 +9,7 @@
   max-width: 1280px;
   margin: auto;
   background: var(--parchment);
-  border-radius: var(--radius-panel)
+  border-radius: var(--radius-panel);
   overflow: hidden;
   box-shadow: var(--shadow-castle);
 }
@@ -34,7 +34,7 @@
   background: var(--parchment);
   padding: 28px 36px;
   border-radius: 22px;
-  box-shadow: 0 12px 36px #08272b55;;
+  box-shadow: 0 12px 36px #08272b55;
 }
 .story-panel h2 {
   font-size: clamp(26px, 3vw, 37px);
@@ -133,7 +133,7 @@
   gap: 7px;
   padding: 10px 12px;
   background: var(--sand);
-  border-radius: var(--radius-chip)
+  border-radius: var(--radius-chip);
 }
 .dot {
   width: 24px;
@@ -145,7 +145,7 @@
 .dot.filled {
   border: 2px solid #80551f;
   background: #e8b54d;
-  box-shadow: inset 0 2px 3px #fff5b7;;
+  box-shadow: inset 0 2px 3px #fff5b7;
 }
 .game-foot {
   display: flex;
@@ -187,7 +187,7 @@
   }
   .game {
     border-radius: 0;
-    box-shadow: none;;
+    box-shadow: none;
   }
 
   .learning-dock {
@@ -283,7 +283,7 @@
   }
   .game {
     border-radius: 0;
-    box-shadow: none;;
+    box-shadow: none;
   }
 }
 
@@ -311,7 +311,7 @@
   min-height: 128px;
   padding: 14px 16px;
   border: 2px solid #75857a;
-  border-radius: var(--radius-surface)
+  border-radius: var(--radius-surface);
   background: var(--cream);
   color: var(--ink);
   line-height: 1.3;
@@ -323,7 +323,7 @@
 .level-card.selected {
   border-color: var(--pink);
   background: var(--warm-ground);
-  box-shadow: 0 0 0 3px #c9186033;;
+  box-shadow: 0 0 0 3px #c9186033;
 }
 .level-card:has(:focus-visible) {
   outline: 3px solid var(--focus);
@@ -406,7 +406,7 @@
 }
 .practice-options fieldset {
   border: 1px solid var(--muted);
-  border-radius: var(--radius-chip)
+  border-radius: var(--radius-chip);
   padding: 12px 20px;
 }
 .practice-options label {

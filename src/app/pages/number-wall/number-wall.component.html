@@ -176,6 +176,16 @@
                 }
               </div>
             }
+            <div class="dock-rule" aria-hidden="true">
+              <div class="demo-wall">
+                <div class="row"><span class="brick filled">5</span></div>
+                <div class="row">
+                  <span class="brick">2</span><span class="plus">+</span
+                  ><span class="brick">3</span>
+                </div>
+              </div>
+              <p class="rule">{{ i.t('wallRule') }}</p>
+            </div>
             @if (built()) {
               <button #nextButton type="button" class="button primary next" (click)="next()">
                 {{ wallIndex() + 1 < walls().length ? i.t('wallNext') : i.t('wallWorldDone') }}

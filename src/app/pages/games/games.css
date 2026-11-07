@@ -92,7 +92,7 @@
   min-height: 150px;
   padding: 18px 64px 18px 20px;
   border: 3px solid transparent;
-  border-radius: var(--radius-pill)
+  border-radius: var(--radius-pill);
   background: var(--cream);
   color: var(--ink);
   text-decoration: none;
@@ -161,7 +161,7 @@
 }
 .level-badge {
   padding: 4px 10px;
-  border-radius: var(--radius-chip)
+  border-radius: var(--radius-chip);
   background: var(--world-color);
   color: var(--paper);
   font-size: 13px;
@@ -219,7 +219,7 @@
     width: 56px;
     height: 56px;
     font-size: 36px;
-    border-radius: var(--radius-tile)
+    border-radius: var(--radius-tile);
   }
   .game-copy h2 {
     font-size: 24px;
