@@ -8,10 +8,16 @@
 }
 <div class="tower left" aria-hidden="true"></div>
 <div class="tower right" aria-hidden="true"></div>
+<div class="road" aria-hidden="true"></div>
 @if (wallsDone() >= total) {
   <div class="flag" aria-hidden="true">🚩</div>
 }
-<div class="wall" [class.three-rows]="wall().rows.length === 3">
+<div class="wall" [class.hit]="trollBump()" [class.crumble]="crumbled()">
+  @for (crack of crackList(); track crack) {
+    <svg class="crack" [class.c2]="crack === 2" viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M38 1 30 13l5 6-11 8 4 8-10 4" />
+    </svg>
+  }
   @for (row of rows(); track row.rowIndex) {
     <div class="row">
       @for (col of row.cols; track col) {
@@ -56,6 +62,7 @@
     class="troll"
     [class.asleep]="trollAsleep()"
     [class.bump]="trollBump()"
+    [class.victory]="crumbled()"
     role="progressbar"
     [attr.aria-valuemin]="0"
     [attr.aria-valuemax]="100"
@@ -63,10 +70,18 @@
     [attr.aria-label]="t('wallTrollLabel')"
   >
     <span class="troll-body" aria-hidden="true">🧌</span>
-    @if (!trollAsleep()) {
+    @if (!trollAsleep() && !trollBump() && !crumbled()) {
       <span class="dust-cloud" aria-hidden="true">💨</span>
     }
-    @if (danger()) {
+    @if (trollBump() || crumbled()) {
+      <span class="boom" aria-hidden="true">💥</span>
+    }
+    @if (trollBump()) {
+      <span class="dizzy" aria-hidden="true">💫</span>
+    }
+    @if (crumbled()) {
+      <span class="alert" aria-hidden="true">🎉</span>
+    } @else if (danger() && !trollBump()) {
       <span class="alert" aria-hidden="true">❗</span>
     }
     @if (trollAsleep()) {

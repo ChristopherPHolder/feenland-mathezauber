@@ -30,10 +30,12 @@ import {
   isMissing,
   levels,
   MAX_DUST,
+  MAX_HEARTS,
   Pace,
   paces,
   ratingFor,
   sameBrick,
+  STAGGER_MS,
   trollSeconds,
   valueOf,
   Wall,
@@ -49,7 +51,8 @@ type Feedback =
   | { readonly kind: 'wrong'; readonly hint: Hint }
   | { readonly kind: 'hint'; readonly hint: Hint; readonly dust?: boolean }
   | { readonly kind: 'shown'; readonly value: number; readonly hint: Hint }
-  | { readonly kind: 'troll' }
+  | { readonly kind: 'troll'; readonly hearts: number }
+  | { readonly kind: 'crumbled' }
   | {
       readonly kind: 'built';
       readonly gems: number;
@@ -82,6 +85,8 @@ export class NumberWallComponent {
   protected readonly confetti = Array.from({ length: 12 }, (_, index) => index);
   protected readonly total = WALLS_PER_WORLD;
   protected readonly maxDust = MAX_DUST;
+  protected readonly maxHearts = MAX_HEARTS;
+  protected readonly heartSlots = Array.from({ length: MAX_HEARTS }, (_, index) => index + 1);
   protected readonly phase = signal<'intro' | 'playing' | 'summary'>('intro');
   protected readonly level = signal<WallLevel>(1);
   protected readonly walls = signal<readonly Wall[]>([]);
@@ -103,6 +108,9 @@ export class NumberWallComponent {
   protected readonly trollProgress = signal<number | undefined>(undefined);
   protected readonly frozenMs = signal(0);
   protected readonly trollBump = signal(false);
+  protected readonly hearts = signal(MAX_HEARTS);
+  protected readonly heartBreak = signal(false);
+  protected readonly knockedDown = signal(0);
   protected readonly rating = signal<1 | 2 | 3>(1);
   private wallMisses = 0;
   private brickMissed = false;
@@ -111,12 +119,15 @@ export class NumberWallComponent {
   protected readonly pace = computed(() => this.store.save().pace);
   protected readonly timed = computed(() => this.pace() !== 'relaxed');
   protected readonly built = computed(() => this.feedback().kind === 'built');
+  protected readonly crumbled = computed(() => this.feedback().kind === 'crumbled');
+  /** Nothing can be typed while the wall is celebrated or lies in pieces. */
+  protected readonly locked = computed(() => this.built() || this.crumbled());
   protected readonly wallsDone = computed(() => this.wallIndex() + (this.built() ? 1 : 0));
   protected readonly combo = computed(() => (this.streak() >= DUST_EVERY ? this.streak() : 0));
   protected readonly trollAsleep = computed(() => this.frozenMs() > 0);
-  protected readonly canShow = computed(() => this.misses() >= 3 && !this.built());
+  protected readonly canShow = computed(() => this.misses() >= 3 && !this.locked());
   protected readonly canDust = computed(
-    () => this.dust() > 0 && !this.built() && !this.trollAsleep() && !!this.selected(),
+    () => this.dust() > 0 && !this.locked() && !this.trollAsleep() && !!this.selected(),
   );
   protected readonly soundOn = computed(() => this.sound.audio().effects);
   protected readonly status = computed(() => {
@@ -146,7 +157,9 @@ export class NumberWallComponent {
       case 'shown':
         return this.shownText(feedback.value, feedback.hint);
       case 'troll':
-        return this.t('wallTrollArrived');
+        return this.t('wallTrollArrived', { n: feedback.hearts });
+      case 'crumbled':
+        return this.t('wallTrollCrumbled');
       case 'built':
         return [
           feedback.explanation,
@@ -183,7 +196,7 @@ export class NumberWallComponent {
     if (levels.includes(requested as WallLevel)) this.start(requested as WallLevel);
     effect(() => this.audio.updateVoice(this.i.locale()));
     effect(() => {
-      if (this.built()) this.nextButton()?.nativeElement.focus();
+      if (this.locked()) this.nextButton()?.nativeElement.focus();
     });
     effect(() => {
       if (this.phase() === 'summary') this.summaryPanel()?.nativeElement.focus();
@@ -214,6 +227,8 @@ export class NumberWallComponent {
     this.gems.set(0);
     this.dust.set(0);
     this.streak.set(0);
+    this.hearts.set(MAX_HEARTS);
+    this.knockedDown.set(0);
     this.phase.set('playing');
     this.beginWall();
   }
@@ -229,6 +244,7 @@ export class NumberWallComponent {
     this.wallMisses = 0;
     this.brickMissed = false;
     this.frozenMs.set(0);
+    this.trollBump.set(false);
     this.trollProgress.set(wall && trollSeconds(this.pace(), wall.missing.length) ? 0 : undefined);
     this.startTroll();
     this.scene()?.nativeElement.focus({ preventScroll: true });
@@ -237,8 +253,9 @@ export class NumberWallComponent {
     this.stopTroll();
     const wall = this.wall();
     const seconds = wall && trollSeconds(this.pace(), wall.missing.length);
-    if (!seconds || this.built() || this.phase() !== 'playing') return;
+    if (!seconds || this.locked() || this.phase() !== 'playing') return;
     this.tick = setInterval(() => {
+      if (this.trollBump()) return;
       if (this.frozenMs() > 0) {
         this.frozenMs.update((ms) => Math.max(0, ms - TICK_MS));
         return;
@@ -252,12 +269,37 @@ export class NumberWallComponent {
     if (this.tick) clearInterval(this.tick);
     this.tick = undefined;
   }
+  /**
+   * The troll reaches the wall and head-butts it: the wall shakes, a heart breaks and a crack
+   * stays. He then staggers back to the start of the road, and the clock waits while he does.
+   * The third bonk tumbles the wall, which the child rebuilds from scratch.
+   */
   private trollArrives() {
-    this.trollProgress.set(0);
-    this.gems.update((gems) => Math.max(0, gems - 1));
-    this.feedback.set({ kind: 'troll' });
+    this.trollProgress.set(1);
+    this.hearts.update((hearts) => Math.max(0, hearts - 1));
+    this.streak.set(0);
     this.audio.effect('damage');
-    this.flash(this.trollBump, 700);
+    this.flash(this.heartBreak, 900);
+    if (this.hearts() === 0) {
+      this.stopTroll();
+      this.knockedDown.update((count) => count + 1);
+      this.selected.set(undefined);
+      this.entry.set('');
+      this.feedback.set({ kind: 'crumbled' });
+      return;
+    }
+    this.feedback.set({ kind: 'troll', hearts: this.hearts() });
+    this.trollBump.set(true);
+    this.timers.push(
+      setTimeout(() => this.trollProgress.set(0), STAGGER_MS * 0.3),
+      setTimeout(() => this.trollBump.set(false), STAGGER_MS),
+    );
+  }
+  /** After the troll knocked the wall down: fresh hearts, same wall, troll back at the start. */
+  protected rebuild() {
+    if (!this.crumbled()) return;
+    this.hearts.set(MAX_HEARTS);
+    this.beginWall();
   }
   protected visibilityChanged() {
     if (this.document.hidden) this.stopTroll();
@@ -269,7 +311,7 @@ export class NumberWallComponent {
   }
   protected select(brick: BrickId) {
     const wall = this.wall();
-    if (!wall || this.built() || !isMissing(wall, brick) || this.isFilled(brick)) return;
+    if (!wall || this.locked() || !isMissing(wall, brick) || this.isFilled(brick)) return;
     if (this.selected() && sameBrick(this.selected()!, brick)) return;
     this.selected.set(brick);
     this.entry.set('');
@@ -281,7 +323,7 @@ export class NumberWallComponent {
     return this.filled().some((f) => sameBrick(f, brick));
   }
   protected type(digit: string) {
-    if (this.built() || !this.selected() || this.entry().length >= 2) return;
+    if (this.locked() || !this.selected() || this.entry().length >= 2) return;
     const entry = (this.entry() + digit).replace(/^0(?=\d)/, '');
     this.entry.set(entry);
     const kind = this.feedback().kind;
@@ -290,13 +332,13 @@ export class NumberWallComponent {
     if (entry.length === 2) this.check();
   }
   protected erase() {
-    if (this.built()) return;
+    if (this.locked()) return;
     this.entry.update((entry) => entry.slice(0, -1));
   }
   protected check() {
     const wall = this.wall();
     const brick = this.selected();
-    if (!wall || !brick || this.built() || this.entry() === '') return;
+    if (!wall || !brick || this.locked() || this.entry() === '') return;
     const answer = valueOf(wall, brick);
     if (Number(this.entry()) === answer) {
       this.place(brick, answer, !this.brickMissed);
@@ -417,6 +459,7 @@ export class NumberWallComponent {
       event.preventDefault();
     } else if (event.key === 'Enter') {
       if (this.built()) this.next();
+      else if (this.crumbled()) this.rebuild();
       else if (this.entry()) this.check();
       else return;
       event.preventDefault();

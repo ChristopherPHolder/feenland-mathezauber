@@ -10,13 +10,18 @@ import {
   WALLS_PER_WORLD,
 } from './number-wall';
 import { wallText } from './wall-text';
-/** The castle scene: bricks, the fairy, the growing towers and the approaching troll. */
+/**
+ * The castle scene: bricks, the fairy, the growing towers, and the troll marching down the
+ * road that ends at the wall. Every head-butt leaves a crack; the third tumbles the wall.
+ */
 @Component({
   selector: 'app-wall-scene',
   templateUrl: './wall-scene.html',
   styleUrls: ['./wall-scene.css', './wall-scene-motion.css'],
   host: {
     '[class.celebrating]': 'built()',
+    '[class.three-rows]': 'wall().rows.length === 3',
+    '[style.--cols]': 'wall().rows[0]?.length ?? 2',
     '[style.--built]': 'wallsDone()',
     '[style.--p]': 'trollProgress() ?? 0',
     '[class.danger]': 'danger()',
@@ -36,6 +41,9 @@ export class WallScene {
   readonly trollProgress = input<number | undefined>(undefined);
   readonly trollAsleep = input(false);
   readonly trollBump = input(false);
+  /** Head-butts the wall has taken so far; each one leaves a crack. */
+  readonly cracks = input(0);
+  readonly crumbled = input(false);
   readonly combo = input(false);
   readonly select = output<BrickId>();
   protected readonly i = inject(LocaleService);
@@ -47,6 +55,7 @@ export class WallScene {
   );
   protected readonly confetti = ['✦', '★', '✦', '✧', '★', '✦'];
   protected readonly gems = [0, 1, 2];
+  protected readonly crackList = computed(() => [1, 2].slice(0, Math.min(2, this.cracks())));
   /** The left brick of the pair that makes (or completes) the glowing brick. */
   private readonly pair = computed<BrickId | undefined>(() => {
     const brick = this.selected();

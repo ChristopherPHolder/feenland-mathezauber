@@ -10,6 +10,11 @@
   --grass: #86c672;
   --grass-deep: #6aae5a;
   --stone: #efe0bb;
+  --brick-h: clamp(52px, min(22cqh, 16.5cqw), 140px);
+  --brick-w: calc(var(--brick-h) * 1.55);
+  --gap: calc(var(--brick-h) * 0.1);
+  /* Half the bottom row: the troll's road starts where the wall ends. */
+  --wall-half: calc((var(--cols) * var(--brick-w) + (var(--cols) - 1) * var(--gap)) / 2);
   container-type: size;
   position: relative;
   display: flex;
@@ -26,6 +31,9 @@
   overflow: hidden;
   outline: none;
   transition: background 0.6s ease;
+}
+:host(.three-rows) {
+  --brick-h: clamp(44px, min(16cqh, 12cqw), 116px);
 }
 :host(.danger) {
   --sky-top: #f2b99a;
@@ -48,7 +56,6 @@
   height: clamp(24px, 4.6cqw, 48px);
   border-radius: var(--radius-panel);
   background: #ffffffd9;
-  animation: drift 46s linear infinite;
 }
 .cloud::before {
   content: '';
@@ -64,15 +71,12 @@
   top: 36%;
   width: clamp(52px, 10cqw, 110px);
   height: clamp(18px, 3.4cqw, 36px);
-  animation-delay: -22s;
-  animation-duration: 60s;
 }
 .bird {
   position: absolute;
   top: 24%;
   font-size: clamp(18px, 3cqw, 30px);
   transform: scaleX(-1);
-  animation: fly-by 28s linear -9s infinite;
 }
 .fairy {
   position: absolute;
@@ -80,16 +84,7 @@
   top: 9%;
   font-size: clamp(38px, 10cqh, 84px);
   line-height: 1;
-  animation: hover 2.4s ease-in-out infinite;
   z-index: 2;
-}
-.fairy.dive {
-  animation:
-    dive 0.7s ease-out,
-    hover 2.4s ease-in-out 0.7s infinite;
-}
-:host(.celebrating) .fairy {
-  animation: cheer 0.6s ease-in-out 3;
 }
 :host(.combo) .fairy::after,
 :host(.combo) .fairy::before {
@@ -98,13 +93,11 @@
   left: -0.5em;
   top: 0.4em;
   font-size: 0.42em;
-  animation: twinkle 0.9s ease-in-out infinite;
 }
 :host(.combo) .fairy::before {
   left: -0.9em;
   top: 0.8em;
   font-size: 0.32em;
-  animation-delay: -0.45s;
 }
 
 /* Towers grow with every finished wall. */
@@ -116,6 +109,7 @@
 .tower {
   position: absolute;
   bottom: 0;
+  z-index: 1;
   width: clamp(40px, 9cqw, 92px);
   height: var(--tower-h);
   border: 3px solid var(--brick-border);
@@ -147,22 +141,55 @@
   left: calc(3cqw + clamp(40px, 9cqw, 92px) / 2 - 0.3em);
   bottom: calc(var(--tower-h) + var(--roof-h) - 0.2em);
   font-size: clamp(28px, 6cqh, 52px);
-  animation: pop 0.6s ease-out;
+}
+
+/* The troll's dirt road comes in from the right edge, past the tower, down to the wall's foot. */
+.road {
+  position: absolute;
+  inset: auto 0 0;
+  height: 24cqh;
+  z-index: 1;
+  clip-path: polygon(
+    calc(50% + var(--wall-half) - 1cqw) 100%,
+    calc(50% + var(--wall-half) + 12cqw) 100%,
+    100% 50%,
+    100% 90%
+  );
+  background:
+    radial-gradient(circle at 76% 84%, #e6d4b0 0 1.4cqw, transparent calc(1.4cqw + 1px)),
+    radial-gradient(circle at 86% 64%, #e6d4b0 0 1cqw, transparent calc(1cqw + 1px)),
+    radial-gradient(circle at 94% 50%, #e6d4b0 0 0.7cqw, transparent calc(0.7cqw + 1px)),
+    linear-gradient(#c4a97f, #cdb38a 60%, #d6bd95);
 }
 
 /* The wall stands on a stone foundation sunk into the grass. */
 .wall {
-  --brick-h: clamp(52px, min(22cqh, 16.5cqw), 140px);
-  --brick-w: calc(var(--brick-h) * 1.55);
-  --gap: calc(var(--brick-h) * 0.1);
   position: relative;
   display: grid;
   gap: var(--gap);
   margin-bottom: calc(10cqh + var(--brick-h) * 0.22);
-  z-index: 1;
+  z-index: 2;
 }
-.wall.three-rows {
-  --brick-h: clamp(44px, min(16cqh, 12cqw), 116px);
+.crack {
+  position: absolute;
+  right: calc(var(--brick-h) * 0.08);
+  bottom: calc(var(--brick-h) * 0.12);
+  width: calc(var(--brick-h) * 0.6);
+  fill: none;
+  stroke: #4b3a2a;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  z-index: 2;
+  transition: opacity 0.6s;
+}
+.wall.crumble .crack {
+  opacity: 0;
+}
+.crack.c2 {
+  right: auto;
+  left: calc(var(--brick-h) * 0.1);
+  transform: rotate(100deg);
 }
 .wall::after {
   content: '';
@@ -215,14 +242,12 @@
   background: #ffffffe6;
   color: var(--pink);
   box-shadow: 0 4px 0 #c9a6b5;
-  animation: glow 1.6s ease-in-out infinite;
   padding: 0;
   cursor: pointer;
 }
 .brick.open.selected {
   border-style: solid;
   background: var(--pink-ground);
-  animation: none;
   box-shadow:
     0 0 0 calc(var(--brick-h) * 0.08) #c918602e,
     0 4px 0 #8c0f41;
@@ -234,9 +259,6 @@
     inset 0 -5px 0 #a3d391,
     0 4px 0 #2f6b39;
 }
-.brick.pair {
-  animation: pair-pulse 1.2s ease-in-out infinite;
-}
 .brick.golden {
   background: linear-gradient(#fff6d2, #ffd66b);
   border-color: var(--star-ink);
@@ -246,7 +268,6 @@
 }
 .brick.sparkle {
   position: relative;
-  animation: drop 0.55s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 .brick.sparkle::before {
   content: '';
@@ -257,7 +278,6 @@
   height: 10px;
   border-radius: 50%;
   background: var(--paper-veil);
-  animation: puff 0.6s ease-out forwards;
 }
 .brick.sparkle::after {
   content: '✦ ✧ ✦';
@@ -266,28 +286,27 @@
   text-align: center;
   font-size: calc(var(--brick-h) * 0.26);
   color: #d19a00;
-  animation: rise 0.9s ease-out forwards;
-}
-.brick.wobble {
-  animation: wobble 0.45s ease-in-out;
 }
 
-/* The troll walks in from the right along the grass. */
+/* The troll walks down the road: far and small at the horizon, big once he reaches the wall. */
 .troll {
+  --start: calc(100% - 0.75em);
+  --end: calc(50% + var(--wall-half) - 0.1em);
   position: absolute;
-  bottom: 6cqh;
-  left: calc(84% - var(--p) * 30%);
+  bottom: calc(7cqh - var(--p) * 3cqh);
+  left: calc(var(--start) + (var(--end) - var(--start)) * var(--p));
   font-size: clamp(44px, 12cqh, 100px);
   line-height: 1;
   transform: scaleX(-1);
-  transition: left 0.1s linear;
-  animation: stomp 0.7s ease-in-out infinite;
-  z-index: 0;
+  transition:
+    left 0.1s linear,
+    bottom 0.1s linear;
+  z-index: 2;
 }
 .troll-body {
   display: inline-block;
   transform-origin: bottom center;
-  scale: calc(1 + var(--p) * 0.45);
+  scale: calc(0.5 + var(--p) * 0.6);
   transition: scale 0.2s linear;
 }
 .alert,
@@ -298,23 +317,36 @@
   font-size: 0.5em;
   transform: scaleX(-1);
 }
-.alert {
-  animation: alert-bounce 0.5s ease-in-out infinite alternate;
-}
 .dust-cloud {
   position: absolute;
   left: -0.6em;
   bottom: 0;
   font-size: 0.4em;
   opacity: 0.6;
-  animation: dust-puff 0.7s ease-out infinite;
+}
+.boom,
+.dizzy {
+  position: absolute;
+  font-size: 0.6em;
+  transform: scaleX(-1);
+}
+.boom {
+  right: -0.45em;
+  top: 0.1em;
+}
+.dizzy {
+  left: 0.2em;
+  top: -0.6em;
+  font-size: 0.5em;
 }
 .troll.asleep {
-  animation: none;
   filter: grayscale(0.4);
 }
+/* Head-butt first, then a dazed stagger back to the start of the road. */
 .troll.bump {
-  animation: bumping 0.6s ease-in-out;
+  transition:
+    left 0.9s cubic-bezier(0.2, 0.8, 0.3, 1) 0.4s,
+    bottom 0.9s cubic-bezier(0.2, 0.8, 0.3, 1) 0.4s;
 }
 .confetti {
   position: absolute;
@@ -327,7 +359,6 @@
   left: calc(10% + var(--i) * 16%);
   font-size: clamp(26px, 6cqh, 48px);
   color: #d19a00;
-  animation: fall 1.4s ease-in calc(var(--i) * 0.08s) forwards;
 }
 .confetti span:nth-child(even) {
   color: var(--pink);
@@ -337,13 +368,4 @@
   bottom: 30%;
   left: calc(38% + var(--i) * 10%);
   color: inherit;
-  animation: gem-fly 1.1s ease-in calc(var(--i) * 0.12s) forwards;
-}
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
-  }
 }
