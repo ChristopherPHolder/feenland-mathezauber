@@ -112,12 +112,16 @@ app-race-scene {
     gap: 6px 10px;
   }
   .stage.finished {
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'hud'
+      'scene';
   }
   .summary {
-    grid-area: quiz;
-    align-self: stretch;
-    margin: 0;
+    grid-area: scene;
+    align-self: end;
+    margin: 0 8px 8px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

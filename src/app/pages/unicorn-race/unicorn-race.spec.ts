@@ -177,6 +177,38 @@ describe('Unicorn race game', () => {
     expect(TestBed.inject(RaceStore).record(1)?.cup).toBe('gold');
     expect(TestBed.inject(RaceStore).save().sparkles).toBeGreaterThan(100);
   });
+  it('can be raced again right after a last-moment finish', () => {
+    const { component, click, wait, answerRight, start } = setup();
+    start();
+    for (let n = 0; n < 20 && !component.race().done; n++) {
+      answerRight();
+      // Answer again while the previous leap is still playing out, so the final leap
+      // crosses the line while the input lock is still pending.
+      wait(400);
+    }
+    expect(component.race().done).toBe(true);
+    wait(1400);
+    click('Race again');
+    wait(4 * 800 + 300);
+    answerRight();
+    expect(component.race().correct).toBe(1);
+  });
+  it('does not finish twice when the tab is switched during the finish hold', () => {
+    const { component, wait, answerRight, start, fixture } = setup();
+    start();
+    for (let n = 0; n < 14 && !component.race().done; n++) {
+      answerRight();
+      wait(1200);
+    }
+    const sparkles = TestBed.inject(RaceStore).save().sparkles;
+    document.dispatchEvent(new Event('visibilitychange'));
+    wait(300);
+    document.dispatchEvent(new Event('visibilitychange'));
+    wait(1500);
+    fixture.detectChanges();
+    expect(TestBed.inject(RaceStore).save().sparkles).toBe(sparkles);
+    expect(sounds.play.mock.calls.filter(([kind]) => kind === 'win')).toHaveLength(1);
+  });
   it('remembers the chosen pace and runs the rivals on a clock in a timed race', () => {
     const { component, click, wait, start } = setup();
     click('Fast');

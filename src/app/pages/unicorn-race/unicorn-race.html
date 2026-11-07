@@ -125,41 +125,44 @@
         <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
         @if (phase() === 'finished') {
           <section #summary class="summary" tabindex="-1" aria-labelledby="summary-title">
-            <div
-              class="star-row"
-              role="img"
-              [attr.aria-label]="i.t('starsOf', { n: finishStars() })"
-            >
-              @for (star of stars; track star) {
-                <app-icon kind="star" [class.earned]="finishStars() >= star" [style.--i]="star" />
+            <div class="summary-info">
+              <div
+                class="star-row"
+                role="img"
+                [attr.aria-label]="i.t('starsOf', { n: finishStars() })"
+              >
+                @for (star of stars; track star) {
+                  <app-icon kind="star" [class.earned]="finishStars() >= star" [style.--i]="star" />
+                }
+              </div>
+              <p [class]="'cup-badge ' + cup()">
+                <app-icon kind="cup" /><span>{{ t(cupKey(cup())) }}</span>
+              </p>
+              <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
+              <p class="summary-line">
+                {{
+                  timed()
+                    ? t('summary', {
+                        correct: race().correct,
+                        mistakes: race().mistakes,
+                        seconds: seconds(),
+                      })
+                    : t('summaryNoRush', { correct: race().correct, mistakes: race().mistakes })
+                }}
+              </p>
+              <p class="summary-sparkles">
+                <span
+                  ><span aria-hidden="true">✨</span>
+                  {{ t('sparklesWon', { n: sparkles() }) }}</span
+                >
+                @if (newBest()) {
+                  <span class="new-best">{{ t('newBest') }}</span>
+                }
+              </p>
+              @if (saveFailed() || cupsFailed()) {
+                <p class="save-failed">{{ t('saveFailed') }}</p>
               }
             </div>
-            <p [class]="'cup-badge ' + cup()">
-              <app-icon kind="cup" /><span>{{ t(cupKey(cup())) }}</span>
-            </p>
-            <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
-            <p class="summary-line">
-              {{
-                timed()
-                  ? t('summary', {
-                      correct: race().correct,
-                      mistakes: race().mistakes,
-                      seconds: seconds(),
-                    })
-                  : t('summaryNoRush', { correct: race().correct, mistakes: race().mistakes })
-              }}
-            </p>
-            <p class="summary-sparkles">
-              <span
-                ><span aria-hidden="true">✨</span> {{ t('sparklesWon', { n: sparkles() }) }}</span
-              >
-              @if (newBest()) {
-                <span class="new-best">{{ t('newBest') }}</span>
-              }
-            </p>
-            @if (saveFailed()) {
-              <p class="save-failed">{{ t('saveFailed') }}</p>
-            }
             <div class="summary-actions">
               @if (nextLevel(); as upcoming) {
                 <button type="button" class="button primary" (click)="goTo(upcoming)">
@@ -205,18 +208,28 @@
               }
               <p class="status" role="status">{{ racing() ? status() : t('ready') }}</p>
               @if (gain(); as won) {
-                <span class="gain" aria-hidden="true">+{{ i.format(won) }} ✨</span>
+                @for (key of [gainKey()]; track key) {
+                  <span class="gain" aria-hidden="true">+{{ i.format(won) }} ✨</span>
+                }
               }
             </div>
             <div class="answers" role="group" [attr.aria-label]="t('choices')">
+              @if (!question().choices.length) {
+                @for (slot of [1, 2, 3, 4]; track slot) {
+                  <button type="button" class="answer ghost" disabled>
+                    <span class="key" aria-hidden="true">{{ slot }}</span>
+                    <span class="value" aria-hidden="true">?</span>
+                  </button>
+                }
+              }
               @for (choice of question().choices; track $index; let index = $index) {
                 <button
-                  #firstAnswer
+                  #answerButton
                   type="button"
                   class="answer"
                   [class.struck]="struck().includes(choice)"
                   [class.right]="flashRight() === choice"
-                  [disabled]="!racing()"
+                  [disabled]="!racing() || crossed()"
                   [attr.aria-disabled]="struck().includes(choice) ? true : null"
                   (click)="choose(choice)"
                 >

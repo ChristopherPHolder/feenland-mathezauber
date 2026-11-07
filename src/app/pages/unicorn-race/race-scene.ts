@@ -32,7 +32,7 @@ export class RaceScene {
   readonly countdown = input<string | null>(null);
   /** A short lunge right after a correct answer. */
   readonly boost = input(false);
-  /** Lumi's current speed (0–12); the scenery scrolls faster with it. */
+  /** Lumi's current speed (0–8); the scenery scrolls faster with it. */
   readonly speed = input(0);
   protected readonly clouds = [0, 1, 2, 3, 4];
   protected readonly flowers = Array.from({ length: 14 }, (_, index) => index);

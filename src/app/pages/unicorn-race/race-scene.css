@@ -183,7 +183,7 @@
 }
 .finish {
   position: absolute;
-  right: 13%;
+  right: 22%;
   top: 13cqh;
   bottom: 10cqh;
   width: clamp(6px, 1.2cqw, 12px);
@@ -211,7 +211,7 @@
 .path {
   position: absolute;
   left: 2%;
-  right: 14%;
+  right: 23%;
   bottom: 6%;
   height: 28%;
   border-radius: 999px;
@@ -231,7 +231,7 @@
 .runner {
   position: absolute;
   bottom: 0;
-  left: calc(var(--p) * (100% - var(--runner-w) - 13%));
+  left: calc(var(--p) * (100% - var(--runner-w) - 22%));
   width: var(--runner-w);
   height: 100%;
   display: grid;
@@ -325,7 +325,7 @@
   pointer-events: none;
   z-index: 4;
 }
-:host(.counting) .lanes {
+:host(.counting:not(.finished)) .lanes {
   opacity: 0.7;
 }
 .runner::after {

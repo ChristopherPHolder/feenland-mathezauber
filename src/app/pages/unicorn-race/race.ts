@@ -11,10 +11,10 @@ export const RAINBOW_STREAK = 3;
  * Timed races: every right answer adds to Lumi's cruising speed (so a streak snowballs into a
  * gallop) and gives a short sprint; a wrong one halves the speed and stops her for a moment.
  */
-const GAIN = 1.0;
-const RAINBOW_GAIN = 1.5;
-const MAX_SPEED = 9;
-const SPRINT = 3;
+const GAIN = 0.8;
+const RAINBOW_GAIN = 1.3;
+const MAX_SPEED = 8;
+const SPRINT = 2.5;
 /** Turn-based races move in steps: a correct answer is one unicorn leap. */
 export const DASH = 8;
 export const RAINBOW_DASH = 12;
@@ -55,7 +55,7 @@ export interface RaceState {
 }
 type Random = () => number;
 /** Base rival speeds (units per second) per pace, before each rival's character. */
-const BASE_SPEED: Readonly<Record<Pace, number>> = { off: 0, relaxed: 2.0, normal: 2.8, fast: 3.8 };
+const BASE_SPEED: Readonly<Record<Pace, number>> = { off: 0, relaxed: 1.7, normal: 2.4, fast: 3.3 };
 /** Turn-based step the rivals take when the child answers, right or wrong. */
 const BASE_STEP = 7.5;
 /** Each rival runs with its own character: one keen, one steady, one dreamy. */

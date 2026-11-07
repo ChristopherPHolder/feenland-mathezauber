@@ -39,7 +39,7 @@
   background: linear-gradient(90deg, var(--pink-ground), #fff6d6, #e8fff0, #e4f3ff, #f1e8ff);
   box-shadow: 0 0 0 2px var(--race-sun);
 }
-.clock {
+.hud p.clock {
   margin-left: auto;
   color: var(--muted);
 }
@@ -94,6 +94,7 @@
 }
 .equation {
   margin: 0;
+  white-space: nowrap;
   font-size: clamp(34px, 9vw, 56px);
   font-weight: 600;
   line-height: 1.1;
@@ -131,6 +132,12 @@
     translate: 0 -60px;
     opacity: 0;
   }
+}
+.answer.ghost {
+  opacity: 0.55;
+}
+.answer.ghost .value {
+  color: var(--muted);
 }
 .answer.right {
   background: var(--success-ground);
@@ -194,13 +201,18 @@
 .summary {
   display: grid;
   justify-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 16px 18px 18px;
   border-radius: var(--radius-panel);
   background: var(--cream);
   box-shadow: var(--shadow-panel);
   text-align: center;
   outline: none;
+}
+.summary-info {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
 }
 .star-row {
   display: flex;
@@ -331,7 +343,7 @@
     font-size: 48px;
   }
   .equation {
-    font-size: 68px;
+    font-size: clamp(44px, 6.6vw, 68px);
   }
   .status {
     font-size: 18px;
@@ -364,7 +376,7 @@
   }
   .answer {
     min-height: 70px;
-    font-size: clamp(44px, 9vh, 92px);
+    font-size: clamp(44px, 12vh, 112px);
   }
   .star-row app-icon {
     width: 64px;
@@ -412,6 +424,42 @@
   .summary-actions .button {
     min-height: 44px;
     font-size: 15px;
+  }
+}
+@media (min-width: 700px) {
+  .hud p {
+    min-height: 48px;
+    padding: 6px 18px;
+    font-size: 20px;
+  }
+  .hud p.place {
+    font-size: 26px;
+    min-width: 84px;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .summary {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+    grid-template-areas:
+      'info actions'
+      'info links';
+    align-items: center;
+    column-gap: 16px;
+    padding: 10px 16px;
+  }
+  .summary-info {
+    grid-area: info;
+    gap: 2px;
+  }
+  .summary-actions {
+    grid-area: actions;
+    margin: 0;
+  }
+  .summary-links {
+    grid-area: links;
+  }
+  .summary h2 {
+    font-size: 22px;
   }
 }
 @media (max-width: 400px) {

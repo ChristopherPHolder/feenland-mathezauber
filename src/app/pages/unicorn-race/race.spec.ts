@@ -27,7 +27,7 @@ describe('unicorn race engine', () => {
     let race = createRace('normal', 1);
     race = run(answer(race, true, fixed), 1000);
     const afterOne = racer(race, 'player');
-    expect(afterOne.position).toBeGreaterThan(2.5);
+    expect(afterOne.position).toBeGreaterThan(2);
     race = run(answer(race, true, fixed), 1000);
     const afterTwo = racer(race, 'player');
     expect(afterTwo.target).toBeGreaterThan(afterOne.target);
@@ -77,7 +77,7 @@ describe('unicorn race engine', () => {
   });
   it('lets a slow racer get overtaken and finish behind the rivals', () => {
     let race = createRace('fast', 1);
-    race = run(race, 40000);
+    race = run(race, 50000);
     expect(race.done).toBe(false);
     expect(playerPlace(race)).toBe(4);
     for (let n = 0; n < 30 && !race.done; n++) race = run(answer(race, true, fixed), 400);

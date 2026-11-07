@@ -18,27 +18,31 @@
   background: linear-gradient(var(--race-lilac), var(--cream) 45%);
 }
 .lineup {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
   justify-content: center;
-  align-items: flex-end;
+  align-items: end;
   gap: clamp(4px, 2vw, 18px);
   margin: 0 auto 6px;
 }
 .lineup-racer {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  width: clamp(64px, 17vw, 120px);
+  display: contents;
 }
 .lineup-racer app-racer {
+  grid-row: 1;
+  width: clamp(64px, 17vw, 120px);
   height: auto;
   aspect-ratio: 170 / 120;
   filter: drop-shadow(0 4px 4px #6d4a9a2e);
 }
-.lineup-racer.lead {
+.lineup-racer.lead app-racer {
   width: clamp(92px, 24vw, 170px);
 }
 .lineup-name {
+  grid-row: 2;
+  justify-self: center;
+  margin-top: 4px;
   padding: 1px 10px;
   border-radius: 999px;
   background: var(--paper);
@@ -151,8 +155,11 @@
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 14px;
+}
+.level-list li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 .level-card {
   position: relative;
@@ -178,6 +185,9 @@
 }
 .level-card:hover {
   transform: translateY(-2px);
+}
+.level-card.starred {
+  background: var(--success-ground);
 }
 .level-card.current {
   border-color: var(--pink);
@@ -270,11 +280,11 @@
     display: grid;
     gap: 14px;
   }
-  .lineup-racer {
-    width: clamp(90px, 10vw, 150px);
+  .lineup-racer app-racer {
+    width: clamp(90px, 11vw, 170px);
   }
-  .lineup-racer.lead {
-    width: clamp(120px, 14vw, 220px);
+  .lineup-racer.lead app-racer {
+    width: clamp(120px, 16vw, 240px);
   }
   .pace {
     grid-area: pace;

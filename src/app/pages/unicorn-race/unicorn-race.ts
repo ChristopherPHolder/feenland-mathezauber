@@ -8,6 +8,7 @@ import {
   linkedSignal,
   signal,
   viewChild,
+  viewChildren,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -107,6 +108,8 @@ export class UnicornRace {
   protected readonly finishPlace = signal<1 | 2 | 3 | 4>(4);
   protected readonly newBest = signal(false);
   protected readonly saveFailed = signal(false);
+  /** Cups and sparkles could not be stored; stars still were, so the party stays open. */
+  protected readonly cupsFailed = signal(false);
   protected readonly sparklePop = signal(false);
   protected readonly placePop = signal(false);
   /** The choice that just lit up green, and the sparkles it earned. */
@@ -117,11 +120,13 @@ export class UnicornRace {
   /** True from crossing the line until the summary slides in. */
   protected readonly crossed = signal(false);
   private readonly summary = viewChild<ElementRef<HTMLElement>>('summary');
-  private readonly firstAnswer = viewChild<ElementRef<HTMLButtonElement>>('firstAnswer');
+  private readonly answerButtons = viewChildren<ElementRef<HTMLButtonElement>>('answerButton');
   private ticker?: ReturnType<typeof setInterval>;
   private timers: ReturnType<typeof setTimeout>[] = [];
   private lastPlace: 1 | 2 | 3 | 4 = 1;
   private gainBase = 0;
+  private gainTimer?: ReturnType<typeof setTimeout>;
+  protected readonly gainKey = signal(0);
   protected readonly pace = computed(() => this.store.save().pace);
   protected readonly timed = computed(() => this.pace() !== 'off');
   protected readonly racing = computed(() => this.phase() === 'racing');
@@ -229,6 +234,10 @@ export class UnicornRace {
     this.crossed.set(false);
     this.flashRight.set(null);
     this.gain.set(null);
+    this.locked.set(false);
+    this.boost.set(false);
+    this.sparklePop.set(false);
+    this.placePop.set(false);
     this.lastPlace = 1;
     this.gainBase = 0;
     this.phase.set('countdown');
@@ -250,7 +259,7 @@ export class UnicornRace {
           this.phase.set('racing');
           if (!this.document.hidden) this.startTicker();
           requestAnimationFrame(() =>
-            this.firstAnswer()?.nativeElement.focus({ preventScroll: true }),
+            this.answerButtons()[0]?.nativeElement.focus({ preventScroll: true }),
           );
         },
         steps.length * COUNT_MS + 300,
@@ -282,8 +291,11 @@ export class UnicornRace {
       // A double tap must not answer the next question blindly.
       this.flash(this.locked, LOCK_MS);
       this.gain.set(next.sparkles - this.gainBase);
+      this.gainKey.update((key) => key + 1);
       this.gainBase = next.sparkles;
-      this.timers.push(setTimeout(() => this.gain.set(null), 700));
+      clearTimeout(this.gainTimer);
+      this.gainTimer = setTimeout(() => this.gain.set(null), 700);
+      this.timers.push(this.gainTimer);
       this.flashRight.set(value);
       this.timers.push(setTimeout(() => this.flashRight.set(null), 400));
       this.nextQuestion();
@@ -325,7 +337,7 @@ export class UnicornRace {
       this.flash(this.placePop, 500);
       this.announcement.set(this.t('youAre', { place: this.t(`place${place}` as RaceMessageKey) }));
     }
-    if (next.done) this.finish();
+    if (next.done && !this.crossed()) this.finish();
   }
   private finish() {
     this.stopTimers();
@@ -348,6 +360,7 @@ export class UnicornRace {
       stars: raceStars(place),
     });
     this.saveFailed.set(!recorded);
+    this.cupsFailed.set(this.store.saveFailed());
     this.sounds.play(place === 1 ? 'win' : 'finish');
     this.announcement.set(this.t(this.outcomeKey()));
     // Hold on the finish line for a moment: confetti, a cheering castle, then the podium.
@@ -375,7 +388,7 @@ export class UnicornRace {
     void this.router.navigate(['/complete', this.levelId()]);
   }
   protected visibilityChanged() {
-    if (this.phase() !== 'racing' || !this.timed()) return;
+    if (this.phase() !== 'racing' || !this.timed() || this.race().done) return;
     if (this.document.hidden) this.stopTicker();
     else this.startTicker();
   }
@@ -392,9 +405,12 @@ export class UnicornRace {
     }
   }
   private focusOpenAnswer() {
-    const open = this.document.querySelector<HTMLButtonElement>(
-      '.answer:not([aria-disabled="true"])',
-    );
+    const buttons = this.answerButtons().map((ref) => ref.nativeElement);
+    const active = this.document.activeElement;
+    const open =
+      buttons.find(
+        (button) => button === active && button.getAttribute('aria-disabled') !== 'true',
+      ) ?? buttons.find((button) => button.getAttribute('aria-disabled') !== 'true');
     open?.focus({ preventScroll: true });
   }
   private flashFeedback(feedback: Feedback, ms = FEEDBACK_MS) {
