@@ -226,6 +226,10 @@ export const paces: readonly Pace[] = ['relaxed', 'steady', 'quick'];
 export const DUST_EVERY = 3;
 export const MAX_DUST = 3;
 export const FREEZE_MS = 8000;
+/** Head-butts the wall survives before it tumbles and has to be rebuilt. */
+export const MAX_HEARTS = 3;
+/** How long the troll stays stunned after a head-butt while he staggers back to the road's start. */
+export const STAGGER_MS = 1400;
 /** Seconds until the troll reaches the wall, or undefined when nobody is coming. */
 export function trollSeconds(pace: Pace, missingCount: number): number | undefined {
   if (pace === 'relaxed') return undefined;
