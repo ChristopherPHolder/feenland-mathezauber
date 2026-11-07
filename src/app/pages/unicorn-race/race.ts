@@ -38,8 +38,6 @@ export const STUMBLE_MS = 1000;
 export const SPARKLES_PER_ANSWER = 10;
 export const SPARKLES_RAINBOW = 20;
 export const PLACE_BONUS: Readonly<Record<1 | 2 | 3 | 4, number>> = { 1: 50, 2: 30, 3: 15, 4: 5 };
-/** Storm grabs the key and is already this far down the track when the race starts. */
-export const HEAD_START = 0.15;
 /** Finishing this close behind Storm or the shadow still earns two stars. */
 const CLOSE_MS = 5000;
 const SHADOW_CLOSE = 1.25;
@@ -120,8 +118,8 @@ export function createRace(pace: Pace, stage: RaceStage, bestMs?: number): RaceS
           ? CRUISE
           : id === 'shadow'
             ? stage.length / (shadowMs! / 1000)
-            : BASE_SPEED[pace] * CHARACTER[id] * CUP_EASE[stage.cup];
-      const position = id === 'storm' ? Math.round(stage.length * HEAD_START) : 0;
+            : BASE_SPEED[pace] * CHARACTER[id] * CUP_EASE[stage.cup] * stage.rivals;
+      const position = id === 'storm' ? Math.round(stage.length * stage.headStart) : 0;
       return { id, position, dash: 0, speed, target: speed };
     }),
     elapsedMs: 0,
@@ -177,7 +175,12 @@ export function tick(state: RaceState, dtMs: number, random: Random = Math.rando
       const jitter = 0.96 + random() * 0.08;
       steady = speed * wave * jitter * rubberBand(state, current);
     }
-    const position = Math.min(state.length, current.position + steady * dt + sprint);
+    // The shadow is a recording, so it crosses the line exactly on its time, not a hair late.
+    const snapped =
+      current.id === 'shadow' && state.shadowMs !== undefined && elapsedMs >= state.shadowMs;
+    const position = snapped
+      ? state.length
+      : Math.min(state.length, current.position + steady * dt + sprint);
     return {
       ...current,
       position,

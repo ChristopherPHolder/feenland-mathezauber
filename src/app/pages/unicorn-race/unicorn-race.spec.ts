@@ -84,6 +84,10 @@ describe('Unicorn race game', () => {
       fixture.detectChanges();
     };
     const status = () => element.querySelector('.status')?.textContent?.trim() ?? '';
+    const chooseHeat = (heat: number) => {
+      [...element.querySelectorAll<HTMLButtonElement>('.heat')][heat - 1].click();
+      fixture.detectChanges();
+    };
     const start = (label = 'Start the race') => {
       click(label);
       wait(4 * 800 + 300);
@@ -99,6 +103,7 @@ describe('Unicorn race game', () => {
       answerWrong,
       status,
       start,
+      chooseHeat,
     };
   }
   it('shows the intro with the pace choice and all fifteen races open in five cups', () => {
@@ -118,8 +123,18 @@ describe('Unicorn race game', () => {
     const cards = [...element.querySelectorAll<HTMLAnchorElement>('.level-card')];
     expect(cards).toHaveLength(15);
     expect(cards[0].getAttribute('aria-current')).toBe('page');
-    expect(cards[1].textContent).toContain('Chase');
-    expect(cards[4].textContent).toContain('Shadow race');
+    expect(cards[1].textContent).toContain('0 of 6 heats');
+    const heats = [...element.querySelectorAll('.heat')];
+    expect(heats).toHaveLength(6);
+    expect(heats[0].getAttribute('aria-pressed')).toBe('true');
+    expect(heats.map((heat) => heat.querySelector('.heat-name')?.textContent?.trim())).toEqual([
+      'Warm-up',
+      'Key chase',
+      'Shadow run',
+      'Big race',
+      'Night chase',
+      'Cup final',
+    ]);
     expect(cards[14].getAttribute('href')).toBe('/adventure/unicorn-race-15');
     expect(element.textContent).toContain('0 of 5 cups complete');
     // Keepsakes stay locked until a whole cup is finished.
@@ -134,8 +149,8 @@ describe('Unicorn race game', () => {
       'unicorn-race-3',
     );
     const store = TestBed.inject(RaceStore);
-    store.recordRace(1, 'bronze', 10, 50000);
-    store.recordRace(2, 'gold', 10, 50000);
+    store.recordRace(1, 1, 'bronze', 10, 50000);
+    store.recordRace(2, 4, 'gold', 10, 50000);
     start();
     for (let n = 0; n < 80 && !component.race().done; n++) {
       answerRight();
@@ -231,14 +246,14 @@ describe('Unicorn race game', () => {
     expect(summary?.querySelector('h2')?.textContent).toContain('Lumi wins the race!');
     expect(summary?.querySelectorAll('.star-row app-icon.earned')).toHaveLength(3);
     expect(summary?.textContent).toContain('Gold cup');
-    expect(summary?.textContent).toContain('Next race');
+    expect(summary?.textContent).toContain('Next heat');
     const progress = TestBed.inject(ProgressService).progress();
     expect(progress.completed).toContain('unicorn-race-1');
     expect(progress.mastered).toContain('unicorn-race-1');
     expect(progress.stars?.['unicorn-race-1']).toBe(3);
     expect(TestBed.inject(CompletionService).result()?.levelId).toBe('unicorn-race-1');
-    expect(TestBed.inject(RaceStore).record(1)?.cup).toBe('gold');
-    expect(TestBed.inject(RaceStore).record(1)?.bestMs).toBeGreaterThan(0);
+    expect(TestBed.inject(RaceStore).record(1, 1)?.cup).toBe('gold');
+    expect(TestBed.inject(RaceStore).record(1, 1)?.bestMs).toBeGreaterThan(0);
     expect(TestBed.inject(RaceStore).save().sparkles).toBeGreaterThan(100);
   });
   it('can be raced again right after a last-moment finish', () => {
@@ -294,8 +309,12 @@ describe('Unicorn race game', () => {
     );
   });
   it('runs a chase against Storm with the gap on the HUD and the key as the prize', () => {
-    const { element, component, wait, answerRight, start } = setup('en', 'unicorn-race-2');
-    expect(element.querySelector('.cup-tag')?.textContent).toContain('Chase');
+    const { element, component, wait, answerRight, start, click, chooseHeat } = setup(
+      'en',
+      'unicorn-race-2',
+    );
+    chooseHeat(2);
+    expect(element.querySelector('.cup-tag')?.textContent).toContain('Key chase');
     expect(element.textContent).toContain('Storm has snatched the castle key');
     expect(element.querySelectorAll('.lineup-racer')).toHaveLength(2);
     start();
@@ -309,7 +328,16 @@ describe('Unicorn race game', () => {
     expect(component.race().done).toBe(true);
     wait(1400);
     expect(element.querySelector('.summary h2')?.textContent).toContain('got the key back');
-    expect(TestBed.inject(RaceStore).record(2)?.cup).toBe('gold');
+    expect(TestBed.inject(RaceStore).record(2, 2)?.cup).toBe('gold');
+    expect(TestBed.inject(RaceStore).record(2, 1)).toBeUndefined();
+    // The summary moves on to the next heat of the same track.
+    expect(element.querySelector('.summary-actions .primary')?.textContent).toContain(
+      'Next heat · Shadow run',
+    );
+    click('Next heat');
+    wait(4 * 800 + 300);
+    expect(component.race().mode).toBe('shadow');
+    expect(component.race().racers.map((racer) => racer.id)).toEqual(['player', 'shadow']);
   });
   it('shows a missing-number question with its own equals sign', () => {
     const { element, component, start } = setup('en', 'unicorn-race-10');
@@ -321,11 +349,33 @@ describe('Unicorn race game', () => {
     expect(element.querySelector('.equation')?.textContent).not.toContain('= ?');
   });
   it('races the shadow at par and asks to beat it', () => {
-    const { element, component, start } = setup('en', 'unicorn-race-5');
+    const { element, component, start, chooseHeat } = setup('en', 'unicorn-race-5');
+    chooseHeat(3);
     expect(element.textContent).toContain('Lumi races her own shadow');
     start();
-    expect(component.race().shadowMs).toBe(80000);
-    expect(element.querySelector('.hud .rival')?.textContent).toContain('Shadow 80 s');
+    expect(component.race().shadowMs).toBe(81000);
+    expect(element.querySelector('.hud .rival')?.textContent).toContain('Shadow 81 s');
+  });
+  it('opens a track on its first unfinished heat and migrates old saves to heat one', () => {
+    localStorage.setItem(
+      'feenland.unicorn-race.v1',
+      JSON.stringify({
+        version: 1,
+        records: { 1: { cup: 'gold', bestMs: 61000 } },
+        sparkles: 50,
+        pace: 'fast',
+      }),
+    );
+    const { element } = setup();
+    const store = TestBed.inject(RaceStore);
+    expect(store.record(1, 1)?.cup).toBe('gold');
+    expect(store.heatsDone(1)).toBe(1);
+    expect(store.save().sparkles).toBe(50);
+    expect(element.querySelector('.heat[aria-pressed="true"] .heat-name')?.textContent).toContain(
+      'Key chase',
+    );
+    expect(element.querySelector('.cup-tag')?.textContent).toContain('Key chase');
+    expect([...element.querySelectorAll('.level-card')][0].textContent).toContain('1 of 6 heats');
   });
   it('speaks German on the intro and during the race', () => {
     const { element, status, start } = setup('de');

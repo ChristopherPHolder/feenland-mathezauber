@@ -1,7 +1,7 @@
 <section class="game" [class.playing]="phase() !== 'intro'" aria-labelledby="game-title">
   <app-game-header
     [title]="t('title')"
-    [detail]="t('level', { n: level() }) + ' · ' + i.t(levelTitle(level()))"
+    [detail]="detail()"
     [anchor]="levelId()"
     [sound]="sounds.enabled"
     (soundToggle)="sounds.toggle()"
@@ -13,7 +13,7 @@
         <div class="story">
           <p class="cup-tag">
             <span aria-hidden="true">{{ cupEmblem(cup()) }}</span> {{ t(cupTitle(cup())) }} ·
-            <span aria-hidden="true">{{ modeEmblem(mode()) }}</span> {{ t(modeTitle(mode())) }}
+            <span aria-hidden="true">{{ modeEmblem(mode()) }}</span> {{ t(heatTitle(heat())) }}
           </p>
           <div class="lineup" aria-hidden="true">
             @for (id of lineup(); track id) {
@@ -41,8 +41,32 @@
           </ul>
           <p class="stage-example" aria-hidden="true">{{ exampleEquation() }}</p>
           <p class="stage-help">{{ i.t(levelHelp(level())) }}</p>
+          <div class="heats" role="group" [attr.aria-label]="t('heatsTitle')">
+            @for (entry of heats; track entry.heat) {
+              <button
+                type="button"
+                class="heat"
+                [class.done]="!!heatCup(entry.heat)"
+                [class]="'heat is-' + entry.sky"
+                [attr.aria-pressed]="heat() === entry.heat"
+                (click)="chooseHeat(entry.heat)"
+              >
+                <span class="heat-number">{{ entry.heat }}</span>
+                <span class="heat-mode" aria-hidden="true">{{ modeEmblem(entry.mode) }}</span>
+                <span class="heat-name">{{ t(heatTitle(entry.heat)) }}</span>
+                <span [class]="'heat-cup ' + (heatCup(entry.heat) ?? 'none')"
+                  ><app-icon kind="cup" /><span class="sr-only">{{
+                    t(cupKey(heatCup(entry.heat)))
+                  }}</span></span
+                >
+                @if (heatBest(entry.heat); as best) {
+                  <span class="heat-best">{{ toSeconds(best) }} s</span>
+                }
+              </button>
+            }
+          </div>
           <button type="button" class="button primary start" (click)="start()">
-            <app-icon kind="play" />{{ t('start') }}
+            <app-icon kind="play" />{{ t('start') }} · {{ t('heatLabel', { n: heat() }) }}
           </button>
         </div>
         <fieldset class="pace">
@@ -111,21 +135,21 @@
                 {{ t(cupTitle(group)) }}
               </h3>
               <ol class="level-list">
-                @for (option of stagesOf(group); track option.stage) {
-                  @let record = store.record(option.stage);
+                @for (option of tracksOf(group); track option.stage) {
+                  @let cup = bestCup(option.stage);
+                  @let done = heatsDone(option.stage);
                   <li>
                     <a
                       class="level-card"
                       [class.current]="option.stage === level()"
-                      [class.starred]="!!record"
+                      [class.starred]="done > 0"
                       [routerLink]="['/adventure', 'unicorn-race-' + option.stage]"
                       [attr.aria-current]="option.stage === level() ? 'page' : null"
                     >
                       <span class="level-number">{{ t('raceLabel', { n: option.stage }) }}</span>
-                      <span class="level-mode"
-                        ><span aria-hidden="true">{{ modeEmblem(option.mode) }}</span>
-                        {{ t(modeTitle(option.mode)) }}</span
-                      >
+                      <span class="level-mode">{{
+                        t('heatsDone', { n: done, total: totalHeats })
+                      }}</span>
                       <span class="level-name">{{ i.t(levelTitle(option.stage)) }}</span>
                       <span class="level-example" aria-hidden="true">{{ example(option) }}</span>
                       <span class="level-help">{{ i.t(levelHelp(option.stage)) }}</span>
@@ -140,16 +164,14 @@
                             <app-icon kind="star" [class.earned]="earned >= star" />
                           }
                         </span>
-                        <span [class]="'level-cup ' + (record?.cup ?? 'none')">
-                          <app-icon kind="cup" /><span class="sr-only">{{
-                            t(cupKey(record?.cup))
-                          }}</span>
+                        <span [class]="'level-cup ' + (cup ?? 'none')">
+                          <app-icon kind="cup" /><span class="sr-only">{{ t(cupKey(cup)) }}</span>
                         </span>
-                        @if (record?.bestMs; as best) {
-                          <span class="level-best">{{
-                            t('bestTime', { seconds: toSeconds(best) })
-                          }}</span>
-                        }
+                        <span class="level-heats" aria-hidden="true">
+                          @for (entry of heats; track entry.heat) {
+                            <span class="dot" [class.done]="done >= entry.heat"></span>
+                          }
+                        </span>
                       </span>
                       <span class="level-go" aria-hidden="true"><app-icon kind="arrow" /></span>
                     </a>
@@ -207,6 +229,8 @@
           [rainbow]="rainbow()"
           [finished]="crossed()"
           [won]="crossed() && finishPlace() === 1"
+          [pulse]="race().correct"
+          [stumbles]="race().mistakes"
           [countdown]="countdown()"
         />
         <app-race-overview
@@ -263,7 +287,11 @@
               }
             </div>
             <div class="summary-actions">
-              @if (nextLevel(); as upcoming) {
+              @if (nextHeat(); as upcoming) {
+                <button type="button" class="button primary" (click)="goOn()">
+                  {{ t('nextHeat') }} · {{ t(heatTitle(upcoming)) }}<app-icon kind="arrow" />
+                </button>
+              } @else if (nextLevel(); as upcoming) {
                 <button type="button" class="button primary" (click)="goTo(upcoming)">
                   {{ t('nextRace') }} · {{ i.t(levelTitle(upcoming)) }}<app-icon kind="arrow" />
                 </button>
@@ -280,7 +308,7 @@
               <button type="button" class="link" (click)="chooseRace()">
                 {{ t('chooseRace') }}
               </button>
-              @if (nextLevel() && !saveFailed()) {
+              @if ((nextHeat() || nextLevel()) && !saveFailed()) {
                 <button type="button" class="link" (click)="celebrate()">
                   <app-icon kind="star" />{{ t('celebrate') }}
                 </button>

@@ -1,6 +1,7 @@
 /* Page frame. The intro scrolls like a menu; a race fills exactly one screen. */
 :host {
-  --race-sky: #e9dcff;
+  --race-sky-base: #e9dcff;
+  --race-sky: var(--race-sky-base);
   --race-meadow: #dff5e6;
   --race-pink: #ff8fb8;
   --race-pink-ink: #a4305f;

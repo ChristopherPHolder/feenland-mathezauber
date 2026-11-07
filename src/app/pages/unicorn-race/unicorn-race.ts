@@ -7,6 +7,7 @@ import {
   inject,
   linkedSignal,
   signal,
+  untracked,
   viewChild,
   viewChildren,
 } from '@angular/core';
@@ -40,16 +41,23 @@ import {
 } from './race';
 import { raceText, RaceMessageKey } from './race-messages';
 import {
-  cupStages,
+  cupTracks,
+  HeatNumber,
+  heatNumbers,
+  heats,
   RaceCup,
   raceCups,
   RaceLevel,
   RaceMode,
   RaceQuestion,
   raceQuestion,
-  raceStage,
   RaceStage,
-  raceStages,
+  raceTrack,
+  RaceTrack,
+  raceTracks,
+  Sky,
+  stageFor,
+  TOTAL_HEATS,
   TOTAL_STAGES,
 } from './race-questions';
 import { RaceOverview } from './race-overview';
@@ -105,6 +113,8 @@ const MODE_EMBLEM: Readonly<Record<RaceMode, string>> = { race: '🏁', chase: '
     '[class.is-star]': 'cup() === "star"',
     '[class.is-castle]': 'cup() === "castle"',
     '[class.is-rainbow]': 'cup() === "rainbow"',
+    '[class.is-dusk]': 'sky() === "dusk"',
+    '[class.is-night]': 'sky() === "night"',
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
   },
@@ -119,13 +129,26 @@ export class UnicornRace {
   private readonly document = inject(DOCUMENT);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
   protected readonly cups = raceCups;
+  protected readonly heats = heats;
+  protected readonly detail = computed(
+    () =>
+      `${this.t('level', { n: this.level() })} · ${this.i.t(this.levelTitle(this.level()))} · ${this.t('heatLabel', { n: this.heat() })}`,
+  );
+  protected readonly totalHeats = TOTAL_HEATS;
   protected readonly outfits = outfits;
   protected readonly paces = paces;
   protected readonly stars = [1, 2, 3] as const;
   protected readonly total = TOTAL_STAGES;
   protected readonly levelId = computed(() => this.params()?.get('id') ?? 'unicorn-race-1');
-  protected readonly stage = computed<RaceStage>(() => raceStage(this.levelId()) ?? raceStages[0]);
-  protected readonly level = computed<RaceLevel>(() => this.stage().stage);
+  protected readonly track = computed<RaceTrack>(() => raceTrack(this.levelId()) ?? raceTracks[0]);
+  protected readonly level = computed<RaceLevel>(() => this.track().stage);
+  /** The heat being run; a new track opens on its first unfinished heat. */
+  protected readonly heat = linkedSignal<RaceLevel, HeatNumber>({
+    source: this.level,
+    computation: (level) => untracked(() => this.store.nextHeat(level)),
+  });
+  protected readonly stage = computed<RaceStage>(() => stageFor(this.track(), this.heat()));
+  protected readonly sky = computed<Sky>(() => this.stage().sky);
   protected readonly cup = computed<RaceCup>(() => this.stage().cup);
   protected readonly mode = computed<RaceMode>(() => this.stage().mode);
   protected readonly lineup = computed<readonly RacerId[]>(() => LINEUP[this.mode()]);
@@ -134,6 +157,7 @@ export class UnicornRace {
     length: this.stage().length,
     racers: this.lineup(),
     outfit: this.outfit(),
+    sky: this.sky(),
   }));
   protected readonly outfit = computed(() => this.store.save().outfit);
   /** The keepsake just earned by finishing this race's cup, if any. */
@@ -145,7 +169,7 @@ export class UnicornRace {
     source: this.levelId,
     computation: () => 'intro',
   });
-  protected readonly race = signal<RaceState>(createRace('normal', raceStages[0]));
+  protected readonly race = signal<RaceState>(createRace('normal', stageFor(raceTracks[0], 1)));
   protected readonly question = signal<RaceQuestion>({ text: '', answer: 0, choices: [] });
   protected readonly struck = signal<readonly number[]>([]);
   protected readonly feedback = signal<Feedback>({ kind: 'idle' });
@@ -274,6 +298,9 @@ export class UnicornRace {
     if (mode === 'shadow') return place === 1 ? 'beatShadow' : 'shadowWon';
     return place === 1 ? 'won' : place === 2 ? 'second' : place === 3 ? 'third' : 'fourth';
   });
+  protected readonly nextHeat = computed<HeatNumber | undefined>(() =>
+    this.heat() < TOTAL_HEATS ? ((this.heat() + 1) as HeatNumber) : undefined,
+  );
   protected readonly nextLevel = computed<RaceLevel | undefined>(() =>
     this.level() < TOTAL_STAGES ? ((this.level() + 1) as RaceLevel) : undefined,
   );
@@ -311,8 +338,33 @@ export class UnicornRace {
   protected levelHelp(level: RaceLevel): MessageKey {
     return `race${level}Help` as MessageKey;
   }
-  protected stagesOf(cup: RaceCup): readonly RaceStage[] {
-    return cupStages(cup);
+  protected tracksOf(cup: RaceCup): readonly RaceTrack[] {
+    return cupTracks(cup);
+  }
+  protected heatTitle(heat: HeatNumber): RaceMessageKey {
+    return `heat${heat}` as RaceMessageKey;
+  }
+  protected heatMode(heat: HeatNumber): RaceMode {
+    return stageFor(this.track(), heat).mode;
+  }
+  protected heatCup(heat: HeatNumber) {
+    this.store.save();
+    return this.store.record(this.level(), heat)?.cup;
+  }
+  protected heatBest(heat: HeatNumber): number | undefined {
+    this.store.save();
+    return this.store.record(this.level(), heat)?.bestMs;
+  }
+  protected heatsDone(level: RaceLevel): number {
+    this.store.save();
+    return this.store.heatsDone(level);
+  }
+  protected bestCup(level: RaceLevel): Cup | undefined {
+    this.store.save();
+    return this.store.bestCup(level);
+  }
+  protected chooseHeat(heat: HeatNumber) {
+    this.heat.set(heat);
   }
   protected cupTitle(cup: RaceCup): RaceMessageKey {
     return `cup${cup.charAt(0).toUpperCase()}${cup.slice(1)}` as RaceMessageKey;
@@ -356,8 +408,8 @@ export class UnicornRace {
   protected toSeconds(ms: number): number {
     return Math.round(ms / 1000);
   }
-  protected example(stage: RaceStage): string {
-    return stage.example.includes('=') ? stage.example : `${stage.example} = ?`;
+  protected example(track: RaceTrack): string {
+    return track.example.includes('=') ? track.example : `${track.example} = ?`;
   }
   protected choosePace(pace: Pace) {
     this.store.setPace(pace);
@@ -365,7 +417,9 @@ export class UnicornRace {
   protected start() {
     this.stopTimers();
     this.sounds.unlock();
-    this.race.set(createRace(this.pace(), this.stage(), this.store.record(this.level())?.bestMs));
+    this.race.set(
+      createRace(this.pace(), this.stage(), this.store.record(this.level(), this.heat())?.bestMs),
+    );
     this.struck.set([]);
     this.feedback.set({ kind: 'idle' });
     this.announcement.set('');
@@ -482,7 +536,9 @@ export class UnicornRace {
     const level = this.level();
     const cup = this.cup();
     const hadCup = this.store.cupComplete(cup);
-    this.newBest.set(this.store.recordRace(level, cupFor(place), sparkles, race.elapsedMs));
+    this.newBest.set(
+      this.store.recordRace(level, this.heat(), cupFor(place), sparkles, race.elapsedMs),
+    );
     if (!hadCup && this.store.cupComplete(cup)) {
       const keepsake = outfits.find((outfit) => OUTFIT_CUP[outfit] === cup) ?? null;
       this.newOutfit.set(keepsake);
@@ -514,6 +570,17 @@ export class UnicornRace {
   }
   protected goTo(level: RaceLevel) {
     void this.router.navigate(['/adventure', `unicorn-race-${level}`]);
+  }
+  /** The next heat of this track starts straight away; after the last heat, the next track. */
+  protected goOn() {
+    const heat = this.nextHeat();
+    if (heat === undefined) {
+      const level = this.nextLevel();
+      if (level !== undefined) this.goTo(level);
+      return;
+    }
+    this.heat.set(heat);
+    this.start();
   }
   protected chooseRace() {
     this.stopTimers();
