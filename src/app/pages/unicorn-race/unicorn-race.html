@@ -47,39 +47,44 @@
           </div>
           <p class="help">{{ pace() === 'off' ? t('paceOffHelp') : t('stumbleHelp') }}</p>
         </fieldset>
-        <h2 class="choose-title">{{ t('chooseRace') }}</h2>
-        <ol class="level-list">
-          @for (option of levels; track option) {
-            @let record = store.record(option);
-            <li>
-              <a
-                class="level-card"
-                [class.current]="option === level()"
-                [class.starred]="!!record"
-                [routerLink]="['/adventure', 'unicorn-race-' + option]"
-                [attr.aria-current]="option === level() ? 'page' : null"
-              >
-                <span class="level-number">{{ t('raceLabel', { n: option }) }}</span>
-                <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
-                <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
-                <span class="level-foot">
-                  <span [class]="'level-cup ' + (record?.cup ?? 'none')">
-                    <app-icon kind="cup" /><span class="sr-only">{{ t(cupKey(record?.cup)) }}</span>
+        <div class="races">
+          <h2 class="choose-title">{{ t('chooseRace') }}</h2>
+          <ol class="level-list">
+            @for (option of levels; track option) {
+              @let record = store.record(option);
+              <li>
+                <a
+                  class="level-card"
+                  [class.current]="option === level()"
+                  [class.starred]="!!record"
+                  [routerLink]="['/adventure', 'unicorn-race-' + option]"
+                  [attr.aria-current]="option === level() ? 'page' : null"
+                >
+                  <span class="level-number">{{ t('raceLabel', { n: option }) }}</span>
+                  <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
+                  <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
+                  <span class="level-foot">
+                    <span [class]="'level-cup ' + (record?.cup ?? 'none')">
+                      <app-icon kind="cup" /><span class="sr-only">{{
+                        t(cupKey(record?.cup))
+                      }}</span>
+                    </span>
+                    @if (record?.bestMs; as best) {
+                      <span class="level-best">{{
+                        t('bestTime', { seconds: toSeconds(best) })
+                      }}</span>
+                    }
                   </span>
-                  @if (record?.bestMs; as best) {
-                    <span class="level-best">{{
-                      t('bestTime', { seconds: toSeconds(best) })
-                    }}</span>
-                  }
-                </span>
-                <span class="level-go" aria-hidden="true"><app-icon kind="arrow" /></span>
-              </a>
-            </li>
-          }
-        </ol>
-        <p class="best">
-          <span aria-hidden="true">✨</span> {{ t('totalSparkles', { n: store.save().sparkles }) }}
-        </p>
+                  <span class="level-go" aria-hidden="true"><app-icon kind="arrow" /></span>
+                </a>
+              </li>
+            }
+          </ol>
+          <p class="best">
+            <span aria-hidden="true">✨</span>
+            {{ t('totalSparkles', { n: store.save().sparkles }) }}
+          </p>
+        </div>
       </div>
     }
     @default {

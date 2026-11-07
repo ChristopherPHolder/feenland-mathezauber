@@ -138,6 +138,10 @@
   margin-top: 12px;
   font-size: 15px;
 }
+.races {
+  display: grid;
+  gap: 16px;
+}
 .choose-title {
   font-size: 24px;
   margin: 4px 0 -6px;
@@ -252,14 +256,19 @@
 @media (min-width: 900px) {
   .intro {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     grid-template-areas:
-      'story title'
-      'pace levels'
-      'pace best';
+      'story races'
+      'pace races';
     align-items: start;
   }
   .story {
     grid-area: story;
+  }
+  .races {
+    grid-area: races;
+    display: grid;
+    gap: 14px;
   }
   .lineup-racer {
     width: clamp(90px, 10vw, 150px);
@@ -270,14 +279,7 @@
   .pace {
     grid-area: pace;
   }
-  .choose-title {
-    grid-area: title;
-  }
   .level-list {
-    grid-area: levels;
     grid-template-columns: 1fr;
-  }
-  .best {
-    grid-area: best;
   }
 }
