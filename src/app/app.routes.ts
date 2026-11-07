@@ -57,6 +57,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/crocodile/crocodile-game').then((m) => m.CrocodileGame),
   },
   {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^unicorn-race-[1-5]$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    loadComponent: () => import('./pages/unicorn-race/unicorn-race').then((m) => m.UnicornRace),
+  },
+  {
     path: 'adventure/number-wall',
     data: { focusedGame: true },
     loadComponent: () =>

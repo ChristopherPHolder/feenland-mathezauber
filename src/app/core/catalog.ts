@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { practiceLevels, PracticeConfig } from './practice';
 import { comparisonLevels } from '../pages/crocodile/comparison';
+import { raceLevelEntries } from '../pages/unicorn-race/race-questions';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
@@ -86,6 +87,13 @@ export const worlds: readonly World[] = [
             format: 'number-wall',
           },
         ],
+      },
+      {
+        id: 'unicorn-race',
+        title: 'raceChapter',
+        description: 'raceChapterHelp',
+        emblem: '🦄',
+        levels: raceLevelEntries,
       },
     ],
   },

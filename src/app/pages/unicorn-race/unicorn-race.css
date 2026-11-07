@@ -1,0 +1,120 @@
+/* Page frame. The intro scrolls like a menu; a race fills exactly one screen. */
+:host {
+  --race-sky: #e9dcff;
+  --race-meadow: #dff5e6;
+  --race-pink: #ff8fb8;
+  --race-pink-ink: #a4305f;
+  --race-violet: #6d4a9a;
+  --race-violet-ink: #4b3a70;
+  --race-lilac: #f1e8ff;
+  --race-mint: #a9efc0;
+  --race-sun: #ffd36b;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: linear-gradient(var(--race-sky), var(--ground) 55%, var(--race-meadow));
+  padding: 10px max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
+    max(14px, env(safe-area-inset-left));
+  color: var(--ink);
+}
+:host(.playing) {
+  height: 100dvh;
+  min-height: auto;
+  overflow: hidden;
+}
+.game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1320px;
+  min-height: 0;
+  margin: 0 auto;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+app-game-header {
+  margin-bottom: 8px;
+}
+/* Race layout: HUD on top, the track takes every spare pixel, the quiz docks at the bottom. */
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(120px, 1fr) auto;
+  grid-template-areas:
+    'hud'
+    'scene'
+    'quiz';
+  gap: 10px;
+}
+.hud {
+  grid-area: hud;
+}
+app-race-scene {
+  grid-area: scene;
+  min-height: 0;
+}
+.quiz,
+.summary {
+  grid-area: quiz;
+  min-height: 0;
+}
+.stage.finished {
+  grid-template-rows: auto minmax(110px, 0.7fr) auto;
+  overflow-y: auto;
+}
+/* Landscape screens put the quiz beside the track so neither is squashed. */
+@media (min-width: 700px) and (orientation: landscape) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr) clamp(290px, 32vw, 430px);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'hud quiz'
+      'scene quiz';
+    column-gap: 16px;
+  }
+  .stage.finished {
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .summary {
+    overflow-y: auto;
+  }
+}
+/* Short phone landscape: tuck the header tight and give the track the height. */
+@media (orientation: landscape) and (max-height: 520px) {
+  :host {
+    padding-top: 6px;
+  }
+  app-game-header {
+    margin-bottom: 4px;
+  }
+  .stage {
+    grid-template-columns: minmax(0, 1fr) clamp(250px, 36vw, 330px);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'hud quiz'
+      'scene quiz';
+    gap: 6px 10px;
+  }
+  .stage.finished {
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .summary {
+    overflow-y: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :host * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

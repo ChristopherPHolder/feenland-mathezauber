@@ -9,6 +9,7 @@ import { StarRating } from '../../shared/star-rating';
 import { CampaignStore } from '../fairy-defense/campaign';
 import { TOTAL_WAVES } from '../fairy-defense/waves';
 import { comparisonStage } from '../crocodile/comparison';
+import { raceStage } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
 import { levels as wallLevels, WallLevel } from '../number-wall/number-wall';
 import { NumberWallStore } from '../number-wall/number-wall-store';
@@ -53,7 +54,12 @@ export class Games {
   }
   /** The worked example a level shows on its card, when the game defines one. */
   protected example(level: Level) {
-    return level.practice?.example ?? comparisonStage(level.id)?.example ?? '';
+    return (
+      level.practice?.example ??
+      comparisonStage(level.id)?.example ??
+      raceStage(level.id)?.example ??
+      ''
+    );
   }
   protected best(level: Level) {
     return this.scores.best()[level.id] ?? 0;
