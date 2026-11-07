@@ -129,23 +129,53 @@ describe('Number wall game', () => {
     expect(element.querySelector('.level-tag')?.textContent).toContain('Level 2');
   });
 
-  it('lets the troll pinch a gem when the wall takes too long, then keeps walking', () => {
-    const { element, click, wait, status, solveSelected, gems } = setup();
+  it('lets the troll bonk the wall, break hearts and knock it down after three hits', () => {
+    const { element, click, wait, status, solveSelected, gems, openBricks } = setup();
+    const hearts = () => element.querySelectorAll('.heart:not(.lost)').length;
     click('Level 1');
+    expect(hearts()).toBe(3);
     solveSelected();
     expect(gems()).toBe('3');
     click('Next wall');
     wait(39_900);
     expect(status()).not.toContain('troll');
     wait(200);
-    expect(status()).toContain('Oh no, the troll pinched a gem! Keep building!');
-    expect(gems()).toBe('2');
+    expect(status()).toContain('Bonk! The troll hit the wall. Hearts left: 2. Build faster!');
+    expect(hearts()).toBe(2);
+    expect(gems()).toBe('3');
     expect(sound.effect).toHaveBeenLastCalledWith('damage');
     expect(element.querySelector('.troll.bump')).toBeTruthy();
-    wait(20_000);
+    expect(element.querySelector('.wall.hit')).toBeTruthy();
+    expect(element.querySelector('.troll')?.getAttribute('aria-valuenow')).toBe('100');
+    expect(element.querySelectorAll('.crack')).toHaveLength(1);
+    // The clock waits while he staggers back to the start of the road.
+    wait(1_500);
+    expect(element.querySelector('.troll.bump')).toBeNull();
+    expect(Number(element.querySelector('.troll')?.getAttribute('aria-valuenow'))).toBeLessThan(5);
+    wait(40_100);
+    expect(status()).toContain('Hearts left: 1');
+    expect(element.querySelectorAll('.crack')).toHaveLength(2);
+    wait(1_500);
+    wait(40_100);
+    expect(status()).toContain('Crash! The troll knocked the wall down. Build it again!');
+    expect(hearts()).toBe(0);
+    expect(element.querySelector('.wall.crumble')).toBeTruthy();
+    expect(element.querySelector('.troll.victory')).toBeTruthy();
+    expect(element.querySelector('.pad')).toBeNull();
+    click('Build it again');
+    expect(hearts()).toBe(3);
+    expect(element.querySelector('.wall.crumble')).toBeNull();
+    expect(element.querySelector('.troll')?.getAttribute('aria-valuenow')).toBe('0');
+    expect(openBricks()).toHaveLength(1);
     solveSelected();
-    expect(status()).toContain('Wall built! +2 gems!');
-    expect(gems()).toBe('4');
+    expect(status()).toContain('Wall built! +3 gems! Super fast!');
+    expect(gems()).toBe('6');
+    for (let wall = 2; wall < 5; wall++) {
+      click('Next wall');
+      solveSelected();
+    }
+    click('You earned a star!');
+    expect(element.textContent).toContain('Walls the troll knocked down: 1.');
   });
 
   it('earns fairy dust after three bricks in a row and uses it to freeze the troll', () => {

@@ -101,6 +101,20 @@
             }
           </div>
           <div class="counters">
+            @if (timed()) {
+              <p
+                class="hearts"
+                [class.break]="heartBreak()"
+                role="img"
+                [attr.aria-label]="t('wallHearts', { n: hearts(), total: maxHearts })"
+              >
+                @for (slot of heartSlots; track slot) {
+                  <span class="heart" [class.lost]="hearts() < slot" aria-hidden="true">{{
+                    hearts() < slot ? '🖤' : '❤️'
+                  }}</span>
+                }
+              </p>
+            }
             <p class="gems" [class.pop]="gemPop()">
               <span aria-hidden="true">💎</span><span class="sr-only">{{ i.t('wallGems') }}: </span
               ><strong>{{ i.format(gems()) }}</strong>
@@ -144,6 +158,8 @@
             [trollProgress]="trollProgress()"
             [trollAsleep]="trollAsleep()"
             [trollBump]="trollBump()"
+            [cracks]="maxHearts - hearts()"
+            [crumbled]="crumbled()"
             [combo]="combo() > 0"
             (select)="select($event)"
           />
@@ -152,13 +168,13 @@
               class="status"
               role="status"
               [class.happy]="feedback().kind === 'correct' || built()"
-              [class.alert]="feedback().kind === 'troll'"
+              [class.alert]="feedback().kind === 'troll' || crumbled()"
             >
               @if (built()) {
                 <app-icon kind="star" />
               } @else if (feedback().kind === 'correct') {
                 <app-icon kind="check" />
-              } @else if (feedback().kind === 'troll') {
+              } @else if (feedback().kind === 'troll' || crumbled()) {
                 <span aria-hidden="true">🧌</span>
               }
               <span>{{ status() }}</span>
@@ -190,6 +206,10 @@
               <button #nextButton type="button" class="button primary next" (click)="next()">
                 {{ wallIndex() + 1 < walls().length ? i.t('wallNext') : i.t('wallWorldDone') }}
                 <app-icon kind="arrow" />
+              </button>
+            } @else if (crumbled()) {
+              <button #nextButton type="button" class="button primary next" (click)="rebuild()">
+                {{ i.t('wallRebuild') }} <span aria-hidden="true">🧱</span>
               </button>
             } @else {
               <div class="pad" role="group" [attr.aria-label]="i.t('wallPad')">
@@ -248,6 +268,9 @@
         <p>
           {{ t('wallSummary', { n: total }) }} {{ t('wallGemsWon', { n: gems() }) }}
           {{ t('wallFirstTry', { n: firstTry() }) }}
+          @if (knockedDown() > 0) {
+            {{ t('wallKnockedDown', { n: knockedDown() }) }}
+          }
         </p>
         <p class="best">
           {{ rating() < 3 ? i.t('wallStarsHelp') : '' }} {{ i.t('wallBestStreak') }}:
