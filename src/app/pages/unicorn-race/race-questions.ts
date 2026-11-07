@@ -18,14 +18,65 @@ export type RaceMode = 'race' | 'chase' | 'shadow';
 /** Five cups of three races each; every cup has its own scenery. */
 export type RaceCup = 'meadow' | 'sky' | 'star' | 'castle' | 'rainbow';
 export const raceCups: readonly RaceCup[] = ['meadow', 'sky', 'star', 'castle', 'rainbow'];
+/** A track: one piece of maths with its own name and scenery, run in six heats. */
+export interface RaceTrack {
+  readonly stage: RaceLevel;
+  readonly cup: RaceCup;
+  readonly skill: RaceSkill;
+  readonly example: string;
+  /** Track units at the middle heat; heats scale it. */
+  readonly length: number;
+}
+export type HeatNumber = 1 | 2 | 3 | 4 | 5 | 6;
+export const heatNumbers: readonly HeatNumber[] = [1, 2, 3, 4, 5, 6];
+export type Sky = 'day' | 'dusk' | 'night';
+/**
+ * Every track is run in six heats that get longer and quicker and turn from day to night:
+ * a warm-up race, a key chase, a shadow run, a big race, a night chase and the cup final.
+ */
+export interface Heat {
+  readonly heat: HeatNumber;
+  readonly mode: RaceMode;
+  /** Multiplies the track length. */
+  readonly scale: number;
+  /** Multiplies the rivals' speed. */
+  readonly rivals: number;
+  /** Chases: Storm's head start as a fraction of the track. */
+  readonly headStart?: number;
+  readonly sky: Sky;
+  readonly final?: boolean;
+}
+export const heats: readonly Heat[] = [
+  { heat: 1, mode: 'race', scale: 0.75, rivals: 0.85, sky: 'day' },
+  { heat: 2, mode: 'chase', scale: 0.9, rivals: 1, headStart: 0.15, sky: 'day' },
+  { heat: 3, mode: 'shadow', scale: 1, rivals: 1, sky: 'dusk' },
+  { heat: 4, mode: 'race', scale: 1.05, rivals: 1.05, sky: 'dusk' },
+  { heat: 5, mode: 'chase', scale: 1.1, rivals: 1.06, headStart: 0.2, sky: 'night' },
+  { heat: 6, mode: 'race', scale: 1.2, rivals: 1.1, sky: 'night', final: true },
+];
+export const TOTAL_HEATS = heats.length;
+/** Seconds per track unit the shadow needs at par; harder sums take longer. */
+const PAR_PER_UNIT: Readonly<Record<RaceCup, number>> = {
+  meadow: 0.32,
+  sky: 0.37,
+  star: 0.4,
+  castle: 0.42,
+  rainbow: 0.4,
+};
+/** One heat of one track, with everything the engine and the scene need. */
 export interface RaceStage {
   readonly stage: RaceLevel;
+  readonly heat: HeatNumber;
   readonly cup: RaceCup;
   readonly mode: RaceMode;
   readonly skill: RaceSkill;
   readonly example: string;
   /** Track units; a longer track makes a longer race. */
   readonly length: number;
+  /** Multiplies the rivals' speed. */
+  readonly rivals: number;
+  readonly headStart: number;
+  readonly sky: Sky;
   /** Shadow races: the time the shadow runs until the child sets a faster best. */
   readonly parMs?: number;
   /** A cup final: only a win masters it. */
@@ -40,100 +91,66 @@ export interface RaceQuestion {
   readonly choices: readonly number[];
 }
 export const CHOICES = 4;
-export const raceStages: readonly RaceStage[] = [
-  { stage: 1, cup: 'meadow', mode: 'race', skill: 'plus10', example: '3 + 4', length: 200 },
-  { stage: 2, cup: 'meadow', mode: 'chase', skill: 'minus10', example: '9 − 4', length: 200 },
-  { stage: 3, cup: 'meadow', mode: 'race', skill: 'plusMinus20', example: '15 − 7', length: 210 },
-  { stage: 4, cup: 'sky', mode: 'race', skill: 'doubles', example: '7 + 7', length: 220 },
-  {
-    stage: 5,
-    cup: 'sky',
-    mode: 'shadow',
-    skill: 'plusMinus100',
-    example: '48 + 30',
-    length: 220,
-    parMs: 80000,
-  },
-  { stage: 6, cup: 'sky', mode: 'chase', skill: 'twoDigit', example: '34 + 25', length: 220 },
-  { stage: 7, cup: 'star', mode: 'race', skill: 'easyTimes', example: '5 × 4', length: 230 },
-  {
-    stage: 8,
-    cup: 'star',
-    mode: 'shadow',
-    skill: 'times34',
-    example: '4 × 6',
-    length: 230,
-    parMs: 90000,
-  },
-  {
-    stage: 9,
-    cup: 'star',
-    mode: 'chase',
-    skill: 'missingFactor',
-    example: '5 × ? = 20',
-    length: 230,
-  },
-  {
-    stage: 10,
-    cup: 'castle',
-    mode: 'race',
-    skill: 'missingAddend',
-    example: '7 + ? = 12',
-    length: 240,
-  },
-  {
-    stage: 11,
-    cup: 'castle',
-    mode: 'shadow',
-    skill: 'hardTimes',
-    example: '7 × 3',
-    length: 240,
-    parMs: 100000,
-  },
-  {
-    stage: 12,
-    cup: 'castle',
-    mode: 'race',
-    skill: 'mixed',
-    example: '6 × 4',
-    length: 260,
-    final: true,
-  },
-  { stage: 13, cup: 'rainbow', mode: 'chase', skill: 'mixed', example: '8 × 3', length: 250 },
-  {
-    stage: 14,
-    cup: 'rainbow',
-    mode: 'shadow',
-    skill: 'mixed',
-    example: '56 − 8',
-    length: 250,
-    parMs: 95000,
-  },
-  {
-    stage: 15,
-    cup: 'rainbow',
-    mode: 'race',
-    skill: 'mixed',
-    example: '7 × 4',
-    length: 280,
-    final: true,
-  },
+export const raceTracks: readonly RaceTrack[] = [
+  { stage: 1, cup: 'meadow', skill: 'plus10', example: '3 + 4', length: 200 },
+  { stage: 2, cup: 'meadow', skill: 'minus10', example: '9 − 4', length: 200 },
+  { stage: 3, cup: 'meadow', skill: 'plusMinus20', example: '15 − 7', length: 210 },
+  { stage: 4, cup: 'sky', skill: 'doubles', example: '7 + 7', length: 220 },
+  { stage: 5, cup: 'sky', skill: 'plusMinus100', example: '48 + 30', length: 220 },
+  { stage: 6, cup: 'sky', skill: 'twoDigit', example: '34 + 25', length: 220 },
+  { stage: 7, cup: 'star', skill: 'easyTimes', example: '5 × 4', length: 230 },
+  { stage: 8, cup: 'star', skill: 'times34', example: '4 × 6', length: 230 },
+  { stage: 9, cup: 'star', skill: 'missingFactor', example: '5 × ? = 20', length: 230 },
+  { stage: 10, cup: 'castle', skill: 'missingAddend', example: '7 + ? = 12', length: 240 },
+  { stage: 11, cup: 'castle', skill: 'hardTimes', example: '7 × 3', length: 240 },
+  { stage: 12, cup: 'castle', skill: 'mixed', example: '6 × 4', length: 250 },
+  { stage: 13, cup: 'rainbow', skill: 'mixed', example: '8 × 3', length: 250 },
+  { stage: 14, cup: 'rainbow', skill: 'mixed', example: '56 − 8', length: 250 },
+  { stage: 15, cup: 'rainbow', skill: 'mixed', example: '7 × 4', length: 260 },
 ];
-export const TOTAL_STAGES = raceStages.length;
-export function cupStages(cup: RaceCup): readonly RaceStage[] {
-  return raceStages.filter((stage) => stage.cup === cup);
+/** The heat of a track, with its length, rivals and sky worked out. */
+export function stageFor(track: RaceTrack, heat: HeatNumber): RaceStage {
+  const config = heats.find((entry) => entry.heat === heat) ?? heats[0];
+  const length = Math.round(track.length * config.scale);
+  return {
+    stage: track.stage,
+    heat,
+    cup: track.cup,
+    mode: config.mode,
+    skill: track.skill,
+    example: track.example,
+    length,
+    rivals: config.rivals,
+    headStart: config.headStart ?? 0,
+    sky: config.sky,
+    ...(config.mode === 'shadow'
+      ? { parMs: Math.round(length * PAR_PER_UNIT[track.cup]) * 1000 }
+      : {}),
+    ...(config.final ? { final: true } : {}),
+  };
+}
+/** Every track at its middle heat, for anything that only needs the maths and the cup. */
+export const raceStages: readonly RaceStage[] = raceTracks.map((track) => stageFor(track, 3));
+export const TOTAL_STAGES = raceTracks.length;
+export function cupTracks(cup: RaceCup): readonly RaceTrack[] {
+  return raceTracks.filter((track) => track.cup === cup);
 }
 /** Every race is open from the start; stars only reward where you finish. */
-export const raceLevelEntries: readonly Level[] = raceStages.map((config) => ({
+export const raceLevelEntries: readonly Level[] = raceTracks.map((config) => ({
   id: `unicorn-race-${config.stage}`,
   title: `race${config.stage}` as MessageKey,
   description: `race${config.stage}Help` as MessageKey,
   skills: ['fluency', config.skill],
   format: 'unicorn-race',
 }));
-export function raceStage(id: string | null | undefined): RaceStage | undefined {
+export function raceTrack(id: string | null | undefined): RaceTrack | undefined {
   const match = /^unicorn-race-(\d{1,2})$/.exec(id ?? '');
-  return match ? raceStages.find((stage) => stage.stage === Number(match[1])) : undefined;
+  return match ? raceTracks.find((track) => track.stage === Number(match[1])) : undefined;
+}
+/** The track's middle heat, for callers that only need the maths and the example. */
+export function raceStage(id: string | null | undefined): RaceStage | undefined {
+  const track = raceTrack(id);
+  return track ? stageFor(track, 3) : undefined;
 }
 type Random = () => number;
 const int = (random: Random, min: number, max: number) =>

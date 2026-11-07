@@ -1,12 +1,13 @@
 import {
   CHOICES,
-  cupStages,
+  cupTracks,
+  heats,
   raceCups,
   raceLevelEntries,
   raceQuestion,
   raceStage,
   RaceSkill,
-  raceStages,
+  raceTracks,
 } from './race-questions';
 function seeded(seed: number) {
   let state = seed;
@@ -35,19 +36,21 @@ describe('race questions', () => {
       Array.from({ length: 15 }, (_, index) => `unicorn-race-${index + 1}`),
     );
     expect(raceStage('unicorn-race-7')?.skill).toBe('easyTimes');
-    expect(raceStage('unicorn-race-12')?.final).toBe(true);
-    expect(raceStage('unicorn-race-15')?.final).toBe(true);
     expect(raceStage('unicorn-race-16')).toBeUndefined();
     expect(raceStage('crocodile-1')).toBeUndefined();
-    for (const cup of raceCups) expect(cupStages(cup)).toHaveLength(3);
-    expect(raceStages.map((stage) => stage.mode).filter((mode) => mode === 'chase')).toHaveLength(
-      4,
-    );
-    expect(raceStages.map((stage) => stage.mode).filter((mode) => mode === 'shadow')).toHaveLength(
-      4,
-    );
-    // Later races are longer, so a race grows with the child.
-    expect(raceStages[11].length).toBeGreaterThan(raceStages[0].length);
+    for (const cup of raceCups) expect(cupTracks(cup)).toHaveLength(3);
+    // Every track runs six heats: two chases, one shadow run and three races, the last a final.
+    expect(heats.map((heat) => heat.mode)).toEqual([
+      'race',
+      'chase',
+      'shadow',
+      'race',
+      'chase',
+      'race',
+    ]);
+    expect(heats[5].final).toBe(true);
+    // Later tracks are longer, so a race grows with the child.
+    expect(raceTracks[11].length).toBeGreaterThan(raceTracks[0].length);
   });
   it.each<[RaceSkill, (answer: number, text: string) => boolean]>([
     ['plus10', (answer, text) => answer <= 10 && text.includes('+')],

@@ -138,6 +138,9 @@ export class RaceScene {
   readonly rainbow = input(false);
   readonly finished = input(false);
   readonly won = input(false);
+  /** Running counts of right answers and stumbles, so the world can react to each one. */
+  readonly pulse = input(0);
+  readonly stumbles = input(0);
   readonly countdown = input<string | null>(null);
   protected readonly confetti = Array.from({ length: 16 }, (_, index) => index);
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
@@ -155,6 +158,8 @@ export class RaceScene {
     rainbow: false,
     finished: false,
     won: false,
+    pulse: 0,
+    stumbles: 0,
   };
   private destroyed = false;
   constructor() {
@@ -170,6 +175,8 @@ export class RaceScene {
         rainbow: this.rainbow(),
         finished: this.finished(),
         won: this.won(),
+        pulse: this.pulse(),
+        stumbles: this.stumbles(),
       };
       this.world?.setFrame(this.frame);
     });
@@ -196,7 +203,8 @@ export class RaceScene {
       this.built.cup === course.cup &&
       this.built.length === course.length &&
       this.built.racers.join() === course.racers.join() &&
-      this.built.outfit === course.outfit
+      this.built.outfit === course.outfit &&
+      this.built.sky === course.sky
     )
       return;
     const previous = this.canvasEl ?? this.canvas().nativeElement;

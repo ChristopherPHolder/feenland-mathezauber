@@ -110,6 +110,94 @@
 .stage-help {
   font-size: 15px;
 }
+.heats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin: 14px 0 0;
+}
+.heat {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px 4px 6px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-button);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+  font-size: 12px;
+  line-height: 1.15;
+}
+.heat.is-dusk {
+  background: #f6ecff;
+}
+.heat.is-night {
+  background: #e4ddff;
+}
+.heat[aria-pressed='true'] {
+  border-color: var(--pink);
+  background: var(--pink-ground);
+}
+.heat-number {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--race-violet-ink);
+  color: var(--paper);
+  font-weight: 600;
+}
+.heat.done .heat-number {
+  background: var(--race-sun);
+  color: var(--race-violet-ink);
+}
+.heat-mode {
+  font-size: 16px;
+}
+.heat-name {
+  font-weight: 600;
+  text-align: center;
+}
+.heat-cup {
+  display: inline-flex;
+  color: var(--star-empty);
+}
+.heat-cup app-icon {
+  width: 18px;
+  height: 18px;
+}
+.heat-cup.gold {
+  color: var(--star-ink);
+  fill: var(--star-fill);
+}
+.heat-cup.silver {
+  color: #52606f;
+  fill: #dfe6ee;
+}
+.heat-cup.bronze {
+  color: var(--bronze);
+  fill: #e8c38f;
+}
+.heat-best {
+  color: var(--muted);
+}
+.level-heats {
+  display: inline-flex;
+  gap: 3px;
+}
+.level-heats .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--paper-veil);
+  box-shadow: inset 0 0 0 1.5px var(--cup-line, #ddd);
+}
+.level-heats .dot.done {
+  background: var(--race-sun);
+  box-shadow: none;
+}
 .start {
   width: min(100%, 360px);
   margin: 16px auto 0;
@@ -344,6 +432,11 @@
   text-align: center;
   color: var(--muted);
   font-weight: 600;
+}
+@media (max-width: 480px) {
+  .heats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 @media (min-width: 900px) {
   .intro {

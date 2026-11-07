@@ -5,7 +5,7 @@
   --cup-ink: #2e6b47;
 }
 :host(.is-sky) {
-  --race-sky: #cfe6ff;
+  --race-sky-base: #cfe6ff;
   --race-meadow: #eef4ff;
   --race-lilac: #e2eeff;
   --cup-ground: #eaf3ff;
@@ -13,7 +13,7 @@
   --cup-ink: #2d5d9e;
 }
 :host(.is-star) {
-  --race-sky: #b9aff2;
+  --race-sky-base: #b9aff2;
   --race-meadow: #e6e0ff;
   --race-lilac: #e6ddff;
   --cup-ground: #ebe6ff;
@@ -21,7 +21,7 @@
   --cup-ink: #4b3a70;
 }
 :host(.is-castle) {
-  --race-sky: #ffd4b8;
+  --race-sky-base: #ffd4b8;
   --race-meadow: #ffe9d8;
   --race-lilac: #ffe5e9;
   --cup-ground: #fff1e4;
@@ -50,7 +50,7 @@
 }
 /* Rainbow Cup: pink sky, golden curbs, rainbows across the track. */
 :host(.is-rainbow) {
-  --race-sky: #ffe3f1;
+  --race-sky-base: #ffe3f1;
   --race-meadow: #fff3f8;
   --race-lilac: #ffe6f2;
   --cup-ground: #fff0f7;
@@ -61,4 +61,11 @@
   --cup-ground: #fff0f7;
   --cup-line: #ffc7e3;
   --cup-ink: #a4305f;
+}
+/* Later heats run at dusk and at night; the page follows the sky. */
+:host(.is-dusk) {
+  --race-sky: color-mix(in srgb, var(--race-sky-base, #e9dcff) 70%, #6d5aa8);
+}
+:host(.is-night) {
+  --race-sky: color-mix(in srgb, var(--race-sky-base, #e9dcff) 45%, #4b3f8a);
 }
