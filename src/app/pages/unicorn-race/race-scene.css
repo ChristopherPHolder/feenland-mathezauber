@@ -1,0 +1,342 @@
+/* The scene sizes itself from its own box (cq units) so it fills whatever the page leaves it. */
+:host {
+  --sky-top: #c9b4ff;
+  --sky-mid: #ffd6ec;
+  --sky-low: #fff3d6;
+  --hill-far: #bfe8d3;
+  --hill-near: #9ddcb6;
+  --lane-path: #fffafc;
+  --lane-edge: #f0dbff;
+  --lane-player: #fff0f7;
+  --castle-wall: #f4e6ff;
+  --castle-roof: #ff8fb8;
+  --castle-ink: #b58ad8;
+  --lane-h: calc(100cqh / 4 - 1.4cqh);
+  --runner-w: clamp(64px, calc(var(--lane-h) * 1.7), 200px);
+  position: relative;
+  display: block;
+  overflow: hidden;
+  container-type: size;
+  border-radius: var(--radius-panel);
+  background: linear-gradient(var(--sky-top), var(--sky-mid) 48%, var(--sky-low));
+  box-shadow: var(--shadow-panel);
+  isolation: isolate;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.sun {
+  position: absolute;
+  top: 5cqh;
+  left: 6cqw;
+  width: clamp(28px, 9cqh, 70px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6c2, #ffd96a 70%, #ffd96a00 72%);
+  box-shadow: 0 0 40px 16px #ffe79a66;
+}
+.rainbow {
+  position: absolute;
+  top: 12cqh;
+  left: 50%;
+  width: min(120cqw, 180cqh);
+  aspect-ratio: 2 / 1;
+  translate: -50% 0;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  border-top: 0;
+  background: conic-gradient(
+    from 270deg at 50% 100%,
+    #ff8fb8cc,
+    #ffd36bcc 30deg,
+    #fff39acc 60deg,
+    #a9efc0cc 90deg,
+    #9ad1ffcc 120deg,
+    #d7b6ffcc 150deg,
+    #0000 180deg
+  );
+  mask: radial-gradient(circle at 50% 100%, #0000 58%, #000 60%, #000 100%);
+  opacity: 0.75;
+}
+.cloud {
+  position: absolute;
+  top: calc(4cqh + var(--i) * 7cqh);
+  left: calc(-20% + var(--i) * 26%);
+  width: clamp(40px, 12cqw, 120px);
+  height: clamp(14px, 4cqh, 36px);
+  border-radius: 999px;
+  background: #ffffffe6;
+  filter: drop-shadow(0 4px 10px #b89ad833);
+}
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  bottom: 30%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: inherit;
+}
+.cloud::before {
+  left: 12%;
+}
+.cloud::after {
+  left: 42%;
+  width: 45%;
+}
+.hill {
+  position: absolute;
+  bottom: 0;
+  border-radius: 50% 50% 0 0;
+}
+.hill.far {
+  left: -10%;
+  width: 70%;
+  height: 34cqh;
+  background: var(--hill-far);
+}
+.hill.near {
+  right: -15%;
+  width: 75%;
+  height: 28cqh;
+  background: var(--hill-near);
+}
+.sparkle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0.9;
+}
+.sparkle.a {
+  top: 18cqh;
+  left: 22cqw;
+}
+.sparkle.b {
+  top: 9cqh;
+  left: 66cqw;
+  width: 11px;
+  height: 11px;
+}
+.sparkle.c {
+  top: 28cqh;
+  left: 84cqw;
+}
+/* The rainbow castle marks the finish; it stands behind the lanes at the right edge. */
+.castle {
+  position: absolute;
+  right: 0.5cqw;
+  bottom: 8cqh;
+  width: clamp(72px, 21cqw, 250px);
+  height: auto;
+  max-height: 74cqh;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 6px 10px #6d4a9a2a);
+}
+.castle .wall {
+  fill: var(--castle-wall);
+}
+.castle .battlement {
+  fill: #e6d2f7;
+}
+.castle .roof {
+  fill: var(--castle-roof);
+}
+.castle .window,
+.castle .gate {
+  fill: var(--castle-ink);
+}
+.castle .gate-line {
+  stroke: #9c74c2;
+  stroke-width: 1.5;
+}
+.castle .flags path {
+  stroke: var(--castle-ink);
+  stroke-width: 1.5;
+}
+.castle .pennant {
+  stroke: none;
+}
+.castle .p1 {
+  fill: #ffd36b;
+}
+.castle .p2 {
+  fill: #9ad1ff;
+}
+.castle .p3 {
+  fill: #a9efc0;
+}
+.castle .heart {
+  fill: #ff6fa6;
+}
+.finish {
+  position: absolute;
+  right: 22%;
+  top: 13cqh;
+  bottom: 10cqh;
+  width: clamp(6px, 1.2cqw, 12px);
+  border-radius: 6px;
+  background: repeating-linear-gradient(180deg, #4b3a70 0 9px, #fff 9px 18px);
+  opacity: 0.85;
+  z-index: 1;
+}
+/* Lanes */
+.lanes {
+  position: absolute;
+  inset: 11cqh 0 10cqh;
+  z-index: 2;
+  margin: 0;
+  padding: 0 1cqw;
+  list-style: none;
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  gap: 1.4cqh;
+}
+.lane {
+  position: relative;
+  min-height: 0;
+}
+.path {
+  position: absolute;
+  left: 2%;
+  right: 23%;
+  bottom: 6%;
+  height: 28%;
+  border-radius: 999px;
+  background: var(--lane-path);
+  box-shadow:
+    inset 0 -3px 0 var(--lane-edge),
+    0 3px 8px #b89ad822;
+  opacity: 0.85;
+}
+.lane.player .path {
+  background: var(--lane-player);
+  box-shadow:
+    inset 0 -3px 0 #ffc2dd,
+    0 3px 8px #ff8fb844;
+  opacity: 1;
+}
+.runner {
+  position: absolute;
+  bottom: 0;
+  left: calc(var(--p) * (100% - var(--runner-w) - 22%));
+  width: var(--runner-w);
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  transition: left 0.12s linear;
+}
+.runner app-racer {
+  height: 100%;
+  min-height: 0;
+  filter: drop-shadow(0 4px 4px #6d4a9a2e);
+}
+.name {
+  justify-self: start;
+  margin: -2px 0 0 10%;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #ffffffd9;
+  color: #4b3a70;
+  font-size: clamp(11px, 2.8cqh, 15px);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.lane.player .name {
+  background: var(--pink);
+  color: #fff;
+}
+.trail {
+  position: absolute;
+  left: -70%;
+  right: 55%;
+  top: 30%;
+  height: 34%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0000, #ff8fb8, #ffd36b, #a9efc0, #9ad1ff, #d7b6ff);
+  opacity: 0.85;
+  filter: blur(1px);
+}
+/* Meadow */
+.meadow {
+  position: absolute;
+  inset: auto 0 0;
+  height: 9cqh;
+  pointer-events: none;
+  background: linear-gradient(#8fd6a8, #74c491);
+}
+.flower {
+  position: absolute;
+  bottom: 30%;
+  left: calc(2% + var(--i) * 7.2%);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 -6px 0 #ff8fb8,
+    5px -3px 0 #ff8fb8,
+    -5px -3px 0 #ff8fb8,
+    4px 4px 0 #ff8fb8,
+    -4px 4px 0 #ff8fb8;
+  transform: scale(0.7);
+}
+.flower:nth-child(3n) {
+  box-shadow:
+    0 -6px 0 #ffd36b,
+    5px -3px 0 #ffd36b,
+    -5px -3px 0 #ffd36b,
+    4px 4px 0 #ffd36b,
+    -4px 4px 0 #ffd36b;
+}
+.flower:nth-child(3n + 1) {
+  box-shadow:
+    0 -6px 0 #b8a6ff,
+    5px -3px 0 #b8a6ff,
+    -5px -3px 0 #b8a6ff,
+    4px 4px 0 #b8a6ff,
+    -4px 4px 0 #b8a6ff;
+}
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-size: clamp(56px, 24cqh, 160px);
+  font-weight: 600;
+  color: #fff;
+  -webkit-text-stroke: 2px #b58ad8;
+  text-shadow: 0 8px 24px #6d4a9a55;
+  pointer-events: none;
+  z-index: 4;
+}
+:host(.counting:not(.finished)) .lanes {
+  opacity: 0.7;
+}
+.runner::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  bottom: 8%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #e6d2f7;
+  opacity: 0;
+  pointer-events: none;
+}

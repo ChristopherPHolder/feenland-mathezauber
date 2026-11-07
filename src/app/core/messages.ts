@@ -123,6 +123,20 @@ export const en = {
   numberWallDescription:
     'Help the fairy build a magic wall. Two bricks side by side make the brick above them.',
   numberWallPlay: 'Build the magic wall',
+  raceChapter: 'Unicorn Rainbow Race',
+  raceChapterHelp:
+    'Race Lumi the unicorn against her friends to the rainbow castle. Right answers make her gallop, wrong ones make her stumble.',
+  racePlay: 'Start the race',
+  race1: 'Flower meadow',
+  race1Help: 'Adding up to 10, like 3 + 4.',
+  race2: 'Cloud path',
+  race2Help: 'Plus and minus up to 20, like 15 − 7.',
+  race3: 'Rainbow bridge',
+  race3Help: 'Plus and minus up to 100, like 48 + 30.',
+  race4: 'Star road',
+  race4Help: 'Times 2, 5 and 10, like 5 × 4.',
+  race5: 'Castle cup',
+  race5Help: 'Times tables up to 30 and sums up to 100, like 7 × 3. Only first place wins the cup.',
   fairyGameDescription: 'Make ten, solve missing numbers and save the castle from the monsters.',
   wallRule: 'Two bricks side by side always make the brick above them.',
   wallIntro:
@@ -328,6 +342,21 @@ export const translations: Record<Locale, Messages> = {
     numberWallDescription:
       'Hilf der Fee, eine Zaubermauer zu bauen. Zwei Steine nebeneinander ergeben den Stein darüber.',
     numberWallPlay: 'Zaubermauer bauen',
+    raceChapter: 'Einhorn-Regenbogenrennen',
+    raceChapterHelp:
+      'Einhorn Lumi macht ein Wettrennen mit ihren Freunden zum Regenbogenschloss. Richtige Antworten lassen sie galoppieren, falsche lassen sie stolpern.',
+    racePlay: 'Rennen starten',
+    race1: 'Blumenwiese',
+    race1Help: 'Plus bis 10, wie 3 + 4.',
+    race2: 'Wolkenpfad',
+    race2Help: 'Plus und minus bis 20, wie 15 − 7.',
+    race3: 'Regenbogenbrücke',
+    race3Help: 'Plus und minus bis 100, wie 48 + 30.',
+    race4: 'Sternenstraße',
+    race4Help: 'Mal 2, 5 und 10, wie 5 × 4.',
+    race5: 'Schloss-Pokal',
+    race5Help:
+      'Einmaleins bis 30 und Summen bis 100, wie 7 × 3. Nur der erste Platz gewinnt den Pokal.',
     fairyGameDescription:
       'Mach die zehn voll, finde fehlende Zahlen und rette das Schloss vor den Monstern.',
     wallRule: 'Zwei Steine nebeneinander ergeben immer den Stein darüber.',
@@ -526,6 +555,20 @@ export const translations: Record<Locale, Messages> = {
     numberWallDescription:
       'Ayuda al hada a construir un muro mágico. Dos ladrillos juntos forman el ladrillo de arriba.',
     numberWallPlay: 'Construir el muro mágico',
+    raceChapter: 'Carrera arcoíris de unicornios',
+    raceChapterHelp:
+      'La unicornio Lumi compite con sus amigos hasta el castillo del arcoíris. Las respuestas correctas la hacen galopar; las incorrectas, tropezar.',
+    racePlay: 'Empezar la carrera',
+    race1: 'Prado de flores',
+    race1Help: 'Sumas hasta 10, como 3 + 4.',
+    race2: 'Sendero de nubes',
+    race2Help: 'Sumas y restas hasta 20, como 15 − 7.',
+    race3: 'Puente arcoíris',
+    race3Help: 'Sumas y restas hasta 100, como 48 + 30.',
+    race4: 'Camino de estrellas',
+    race4Help: 'Tablas del 2, del 5 y del 10, como 5 × 4.',
+    race5: 'Copa del castillo',
+    race5Help: 'Tablas hasta 30 y sumas hasta 100, como 7 × 3. Solo el primer puesto gana la copa.',
     fairyGameDescription:
       'Completa diez, encuentra números perdidos y salva el castillo de los monstruos.',
     wallRule: 'Dos ladrillos juntos siempre forman el ladrillo de arriba.',
@@ -726,6 +769,21 @@ export const translations: Record<Locale, Messages> = {
     numberWallDescription:
       'Aide la fée à construire un mur magique. Deux briques côte à côte forment la brique au-dessus.',
     numberWallPlay: 'Construire le mur magique',
+    raceChapter: 'Course arc-en-ciel des licornes',
+    raceChapterHelp:
+      'Lumi la licorne fait la course avec ses amis jusqu’au château arc-en-ciel. Les bonnes réponses la font galoper, les mauvaises la font trébucher.',
+    racePlay: 'Lancer la course',
+    race1: 'Prairie fleurie',
+    race1Help: 'Additions jusqu’à 10, comme 3 + 4.',
+    race2: 'Sentier des nuages',
+    race2Help: 'Plus et moins jusqu’à 20, comme 15 − 7.',
+    race3: 'Pont arc-en-ciel',
+    race3Help: 'Plus et moins jusqu’à 100, comme 48 + 30.',
+    race4: 'Route des étoiles',
+    race4Help: 'Tables de 2, 5 et 10, comme 5 × 4.',
+    race5: 'Coupe du château',
+    race5Help:
+      'Tables jusqu’à 30 et sommes jusqu’à 100, comme 7 × 3. Seule la première place gagne la coupe.',
     fairyGameDescription:
       'Complète dix, trouve les nombres manquants et sauve le château des monstres.',
     wallRule: 'Deux briques côte à côte forment toujours la brique au-dessus.',

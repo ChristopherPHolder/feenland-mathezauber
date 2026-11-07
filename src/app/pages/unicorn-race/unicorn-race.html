@@ -1,0 +1,246 @@
+<section class="game" [class.playing]="phase() !== 'intro'" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: level() }) + ' · ' + i.t(levelTitle(level()))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @switch (phase()) {
+    @case ('intro') {
+      <div class="intro">
+        <div class="story">
+          <div class="lineup" aria-hidden="true">
+            @for (id of racerIds; track id) {
+              <span class="lineup-racer" [class.lead]="id === 'player'">
+                <app-racer [kind]="id" [running]="id === 'player'" />
+                <span class="lineup-name">{{ names()[id] }}</span>
+              </span>
+            }
+          </div>
+          <p class="lead">{{ t('intro') }}</p>
+          <ul class="rules">
+            <li><span class="rule-icon" aria-hidden="true">✅</span>{{ t('ruleRight') }}</li>
+            <li><span class="rule-icon" aria-hidden="true">💫</span>{{ t('ruleWrong') }}</li>
+            <li><span class="rule-icon" aria-hidden="true">🌈</span>{{ t('ruleRainbow') }}</li>
+          </ul>
+          <p class="stage-example" aria-hidden="true">{{ stage()?.example }} = ?</p>
+          <p class="stage-help">{{ i.t(levelHelp(level())) }}</p>
+          <button type="button" class="button primary start" (click)="start()">
+            <app-icon kind="play" />{{ t('start') }}
+          </button>
+        </div>
+        <fieldset class="pace">
+          <legend>{{ t('paceTitle') }}</legend>
+          <div class="pace-options">
+            @for (option of paces; track option) {
+              <button
+                type="button"
+                class="chip"
+                [attr.aria-pressed]="pace() === option"
+                (click)="choosePace(option)"
+              >
+                {{ t(paceLabel(option)) }}
+              </button>
+            }
+          </div>
+          <p class="help">{{ pace() === 'off' ? t('paceOffHelp') : t('stumbleHelp') }}</p>
+        </fieldset>
+        <div class="races">
+          <h2 class="choose-title">{{ t('chooseRace') }}</h2>
+          <ol class="level-list">
+            @for (option of levels; track option) {
+              @let record = store.record(option);
+              <li>
+                <a
+                  class="level-card"
+                  [class.current]="option === level()"
+                  [class.starred]="!!record"
+                  [routerLink]="['/adventure', 'unicorn-race-' + option]"
+                  [attr.aria-current]="option === level() ? 'page' : null"
+                >
+                  <span class="level-number">{{ t('raceLabel', { n: option }) }}</span>
+                  <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
+                  <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
+                  <span class="level-foot">
+                    <span [class]="'level-cup ' + (record?.cup ?? 'none')">
+                      <app-icon kind="cup" /><span class="sr-only">{{
+                        t(cupKey(record?.cup))
+                      }}</span>
+                    </span>
+                    @if (record?.bestMs; as best) {
+                      <span class="level-best">{{
+                        t('bestTime', { seconds: toSeconds(best) })
+                      }}</span>
+                    }
+                  </span>
+                  <span class="level-go" aria-hidden="true"><app-icon kind="arrow" /></span>
+                </a>
+              </li>
+            }
+          </ol>
+          <p class="best">
+            <span aria-hidden="true">✨</span>
+            {{ t('totalSparkles', { n: store.save().sparkles }) }}
+          </p>
+        </div>
+      </div>
+    }
+    @default {
+      <div class="stage" [class.rainbow]="rainbow()" [class.finished]="phase() === 'finished'">
+        <div class="hud">
+          <p class="place" [class.leading]="place() === 1" [class.pop]="placePop()">
+            <span class="sr-only">{{ t('youAre', { place: t(placeKey()) }) }}</span>
+            <strong aria-hidden="true">{{ t(placeKey()) }}</strong>
+          </p>
+          <p class="sparkles" [class.pop]="sparklePop()">
+            <span aria-hidden="true">✨</span><span class="sr-only">{{ t('sparkles') }}: </span
+            ><strong>{{ i.format(sparkles()) }}</strong>
+          </p>
+          <p class="streak" [class.combo]="rainbow()">
+            <span aria-hidden="true">🌈</span><span class="sr-only">{{ t('streak') }}: </span
+            ><strong>{{ i.format(race().streak) }}</strong>
+          </p>
+          @if (timed()) {
+            <p class="clock">
+              <span aria-hidden="true">⏱</span><strong>{{ i.format(seconds()) }} s</strong>
+            </p>
+          }
+        </div>
+        <app-race-scene
+          role="img"
+          [attr.aria-label]="t('track') + ' · ' + t('youAre', { place: t(placeKey()) })"
+          [racers]="race().racers"
+          [names]="names()"
+          [labels]="labels()"
+          [running]="racing() && !countdown()"
+          [stumbling]="stumbling()"
+          [rainbow]="rainbow()"
+          [boost]="boost()"
+          [speed]="playerSpeed()"
+          [finished]="crossed()"
+          [countdown]="countdown()"
+        />
+        <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
+        @if (phase() === 'finished') {
+          <section #summary class="summary" tabindex="-1" aria-labelledby="summary-title">
+            <div class="summary-info">
+              <div
+                class="star-row"
+                role="img"
+                [attr.aria-label]="i.t('starsOf', { n: finishStars() })"
+              >
+                @for (star of stars; track star) {
+                  <app-icon kind="star" [class.earned]="finishStars() >= star" [style.--i]="star" />
+                }
+              </div>
+              <p [class]="'cup-badge ' + cup()">
+                <app-icon kind="cup" /><span>{{ t(cupKey(cup())) }}</span>
+              </p>
+              <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
+              <p class="summary-line">
+                {{
+                  timed()
+                    ? t('summary', {
+                        correct: race().correct,
+                        mistakes: race().mistakes,
+                        seconds: seconds(),
+                      })
+                    : t('summaryNoRush', { correct: race().correct, mistakes: race().mistakes })
+                }}
+              </p>
+              <p class="summary-sparkles">
+                <span
+                  ><span aria-hidden="true">✨</span>
+                  {{ t('sparklesWon', { n: sparkles() }) }}</span
+                >
+                @if (newBest()) {
+                  <span class="new-best">{{ t('newBest') }}</span>
+                }
+              </p>
+              @if (saveFailed() || cupsFailed()) {
+                <p class="save-failed">{{ t('saveFailed') }}</p>
+              }
+            </div>
+            <div class="summary-actions">
+              @if (nextLevel(); as upcoming) {
+                <button type="button" class="button primary" (click)="goTo(upcoming)">
+                  {{ t('nextRace') }} · {{ i.t(levelTitle(upcoming)) }}<app-icon kind="arrow" />
+                </button>
+              } @else if (!saveFailed()) {
+                <button type="button" class="button primary" (click)="celebrate()">
+                  <app-icon kind="star" />{{ t('celebrate') }}
+                </button>
+              }
+              <button type="button" class="button secondary" (click)="playAgain()">
+                {{ t('playAgain') }}
+              </button>
+            </div>
+            <div class="summary-links">
+              <button type="button" class="link" (click)="chooseRace()">
+                {{ t('chooseRace') }}
+              </button>
+              @if (nextLevel() && !saveFailed()) {
+                <button type="button" class="link" (click)="celebrate()">
+                  <app-icon kind="star" />{{ t('celebrate') }}
+                </button>
+              }
+              <a class="link" routerLink="/games" [fragment]="levelId()"
+                ><app-icon kind="grid" />{{ i.t('allGames') }}</a
+              >
+            </div>
+          </section>
+        } @else {
+          <div class="quiz">
+            <div
+              class="question"
+              [class.happy]="feedback().kind === 'gallop' || feedback().kind === 'rainbow'"
+              [class.sad]="feedback().kind === 'wrong' || feedback().kind === 'wrongAgain'"
+            >
+              @if (question().text) {
+                <p class="equation">
+                  <span class="sr-only">{{ t('question', { text: question().text }) }}</span>
+                  <span aria-hidden="true">{{ question().text }} = ?</span>
+                </p>
+              } @else {
+                <p class="equation ghost" aria-hidden="true">{{ stage()?.example }} = ?</p>
+              }
+              <p class="status" role="status">{{ racing() ? status() : t('ready') }}</p>
+              @if (gain(); as won) {
+                @for (key of [gainKey()]; track key) {
+                  <span class="gain" aria-hidden="true">+{{ i.format(won) }} ✨</span>
+                }
+              }
+            </div>
+            <div class="answers" role="group" [attr.aria-label]="t('choices')">
+              @if (!question().choices.length) {
+                @for (slot of [1, 2, 3, 4]; track slot) {
+                  <button type="button" class="answer ghost" disabled>
+                    <span class="key" aria-hidden="true">{{ slot }}</span>
+                    <span class="value" aria-hidden="true">?</span>
+                  </button>
+                }
+              }
+              @for (choice of question().choices; track $index; let index = $index) {
+                <button
+                  #answerButton
+                  type="button"
+                  class="answer"
+                  [class.struck]="struck().includes(choice)"
+                  [class.right]="flashRight() === choice"
+                  [disabled]="!racing() || crossed()"
+                  [attr.aria-disabled]="struck().includes(choice) ? true : null"
+                  (click)="choose(choice)"
+                >
+                  <span class="key" aria-hidden="true">{{ index + 1 }}</span>
+                  <span class="value">{{ i.format(choice) }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</section>

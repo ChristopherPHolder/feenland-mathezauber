@@ -10,6 +10,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
   'fairy-defense': 'fairyPlay',
   crocodile: 'crocodilePlay',
   'number-wall': 'numberWallPlay',
+  'unicorn-race': 'racePlay',
 };
 @Component({
   selector: 'app-welcome',

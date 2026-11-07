@@ -1,0 +1,295 @@
+/* Intro: the starting line-up, the pace choice and the five races. */
+.intro {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 12px;
+}
+.story,
+.pace {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: 20px 22px 22px;
+  box-shadow: var(--shadow-panel);
+  text-align: center;
+  border: 0;
+  margin: 0;
+}
+.story {
+  background: linear-gradient(var(--race-lilac), var(--cream) 45%);
+}
+.lineup {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
+  justify-content: center;
+  align-items: end;
+  gap: clamp(4px, 2vw, 18px);
+  margin: 0 auto 6px;
+}
+.lineup-racer {
+  display: contents;
+}
+.lineup-racer app-racer {
+  grid-row: 1;
+  width: clamp(64px, 17vw, 120px);
+  height: auto;
+  aspect-ratio: 170 / 120;
+  filter: drop-shadow(0 4px 4px #6d4a9a2e);
+}
+.lineup-racer.lead app-racer {
+  width: clamp(92px, 24vw, 170px);
+}
+.lineup-name {
+  grid-row: 2;
+  justify-self: center;
+  margin-top: 4px;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--race-violet-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.lineup-racer.lead .lineup-name {
+  background: var(--pink);
+  color: var(--paper);
+}
+.lead {
+  font-size: 19px;
+  margin: 8px auto 8px;
+  max-width: 36ch;
+  text-wrap: balance;
+}
+.rules {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  width: max-content;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.rules li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rule-icon {
+  font-size: 20px;
+}
+.rule,
+.help,
+.stage-help {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.stage-example {
+  margin: 10px auto 2px;
+  font-size: clamp(30px, 6vw, 44px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--race-violet-ink);
+}
+.stage-help {
+  font-size: 15px;
+}
+.start {
+  width: min(100%, 360px);
+  margin: 16px auto 0;
+  font-size: 20px;
+}
+.start app-icon {
+  width: 24px;
+  height: 24px;
+}
+.pace legend {
+  float: left;
+  width: 100%;
+  font-weight: 600;
+  font-size: 19px;
+  padding: 0;
+  margin-bottom: 12px;
+}
+.pace-options {
+  clear: both;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.chip {
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-button);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: var(--shadow-rest);
+}
+.chip[aria-pressed='true'] {
+  background: var(--pink-ground);
+  border-color: var(--pink);
+  color: var(--pink-deep);
+}
+.help {
+  margin-top: 12px;
+  font-size: 15px;
+}
+.races {
+  display: grid;
+  gap: 16px;
+}
+.choose-title {
+  font-size: 24px;
+  margin: 4px 0 -6px;
+}
+.level-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.level-list li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+.level-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'number go'
+    'name go'
+    'help go'
+    'foot go';
+  gap: 2px 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px 18px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-tile);
+  background: var(--paper);
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  box-shadow: var(--shadow-tile);
+  transition: transform 0.15s;
+}
+.level-card:hover {
+  transform: translateY(-2px);
+}
+.level-card.starred {
+  background: var(--success-ground);
+}
+.level-card.current {
+  border-color: var(--pink);
+  background: var(--pink-ground);
+}
+.level-number {
+  grid-area: number;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--race-pink-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.level-name {
+  grid-area: name;
+  font-size: 20px;
+  font-weight: 600;
+}
+.level-help {
+  grid-area: help;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.level-foot {
+  grid-area: foot;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.level-cup {
+  display: inline-flex;
+  color: var(--star-empty);
+}
+.level-cup app-icon {
+  width: 24px;
+  height: 24px;
+}
+.level-cup.gold {
+  color: var(--star-ink);
+  fill: var(--star-fill);
+}
+.level-cup.silver {
+  color: #52606f;
+  fill: #dfe6ee;
+}
+.level-cup.bronze {
+  color: var(--bronze);
+  fill: #e8c38f;
+}
+.level-go {
+  grid-area: go;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--pink);
+  color: var(--paper);
+  box-shadow: var(--shadow-primary);
+}
+.level-go app-icon {
+  width: 24px;
+  height: 24px;
+}
+.best {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 600;
+}
+@media (min-width: 900px) {
+  .intro {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'story races'
+      'pace races';
+    align-items: start;
+  }
+  .story {
+    grid-area: story;
+  }
+  .races {
+    grid-area: races;
+    display: grid;
+    gap: 14px;
+  }
+  .lineup-racer app-racer {
+    width: clamp(90px, 11vw, 170px);
+  }
+  .lineup-racer.lead app-racer {
+    width: clamp(120px, 16vw, 240px);
+  }
+  .pace {
+    grid-area: pace;
+  }
+  .level-list {
+    grid-template-columns: 1fr;
+  }
+}
