@@ -1,0 +1,50 @@
+/* Each cup colours the page: a meadow, a path above the clouds, a starry night, a sunset. */
+:host(.is-meadow) {
+  --cup-ground: #eef9f1;
+  --cup-line: #cdebd6;
+  --cup-ink: #2e6b47;
+}
+:host(.is-sky) {
+  --race-sky: #cfe6ff;
+  --race-meadow: #eef4ff;
+  --race-lilac: #e2eeff;
+  --cup-ground: #eaf3ff;
+  --cup-line: #c7ddff;
+  --cup-ink: #2d5d9e;
+}
+:host(.is-star) {
+  --race-sky: #b9aff2;
+  --race-meadow: #e6e0ff;
+  --race-lilac: #e6ddff;
+  --cup-ground: #ebe6ff;
+  --cup-line: #cdbfff;
+  --cup-ink: #4b3a70;
+}
+:host(.is-castle) {
+  --race-sky: #ffd4b8;
+  --race-meadow: #ffe9d8;
+  --race-lilac: #ffe5e9;
+  --cup-ground: #fff1e4;
+  --cup-line: #ffd2b3;
+  --cup-ink: #a04a2a;
+}
+.cup-section.is-meadow {
+  --cup-ground: #eef9f1;
+  --cup-line: #cdebd6;
+  --cup-ink: #2e6b47;
+}
+.cup-section.is-sky {
+  --cup-ground: #eaf3ff;
+  --cup-line: #c7ddff;
+  --cup-ink: #2d5d9e;
+}
+.cup-section.is-star {
+  --cup-ground: #ebe6ff;
+  --cup-line: #cdbfff;
+  --cup-ink: #4b3a70;
+}
+.cup-section.is-castle {
+  --cup-ground: #fff1e4;
+  --cup-line: #ffd2b3;
+  --cup-ink: #a04a2a;
+}

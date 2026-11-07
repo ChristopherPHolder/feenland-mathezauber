@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { RacerId, RacerState, standings, TRACK_LENGTH } from './race';
+import { RacerId, RacerState, standings } from './race';
 import { RacerArt } from './racer-art';
 /**
  * The bird's-eye strip above the track: one line from the start to the castle with every
@@ -163,6 +163,12 @@ import { RacerArt } from './racer-art';
     .entry.is-player .pos {
       background: #ffd36b;
     }
+    .entry.is-storm .pos {
+      background: #c9cfe8;
+    }
+    .entry.is-shadow .pos {
+      background: #e4dbff;
+    }
     .sr-only {
       position: absolute;
       width: 1px;
@@ -198,6 +204,8 @@ import { RacerArt } from './racer-art';
 })
 export class RaceOverview {
   readonly racers = input.required<readonly RacerState[]>();
+  /** Track units from start to finish. */
+  readonly length = input.required<number>();
   readonly names = input.required<Readonly<Record<RacerId, string>>>();
   /** Spoken description per racer (name and how far along it is). */
   readonly labels = input.required<Readonly<Record<RacerId, string>>>();
@@ -207,7 +215,7 @@ export class RaceOverview {
     this.racers().map((racer, row) => ({
       id: racer.id,
       row,
-      fraction: Math.min(1, racer.position / TRACK_LENGTH),
+      fraction: Math.min(1, racer.position / this.length()),
       done: racer.finishedAt !== undefined,
     })),
   );

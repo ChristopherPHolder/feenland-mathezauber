@@ -39,6 +39,10 @@
   background: linear-gradient(90deg, var(--pink-ground), #fff6d6, #e8fff0, #e4f3ff, #f1e8ff);
   box-shadow: 0 0 0 2px var(--race-sun);
 }
+.hud p.rival {
+  background: var(--race-lilac);
+  color: var(--race-violet-ink);
+}
 .hud p.clock {
   margin-left: auto;
   color: var(--muted);

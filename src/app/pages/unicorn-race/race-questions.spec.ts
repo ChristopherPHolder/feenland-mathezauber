@@ -1,4 +1,13 @@
-import { CHOICES, raceLevelEntries, raceQuestion, raceStage, RaceSkill } from './race-questions';
+import {
+  CHOICES,
+  cupStages,
+  raceCups,
+  raceLevelEntries,
+  raceQuestion,
+  raceStage,
+  RaceSkill,
+  raceStages,
+} from './race-questions';
 function seeded(seed: number) {
   let state = seed;
   return () => {
@@ -6,29 +15,51 @@ function seeded(seed: number) {
     return state / 4294967296;
   };
 }
+/** Works the sum out; a missing-number question is solved for its question mark. */
 function evaluate(text: string): number {
-  const [a, op, b] = text.split(' ');
-  const left = Number(a);
-  const right = Number(b);
-  return op === '+' ? left + right : op === '−' ? left - right : left * right;
+  const apply = (left: number, op: string, right: number) =>
+    op === '+' ? left + right : op === '−' ? left - right : left * right;
+  const [lhs, rhs] = text.split(' = ');
+  const [a, op, b] = lhs.split(' ');
+  if (rhs === undefined) return apply(Number(a), op, Number(b));
+  const result = Number(rhs);
+  const known = Number(a === '?' ? b : a);
+  if (op === '+') return result - known;
+  if (op === '×') return result / known;
+  // a − ? = result
+  return Number(a) - result;
 }
 describe('race questions', () => {
-  it('lists five open races with stable ids', () => {
-    expect(raceLevelEntries.map((level) => level.id)).toEqual([
-      'unicorn-race-1',
-      'unicorn-race-2',
-      'unicorn-race-3',
-      'unicorn-race-4',
-      'unicorn-race-5',
-    ]);
-    expect(raceStage('unicorn-race-4')?.skill).toBe('easyTimes');
+  it('lists twelve open races in four cups with stable ids', () => {
+    expect(raceLevelEntries.map((level) => level.id)).toEqual(
+      Array.from({ length: 12 }, (_, index) => `unicorn-race-${index + 1}`),
+    );
+    expect(raceStage('unicorn-race-7')?.skill).toBe('easyTimes');
+    expect(raceStage('unicorn-race-12')?.mode).toBe('race');
+    expect(raceStage('unicorn-race-13')).toBeUndefined();
     expect(raceStage('crocodile-1')).toBeUndefined();
+    for (const cup of raceCups) expect(cupStages(cup)).toHaveLength(3);
+    expect(raceStages.map((stage) => stage.mode).filter((mode) => mode === 'chase')).toHaveLength(
+      3,
+    );
+    expect(raceStages.map((stage) => stage.mode).filter((mode) => mode === 'shadow')).toHaveLength(
+      3,
+    );
+    // Later races are longer, so a race grows with the child.
+    expect(raceStages[11].length).toBeGreaterThan(raceStages[0].length);
   });
   it.each<[RaceSkill, (answer: number, text: string) => boolean]>([
     ['plus10', (answer, text) => answer <= 10 && text.includes('+')],
+    ['minus10', (answer, text) => answer >= 1 && answer <= 9 && text.includes('−')],
     ['plusMinus20', (answer) => answer >= 1 && answer <= 20],
+    ['doubles', (answer, text) => answer <= 20 && text.includes('+')],
     ['plusMinus100', (answer) => answer >= 1 && answer <= 100],
+    ['twoDigit', (answer) => answer >= 1 && answer <= 99],
     ['easyTimes', (answer, text) => answer <= 30 && text.includes('×')],
+    ['times34', (answer, text) => answer <= 30 && text.includes('×')],
+    ['missingFactor', (answer, text) => answer >= 2 && answer <= 10 && text.includes('?')],
+    ['missingAddend', (answer, text) => answer >= 1 && answer <= 80 && text.includes('?')],
+    ['hardTimes', (answer, text) => answer <= 30 && text.includes('×')],
     ['mixed', (answer) => answer >= 1 && answer <= 100],
   ])('keeps %s questions in range with four distinct choices', (skill, inRange) => {
     const random = seeded(7);
@@ -47,6 +78,21 @@ describe('race questions', () => {
     for (let n = 0; n < 100; n++) {
       const [a, , b] = raceQuestion('easyTimes', random).text.split(' ');
       expect([a, b].some((factor) => ['2', '5', '10'].includes(factor))).toBe(true);
+    }
+  });
+  it('keeps hard times tables out of the easy rows and two-digit sums free of carrying', () => {
+    const random = seeded(5);
+    for (let n = 0; n < 100; n++) {
+      const [a, , b] = raceQuestion('hardTimes', random).text.split(' ');
+      expect([a, b].includes('2') || [a, b].includes('5') || [a, b].includes('10')).toBe(false);
+      const [left, op, right] = raceQuestion('twoDigit', random).text.split(' ');
+      const [tensA, onesA] = [Math.floor(Number(left) / 10), Number(left) % 10];
+      const [tensB, onesB] = [Math.floor(Number(right) / 10), Number(right) % 10];
+      if (op === '+') expect(onesA + onesB).toBeLessThan(10);
+      else {
+        expect(onesA).toBeGreaterThan(onesB);
+        expect(tensA).toBeGreaterThan(tensB);
+      }
     }
   });
   it('avoids asking the same question twice in a row', () => {

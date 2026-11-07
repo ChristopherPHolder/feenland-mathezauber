@@ -1,4 +1,4 @@
-/* Intro: the starting line-up, the pace choice and the five races. */
+/* Intro: the starting line-up, the pace choice and the four cups of races. */
 .intro {
   display: grid;
   gap: 16px;
@@ -16,6 +16,18 @@
 }
 .story {
   background: linear-gradient(var(--race-lilac), var(--cream) 45%);
+}
+.cup-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 auto 10px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--race-violet-ink);
+  font-size: 14px;
+  font-weight: 600;
 }
 .lineup {
   display: grid;
@@ -148,7 +160,31 @@
 }
 .choose-title {
   font-size: 24px;
-  margin: 4px 0 -6px;
+  margin: 4px 0 -10px;
+}
+.cups-done {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+.cup-section {
+  display: grid;
+  gap: 10px;
+  padding: 12px 12px 14px;
+  border-radius: var(--radius-panel);
+  background: var(--cup-ground, var(--paper-veil));
+  border: 2px solid var(--cup-line, transparent);
+}
+.cup-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 19px;
+  color: var(--cup-ink, var(--race-violet-ink));
+}
+.cup-emblem {
+  font-size: 22px;
 }
 .level-list {
   list-style: none;
@@ -168,6 +204,7 @@
   grid-template-areas:
     'number go'
     'name go'
+    'example go'
     'help go'
     'foot go';
   gap: 2px 12px;
@@ -201,10 +238,31 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+.level-number {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.level-mode {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cup-line, var(--race-lilac));
+  color: var(--race-violet-ink);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+}
 .level-name {
   grid-area: name;
   font-size: 20px;
   font-weight: 600;
+}
+.level-example {
+  grid-area: example;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--race-violet-ink);
+  opacity: 0.8;
 }
 .level-help {
   grid-area: help;
