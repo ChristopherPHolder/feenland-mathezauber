@@ -33,7 +33,7 @@
   padding: 10px 16px;
   border-radius: 14px;
   font-size: 16px;
-  box-shadow: 0 4px 12px #092e3333;;
+  box-shadow: 0 4px 12px #092e3333;
 }
 .encounter-track {
   display: flex;
@@ -54,7 +54,7 @@
   gap: 5px;
   background: var(--parchment);
   padding: 9px 11px;
-  border-radius: var(--radius-button)
+  border-radius: var(--radius-button);
 }
 .hearts svg {
   width: 29px;
@@ -102,7 +102,7 @@
   height: 8px;
   border-radius: 50%;
   background: #fff6a8;
-  box-shadow: 0 0 10px 4px #ffe66a99;;
+  box-shadow: 0 0 10px 4px #ffe66a99;
   opacity: 0;
   animation: firefly 6.5s ease-in-out calc(var(--i) * -0.9s) infinite;
 }
@@ -162,14 +162,14 @@
   line-height: 1;
   padding: 8px 18px;
   z-index: 1;
-  box-shadow: 0 5px 15px #4e301d33;;
+  box-shadow: 0 5px 15px #4e301d33;
 }
 .steps {
   display: flex;
   gap: 9px;
   margin: 0 0 0;
   padding: 6px 10px;
-  border-radius: var(--radius-pill)
+  border-radius: var(--radius-pill);
   background: #fff8e9;
 }
 .steps span {
@@ -194,12 +194,12 @@
   top: -10px;
   white-space: nowrap;
   padding: 10px 18px;
-  border-radius: var(--radius-surface)
+  border-radius: var(--radius-surface);
   background: #fff4c6;
   color: #623815;
   font-size: clamp(20px, 3vw, 34px);
   font-weight: 600;
-  box-shadow: 0 5px 22px #e8ac4655;;
+  box-shadow: 0 5px 22px #e8ac4655;
   z-index: 3;
 }
 .sparkles {
@@ -437,7 +437,7 @@
   display: flex;
   gap: 6px;
   padding: 6px 10px;
-  border-radius: var(--radius-tile)
+  border-radius: var(--radius-tile);
   background: var(--parchment);
   color: #744288;
 }

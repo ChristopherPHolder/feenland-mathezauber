@@ -1,67 +1,84 @@
+/*
+ * The castle scene fills whatever box the page gives it. It is a size container, so the
+ * bricks, towers and characters scale with the scene (cqw/cqh) rather than the viewport:
+ * the same wall reads well beside the keypad on an iPad in landscape, above it in
+ * portrait, and on a phone.
+ */
 :host {
+  --sky-top: #9fd6f4;
+  --sky-bottom: #e6f5fc;
+  --grass: #86c672;
+  --grass-deep: #6aae5a;
+  --stone: #efe0bb;
+  container-type: size;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  min-height: 280px;
-  padding: 30px 16px 22px;
+  min-height: 260px;
   border-radius: var(--radius-panel);
-  background: linear-gradient(#a9dbf5, #dff2fb 70%, #9fd38e 70%, #86c475);
+  background:
+    radial-gradient(circle at 86% 14%, #fff6c8 0 22px, #ffd96a 23px 34px, transparent 35px),
+    radial-gradient(ellipse 55% 26% at 12% 80%, #b6e0a2 0 99%, transparent 100%),
+    radial-gradient(ellipse 65% 30% at 92% 82%, #a7d892 0 99%, transparent 100%),
+    linear-gradient(var(--sky-top), var(--sky-bottom) 76%, var(--grass) 76%, var(--grass-deep));
+  box-shadow: var(--shadow-panel);
   overflow: hidden;
   outline: none;
   transition: background 0.6s ease;
 }
 :host(.danger) {
-  background: linear-gradient(#f3c0a3, #fbe3d2 70%, #9fd38e 70%, #86c475);
+  --sky-top: #f2b99a;
+  --sky-bottom: #fde6d6;
+}
+:host(:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
 }
 .sky {
   position: absolute;
   inset: 0 0 auto;
-  height: 40%;
+  height: 45%;
   pointer-events: none;
 }
 .cloud {
   position: absolute;
-  top: 10%;
-  width: 72px;
-  height: 24px;
-  border-radius: var(--radius-panel)
+  top: 12%;
+  width: clamp(72px, 14cqw, 150px);
+  height: clamp(24px, 4.6cqw, 48px);
+  border-radius: var(--radius-panel);
   background: #ffffffd9;
   animation: drift 46s linear infinite;
 }
 .cloud::before {
   content: '';
   position: absolute;
-  left: 18px;
-  top: -14px;
-  width: 34px;
-  height: 34px;
+  left: 24%;
+  top: -55%;
+  width: 46%;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: inherit;
 }
 .cloud.c2 {
-  top: 34%;
-  width: 52px;
-  height: 18px;
+  top: 36%;
+  width: clamp(52px, 10cqw, 110px);
+  height: clamp(18px, 3.4cqw, 36px);
   animation-delay: -22s;
   animation-duration: 60s;
 }
 .bird {
   position: absolute;
   top: 24%;
-  font-size: 18px;
+  font-size: clamp(18px, 3cqw, 30px);
   transform: scaleX(-1);
   animation: fly-by 28s linear -9s infinite;
 }
-:host(:focus-visible) {
-  outline: 3px solid var(--focus);
-  outline-offset: 3px;
-}
 .fairy {
   position: absolute;
-  left: 10%;
-  top: 12%;
-  font-size: 38px;
+  left: 13%;
+  top: 9%;
+  font-size: clamp(38px, 10cqh, 84px);
   line-height: 1;
   animation: hover 2.4s ease-in-out infinite;
   z-index: 2;
@@ -74,62 +91,104 @@
 :host(.celebrating) .fairy {
   animation: cheer 0.6s ease-in-out 3;
 }
+:host(.combo) .fairy::after,
+:host(.combo) .fairy::before {
+  content: '✨';
+  position: absolute;
+  left: -0.5em;
+  top: 0.4em;
+  font-size: 0.42em;
+  animation: twinkle 0.9s ease-in-out infinite;
+}
+:host(.combo) .fairy::before {
+  left: -0.9em;
+  top: 0.8em;
+  font-size: 0.32em;
+  animation-delay: -0.45s;
+}
+
+/* Towers grow with every finished wall. */
+.tower,
+.flag {
+  --tower-h: calc(24cqh + var(--built) * 7cqh);
+  --roof-h: clamp(24px, 6cqw, 56px);
+}
 .tower {
   position: absolute;
   bottom: 0;
-  width: 46px;
-  height: calc(24% + var(--built) * 8%);
-  background: #e8d9b6;
+  width: clamp(40px, 9cqw, 92px);
+  height: var(--tower-h);
   border: 3px solid var(--brick-border);
   border-bottom: 0;
-  border-radius: 6px 6px 0 0;
+  background:
+    linear-gradient(#5c4f86, #3f3566) 50% 18% / 30% 14% no-repeat,
+    repeating-linear-gradient(transparent 0 20px, #d2bb8b 20px 23px),
+    var(--stone);
   transition: height 0.6s ease-out;
 }
 .tower::before {
   content: '';
   position: absolute;
-  left: -3px;
-  right: -3px;
-  top: -24px;
-  height: 24px;
-  background: var(--pink);
+  left: -10%;
+  right: -10%;
+  top: calc(-1 * var(--roof-h));
+  height: var(--roof-h);
+  background: linear-gradient(90deg, var(--pink), var(--pink-deep));
   clip-path: polygon(0 100%, 50% 0, 100% 100%);
 }
 .tower.left {
-  left: 12px;
+  left: 3cqw;
 }
 .tower.right {
-  right: 12px;
+  right: 3cqw;
 }
 .flag {
   position: absolute;
-  left: 14px;
-  bottom: 68%;
-  font-size: 30px;
+  left: calc(3cqw + clamp(40px, 9cqw, 92px) / 2 - 0.3em);
+  bottom: calc(var(--tower-h) + var(--roof-h) - 0.2em);
+  font-size: clamp(28px, 6cqh, 52px);
   animation: pop 0.6s ease-out;
 }
+
+/* The wall stands on a stone foundation sunk into the grass. */
 .wall {
-  --brick-w: clamp(78px, 24vw, 128px);
-  --brick-h: clamp(56px, 15vw, 80px);
+  --brick-h: clamp(52px, min(22cqh, 16.5cqw), 140px);
+  --brick-w: calc(var(--brick-h) * 1.55);
+  --gap: calc(var(--brick-h) * 0.1);
+  position: relative;
   display: grid;
-  gap: 8px;
+  gap: var(--gap);
+  margin-bottom: calc(10cqh + var(--brick-h) * 0.22);
   z-index: 1;
 }
 .wall.three-rows {
-  --brick-w: clamp(68px, 21vw, 118px);
-  --brick-h: clamp(52px, 14vw, 76px);
+  --brick-h: clamp(44px, min(16cqh, 12cqw), 116px);
+}
+.wall::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--brick-h) * -0.3);
+  right: calc(var(--brick-h) * -0.3);
+  bottom: calc(var(--brick-h) * -0.26);
+  height: calc(var(--brick-h) * 0.22);
+  border-radius: 8px 8px 2px 2px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 38px, #7d7468 38px 41px),
+    linear-gradient(#a99f92, #8c8275);
+  z-index: -1;
 }
 .row {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap);
 }
 .plus {
-  width: 18px;
+  width: calc(var(--brick-h) * 0.3);
+  margin: 0 calc(var(--gap) * -0.5);
   text-align: center;
-  color: var(--muted);
-  font-size: clamp(20px, 4vw, 26px);
+  color: var(--ink);
+  font-size: calc(var(--brick-h) * 0.4);
   font-weight: 600;
   line-height: 1;
   user-select: none;
@@ -139,34 +198,41 @@
   place-items: center;
   width: var(--brick-w);
   height: var(--brick-h);
-  border: 3px solid var(--brick-border);
-  border-radius: var(--radius-chip)
-  background: linear-gradient(var(--cream), #f1e6c6);
+  border: 3px solid #a3875a;
+  border-radius: calc(var(--brick-h) * 0.16);
+  background: linear-gradient(#fcf3da, #ecd8a8);
   color: var(--ink);
-  font-size: clamp(26px, 6vw, 36px);
+  font-size: calc(var(--brick-h) * 0.5);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  box-shadow: inset 0 -4px 0 #d9c795;;
+  box-shadow:
+    inset 0 -5px 0 #d8bd83,
+    inset 0 3px 0 #fffaea,
+    0 4px 0 #8a6c43;
 }
 .brick.open {
-  border-style: dashed;
-  border-color: var(--pink);
-  background: var(--paper);
+  border: 4px dashed var(--pink);
+  background: #ffffffe6;
   color: var(--pink);
+  box-shadow: 0 4px 0 #c9a6b5;
   animation: glow 1.6s ease-in-out infinite;
   padding: 0;
   cursor: pointer;
 }
 .brick.open.selected {
   border-style: solid;
-  border-width: 4px;
   background: var(--pink-ground);
   animation: none;
-  box-shadow: 0 0 0 6px #c918602e;;
+  box-shadow:
+    0 0 0 calc(var(--brick-h) * 0.08) #c918602e,
+    0 4px 0 #8c0f41;
 }
 .brick.filled {
-  background: linear-gradient(#f0fbea, #cfeec3);
+  background: linear-gradient(#f0fbea, #c9ecbb);
   border-color: var(--brick-filled);
+  box-shadow:
+    inset 0 -5px 0 #a3d391,
+    0 4px 0 #2f6b39;
 }
 .brick.pair {
   animation: pair-pulse 1.2s ease-in-out infinite;
@@ -174,7 +240,9 @@
 .brick.golden {
   background: linear-gradient(#fff6d2, #ffd66b);
   border-color: var(--star-ink);
-  box-shadow: 0 0 14px #ffc93c;;
+  box-shadow:
+    0 0 16px #ffc93c,
+    0 4px 0 #a67400;
 }
 .brick.sparkle {
   position: relative;
@@ -185,7 +253,7 @@
   position: absolute;
   left: 6%;
   right: 6%;
-  bottom: -7px;
+  bottom: -9px;
   height: 10px;
   border-radius: 50%;
   background: var(--paper-veil);
@@ -194,20 +262,22 @@
 .brick.sparkle::after {
   content: '✦ ✧ ✦';
   position: absolute;
-  inset: -22px 0 auto;
+  inset: -0.8em 0 auto;
   text-align: center;
-  font-size: 18px;
+  font-size: calc(var(--brick-h) * 0.26);
   color: #d19a00;
   animation: rise 0.9s ease-out forwards;
 }
 .brick.wobble {
   animation: wobble 0.45s ease-in-out;
 }
+
+/* The troll walks in from the right along the grass. */
 .troll {
   position: absolute;
-  bottom: 14px;
+  bottom: 6cqh;
   left: calc(84% - var(--p) * 30%);
-  font-size: 44px;
+  font-size: clamp(44px, 12cqh, 100px);
   line-height: 1;
   transform: scaleX(-1);
   transition: left 0.1s linear;
@@ -220,35 +290,22 @@
   scale: calc(1 + var(--p) * 0.45);
   transition: scale 0.2s linear;
 }
-.alert {
+.alert,
+.zzz {
   position: absolute;
-  top: -30px;
-  left: 6px;
-  font-size: 22px;
+  top: -0.7em;
+  left: 0.1em;
+  font-size: 0.5em;
   transform: scaleX(-1);
+}
+.alert {
   animation: alert-bounce 0.5s ease-in-out infinite alternate;
-}
-:host(.combo) .fairy::after {
-  content: '✨';
-  position: absolute;
-  left: -20px;
-  top: 16px;
-  font-size: 16px;
-  animation: twinkle 0.9s ease-in-out infinite;
-}
-:host(.combo) .fairy::before {
-  content: '✨';
-  position: absolute;
-  left: -34px;
-  top: 30px;
-  font-size: 12px;
-  animation: twinkle 0.9s ease-in-out -0.45s infinite;
 }
 .dust-cloud {
   position: absolute;
-  left: -26px;
+  left: -0.6em;
   bottom: 0;
-  font-size: 18px;
+  font-size: 0.4em;
   opacity: 0.6;
   animation: dust-puff 0.7s ease-out infinite;
 }
@@ -259,13 +316,6 @@
 .troll.bump {
   animation: bumping 0.6s ease-in-out;
 }
-.zzz {
-  position: absolute;
-  top: -22px;
-  left: -8px;
-  font-size: 22px;
-  transform: scaleX(-1);
-}
 .confetti {
   position: absolute;
   inset: 0;
@@ -275,7 +325,7 @@
   position: absolute;
   top: -10%;
   left: calc(10% + var(--i) * 16%);
-  font-size: 26px;
+  font-size: clamp(26px, 6cqh, 48px);
   color: #d19a00;
   animation: fall 1.4s ease-in calc(var(--i) * 0.08s) forwards;
 }
@@ -287,215 +337,7 @@
   bottom: 30%;
   left: calc(38% + var(--i) * 10%);
   color: inherit;
-  font-size: 30px;
   animation: gem-fly 1.1s ease-in calc(var(--i) * 0.12s) forwards;
-}
-@keyframes drift {
-  from {
-    left: -90px;
-  }
-  to {
-    left: 105%;
-  }
-}
-@keyframes fly-by {
-  0% {
-    left: 105%;
-    top: 24%;
-  }
-  50% {
-    top: 14%;
-  }
-  100% {
-    left: -40px;
-    top: 28%;
-  }
-}
-@keyframes dive {
-  0% {
-    transform: translate(0, 0) rotate(0);
-  }
-  45% {
-    transform: translate(60px, 70px) rotate(35deg) scale(1.2);
-  }
-  100% {
-    transform: translate(0, 0) rotate(0);
-  }
-}
-@keyframes pair-pulse {
-  0%,
-  100% {
-    box-shadow:
-      inset 0 -4px 0 #d9c795,
-      0 0 0 0 #3f8a4b00;;
-  }
-  50% {
-    box-shadow:
-      inset 0 -4px 0 #d9c795,
-      0 0 0 6px #3f8a4b55;;
-  }
-}
-@keyframes drop {
-  0% {
-    transform: translateY(-70px) scale(1.05);
-    opacity: 0.4;
-  }
-  70% {
-    transform: translateY(4px) scaleY(0.92);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-@keyframes puff {
-  0% {
-    transform: scaleX(0.3);
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-  100% {
-    transform: scaleX(1.5);
-    opacity: 0;
-  }
-}
-@keyframes dust-puff {
-  0% {
-    transform: translateX(0) scale(0.6);
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateX(-14px) scale(1.2);
-    opacity: 0;
-  }
-}
-@keyframes gem-fly {
-  0% {
-    transform: translateY(0) scale(0.6);
-    opacity: 0;
-  }
-  20% {
-    transform: translateY(-20px) scale(1.2);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-240px) scale(0.8);
-    opacity: 0;
-  }
-}
-@keyframes alert-bounce {
-  from {
-    transform: scaleX(-1) translateY(0);
-  }
-  to {
-    transform: scaleX(-1) translateY(-8px);
-  }
-}
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.2;
-    transform: scale(0.7) rotate(0);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2) rotate(20deg);
-  }
-}
-@keyframes hover {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-@keyframes cheer {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0);
-  }
-  50% {
-    transform: translateY(-26px) rotate(12deg);
-  }
-}
-@keyframes stomp {
-  0%,
-  100% {
-    transform: scaleX(-1) translateY(0);
-  }
-  50% {
-    transform: scaleX(-1) translateY(-6px) rotate(-4deg);
-  }
-}
-@keyframes bumping {
-  0%,
-  100% {
-    transform: scaleX(-1) translateX(0);
-  }
-  40% {
-    transform: scaleX(-1) translateX(28px) rotate(-14deg);
-  }
-}
-@keyframes glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 #c9186055;;
-  }
-  50% {
-    box-shadow: 0 0 0 8px #c9186000;;
-  }
-}
-@keyframes pop {
-  0% {
-    transform: scale(0.7);
-  }
-  60% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-@keyframes rise {
-  from {
-    opacity: 1;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-18px);
-  }
-}
-@keyframes wobble {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-7px) rotate(-2deg);
-  }
-  75% {
-    transform: translateX(7px) rotate(2deg);
-  }
-}
-@keyframes fall {
-  from {
-    transform: translateY(0) rotate(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(300px) rotate(200deg);
-    opacity: 0;
-  }
-}
-@media (min-width: 700px) {
-  :host {
-    min-height: 380px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,

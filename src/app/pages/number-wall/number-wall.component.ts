@@ -63,7 +63,7 @@ const TICK_MS = 100;
   imports: [RouterLink, Icon, GameHeader, WallScene, NgOptimizedImage],
   providers: [GameAudio],
   templateUrl: './number-wall.component.html',
-  styleUrl: './number-wall.component.css',
+  styleUrls: ['./number-wall.component.css', './number-wall-play.css'],
   host: {
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
