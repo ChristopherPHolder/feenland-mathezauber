@@ -1,19 +1,25 @@
 import {
   answer,
-  createRace,
+  createRace as createRaceFrom,
   CRUISE,
   finalSparkles,
+  gapTo,
+  HEAD_START,
   isMastered,
   MAX_SPEED,
+  Pace,
   playerPlace,
   racer,
   raceStars,
   standings,
   STUMBLE_MS,
   tick,
-  TRACK_LENGTH,
 } from './race';
+import { RaceLevel, raceStages } from './race-questions';
 const fixed = () => 0.5;
+const stage = (level: RaceLevel) => raceStages.find((entry) => entry.stage === level)!;
+const createRace = (pace: Pace, level: RaceLevel, bestMs?: number) =>
+  createRaceFrom(pace, stage(level), bestMs);
 function run(state: ReturnType<typeof createRace>, ms: number) {
   for (let elapsed = 0; elapsed < ms; elapsed += 100) state = tick(state, 100, fixed);
   return state;
@@ -91,9 +97,9 @@ describe('unicorn race engine', () => {
   });
   it('finishes when the unicorn crosses the line and ranks her by who got there first', () => {
     let race = createRace('relaxed', 1);
-    for (let n = 0; n < 12 && !race.done; n++) race = run(answer(race, true), 1500);
+    for (let n = 0; n < 40 && !race.done; n++) race = run(answer(race, true), 1500);
     expect(race.done).toBe(true);
-    expect(racer(race, 'player').position).toBe(TRACK_LENGTH);
+    expect(racer(race, 'player').position).toBe(race.length);
     expect(playerPlace(race)).toBe(1);
     expect(finalSparkles(race)).toBe(race.sparkles + 50);
     const later = tick(race, 100, fixed);
@@ -101,10 +107,10 @@ describe('unicorn race engine', () => {
   });
   it('lets a slow racer get overtaken and finish behind the rivals', () => {
     let race = createRace('fast', 1);
-    race = run(race, 50000);
+    race = run(race, 90000);
     expect(race.done).toBe(false);
     expect(playerPlace(race)).toBe(4);
-    for (let n = 0; n < 30 && !race.done; n++) race = run(answer(race, true), 400);
+    for (let n = 0; n < 60 && !race.done; n++) race = run(answer(race, true), 400);
     expect(race.done).toBe(true);
     expect(playerPlace(race)).toBe(4);
   });
@@ -116,14 +122,87 @@ describe('unicorn race engine', () => {
     expect(order[0].id).toBe('cloud');
     expect(order[3].id).toBe('player');
   });
+  it('makes a longer race last about a minute of steady answering', () => {
+    let race = createRace('normal', 1);
+    // One right answer every four seconds, the pace of a child who knows the facts.
+    while (!race.done && race.elapsedMs < 300000) race = run(answer(race, true), 4000);
+    expect(race.done).toBe(true);
+    expect(race.elapsedMs).toBeGreaterThan(30000);
+    expect(race.elapsedMs).toBeLessThan(90000);
+    expect(race.correct).toBeGreaterThanOrEqual(9);
+  });
   it('awards stars by place and requires a win for the castle cup', () => {
-    expect(raceStars(1)).toBe(3);
-    expect(raceStars(2)).toBe(2);
-    expect(raceStars(3)).toBe(1);
-    expect(raceStars(4)).toBe(1);
-    expect(isMastered(2, 1)).toBe(true);
-    expect(isMastered(3, 1)).toBe(false);
-    expect(isMastered(2, 5)).toBe(false);
-    expect(isMastered(1, 5)).toBe(true);
+    const finish = (level: RaceLevel, holdMs: number) => {
+      let race = createRace('normal', level);
+      race = run(race, holdMs);
+      for (let n = 0; n < 200 && !race.done; n++) race = run(answer(race, true), 300);
+      return race;
+    };
+    const win = finish(1, 0);
+    expect(playerPlace(win)).toBe(1);
+    expect(raceStars(win)).toBe(3);
+    expect(isMastered(win)).toBe(true);
+    const late = finish(1, 120000);
+    expect(playerPlace(late)).toBe(4);
+    expect(raceStars(late)).toBe(1);
+    expect(isMastered(late)).toBe(false);
+    const finalLate = finish(12, 120000);
+    expect(isMastered(finalLate)).toBe(false);
+    let final = createRace('normal', 12);
+    for (let n = 0; n < 200 && !final.done; n++) final = run(answer(final, true), 300);
+    expect(playerPlace(final)).toBe(1);
+    expect(isMastered(final)).toBe(true);
+  });
+  it('lines Lumi up against Storm with a head start in a chase and rewards catching him', () => {
+    let race = createRace('normal', 2);
+    expect(race.mode).toBe('chase');
+    expect(race.racers.map((racer) => racer.id)).toEqual(['player', 'storm']);
+    expect(racer(race, 'storm').position).toBe(Math.round(race.length * HEAD_START));
+    expect(gapTo(race, 'storm')).toBe(Math.round(race.length * HEAD_START));
+    expect(playerPlace(race)).toBe(2);
+    for (let n = 0; n < 200 && !race.done; n++) race = run(answer(race, true), 300);
+    expect(playerPlace(race)).toBe(1);
+    expect(raceStars(race)).toBe(3);
+    expect(isMastered(race)).toBe(true);
+    let slow = createRace('fast', 2);
+    slow = run(slow, 120000);
+    for (let n = 0; n < 200 && !slow.done; n++) slow = run(answer(slow, true), 300);
+    expect(playerPlace(slow)).toBe(2);
+    expect(raceStars(slow)).toBe(1);
+    expect(isMastered(slow)).toBe(false);
+  });
+  it('runs the shadow at the par time, or the best time once there is a faster one', () => {
+    const par = createRace('normal', 5);
+    expect(par.mode).toBe('shadow');
+    expect(par.shadowMs).toBe(80000);
+    const shadow = racer(run(par, 80000), 'shadow');
+    expect(shadow.position).toBe(par.length);
+    expect(shadow.finishedAt).toBe(80000);
+    // The shadow ignores the pace setting and the rubber band: it is a recording.
+    expect(racer(run(createRace('fast', 5), 40000), 'shadow').position).toBeCloseTo(
+      par.length / 2,
+      0,
+    );
+    const best = createRace('normal', 5, 60000);
+    expect(best.shadowMs).toBe(60000);
+    const slower = createRace('normal', 5, 120000);
+    expect(slower.shadowMs).toBe(80000);
+    let race = createRace('normal', 5, 60000);
+    for (let n = 0; n < 200 && !race.done; n++) race = run(answer(race, true), 300);
+    expect(playerPlace(race)).toBe(1);
+    expect(raceStars(race)).toBe(3);
+    const sprint = (bestMs: number) => {
+      let state = createRace('normal', 5, bestMs);
+      for (let n = 0; n < 200 && !state.done; n++) state = run(answer(state, true), 300);
+      return state;
+    };
+    const time = sprint(60000).elapsedMs;
+    const close = sprint(time * 0.9);
+    expect(playerPlace(close)).toBe(2);
+    expect(raceStars(close)).toBe(2);
+    expect(isMastered(close)).toBe(false);
+    const far = sprint(time * 0.5);
+    expect(playerPlace(far)).toBe(2);
+    expect(raceStars(far)).toBe(1);
   });
 });

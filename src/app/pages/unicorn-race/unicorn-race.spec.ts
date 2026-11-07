@@ -36,7 +36,10 @@ describe('Unicorn race game', () => {
     vi.useRealTimers();
     vi.clearAllMocks();
   });
-  function setup(locale: 'en' | 'de' = 'en') {
+  function setup(locale: 'en' | 'de' = 'en', levelId = 'unicorn-race-1') {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { paramMap: of(convertToParamMap({ id: levelId })) },
+    });
     const fixture = TestBed.createComponent(UnicornRace);
     TestBed.inject(LocaleService).select(locale);
     fixture.detectChanges();
@@ -98,16 +101,21 @@ describe('Unicorn race game', () => {
       start,
     };
   }
-  it('shows the intro with the pace choice and all five races open', () => {
+  it('shows the intro with the pace choice and all twelve races open in four cups', () => {
     const { element } = setup();
     expect(element.querySelector('h1')?.textContent).toContain('Unicorn Rainbow Race');
     const chips = [...element.querySelectorAll('.chip')];
     expect(chips.map((chip) => chip.textContent?.trim())).toEqual(['Relaxed', 'Normal', 'Fast']);
     expect(chips[1].getAttribute('aria-pressed')).toBe('true');
+    const cups = [...element.querySelectorAll('.cup-title')].map((cup) => cup.textContent?.trim());
+    expect(cups).toEqual(['🌸 Meadow Cup', '☁️ Sky Cup', '🌙 Starlight Cup', '🏰 Castle Cup']);
     const cards = [...element.querySelectorAll<HTMLAnchorElement>('.level-card')];
-    expect(cards).toHaveLength(5);
+    expect(cards).toHaveLength(12);
     expect(cards[0].getAttribute('aria-current')).toBe('page');
-    expect(cards[4].getAttribute('href')).toBe('/adventure/unicorn-race-5');
+    expect(cards[1].textContent).toContain('Chase');
+    expect(cards[4].textContent).toContain('Shadow race');
+    expect(cards[11].getAttribute('href')).toBe('/adventure/unicorn-race-12');
+    expect(element.textContent).toContain('0 of 4 cups complete');
   });
   it('counts down, then races: right answers gallop and wrong ones strike the choice out', () => {
     const { fixture, element, component, click, wait, answers, answerRight, answerWrong, status } =
@@ -150,7 +158,7 @@ describe('Unicorn race game', () => {
   it('finishes a race, records stars, the cup and the time, and offers the next race', () => {
     const { element, component, wait, answerRight, start } = setup();
     start();
-    for (let n = 0; n < 14 && !component.race().done; n++) {
+    for (let n = 0; n < 60 && !component.race().done; n++) {
       answerRight();
       wait(1200);
     }
@@ -176,7 +184,7 @@ describe('Unicorn race game', () => {
   it('can be raced again right after a last-moment finish', () => {
     const { component, click, wait, answerRight, start } = setup();
     start();
-    for (let n = 0; n < 20 && !component.race().done; n++) {
+    for (let n = 0; n < 80 && !component.race().done; n++) {
       answerRight();
       // Answer again while the previous leap is still playing out, so the final leap
       // crosses the line while the input lock is still pending.
@@ -192,7 +200,7 @@ describe('Unicorn race game', () => {
   it('does not finish twice when the tab is switched during the finish hold', () => {
     const { component, wait, answerRight, start, fixture } = setup();
     start();
-    for (let n = 0; n < 14 && !component.race().done; n++) {
+    for (let n = 0; n < 60 && !component.race().done; n++) {
       answerRight();
       wait(1200);
     }
@@ -224,6 +232,40 @@ describe('Unicorn race game', () => {
     expect(element.querySelector('app-race-overview ol')?.getAttribute('aria-label')).toBe(
       'Who is ahead',
     );
+  });
+  it('runs a chase against Storm with the gap on the HUD and the key as the prize', () => {
+    const { element, component, wait, answerRight, start } = setup('en', 'unicorn-race-2');
+    expect(element.querySelector('.cup-tag')?.textContent).toContain('Chase');
+    expect(element.textContent).toContain('Storm has snatched the castle key');
+    expect(element.querySelectorAll('.lineup-racer')).toHaveLength(2);
+    start();
+    expect(element.querySelector('.hud .rival')?.textContent).toContain('Storm');
+    expect(element.querySelector('.hud .rival')?.textContent).toContain('ahead');
+    expect(element.querySelectorAll('app-race-overview .entry')).toHaveLength(2);
+    for (let n = 0; n < 80 && !component.race().done; n++) {
+      answerRight();
+      wait(400);
+    }
+    expect(component.race().done).toBe(true);
+    wait(1400);
+    expect(element.querySelector('.summary h2')?.textContent).toContain('got the key back');
+    expect(TestBed.inject(RaceStore).record(2)?.cup).toBe('gold');
+  });
+  it('shows a missing-number question with its own equals sign', () => {
+    const { element, component, start } = setup('en', 'unicorn-race-10');
+    expect(element.querySelector('.stage-example')?.textContent?.trim()).toBe('7 + ? = 12');
+    start();
+    const text = component.question().text;
+    expect(text).toContain('?');
+    expect(element.querySelector('.equation')?.textContent).toContain(text);
+    expect(element.querySelector('.equation')?.textContent).not.toContain('= ?');
+  });
+  it('races the shadow at par and asks to beat it', () => {
+    const { element, component, start } = setup('en', 'unicorn-race-5');
+    expect(element.textContent).toContain('Lumi races her own shadow');
+    start();
+    expect(component.race().shadowMs).toBe(80000);
+    expect(element.querySelector('.hud .rival')?.textContent).toContain('Shadow 80 s');
   });
   it('speaks German on the intro and during the race', () => {
     const { element, status, start } = setup('de');

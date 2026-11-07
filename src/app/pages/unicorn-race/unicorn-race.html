@@ -11,21 +11,31 @@
     @case ('intro') {
       <div class="intro">
         <div class="story">
+          <p class="cup-tag">
+            <span aria-hidden="true">{{ cupEmblem(cup()) }}</span> {{ t(cupTitle(cup())) }} ·
+            <span aria-hidden="true">{{ modeEmblem(mode()) }}</span> {{ t(modeTitle(mode())) }}
+          </p>
           <div class="lineup" aria-hidden="true">
-            @for (id of racerIds; track id) {
+            @for (id of lineup(); track id) {
               <span class="lineup-racer" [class.lead]="id === 'player'">
                 <app-racer [kind]="id" [running]="id === 'player'" />
                 <span class="lineup-name">{{ names()[id] }}</span>
               </span>
             }
           </div>
-          <p class="lead">{{ t('intro') }}</p>
+          <p class="lead">{{ t(introKey()) }}</p>
           <ul class="rules">
             <li><span class="rule-icon" aria-hidden="true">✅</span>{{ t('ruleRight') }}</li>
             <li><span class="rule-icon" aria-hidden="true">💫</span>{{ t('ruleWrong') }}</li>
             <li><span class="rule-icon" aria-hidden="true">🌈</span>{{ t('ruleRainbow') }}</li>
+            @if (modeRule(); as rule) {
+              <li>
+                <span class="rule-icon" aria-hidden="true">{{ modeEmblem(mode()) }}</span
+                >{{ t(rule) }}
+              </li>
+            }
           </ul>
-          <p class="stage-example" aria-hidden="true">{{ stage()?.example }} = ?</p>
+          <p class="stage-example" aria-hidden="true">{{ exampleEquation() }}</p>
           <p class="stage-help">{{ i.t(levelHelp(level())) }}</p>
           <button type="button" class="button primary start" (click)="start()">
             <app-icon kind="play" />{{ t('start') }}
@@ -49,37 +59,54 @@
         </fieldset>
         <div class="races">
           <h2 class="choose-title">{{ t('chooseRace') }}</h2>
-          <ol class="level-list">
-            @for (option of levels; track option) {
-              @let record = store.record(option);
-              <li>
-                <a
-                  class="level-card"
-                  [class.current]="option === level()"
-                  [class.starred]="!!record"
-                  [routerLink]="['/adventure', 'unicorn-race-' + option]"
-                  [attr.aria-current]="option === level() ? 'page' : null"
-                >
-                  <span class="level-number">{{ t('raceLabel', { n: option }) }}</span>
-                  <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
-                  <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
-                  <span class="level-foot">
-                    <span [class]="'level-cup ' + (record?.cup ?? 'none')">
-                      <app-icon kind="cup" /><span class="sr-only">{{
-                        t(cupKey(record?.cup))
-                      }}</span>
-                    </span>
-                    @if (record?.bestMs; as best) {
-                      <span class="level-best">{{
-                        t('bestTime', { seconds: toSeconds(best) })
-                      }}</span>
-                    }
-                  </span>
-                  <span class="level-go" aria-hidden="true"><app-icon kind="arrow" /></span>
-                </a>
-              </li>
-            }
-          </ol>
+          <p class="cups-done">
+            <span aria-hidden="true">🏆</span>
+            {{ t('cupsWon', { n: cupsComplete(), total: cups.length }) }}
+          </p>
+          @for (group of cups; track group) {
+            <section [class]="'cup-section is-' + group" [attr.aria-labelledby]="'cup-' + group">
+              <h3 class="cup-title" [id]="'cup-' + group">
+                <span class="cup-emblem" aria-hidden="true">{{ cupEmblem(group) }}</span>
+                {{ t(cupTitle(group)) }}
+              </h3>
+              <ol class="level-list">
+                @for (option of stagesOf(group); track option.stage) {
+                  @let record = store.record(option.stage);
+                  <li>
+                    <a
+                      class="level-card"
+                      [class.current]="option.stage === level()"
+                      [class.starred]="!!record"
+                      [routerLink]="['/adventure', 'unicorn-race-' + option.stage]"
+                      [attr.aria-current]="option.stage === level() ? 'page' : null"
+                    >
+                      <span class="level-number">{{ t('raceLabel', { n: option.stage }) }}</span>
+                      <span class="level-mode"
+                        ><span aria-hidden="true">{{ modeEmblem(option.mode) }}</span>
+                        {{ t(modeTitle(option.mode)) }}</span
+                      >
+                      <span class="level-name">{{ i.t(levelTitle(option.stage)) }}</span>
+                      <span class="level-example" aria-hidden="true">{{ example(option) }}</span>
+                      <span class="level-help">{{ i.t(levelHelp(option.stage)) }}</span>
+                      <span class="level-foot">
+                        <span [class]="'level-cup ' + (record?.cup ?? 'none')">
+                          <app-icon kind="cup" /><span class="sr-only">{{
+                            t(cupKey(record?.cup))
+                          }}</span>
+                        </span>
+                        @if (record?.bestMs; as best) {
+                          <span class="level-best">{{
+                            t('bestTime', { seconds: toSeconds(best) })
+                          }}</span>
+                        }
+                      </span>
+                      <span class="level-go" aria-hidden="true"><app-icon kind="arrow" /></span>
+                    </a>
+                  </li>
+                }
+              </ol>
+            </section>
+          }
           <p class="best">
             <span aria-hidden="true">✨</span>
             {{ t('totalSparkles', { n: store.save().sparkles }) }}
@@ -102,6 +129,12 @@
             <span aria-hidden="true">🌈</span><span class="sr-only">{{ t('streak') }}: </span
             ><strong>{{ i.format(race().streak) }}</strong>
           </p>
+          @if (rivalChip(); as chip) {
+            <p class="rival">
+              <span aria-hidden="true">{{ modeEmblem(mode()) }}</span
+              ><strong>{{ chip }}</strong>
+            </p>
+          }
           <p class="clock">
             <span aria-hidden="true">⏱</span><strong>{{ i.format(seconds()) }} s</strong>
           </p>
@@ -109,6 +142,7 @@
         <app-race-scene
           role="img"
           [attr.aria-label]="t('track') + ' · ' + t('youAre', { place: t(placeKey()) })"
+          [course]="course()"
           [racers]="race().racers"
           [names]="names()"
           [labels]="labels()"
@@ -120,6 +154,7 @@
         />
         <app-race-overview
           [racers]="race().racers"
+          [length]="race().length"
           [names]="names()"
           [labels]="labels()"
           [placeLabels]="placeLabels()"
@@ -138,8 +173,8 @@
                   <app-icon kind="star" [class.earned]="finishStars() >= star" [style.--i]="star" />
                 }
               </div>
-              <p [class]="'cup-badge ' + cup()">
-                <app-icon kind="cup" /><span>{{ t(cupKey(cup())) }}</span>
+              <p [class]="'cup-badge ' + cupBadge()">
+                <app-icon kind="cup" /><span>{{ t(cupKey(cupBadge())) }}</span>
               </p>
               <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
               <p class="summary-line">
@@ -201,11 +236,11 @@
             >
               @if (question().text) {
                 <p class="equation">
-                  <span class="sr-only">{{ t('question', { text: question().text }) }}</span>
-                  <span aria-hidden="true">{{ question().text }} = ?</span>
+                  <span class="sr-only">{{ questionLabel() }}</span>
+                  <span aria-hidden="true">{{ equation() }}</span>
                 </p>
               } @else {
-                <p class="equation ghost" aria-hidden="true">{{ stage()?.example }} = ?</p>
+                <p class="equation ghost" aria-hidden="true">{{ exampleEquation() }}</p>
               }
               <p class="status" role="status">{{ racing() ? status() : t('ready') }}</p>
               @if (gain(); as won) {

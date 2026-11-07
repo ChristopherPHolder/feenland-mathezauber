@@ -3,7 +3,8 @@ import type { RacerId } from './race';
 /**
  * One side-view pony drawn from simple shapes, facing the finish. Each racer is the same
  * body in its own colours: Lumi is the white unicorn with the rainbow mane, Cloud a lavender
- * pegasus, Minty a mint unicorn and Peach a peach pony with a bow.
+ * pegasus, Minty a mint unicorn, Peach a peach pony with a bow, Storm a dusky pegasus with
+ * a crown and the stolen key, and Shadow a see-through Lumi.
  */
 @Component({
   selector: 'app-racer',
@@ -23,7 +24,7 @@ import type { RacerId } from './race';
         <rect class="hoof" x="95" y="102" width="11" height="7" rx="3" />
       </g>
     </g>
-    @if (kind() === 'cloud') {
+    @if (kind() === 'cloud' || kind() === 'storm') {
       <path
         class="wing"
         d="M66 52c6-18 26-26 44-16-8 2-12 8-12 14 12-4 22 0 26 8-14-4-24 0-30 8 10 2 16 8 18 14-20-6-36-4-46-28z"
@@ -49,6 +50,11 @@ import type { RacerId } from './race';
     @if (kind() === 'peach') {
       <path class="bow" d="m112 18-8-6 1 10zm0 0 8-8-1 12z" />
       <circle class="bow" cx="112" cy="18" r="2.4" />
+    }
+    @if (kind() === 'storm') {
+      <path class="crown" d="m118 20 3-10 5 6 4-8 4 8 5-6 3 10z" />
+      <circle class="crown" cx="64" cy="84" r="5" />
+      <rect class="crown" x="62" y="86" width="4" height="12" rx="1.5" />
     }
     <circle class="eye" cx="134" cy="32" r="3.4" />
     <circle class="shine" cx="135.3" cy="30.8" r="1.1" />
@@ -101,6 +107,26 @@ import type { RacerId } from './race';
       --mane-1: #fff0b8;
       --mane-2: #ffe58a;
       --mane-3: #ffd766;
+    }
+    :host(.racer-storm) {
+      --coat: #8f98c4;
+      --shade: #6b739e;
+      --mane-1: #4b3a70;
+      --mane-2: #6d4a9a;
+      --mane-3: #3a2f5c;
+    }
+    :host(.racer-shadow) {
+      --coat: #c9b8ff;
+      --shade: #b09cf2;
+      --mane-1: #e2d6ff;
+      --mane-2: #d2c2ff;
+      --mane-3: #efe8ff;
+      opacity: 0.6;
+    }
+    .crown {
+      fill: #ffd54a;
+      stroke: #c99a1a;
+      stroke-width: 1;
     }
     svg {
       display: block;
@@ -258,6 +284,6 @@ export class RacerArt {
   readonly stumbling = input(false);
   readonly rainbow = input(false);
   protected horn() {
-    return this.kind() === 'player' || this.kind() === 'mint';
+    return this.kind() === 'player' || this.kind() === 'mint' || this.kind() === 'shadow';
   }
 }

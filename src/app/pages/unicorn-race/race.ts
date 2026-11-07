@@ -1,36 +1,49 @@
-import type { RaceLevel } from './race-questions';
+import { FINAL_STAGE } from './race-questions';
+import type { RaceLevel, RaceMode, RaceStage } from './race-questions';
 /** How quickly the other racers run. Everyone is always moving; this sets the rivals' pace. */
 export type Pace = 'relaxed' | 'normal' | 'fast';
 export const paces: readonly Pace[] = ['relaxed', 'normal', 'fast'];
-export type RacerId = 'player' | 'cloud' | 'mint' | 'peach';
-export const opponents: readonly Exclude<RacerId, 'player'>[] = ['cloud', 'mint', 'peach'];
-export const racerIds: readonly RacerId[] = ['player', ...opponents];
-export const TRACK_LENGTH = 100;
+/** Lumi, her three friends, Storm the key thief and Lumi's own shadow. */
+export type RacerId = 'player' | 'cloud' | 'mint' | 'peach' | 'storm' | 'shadow';
+export const friends: readonly RacerId[] = ['cloud', 'mint', 'peach'];
+export const racerIds: readonly RacerId[] = ['player', ...friends, 'storm', 'shadow'];
+/** Who lines up for each kind of race, in lane order. */
+export const LINEUP: Readonly<Record<RaceMode, readonly RacerId[]>> = {
+  race: ['player', 'cloud', 'mint', 'peach'],
+  chase: ['player', 'storm'],
+  shadow: ['player', 'shadow'],
+};
 export const RAINBOW_STREAK = 3;
 /**
  * Lumi never stands still: she trots at a cruising speed from the start. Every right answer
  * raises her cruising speed (so a streak snowballs into a gallop) and gives a short sprint; a
- * wrong one makes her stumble, which cuts her speed and holds it down for a moment.
+ * wrong one makes her stumble, which cuts her speed and holds it down for a moment. The gains
+ * are small on purpose: a race is won by answering steadily for a minute, not by a quick burst.
  */
 export const CRUISE = 1.5;
 export const MIN_SPEED = 0.8;
-const GAIN = 0.9;
-const RAINBOW_GAIN = 1.4;
-export const MAX_SPEED = 7.5;
-const SPRINT = 2.5;
-const RAINBOW_SPRINT = 4;
+const GAIN = 0.5;
+const RAINBOW_GAIN = 0.9;
+export const MAX_SPEED = 6;
+const SPRINT = 2;
+const RAINBOW_SPRINT = 3.5;
 /** Units per second a sprint plays out at, so a boost reads as a run, not a jump. */
 const DASH_RATE = 14;
 /** Speed eases toward its target so a gallop builds up visibly and a stumble bites at once. */
 const ACCEL = 4.5;
 const BRAKE = 9;
 /** Without an answer for a while, Lumi eases back toward her cruising trot. */
-const IDLE_MS = 6000;
-const IDLE_DECAY_PER_S = 0.3;
+const IDLE_MS = 4000;
+const IDLE_DECAY_PER_S = 0.6;
 export const STUMBLE_MS = 1000;
 export const SPARKLES_PER_ANSWER = 10;
 export const SPARKLES_RAINBOW = 20;
 export const PLACE_BONUS: Readonly<Record<1 | 2 | 3 | 4, number>> = { 1: 50, 2: 30, 3: 15, 4: 5 };
+/** Storm grabs the key and is already this far down the track when the race starts. */
+export const HEAD_START = 0.15;
+/** Finishing this close behind Storm or the shadow still earns two stars. */
+const CLOSE_MS = 5000;
+const SHADOW_CLOSE = 1.25;
 export interface RacerState {
   readonly id: RacerId;
   readonly position: number;
@@ -45,6 +58,10 @@ export interface RacerState {
 export interface RaceState {
   readonly pace: Pace;
   readonly level: RaceLevel;
+  readonly mode: RaceMode;
+  readonly length: number;
+  /** Shadow races: the time the shadow needs for the whole track. */
+  readonly shadowMs?: number;
   readonly racers: readonly RacerState[];
   readonly elapsedMs: number;
   readonly stumbleMs: number;
@@ -57,28 +74,50 @@ export interface RaceState {
 }
 type Random = () => number;
 /** Base rival speeds (units per second) per pace, before each rival's character. */
-const BASE_SPEED: Readonly<Record<Pace, number>> = { relaxed: 1.8, normal: 2.5, fast: 3.3 };
-/** Each rival runs with its own character: one keen, one steady, one dreamy. */
-const CHARACTER: Readonly<Record<Exclude<RacerId, 'player'>, number>> = {
+const BASE_SPEED: Readonly<Record<Pace, number>> = { relaxed: 2.0, normal: 3.3, fast: 4.9 };
+/** Each rival runs with its own character: one keen, one steady, one dreamy, one sneaky. */
+const CHARACTER: Readonly<Record<RacerId, number>> = {
+  player: 1,
   cloud: 1.0,
   mint: 0.88,
   peach: 0.76,
+  storm: 0.86,
+  shadow: 1,
 };
 /** Rivals surge and ease in their own slow rhythm, so the field keeps shuffling. */
-const RHYTHM: Readonly<Record<Exclude<RacerId, 'player'>, { hz: number; phase: number }>> = {
+const RHYTHM: Readonly<Record<RacerId, { hz: number; phase: number }>> = {
+  player: { hz: 0, phase: 0 },
   cloud: { hz: 0.09, phase: 0 },
   mint: { hz: 0.13, phase: 2.1 },
   peach: { hz: 0.11, phase: 4.2 },
+  storm: { hz: 0.1, phase: 1.3 },
+  shadow: { hz: 0, phase: 0 },
 };
-/** Higher levels mean slower sums, so the rivals ease off a touch to keep races close. */
-const LEVEL_EASE: Readonly<Record<RaceLevel, number>> = { 1: 1, 2: 0.95, 3: 0.86, 4: 0.9, 5: 0.9 };
-export function createRace(pace: Pace, level: RaceLevel): RaceState {
+/** Later cups mean slower sums, so the rivals ease off a touch to keep races close. */
+const CUP_EASE: Readonly<Record<RaceStage['cup'], number>> = {
+  meadow: 1,
+  sky: 0.86,
+  star: 0.78,
+  castle: 0.74,
+};
+export function createRace(pace: Pace, stage: RaceStage, bestMs?: number): RaceState {
+  const shadowMs =
+    stage.mode === 'shadow' ? Math.min(stage.parMs ?? Infinity, bestMs ?? Infinity) : undefined;
   return {
     pace,
-    level,
-    racers: racerIds.map((id) => {
-      const speed = id === 'player' ? CRUISE : BASE_SPEED[pace] * CHARACTER[id] * LEVEL_EASE[level];
-      return { id, position: 0, dash: 0, speed, target: speed };
+    level: stage.stage,
+    mode: stage.mode,
+    length: stage.length,
+    ...(shadowMs !== undefined ? { shadowMs } : {}),
+    racers: LINEUP[stage.mode].map((id) => {
+      const speed =
+        id === 'player'
+          ? CRUISE
+          : id === 'shadow'
+            ? stage.length / (shadowMs! / 1000)
+            : BASE_SPEED[pace] * CHARACTER[id] * CUP_EASE[stage.cup];
+      const position = id === 'storm' ? Math.round(stage.length * HEAD_START) : 0;
+      return { id, position, dash: 0, speed, target: speed };
     }),
     elapsedMs: 0,
     stumbleMs: 0,
@@ -93,11 +132,12 @@ export function createRace(pace: Pace, level: RaceLevel): RaceState {
 export function racer(state: Pick<RaceState, 'racers'>, id: RacerId): RacerState {
   return state.racers.find((racer) => racer.id === id)!;
 }
-/** Rivals never run away or wait up by much: a gentle band keeps the race in reach. */
+/** Friends never run away or wait up by much; Storm only ever slows a little when far ahead. */
 function rubberBand(state: RaceState, rival: RacerState): number {
   const gap = rival.position - racer(state, 'player').position;
-  if (gap > 30) return 0.85;
-  if (gap < -30) return 1.15;
+  if (rival.id === 'storm') return gap > 45 ? 0.8 : 1;
+  if (gap > 40) return 0.85;
+  if (gap < -40) return 1.15;
   return 1;
 }
 function approach(value: number, target: number, step: number): number {
@@ -123,20 +163,23 @@ export function tick(state: RaceState, dtMs: number, random: Random = Math.rando
       if (!stumbling) speed = approach(speed, target, (speed < target ? ACCEL : BRAKE) * dt);
       steady = speed;
       sprint = stumbling ? 0 : Math.min(current.dash, DASH_RATE * dt);
+    } else if (current.id === 'shadow') {
+      // The shadow is a recording: it runs the same time every race, no matter what.
+      steady = speed;
     } else {
       const { hz, phase } = RHYTHM[current.id];
       const wave = 1 + 0.14 * Math.sin(phase + (elapsedMs / 1000) * hz * Math.PI * 2);
       const jitter = 0.96 + random() * 0.08;
       steady = speed * wave * jitter * rubberBand(state, current);
     }
-    const position = Math.min(TRACK_LENGTH, current.position + steady * dt + sprint);
+    const position = Math.min(state.length, current.position + steady * dt + sprint);
     return {
       ...current,
       position,
       speed,
       target,
       dash: current.dash - sprint,
-      ...(position >= TRACK_LENGTH ? { finishedAt: elapsedMs } : {}),
+      ...(position >= state.length ? { finishedAt: elapsedMs } : {}),
     };
   });
   const player = racers.find((current) => current.id === 'player')!;
@@ -207,13 +250,39 @@ export function standings(
     .map((current) => ({ id: current.id, place: place(state, current.id) }))
     .sort((a, b) => a.place - b.place);
 }
-/** Three stars for a win, two for second, one always rewards crossing the line. */
-export function raceStars(finish: 1 | 2 | 3 | 4): 1 | 2 | 3 {
-  return finish === 1 ? 3 : finish === 2 ? 2 : 1;
+/** How far the player is behind (positive) or ahead (negative) of the rival, in track units. */
+export function gapTo(state: RaceState, id: RacerId): number {
+  return Math.round(racer(state, id).position - racer(state, 'player').position);
 }
-/** The castle cup (race 5) must be won outright; the other races count a podium as mastered. */
-export function isMastered(finish: 1 | 2 | 3 | 4, level: RaceLevel): boolean {
-  return level === 5 ? finish === 1 : finish <= 2;
+/**
+ * Three stars for a win, two for a close second, one always rewards crossing the line. In a
+ * chase, close means within a few seconds of Storm; against the shadow, within a quarter of
+ * its time.
+ */
+export function raceStars(state: RaceState): 1 | 2 | 3 {
+  const finish = playerPlace(state);
+  if (finish === 1) return 3;
+  const me = racer(state, 'player');
+  if (state.mode === 'chase') {
+    const storm = racer(state, 'storm');
+    return me.finishedAt !== undefined &&
+      storm.finishedAt !== undefined &&
+      me.finishedAt - storm.finishedAt <= CLOSE_MS
+      ? 2
+      : 1;
+  }
+  if (state.mode === 'shadow')
+    return me.finishedAt !== undefined && me.finishedAt <= state.shadowMs! * SHADOW_CLOSE ? 2 : 1;
+  return finish === 2 ? 2 : 1;
+}
+/**
+ * A podium masters an ordinary race; a chase needs the key back and a shadow race a beaten
+ * shadow. The castle cup final must be won outright.
+ */
+export function isMastered(state: RaceState): boolean {
+  const finish = playerPlace(state);
+  if (state.mode !== 'race' || state.level === FINAL_STAGE) return finish === 1;
+  return finish <= 2;
 }
 /** Sparkles at the finish, including the place bonus. */
 export function finalSparkles(state: RaceState): number {

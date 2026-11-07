@@ -9,19 +9,20 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { RacerId, racerIds, RacerState } from './race';
-import type { RaceWorld, WorldFrame } from './race-world';
+import { RacerId, RacerState } from './race';
+import type { Course, RaceWorld, WorldFrame } from './race-world';
 /**
- * The race track in 3D: four lanes down a fairyland meadow to the rainbow castle, seen from
- * just behind Lumi. Purely presentational; the page owns the race and feeds it each tick.
- * The world itself (Three.js) loads lazily and is skipped where WebGL is missing.
+ * The race track in 3D: lanes down a fairyland course to the rainbow castle, seen from just
+ * behind Lumi. Purely presentational; the page owns the race and feeds it each tick. The world
+ * itself (Three.js) loads lazily, is rebuilt when the course changes, and is skipped where
+ * WebGL is missing.
  */
 @Component({
   selector: 'app-race-scene',
   template: `
     <canvas #canvas aria-hidden="true"></canvas>
     <ul class="sr-only">
-      @for (id of ids; track id) {
+      @for (id of course().racers; track id) {
         <li>{{ labels()[id] }}</li>
       }
     </ul>
@@ -42,7 +43,7 @@ import type { RaceWorld, WorldFrame } from './race-world';
       display: block;
       overflow: hidden;
       border-radius: var(--radius-panel);
-      background: linear-gradient(#e6e1ff, #cfeedd);
+      background: linear-gradient(var(--race-sky, #e6e1ff), var(--race-meadow, #cfeedd));
       box-shadow: var(--shadow-panel);
       contain: strict;
     }
@@ -127,6 +128,7 @@ import type { RaceWorld, WorldFrame } from './race-world';
   },
 })
 export class RaceScene {
+  readonly course = input.required<Course>();
   readonly racers = input.required<readonly RacerState[]>();
   readonly names = input.required<Readonly<Record<RacerId, string>>>();
   /** Spoken description per racer (name and how far along it is). */
@@ -136,12 +138,15 @@ export class RaceScene {
   readonly rainbow = input(false);
   readonly finished = input(false);
   readonly countdown = input<string | null>(null);
-  protected readonly ids = racerIds;
   protected readonly confetti = Array.from({ length: 16 }, (_, index) => index);
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly document = inject(DOCUMENT);
   private world?: RaceWorld;
+  private worldClass?: typeof RaceWorld;
+  /** The canvas in use; a rebuilt world gets a fresh canvas so no stale GL context lingers. */
+  private canvasEl?: HTMLCanvasElement;
+  private built?: Course;
   private frame: WorldFrame = {
     racers: [],
     running: false,
@@ -166,6 +171,10 @@ export class RaceScene {
       this.world?.setFrame(this.frame);
     });
     effect(() => this.world?.setNames(this.names()));
+    effect(() => {
+      const course = this.course();
+      if (this.worldClass) this.build(course);
+    });
     afterNextRender(() => void this.mount());
   }
   private async mount() {
@@ -173,11 +182,33 @@ export class RaceScene {
     if (!view || typeof view.WebGL2RenderingContext === 'undefined') return;
     const { RaceWorld } = await import('./race-world');
     if (this.destroyed) return;
+    this.worldClass = RaceWorld;
+    this.build(this.course());
+  }
+  /** Tears the old world down and builds the course once; the same course is kept. */
+  private build(course: Course) {
+    if (!this.worldClass || this.destroyed) return;
+    if (
+      this.built &&
+      this.built.cup === course.cup &&
+      this.built.length === course.length &&
+      this.built.racers.join() === course.racers.join()
+    )
+      return;
+    const previous = this.canvasEl ?? this.canvas().nativeElement;
+    if (this.world) {
+      this.world.dispose();
+      this.world = undefined;
+      const fresh = previous.cloneNode() as HTMLCanvasElement;
+      previous.replaceWith(fresh);
+      this.canvasEl = fresh;
+    } else this.canvasEl = previous;
     try {
-      this.world = new RaceWorld(this.canvas().nativeElement, this.host.nativeElement);
+      this.world = new this.worldClass(this.canvasEl, this.host.nativeElement, course);
     } catch {
       return;
     }
+    this.built = course;
     this.world.setNames(this.names());
     this.world.setFrame(this.frame);
   }
