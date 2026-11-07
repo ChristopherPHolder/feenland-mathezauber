@@ -61,13 +61,19 @@ app-race-scene {
   grid-area: scene;
   min-height: 0;
 }
-.quiz,
-.summary {
+.quiz {
   grid-area: quiz;
   min-height: 0;
 }
 .stage.finished {
-  grid-template-rows: auto minmax(110px, 0.7fr) auto;
+  grid-template-rows: auto minmax(120px, 1fr) auto;
+}
+.summary {
+  grid-area: scene;
+  align-self: end;
+  z-index: 3;
+  margin: 0 8px 8px;
+  max-height: 100%;
   overflow-y: auto;
 }
 /* Landscape screens put the quiz beside the track so neither is squashed. */
@@ -82,10 +88,11 @@ app-race-scene {
   }
   .stage.finished {
     grid-template-rows: auto minmax(0, 1fr);
-    overflow: hidden;
   }
   .summary {
-    overflow-y: auto;
+    grid-area: quiz;
+    align-self: center;
+    margin: 0;
   }
 }
 /* Short phone landscape: tuck the header tight and give the track the height. */
@@ -106,10 +113,11 @@ app-race-scene {
   }
   .stage.finished {
     grid-template-rows: auto minmax(0, 1fr);
-    overflow: hidden;
   }
   .summary {
-    overflow-y: auto;
+    grid-area: quiz;
+    align-self: stretch;
+    margin: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

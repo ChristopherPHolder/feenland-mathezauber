@@ -20,7 +20,11 @@
             }
           </div>
           <p class="lead">{{ t('intro') }}</p>
-          <p class="rule">{{ t('stumbleHelp') }}</p>
+          <ul class="rules">
+            <li><span class="rule-icon" aria-hidden="true">✅</span>{{ t('ruleRight') }}</li>
+            <li><span class="rule-icon" aria-hidden="true">💫</span>{{ t('ruleWrong') }}</li>
+            <li><span class="rule-icon" aria-hidden="true">🌈</span>{{ t('ruleRainbow') }}</li>
+          </ul>
           <p class="stage-example" aria-hidden="true">{{ stage()?.example }} = ?</p>
           <p class="stage-help">{{ i.t(levelHelp(level())) }}</p>
           <button type="button" class="button primary start" (click)="start()">
@@ -55,7 +59,7 @@
                 [routerLink]="['/adventure', 'unicorn-race-' + option]"
                 [attr.aria-current]="option === level() ? 'page' : null"
               >
-                <span class="level-number">{{ i.t('levelLabel', { n: option }) }}</span>
+                <span class="level-number">{{ t('raceLabel', { n: option }) }}</span>
                 <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
                 <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
                 <span class="level-foot">
@@ -81,7 +85,7 @@
     @default {
       <div class="stage" [class.rainbow]="rainbow()" [class.finished]="phase() === 'finished'">
         <div class="hud">
-          <p class="place" [class.leading]="place() === 1">
+          <p class="place" [class.leading]="place() === 1" [class.pop]="placePop()">
             <span class="sr-only">{{ t('youAre', { place: t(placeKey()) }) }}</span>
             <strong aria-hidden="true">{{ t(placeKey()) }}</strong>
           </p>
@@ -108,7 +112,9 @@
           [running]="racing() && !countdown()"
           [stumbling]="stumbling()"
           [rainbow]="rainbow()"
-          [finished]="phase() === 'finished'"
+          [boost]="boost()"
+          [speed]="playerSpeed()"
+          [finished]="crossed()"
           [countdown]="countdown()"
         />
         <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
@@ -129,15 +135,19 @@
             <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
             <p class="summary-line">
               {{
-                t('summary', {
-                  correct: race().correct,
-                  mistakes: race().mistakes,
-                  seconds: seconds(),
-                })
+                timed()
+                  ? t('summary', {
+                      correct: race().correct,
+                      mistakes: race().mistakes,
+                      seconds: seconds(),
+                    })
+                  : t('summaryNoRush', { correct: race().correct, mistakes: race().mistakes })
               }}
             </p>
             <p class="summary-sparkles">
-              <span aria-hidden="true">✨</span> {{ t('sparklesWon', { n: sparkles() }) }}
+              <span
+                ><span aria-hidden="true">✨</span> {{ t('sparklesWon', { n: sparkles() }) }}</span
+              >
               @if (newBest()) {
                 <span class="new-best">{{ t('newBest') }}</span>
               }
@@ -150,19 +160,25 @@
                 <button type="button" class="button primary" (click)="goTo(upcoming)">
                   {{ t('nextRace') }} · {{ i.t(levelTitle(upcoming)) }}<app-icon kind="arrow" />
                 </button>
+              } @else if (!saveFailed()) {
+                <button type="button" class="button primary" (click)="celebrate()">
+                  <app-icon kind="star" />{{ t('celebrate') }}
+                </button>
               }
               <button type="button" class="button secondary" (click)="playAgain()">
                 {{ t('playAgain') }}
               </button>
-              <button type="button" class="button secondary" (click)="chooseRace()">
+            </div>
+            <div class="summary-links">
+              <button type="button" class="link" (click)="chooseRace()">
                 {{ t('chooseRace') }}
               </button>
-              @if (!saveFailed()) {
-                <button type="button" class="button secondary" (click)="celebrate()">
+              @if (nextLevel() && !saveFailed()) {
+                <button type="button" class="link" (click)="celebrate()">
                   <app-icon kind="star" />{{ t('celebrate') }}
                 </button>
               }
-              <a class="button secondary" routerLink="/games" [fragment]="levelId()"
+              <a class="link" routerLink="/games" [fragment]="levelId()"
                 ><app-icon kind="grid" />{{ i.t('allGames') }}</a
               >
             </div>
@@ -183,6 +199,9 @@
                 <p class="equation ghost" aria-hidden="true">{{ stage()?.example }} = ?</p>
               }
               <p class="status" role="status">{{ racing() ? status() : t('ready') }}</p>
+              @if (gain(); as won) {
+                <span class="gain" aria-hidden="true">+{{ i.format(won) }} ✨</span>
+              }
             </div>
             <div class="answers" role="group" [attr.aria-label]="t('choices')">
               @for (choice of question().choices; track $index; let index = $index) {
@@ -191,7 +210,9 @@
                   type="button"
                   class="answer"
                   [class.struck]="struck().includes(choice)"
-                  [disabled]="!racing() || struck().includes(choice)"
+                  [class.right]="flashRight() === choice"
+                  [disabled]="!racing()"
+                  [attr.aria-disabled]="struck().includes(choice) ? true : null"
                   (click)="choose(choice)"
                 >
                   <span class="key" aria-hidden="true">{{ index + 1 }}</span>

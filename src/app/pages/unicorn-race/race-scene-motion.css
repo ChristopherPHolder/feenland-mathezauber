@@ -4,7 +4,42 @@
   animation-delay: calc(var(--i) * -11s);
 }
 :host(.running) .cloud {
-  animation-duration: calc(14s + var(--i) * 4s);
+  animation-duration: calc((14s + var(--i) * 4s) / (1 + var(--speed, 0) * 0.3));
+}
+:host(.running) .flower {
+  animation: meadow calc(6s / (1 + var(--speed, 0) * 0.3)) linear infinite;
+}
+@keyframes meadow {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: -7.2cqw 0;
+  }
+}
+:host(.boost) .lane.player .runner app-racer {
+  animation: lunge 0.35s ease-out;
+}
+@keyframes lunge {
+  30% {
+    transform: translateX(6%) scale(1.08);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+:host(.stumbling) .lane.player .runner::after {
+  animation: puff 0.6s ease-out;
+}
+@keyframes puff {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6) translateX(-40%);
+  }
 }
 @keyframes drift {
   from {
@@ -149,7 +184,10 @@
   .sun,
   .trail,
   .countdown,
+  .flower,
   .confetti span,
+  :host(.boost) .lane.player .runner app-racer,
+  :host(.stumbling) .lane.player .runner::after,
   :host(.finished) .castle,
   :host(.finished) .lane.player .runner app-racer {
     animation: none !important;

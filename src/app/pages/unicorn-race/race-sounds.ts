@@ -25,6 +25,16 @@ export class RaceSounds {
     this.settings.toggle('effects');
     if (!this.enabled) this.silence();
   }
+  /** Creates or resumes the context inside a user gesture so later cues are allowed to play. */
+  unlock() {
+    if (!this.enabled || this.destroyed) return;
+    try {
+      this.context ??= new AudioContext();
+      void this.context.resume().catch(() => undefined);
+    } catch {
+      /* The race is fully playable without audio. */
+    }
+  }
   play(kind: RaceSound) {
     if (!this.enabled || this.destroyed) return;
     // A new answer cue replaces stale feedback; fanfares queue after the cue.

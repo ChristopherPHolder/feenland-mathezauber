@@ -27,7 +27,7 @@ describe('unicorn race engine', () => {
     let race = createRace('normal', 1);
     race = run(answer(race, true, fixed), 1000);
     const afterOne = racer(race, 'player');
-    expect(afterOne.position).toBeGreaterThan(3);
+    expect(afterOne.position).toBeGreaterThan(2.5);
     race = run(answer(race, true, fixed), 1000);
     const afterTwo = racer(race, 'player');
     expect(afterTwo.target).toBeGreaterThan(afterOne.target);
@@ -55,7 +55,7 @@ describe('unicorn race engine', () => {
     race = answer(race, true, fixed);
     expect(race.streak).toBe(3);
     expect(race.sparkles).toBe(40);
-    expect(racer(race, 'player').dash).toBeGreaterThan(9 * 3);
+    expect(racer(race, 'player').dash).toBeGreaterThan(8 * 3);
   });
   it('only moves the rivals when the child answers in a no-rush race', () => {
     let race = createRace('off', 2);

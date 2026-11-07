@@ -15,6 +15,9 @@ import { RacerArt } from './racer-art';
     '[class.finished]': 'finished()',
     '[class.rainbow]': 'rainbow()',
     '[class.stumbling]': 'stumbling()',
+    '[class.boost]': 'boost()',
+    '[class.counting]': 'countdown() !== null',
+    '[style.--speed]': 'speed()',
   },
 })
 export class RaceScene {
@@ -27,6 +30,10 @@ export class RaceScene {
   readonly rainbow = input(false);
   readonly finished = input(false);
   readonly countdown = input<string | null>(null);
+  /** A short lunge right after a correct answer. */
+  readonly boost = input(false);
+  /** Lumi's current speed (0–12); the scenery scrolls faster with it. */
+  readonly speed = input(0);
   protected readonly clouds = [0, 1, 2, 3, 4];
   protected readonly flowers = Array.from({ length: 14 }, (_, index) => index);
   protected readonly confetti = Array.from({ length: 16 }, (_, index) => index);

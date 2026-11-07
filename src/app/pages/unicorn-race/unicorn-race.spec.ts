@@ -12,7 +12,7 @@ import { RaceQuestion } from './race-questions';
 import { RaceState } from './race';
 
 describe('Unicorn race game', () => {
-  const sounds = { play: vi.fn(), toggle: vi.fn(), enabled: true };
+  const sounds = { play: vi.fn(), toggle: vi.fn(), unlock: vi.fn(), enabled: true };
   beforeEach(() => {
     vi.useFakeTimers();
     localStorage.clear();
@@ -72,7 +72,7 @@ describe('Unicorn race game', () => {
     const answerWrong = () => {
       const wrong = answers().find(
         (button) =>
-          !button.disabled &&
+          button.getAttribute('aria-disabled') !== 'true' &&
           button.querySelector('.value')?.textContent?.trim() !==
             String(component.question().answer),
       );
@@ -115,7 +115,8 @@ describe('Unicorn race game', () => {
     expect(cards[4].getAttribute('href')).toBe('/adventure/unicorn-race-5');
   });
   it('counts down, then races: right answers gallop and wrong ones strike the choice out', () => {
-    const { element, component, click, wait, answers, answerRight, answerWrong, status } = setup();
+    const { fixture, element, component, click, wait, answers, answerRight, answerWrong, status } =
+      setup();
     click('Start the race');
     wait(100);
     expect(element.querySelector('.countdown')?.textContent?.trim()).toBe('3');
@@ -129,10 +130,17 @@ describe('Unicorn race game', () => {
     expect(component.question().text).not.toBe(first);
     expect(component.race().correct).toBe(1);
     expect(element.querySelector('.sparkles strong')?.textContent).toBe('10');
+    // A double tap right after a correct answer is ignored instead of answering blindly.
+    answers()[0].click();
+    fixture.detectChanges();
+    expect(component.race().mistakes + component.race().correct).toBe(1);
+    wait(400);
     answerWrong();
     expect(status()).toContain('stumble');
     expect(answers().filter((button) => button.classList.contains('struck'))).toHaveLength(1);
-    expect(answers().filter((button) => button.disabled)).toHaveLength(1);
+    expect(
+      answers().filter((button) => button.getAttribute('aria-disabled') === 'true'),
+    ).toHaveLength(1);
     expect(component.race().mistakes).toBe(1);
     // The struck choice stays out; the question itself stays, so the child works it out.
     expect(element.querySelector('.equation')?.textContent).toContain(component.question().text);
@@ -152,7 +160,9 @@ describe('Unicorn race game', () => {
       wait(1200);
     }
     expect(component.race().done).toBe(true);
-    wait(100);
+    expect(element.querySelector('.countdown')?.textContent).toContain('Finish!');
+    expect(element.querySelector('.summary')).toBeNull();
+    wait(1400);
     const summary = element.querySelector('.summary');
     expect(summary).toBeTruthy();
     expect(summary?.querySelector('h2')?.textContent).toContain('Lumi wins the race!');
@@ -182,6 +192,6 @@ describe('Unicorn race game', () => {
     expect(element.querySelector('h1')?.textContent).toContain('Einhorn-Regenbogenrennen');
     expect(element.textContent).toContain('Blumenwiese');
     start('Rennen starten');
-    expect(status()).toContain('Du bist 1.');
+    expect(status()).toContain('Du bist auf Platz 1');
   });
 });

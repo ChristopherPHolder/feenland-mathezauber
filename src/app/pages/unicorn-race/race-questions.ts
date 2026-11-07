@@ -76,7 +76,7 @@ function minusTens(random: Random): Fact {
 }
 function times(random: Random, rows: readonly number[], maxProduct: number): Fact {
   const row = pick(random, rows);
-  const other = int(random, 1, Math.min(10, Math.floor(maxProduct / row)));
+  const other = int(random, 2, Math.min(10, Math.floor(maxProduct / row)));
   return random() < 0.5
     ? { text: `${row} × ${other}`, answer: row * other }
     : { text: `${other} × ${row}`, answer: row * other };
@@ -108,9 +108,10 @@ function distractors(random: Random, answer: number, skill: RaceSkill): number[]
         ? [10, -10, 1, -1, 2, -2, 20, -20]
         : [1, -1, 2, -2, 3, -3, 10, -10];
   const swapped = Number(String(answer).split('').reverse().join(''));
-  if (swapped !== answer && swapped >= 0) candidates.add(swapped);
-  for (const offset of offsets) if (answer + offset >= 0) candidates.add(answer + offset);
-  const pool = [...candidates].filter((value) => value !== answer && value <= 110);
+  // A digit swap only fools anyone for two-digit answers that are not whole tens.
+  if (swapped !== answer && swapped >= 10 && answer % 10 !== 0) candidates.add(swapped);
+  for (const offset of offsets) if (answer + offset >= 1) candidates.add(answer + offset);
+  const pool = [...candidates].filter((value) => value !== answer && value <= 100);
   const chosen: number[] = [];
   while (chosen.length < CHOICES - 1 && pool.length) {
     const index = Math.min(pool.length - 1, Math.floor(random() * pool.length));

@@ -11,19 +11,19 @@ export const RAINBOW_STREAK = 3;
  * Timed races: every right answer adds to Lumi's cruising speed (so a streak snowballs into a
  * gallop) and gives a short sprint; a wrong one halves the speed and stops her for a moment.
  */
-const GAIN = 1.7;
-const RAINBOW_GAIN = 2.5;
-const MAX_SPEED = 12;
-const SPRINT = 4;
+const GAIN = 1.0;
+const RAINBOW_GAIN = 1.5;
+const MAX_SPEED = 9;
+const SPRINT = 3;
 /** Turn-based races move in steps: a correct answer is one unicorn leap. */
-export const DASH = 9;
-export const RAINBOW_DASH = 13;
+export const DASH = 8;
+export const RAINBOW_DASH = 12;
 /** Units per second a sprint or leap plays out at, so a boost reads as a run, not a jump. */
 const DASH_RATE = 18;
 /** Speed eases toward its target so a gallop builds up visibly. */
 const ACCEL = 7;
 /** Without an answer for a while, Lumi slows down again. */
-const IDLE_MS = 7000;
+const IDLE_MS = 9000;
 const IDLE_DECAY_PER_S = 0.35;
 export const STUMBLE_MS = 1100;
 export const SPARKLES_PER_ANSWER = 10;
@@ -55,7 +55,7 @@ export interface RaceState {
 }
 type Random = () => number;
 /** Base rival speeds (units per second) per pace, before each rival's character. */
-const BASE_SPEED: Readonly<Record<Pace, number>> = { off: 0, relaxed: 2.3, normal: 3.4, fast: 4.8 };
+const BASE_SPEED: Readonly<Record<Pace, number>> = { off: 0, relaxed: 2.0, normal: 2.8, fast: 3.8 };
 /** Turn-based step the rivals take when the child answers, right or wrong. */
 const BASE_STEP = 7.5;
 /** Each rival runs with its own character: one keen, one steady, one dreamy. */
@@ -65,7 +65,7 @@ const CHARACTER: Readonly<Record<Exclude<RacerId, 'player'>, number>> = {
   peach: 0.72,
 };
 /** Higher levels mean slower sums, so the rivals ease off a touch to keep races close. */
-const LEVEL_EASE: Readonly<Record<RaceLevel, number>> = { 1: 1, 2: 0.95, 3: 0.86, 4: 0.9, 5: 0.82 };
+const LEVEL_EASE: Readonly<Record<RaceLevel, number>> = { 1: 1, 2: 0.95, 3: 0.86, 4: 0.9, 5: 0.9 };
 export function createRace(pace: Pace, level: RaceLevel): RaceState {
   return {
     pace,
@@ -158,8 +158,8 @@ export function answer(
       };
     }
     if (!turnBased) return current;
-    const step =
-      BASE_STEP * CHARACTER[current.id] * LEVEL_EASE[state.level] * (0.8 + random() * 0.4);
+    // A hard sum costs no time in a turn-based race, so the level does not ease the step.
+    const step = BASE_STEP * CHARACTER[current.id] * (0.8 + random() * 0.4);
     return { ...current, dash: current.dash + step * rubberBand(state, current) };
   });
   return {

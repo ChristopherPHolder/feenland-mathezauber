@@ -56,6 +56,27 @@
   max-width: 36ch;
   text-wrap: balance;
 }
+.rules {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  width: max-content;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.rules li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rule-icon {
+  font-size: 20px;
+}
 .rule,
 .help,
 .stage-help {
@@ -64,7 +85,7 @@
   line-height: 1.5;
 }
 .stage-example {
-  margin: 14px auto 2px;
+  margin: 10px auto 2px;
   font-size: clamp(30px, 6vw, 44px);
   font-weight: 600;
   line-height: 1.1;
@@ -232,16 +253,19 @@
   .intro {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     grid-template-areas:
-      'story pace'
       'story title'
-      'story levels'
-      'story best';
+      'pace levels'
+      'pace best';
     align-items: start;
   }
   .story {
     grid-area: story;
-    position: sticky;
-    top: 10px;
+  }
+  .lineup-racer {
+    width: clamp(90px, 10vw, 150px);
+  }
+  .lineup-racer.lead {
+    width: clamp(120px, 14vw, 220px);
   }
   .pace {
     grid-area: pace;

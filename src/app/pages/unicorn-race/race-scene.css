@@ -12,7 +12,7 @@
   --castle-roof: #ff8fb8;
   --castle-ink: #b58ad8;
   --lane-h: calc(100cqh / 4 - 1.4cqh);
-  --runner-w: clamp(54px, calc(var(--lane-h) * 1.55), 150px);
+  --runner-w: clamp(64px, calc(var(--lane-h) * 1.7), 200px);
   position: relative;
   display: block;
   overflow: hidden;
@@ -113,8 +113,8 @@
 }
 .sparkle {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   background: #fff;
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   opacity: 0.9;
@@ -142,6 +142,7 @@
   height: auto;
   max-height: 74cqh;
   pointer-events: none;
+  z-index: 2;
   filter: drop-shadow(0 6px 10px #6d4a9a2a);
 }
 .castle .wall {
@@ -183,7 +184,7 @@
 .finish {
   position: absolute;
   right: 13%;
-  top: 9cqh;
+  top: 13cqh;
   bottom: 10cqh;
   width: clamp(6px, 1.2cqw, 12px);
   border-radius: 6px;
@@ -250,7 +251,7 @@
   border-radius: 999px;
   background: #ffffffd9;
   color: #4b3a70;
-  font-size: clamp(9px, 2.6cqh, 13px);
+  font-size: clamp(11px, 2.8cqh, 15px);
   font-weight: 600;
   line-height: 1.3;
   white-space: nowrap;
@@ -282,8 +283,8 @@
   position: absolute;
   bottom: 30%;
   left: calc(2% + var(--i) * 7.2%);
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #fff;
   box-shadow:
@@ -321,5 +322,21 @@
   color: #fff;
   -webkit-text-stroke: 2px #b58ad8;
   text-shadow: 0 8px 24px #6d4a9a55;
+  pointer-events: none;
+  z-index: 4;
+}
+:host(.counting) .lanes {
+  opacity: 0.7;
+}
+.runner::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  bottom: 8%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #e6d2f7;
+  opacity: 0;
   pointer-events: none;
 }

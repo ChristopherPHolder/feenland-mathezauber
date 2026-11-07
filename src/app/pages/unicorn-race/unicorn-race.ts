@@ -58,6 +58,8 @@ type Feedback =
 export const TICK_MS = 100;
 const COUNT_MS = 800;
 const FEEDBACK_MS = 900;
+const FINISH_HOLD_MS = 1300;
+const LOCK_MS = 350;
 /**
  * The unicorn race: Lumi gallops against three friends to the rainbow castle. Right answers
  * speed her up, wrong ones make her stumble, and where she finishes decides the stars.
@@ -106,17 +108,27 @@ export class UnicornRace {
   protected readonly newBest = signal(false);
   protected readonly saveFailed = signal(false);
   protected readonly sparklePop = signal(false);
+  protected readonly placePop = signal(false);
+  /** The choice that just lit up green, and the sparkles it earned. */
+  protected readonly flashRight = signal<number | null>(null);
+  protected readonly gain = signal<number | null>(null);
+  protected readonly boost = signal(false);
+  protected readonly locked = signal(false);
+  /** True from crossing the line until the summary slides in. */
+  protected readonly crossed = signal(false);
   private readonly summary = viewChild<ElementRef<HTMLElement>>('summary');
   private readonly firstAnswer = viewChild<ElementRef<HTMLButtonElement>>('firstAnswer');
   private ticker?: ReturnType<typeof setInterval>;
   private timers: ReturnType<typeof setTimeout>[] = [];
   private lastPlace: 1 | 2 | 3 | 4 = 1;
+  private gainBase = 0;
   protected readonly pace = computed(() => this.store.save().pace);
   protected readonly timed = computed(() => this.pace() !== 'off');
   protected readonly racing = computed(() => this.phase() === 'racing');
   protected readonly rainbow = computed(() => isRainbow(this.race()));
   protected readonly stumbling = computed(() => this.race().stumbleMs > 0);
   protected readonly place = computed(() => playerPlace(this.race()));
+  protected readonly playerSpeed = computed(() => racer(this.race(), 'player').speed);
   protected readonly placeKey = computed(() => `place${this.place()}` as RaceMessageKey);
   protected readonly finishStars = computed(() => raceStars(this.finishPlace()));
   protected readonly cup = computed<Cup>(() => cupFor(this.finishPlace()));
@@ -207,19 +219,25 @@ export class UnicornRace {
   }
   protected start() {
     this.stopTimers();
+    this.sounds.unlock();
     this.race.set(createRace(this.pace(), this.level()));
     this.struck.set([]);
     this.feedback.set({ kind: 'idle' });
     this.announcement.set('');
     this.newBest.set(false);
     this.saveFailed.set(false);
+    this.crossed.set(false);
+    this.flashRight.set(null);
+    this.gain.set(null);
     this.lastPlace = 1;
+    this.gainBase = 0;
     this.phase.set('countdown');
     const steps = ['3', '2', '1', this.t('go')];
     steps.forEach((step, index) =>
       this.timers.push(
         setTimeout(() => {
           this.countdown.set(step);
+          this.announcement.set(step);
           this.sounds.play(index === steps.length - 1 ? 'go' : 'count');
         }, index * COUNT_MS),
       ),
@@ -230,7 +248,7 @@ export class UnicornRace {
           this.countdown.set(null);
           this.nextQuestion();
           this.phase.set('racing');
-          this.startTicker();
+          if (!this.document.hidden) this.startTicker();
           requestAnimationFrame(() =>
             this.firstAnswer()?.nativeElement.focus({ preventScroll: true }),
           );
@@ -245,7 +263,13 @@ export class UnicornRace {
     this.struck.set([]);
   }
   protected choose(value: number) {
-    if (this.phase() !== 'racing' || this.race().done || this.struck().includes(value)) return;
+    if (
+      this.phase() !== 'racing' ||
+      this.race().done ||
+      this.locked() ||
+      this.struck().includes(value)
+    )
+      return;
     const correct = value === this.question().answer;
     const next = answer(this.race(), correct);
     this.race.set(next);
@@ -254,11 +278,20 @@ export class UnicornRace {
       this.sounds.play(rainbow ? 'rainbow' : 'gallop');
       this.flashFeedback(rainbow ? { kind: 'rainbow', streak: next.streak } : { kind: 'gallop' });
       this.flash(this.sparklePop, 500);
+      this.flash(this.boost, 350);
+      // A double tap must not answer the next question blindly.
+      this.flash(this.locked, LOCK_MS);
+      this.gain.set(next.sparkles - this.gainBase);
+      this.gainBase = next.sparkles;
+      this.timers.push(setTimeout(() => this.gain.set(null), 700));
+      this.flashRight.set(value);
+      this.timers.push(setTimeout(() => this.flashRight.set(null), 400));
       this.nextQuestion();
     } else {
       this.sounds.play('stumble');
       this.struck.update((struck) => [...struck, value]);
       this.flashFeedback({ kind: this.struck().length > 1 ? 'wrongAgain' : 'wrong' }, 1600);
+      requestAnimationFrame(() => this.focusOpenAnswer());
     }
     if (this.pace() === 'off') this.advanceTurn();
   }
@@ -267,7 +300,8 @@ export class UnicornRace {
     if (this.ticker) return;
     this.startTicker();
     const stop = () => {
-      const settled = this.race().racers.every((racer) => racer.dash <= 0.001);
+      const settled =
+        this.race().stumbleMs === 0 && this.race().racers.every((racer) => racer.dash <= 0.001);
       if (settled || this.race().done) this.stopTicker();
       else this.timers.push(setTimeout(stop, TICK_MS));
     };
@@ -288,6 +322,7 @@ export class UnicornRace {
     if (place !== this.lastPlace) {
       if (place < this.lastPlace) this.sounds.play('overtake');
       this.lastPlace = place;
+      this.flash(this.placePop, 500);
       this.announcement.set(this.t('youAre', { place: this.t(`place${place}` as RaceMessageKey) }));
     }
     if (next.done) this.finish();
@@ -312,10 +347,18 @@ export class UnicornRace {
       mastered: isMastered(place, level),
       stars: raceStars(place),
     });
-    this.saveFailed.set(!recorded || this.store.saveFailed());
+    this.saveFailed.set(!recorded);
     this.sounds.play(place === 1 ? 'win' : 'finish');
     this.announcement.set(this.t(this.outcomeKey()));
-    this.phase.set('finished');
+    // Hold on the finish line for a moment: confetti, a cheering castle, then the podium.
+    this.crossed.set(true);
+    this.countdown.set(this.t('finish'));
+    this.timers.push(
+      setTimeout(() => {
+        this.countdown.set(null);
+        this.phase.set('finished');
+      }, FINISH_HOLD_MS),
+    );
   }
   protected playAgain() {
     this.start();
@@ -337,7 +380,8 @@ export class UnicornRace {
     else this.startTicker();
   }
   protected onKey(event: KeyboardEvent) {
-    if (this.phase() !== 'racing' || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.repeat || this.phase() !== 'racing' || event.metaKey || event.ctrlKey || event.altKey)
+      return;
     const target = event.target as HTMLElement | null;
     if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) return;
     const index = Number(event.key) - 1;
@@ -346,6 +390,12 @@ export class UnicornRace {
       this.choose(choice);
       event.preventDefault();
     }
+  }
+  private focusOpenAnswer() {
+    const open = this.document.querySelector<HTMLButtonElement>(
+      '.answer:not([aria-disabled="true"])',
+    );
+    open?.focus({ preventScroll: true });
   }
   private flashFeedback(feedback: Feedback, ms = FEEDBACK_MS) {
     this.feedback.set(feedback);
