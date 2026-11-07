@@ -45,6 +45,7 @@ import {
   raceStage,
   TOTAL_STAGES,
 } from './race-questions';
+import { RaceOverview } from './race-overview';
 import { RaceScene } from './race-scene';
 import { RaceSounds } from './race-sounds';
 import { RacerArt } from './racer-art';
@@ -62,12 +63,13 @@ const FEEDBACK_MS = 900;
 const FINISH_HOLD_MS = 1300;
 const LOCK_MS = 350;
 /**
- * The unicorn race: Lumi gallops against three friends to the rainbow castle. Right answers
- * speed her up, wrong ones make her stumble, and where she finishes decides the stars.
+ * The unicorn race: Lumi gallops against three friends to the rainbow castle. Everyone runs
+ * the whole time; right answers speed Lumi up, wrong ones make her stumble, and where she
+ * finishes decides the stars.
  */
 @Component({
   selector: 'app-unicorn-race',
-  imports: [RouterLink, Icon, GameHeader, RaceScene, RacerArt],
+  imports: [RouterLink, Icon, GameHeader, RaceScene, RaceOverview, RacerArt],
   providers: [RaceSounds],
   templateUrl: './unicorn-race.html',
   styleUrls: ['./unicorn-race.css', './race-intro.css', './race-play.css'],
@@ -99,7 +101,7 @@ export class UnicornRace {
     source: this.levelId,
     computation: () => 'intro',
   });
-  protected readonly race = signal<RaceState>(createRace('off', 1));
+  protected readonly race = signal<RaceState>(createRace('normal', 1));
   protected readonly question = signal<RaceQuestion>({ text: '', answer: 0, choices: [] });
   protected readonly struck = signal<readonly number[]>([]);
   protected readonly feedback = signal<Feedback>({ kind: 'idle' });
@@ -115,7 +117,6 @@ export class UnicornRace {
   /** The choice that just lit up green, and the sparkles it earned. */
   protected readonly flashRight = signal<number | null>(null);
   protected readonly gain = signal<number | null>(null);
-  protected readonly boost = signal(false);
   protected readonly locked = signal(false);
   /** True from crossing the line until the summary slides in. */
   protected readonly crossed = signal(false);
@@ -128,13 +129,17 @@ export class UnicornRace {
   private gainTimer?: ReturnType<typeof setTimeout>;
   protected readonly gainKey = signal(0);
   protected readonly pace = computed(() => this.store.save().pace);
-  protected readonly timed = computed(() => this.pace() !== 'off');
   protected readonly racing = computed(() => this.phase() === 'racing');
   protected readonly rainbow = computed(() => isRainbow(this.race()));
   protected readonly stumbling = computed(() => this.race().stumbleMs > 0);
   protected readonly place = computed(() => playerPlace(this.race()));
-  protected readonly playerSpeed = computed(() => racer(this.race(), 'player').speed);
   protected readonly placeKey = computed(() => `place${this.place()}` as RaceMessageKey);
+  protected readonly placeLabels = computed<Readonly<Record<1 | 2 | 3 | 4, string>>>(() => ({
+    1: this.t('place1'),
+    2: this.t('place2'),
+    3: this.t('place3'),
+    4: this.t('place4'),
+  }));
   protected readonly finishStars = computed(() => raceStars(this.finishPlace()));
   protected readonly cup = computed<Cup>(() => cupFor(this.finishPlace()));
   protected readonly sparkles = computed(() =>
@@ -235,7 +240,6 @@ export class UnicornRace {
     this.flashRight.set(null);
     this.gain.set(null);
     this.locked.set(false);
-    this.boost.set(false);
     this.sparklePop.set(false);
     this.placePop.set(false);
     this.lastPlace = 1;
@@ -287,7 +291,6 @@ export class UnicornRace {
       this.sounds.play(rainbow ? 'rainbow' : 'gallop');
       this.flashFeedback(rainbow ? { kind: 'rainbow', streak: next.streak } : { kind: 'gallop' });
       this.flash(this.sparklePop, 500);
-      this.flash(this.boost, 350);
       // A double tap must not answer the next question blindly.
       this.flash(this.locked, LOCK_MS);
       this.gain.set(next.sparkles - this.gainBase);
@@ -305,19 +308,6 @@ export class UnicornRace {
       this.flashFeedback({ kind: this.struck().length > 1 ? 'wrongAgain' : 'wrong' }, 1600);
       requestAnimationFrame(() => this.focusOpenAnswer());
     }
-    if (this.pace() === 'off') this.advanceTurn();
-  }
-  /** Turn-based races play their steps out right after the answer, then pause again. */
-  private advanceTurn() {
-    if (this.ticker) return;
-    this.startTicker();
-    const stop = () => {
-      const settled =
-        this.race().stumbleMs === 0 && this.race().racers.every((racer) => racer.dash <= 0.001);
-      if (settled || this.race().done) this.stopTicker();
-      else this.timers.push(setTimeout(stop, TICK_MS));
-    };
-    this.timers.push(setTimeout(stop, TICK_MS));
   }
   private startTicker() {
     if (this.ticker) return;
@@ -345,14 +335,7 @@ export class UnicornRace {
     this.finishPlace.set(place);
     const sparkles = finalSparkles(this.race());
     const level = this.level();
-    this.newBest.set(
-      this.store.recordRace(
-        level,
-        cupFor(place),
-        sparkles,
-        this.timed() ? this.race().elapsedMs : undefined,
-      ),
-    );
+    this.newBest.set(this.store.recordRace(level, cupFor(place), sparkles, this.race().elapsedMs));
     const recorded = this.completion.finish({
       levelId: this.levelId(),
       completed: true,
@@ -388,7 +371,7 @@ export class UnicornRace {
     void this.router.navigate(['/complete', this.levelId()]);
   }
   protected visibilityChanged() {
-    if (this.phase() !== 'racing' || !this.timed() || this.race().done) return;
+    if (this.phase() !== 'racing' || this.race().done) return;
     if (this.document.hidden) this.stopTicker();
     else this.startTicker();
   }
