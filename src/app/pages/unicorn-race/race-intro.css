@@ -154,6 +154,30 @@
   margin-top: 12px;
   font-size: 15px;
 }
+.chip.locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--paper-veil);
+  color: var(--muted);
+  box-shadow: none;
+  border-style: dashed;
+  border-color: var(--cup-line, #ddd);
+  font-size: 14px;
+}
+.level-stars {
+  display: inline-flex;
+  gap: 1px;
+  color: var(--star-empty);
+}
+.level-stars app-icon {
+  width: 20px;
+  height: 20px;
+}
+.level-stars app-icon.earned {
+  color: var(--star-ink);
+  fill: var(--star-fill);
+}
 .races {
   display: grid;
   gap: 16px;

@@ -152,6 +152,13 @@ export const en = {
   race12: 'Castle cup',
   race12Help:
     'Everything mixed: times tables, missing numbers and sums up to 100. Only first place wins the cup.',
+  race13: 'Rainbow run',
+  race13Help: 'Everything mixed, chasing Storm over the rainbows.',
+  race14: 'Dream ride',
+  race14Help: 'Everything mixed, racing your own shadow across the rainbows.',
+  race15: 'Grand prix',
+  race15Help:
+    'The grand final with everything mixed and fast friends. Only first place wins the Rainbow Cup.',
   fairyGameDescription: 'Make ten, solve missing numbers and save the castle from the monsters.',
   wallRule: 'Two bricks side by side always make the brick above them.',
   wallIntro:
@@ -387,6 +394,13 @@ export const translations: Record<Locale, Messages> = {
     race12: 'Schloss-Pokal',
     race12Help:
       'Alles gemischt: Einmaleins, fehlende Zahlen und Rechnen bis 100. Nur der erste Platz gewinnt den Pokal.',
+    race13: 'Regenbogenlauf',
+    race13Help: 'Alles gemischt, Sturm über die Regenbögen hinterher.',
+    race14: 'Traumritt',
+    race14Help: 'Alles gemischt, gegen deinen Schatten über die Regenbögen.',
+    race15: 'Grand Prix',
+    race15Help:
+      'Das große Finale mit allem gemischt und schnellen Freunden. Nur der erste Platz gewinnt den Regenbogen-Pokal.',
     fairyGameDescription:
       'Mach die zehn voll, finde fehlende Zahlen und rette das Schloss vor den Monstern.',
     wallRule: 'Zwei Steine nebeneinander ergeben immer den Stein darüber.',
@@ -614,6 +628,13 @@ export const translations: Record<Locale, Messages> = {
     race12: 'Copa del castillo',
     race12Help:
       'Todo mezclado: tablas, números que faltan y sumas hasta 100. Solo el primer puesto gana la copa.',
+    race13: 'Carrera arcoíris',
+    race13Help: 'Todo mezclado, persiguiendo a Tormenta sobre los arcoíris.',
+    race14: 'Paseo de ensueño',
+    race14Help: 'Todo mezclado, contra tu sombra por los arcoíris.',
+    race15: 'Gran premio',
+    race15Help:
+      'La gran final con todo mezclado y amigos veloces. Solo el primer puesto gana la Copa arcoíris.',
     fairyGameDescription:
       'Completa diez, encuentra números perdidos y salva el castillo de los monstruos.',
     wallRule: 'Dos ladrillos juntos siempre forman el ladrillo de arriba.',
@@ -843,6 +864,13 @@ export const translations: Record<Locale, Messages> = {
     race12: 'Coupe du château',
     race12Help:
       'Tout mélangé : tables, nombres manquants et calculs jusqu’à 100. Seule la première place gagne la coupe.',
+    race13: 'Course arc-en-ciel',
+    race13Help: 'Tout mélangé, à la poursuite de Tempête sur les arcs-en-ciel.',
+    race14: 'Chevauchée de rêve',
+    race14Help: 'Tout mélangé, contre ton ombre à travers les arcs-en-ciel.',
+    race15: 'Grand prix',
+    race15Help:
+      'La grande finale, tout mélangé avec des amis rapides. Seule la première place gagne la Coupe arc-en-ciel.',
     fairyGameDescription:
       'Complète dix, trouve les nombres manquants et sauve le château des monstres.',
     wallRule: 'Deux briques côte à côte forment toujours la brique au-dessus.',

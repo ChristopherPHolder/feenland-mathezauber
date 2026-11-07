@@ -1,7 +1,17 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Service, signal } from '@angular/core';
 import { Pace, paces } from './race';
-import { RaceLevel, raceLevels } from './race-questions';
+import { cupStages, RaceCup, raceCups, RaceLevel, raceLevels } from './race-questions';
+/** One keepsake per cup; Lumi wears the chosen one in every race. */
+export type Outfit = 'wreath' | 'wings' | 'tiara' | 'crown' | 'cape';
+export const outfits: readonly Outfit[] = ['wreath', 'wings', 'tiara', 'crown', 'cape'];
+export const OUTFIT_CUP: Readonly<Record<Outfit, RaceCup>> = {
+  wreath: 'meadow',
+  wings: 'sky',
+  tiara: 'star',
+  crown: 'castle',
+  cape: 'rainbow',
+};
 export type Cup = 'gold' | 'silver' | 'bronze';
 export interface RaceRecord {
   readonly cup: Cup;
@@ -13,9 +23,10 @@ export interface RaceSave {
   readonly records: Readonly<Partial<Record<RaceLevel, RaceRecord>>>;
   readonly sparkles: number;
   readonly pace: Pace;
+  readonly outfit: Outfit | null;
 }
 const STORAGE_KEY = 'feenland.unicorn-race.v1';
-const empty: RaceSave = { version: 1, records: {}, sparkles: 0, pace: 'normal' };
+const empty: RaceSave = { version: 1, records: {}, sparkles: 0, pace: 'normal', outfit: null };
 const CUP_RANK: Readonly<Record<Cup, number>> = { gold: 3, silver: 2, bronze: 1 };
 export function cupFor(place: 1 | 2 | 3 | 4): Cup {
   return place === 1 ? 'gold' : place === 2 ? 'silver' : 'bronze';
@@ -49,6 +60,22 @@ export class RaceStore {
   }
   setPace(pace: Pace) {
     this.state.update((save) => ({ ...save, pace }));
+    this.persist();
+  }
+  /** A cup is complete once every race in it has earned any cup. */
+  cupComplete(cup: RaceCup): boolean {
+    return cupStages(cup).every((stage) => !!this.record(stage.stage));
+  }
+  completedCups(): number {
+    return raceCups.filter((cup) => this.cupComplete(cup)).length;
+  }
+  earned(outfit: Outfit): boolean {
+    return this.cupComplete(OUTFIT_CUP[outfit]);
+  }
+  /** Dresses Lumi in an earned outfit, or in nothing; an unearned one is ignored. */
+  wear(outfit: Outfit | null) {
+    if (outfit && !this.earned(outfit)) return;
+    this.state.update((save) => ({ ...save, outfit }));
     this.persist();
   }
   private persist() {
@@ -86,7 +113,8 @@ export class RaceStore {
           ? Math.floor(record['sparkles'])
           : 0;
       const pace = paces.find((pace) => pace === record['pace']) ?? empty.pace;
-      return { version: 1, records, sparkles, pace };
+      const outfit = outfits.find((outfit) => outfit === record['outfit']) ?? null;
+      return { version: 1, records, sparkles, pace, outfit };
     } catch {
       return empty;
     }

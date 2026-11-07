@@ -35,6 +35,31 @@
 .hud p.pop {
   animation: pop 0.5s ease-out;
 }
+.pips {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+.pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--paper-veil);
+  box-shadow: inset 0 0 0 1.5px var(--race-violet);
+}
+.pip.lit {
+  background: linear-gradient(135deg, var(--race-pink), var(--race-sun));
+  box-shadow: 0 0 0 1.5px var(--race-sun);
+}
+.new-outfit {
+  margin: 4px 0 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--race-sun);
+  color: var(--race-violet-ink);
+  font-weight: 600;
+  text-align: center;
+}
 .streak.combo {
   background: linear-gradient(90deg, var(--pink-ground), #fff6d6, #e8fff0, #e4f3ff, #f1e8ff);
   box-shadow: 0 0 0 2px var(--race-sun);

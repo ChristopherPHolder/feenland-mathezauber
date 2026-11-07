@@ -5,6 +5,7 @@ import {
   finalSparkles,
   gapTo,
   HEAD_START,
+  inFinalStretch,
   isMastered,
   MAX_SPEED,
   Pace,
@@ -152,6 +153,14 @@ describe('unicorn race engine', () => {
     for (let n = 0; n < 200 && !final.done; n++) final = run(answer(final, true), 300);
     expect(playerPlace(final)).toBe(1);
     expect(isMastered(final)).toBe(true);
+  });
+  it('calls the final stretch in the last fifth of the track', () => {
+    let race = createRace('relaxed', 1);
+    expect(inFinalStretch(race)).toBe(false);
+    for (let n = 0; n < 200 && !inFinalStretch(race); n++) race = run(answer(race, true), 300);
+    expect(inFinalStretch(race)).toBe(true);
+    expect(race.done).toBe(false);
+    expect(racer(race, 'player').position).toBeGreaterThanOrEqual(race.length * 0.8);
   });
   it('lines Lumi up against Storm with a head start in a chase and rewards catching him', () => {
     let race = createRace('normal', 2);

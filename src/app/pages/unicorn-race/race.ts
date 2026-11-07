@@ -1,4 +1,3 @@
-import { FINAL_STAGE } from './race-questions';
 import type { RaceLevel, RaceMode, RaceStage } from './race-questions';
 /** How quickly the other racers run. Everyone is always moving; this sets the rivals' pace. */
 export type Pace = 'relaxed' | 'normal' | 'fast';
@@ -60,6 +59,8 @@ export interface RaceState {
   readonly level: RaceLevel;
   readonly mode: RaceMode;
   readonly length: number;
+  /** A cup final must be won outright. */
+  readonly final: boolean;
   /** Shadow races: the time the shadow needs for the whole track. */
   readonly shadowMs?: number;
   readonly racers: readonly RacerState[];
@@ -99,7 +100,10 @@ const CUP_EASE: Readonly<Record<RaceStage['cup'], number>> = {
   sky: 0.86,
   star: 0.78,
   castle: 0.74,
+  rainbow: 0.8,
 };
+/** Past this fraction of the track the final stretch begins. */
+export const FINAL_STRETCH = 0.8;
 export function createRace(pace: Pace, stage: RaceStage, bestMs?: number): RaceState {
   const shadowMs =
     stage.mode === 'shadow' ? Math.min(stage.parMs ?? Infinity, bestMs ?? Infinity) : undefined;
@@ -108,6 +112,7 @@ export function createRace(pace: Pace, stage: RaceStage, bestMs?: number): RaceS
     level: stage.stage,
     mode: stage.mode,
     length: stage.length,
+    final: stage.final ?? false,
     ...(shadowMs !== undefined ? { shadowMs } : {}),
     racers: LINEUP[stage.mode].map((id) => {
       const speed =
@@ -281,8 +286,12 @@ export function raceStars(state: RaceState): 1 | 2 | 3 {
  */
 export function isMastered(state: RaceState): boolean {
   const finish = playerPlace(state);
-  if (state.mode !== 'race' || state.level === FINAL_STAGE) return finish === 1;
+  if (state.mode !== 'race' || state.final) return finish === 1;
   return finish <= 2;
+}
+/** True once Lumi is in the last fifth of the track. */
+export function inFinalStretch(state: RaceState): boolean {
+  return racer(state, 'player').position >= state.length * FINAL_STRETCH;
 }
 /** Sparkles at the finish, including the place bonus. */
 export function finalSparkles(state: RaceState): number {

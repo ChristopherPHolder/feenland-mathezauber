@@ -18,7 +18,11 @@
           <div class="lineup" aria-hidden="true">
             @for (id of lineup(); track id) {
               <span class="lineup-racer" [class.lead]="id === 'player'">
-                <app-racer [kind]="id" [running]="id === 'player'" />
+                <app-racer
+                  [kind]="id"
+                  [outfit]="id === 'player' ? outfit() : null"
+                  [running]="id === 'player'"
+                />
                 <span class="lineup-name">{{ names()[id] }}</span>
               </span>
             }
@@ -57,6 +61,43 @@
           </div>
           <p class="help">{{ t('stumbleHelp') }}</p>
         </fieldset>
+        <fieldset class="pace wardrobe">
+          <legend>{{ t('wardrobe') }}</legend>
+          <div class="pace-options">
+            <button
+              type="button"
+              class="chip"
+              [attr.aria-pressed]="outfit() === null"
+              (click)="wear(null)"
+            >
+              {{ t('outfitNone') }}
+            </button>
+            @for (item of outfits; track item) {
+              @if (outfitEarned(item)) {
+                <button
+                  type="button"
+                  class="chip"
+                  [attr.aria-pressed]="outfit() === item"
+                  (click)="wear(item)"
+                >
+                  <span aria-hidden="true">{{ outfitEmblem(item) }}</span>
+                  {{ t(outfitName(item)) }}
+                </button>
+              } @else {
+                <span class="chip locked">
+                  <span aria-hidden="true">🔒</span>
+                  {{
+                    t('outfitLocked', {
+                      name: t(outfitName(item)),
+                      cup: t(cupTitle(outfitCup(item))),
+                    })
+                  }}
+                </span>
+              }
+            }
+          </div>
+          <p class="help">{{ t('wardrobeHelp') }}</p>
+        </fieldset>
         <div class="races">
           <h2 class="choose-title">{{ t('chooseRace') }}</h2>
           <p class="cups-done">
@@ -89,6 +130,16 @@
                       <span class="level-example" aria-hidden="true">{{ example(option) }}</span>
                       <span class="level-help">{{ i.t(levelHelp(option.stage)) }}</span>
                       <span class="level-foot">
+                        @let earned = starsOf(option.stage);
+                        <span
+                          class="level-stars"
+                          role="img"
+                          [attr.aria-label]="t('starsOn', { n: earned })"
+                        >
+                          @for (star of stars; track star) {
+                            <app-icon kind="star" [class.earned]="earned >= star" />
+                          }
+                        </span>
                         <span [class]="'level-cup ' + (record?.cup ?? 'none')">
                           <app-icon kind="cup" /><span class="sr-only">{{
                             t(cupKey(record?.cup))
@@ -128,6 +179,11 @@
           <p class="streak" [class.combo]="rainbow()">
             <span aria-hidden="true">🌈</span><span class="sr-only">{{ t('streak') }}: </span
             ><strong>{{ i.format(race().streak) }}</strong>
+            <span class="pips" aria-hidden="true">
+              @for (pip of stars; track pip) {
+                <span class="pip" [class.lit]="pips() >= pip"></span>
+              }
+            </span>
           </p>
           @if (rivalChip(); as chip) {
             <p class="rival">
@@ -150,6 +206,7 @@
           [stumbling]="stumbling()"
           [rainbow]="rainbow()"
           [finished]="crossed()"
+          [won]="crossed() && finishPlace() === 1"
           [countdown]="countdown()"
         />
         <app-race-overview
@@ -195,6 +252,12 @@
                   <span class="new-best">{{ t('newBest') }}</span>
                 }
               </p>
+              @if (newOutfit(); as keepsake) {
+                <p class="new-outfit">
+                  <span aria-hidden="true">{{ outfitEmblem(keepsake) }}</span>
+                  {{ t('outfitNew', { name: t(outfitName(keepsake)) }) }}
+                </p>
+              }
               @if (saveFailed() || cupsFailed()) {
                 <p class="save-failed">{{ t('saveFailed') }}</p>
               }

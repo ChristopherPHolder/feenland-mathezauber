@@ -101,21 +101,81 @@ describe('Unicorn race game', () => {
       start,
     };
   }
-  it('shows the intro with the pace choice and all twelve races open in four cups', () => {
+  it('shows the intro with the pace choice and all fifteen races open in five cups', () => {
     const { element } = setup();
     expect(element.querySelector('h1')?.textContent).toContain('Unicorn Rainbow Race');
-    const chips = [...element.querySelectorAll('.chip')];
+    const chips = [...element.querySelectorAll('.pace:not(.wardrobe) .chip')];
     expect(chips.map((chip) => chip.textContent?.trim())).toEqual(['Relaxed', 'Normal', 'Fast']);
     expect(chips[1].getAttribute('aria-pressed')).toBe('true');
     const cups = [...element.querySelectorAll('.cup-title')].map((cup) => cup.textContent?.trim());
-    expect(cups).toEqual(['🌸 Meadow Cup', '☁️ Sky Cup', '🌙 Starlight Cup', '🏰 Castle Cup']);
+    expect(cups).toEqual([
+      '🌸 Meadow Cup',
+      '☁️ Sky Cup',
+      '🌙 Starlight Cup',
+      '🏰 Castle Cup',
+      '🌈 Rainbow Cup',
+    ]);
     const cards = [...element.querySelectorAll<HTMLAnchorElement>('.level-card')];
-    expect(cards).toHaveLength(12);
+    expect(cards).toHaveLength(15);
     expect(cards[0].getAttribute('aria-current')).toBe('page');
     expect(cards[1].textContent).toContain('Chase');
     expect(cards[4].textContent).toContain('Shadow race');
-    expect(cards[11].getAttribute('href')).toBe('/adventure/unicorn-race-12');
-    expect(element.textContent).toContain('0 of 4 cups complete');
+    expect(cards[14].getAttribute('href')).toBe('/adventure/unicorn-race-15');
+    expect(element.textContent).toContain('0 of 5 cups complete');
+    // Keepsakes stay locked until a whole cup is finished.
+    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(5);
+    expect(element.querySelector('.wardrobe .chip[aria-pressed="true"]')?.textContent).toContain(
+      'Just Lumi',
+    );
+  });
+  it('hands out the cup keepsake once all three races are finished and lets Lumi wear it', () => {
+    const { element, component, wait, answerRight, start, click, fixture } = setup(
+      'en',
+      'unicorn-race-3',
+    );
+    const store = TestBed.inject(RaceStore);
+    store.recordRace(1, 'bronze', 10, 50000);
+    store.recordRace(2, 'gold', 10, 50000);
+    start();
+    for (let n = 0; n < 80 && !component.race().done; n++) {
+      answerRight();
+      wait(400);
+    }
+    wait(1400);
+    expect(element.querySelector('.summary .new-outfit')?.textContent).toContain('Flower wreath');
+    expect(store.save().outfit).toBe('wreath');
+    expect(store.completedCups()).toBe(1);
+    click('Choose a race');
+    expect(element.textContent).toContain('1 of 5 cups complete');
+    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(4);
+    expect(element.querySelector('.lineup app-racer .wreath')).toBeTruthy();
+    click('Just Lumi');
+    fixture.detectChanges();
+    expect(store.save().outfit).toBeNull();
+    expect(element.querySelector('.lineup app-racer .wreath')).toBeNull();
+    expect(
+      [...element.querySelectorAll('.level-card')][2].querySelectorAll('.level-stars .earned'),
+    ).toHaveLength(3);
+  });
+  it('lights the streak pips and calls the final stretch', () => {
+    const { element, component, wait, answerRight, start } = setup();
+    start();
+    expect(element.querySelectorAll('.pip.lit')).toHaveLength(0);
+    answerRight();
+    wait(400);
+    answerRight();
+    expect(element.querySelectorAll('.pip.lit')).toHaveLength(2);
+    for (
+      let n = 0;
+      n < 80 && component.race().racers[0].position < component.race().length * 0.8;
+      n++
+    ) {
+      answerRight();
+      wait(400);
+    }
+    wait(100);
+    expect(element.querySelector('.status')?.textContent).toContain('Final stretch!');
+    expect(sounds.play.mock.calls.some(([kind]) => kind === 'overtake')).toBe(true);
   });
   it('counts down, then races: right answers gallop and wrong ones strike the choice out', () => {
     const { fixture, element, component, click, wait, answers, answerRight, answerWrong, status } =
