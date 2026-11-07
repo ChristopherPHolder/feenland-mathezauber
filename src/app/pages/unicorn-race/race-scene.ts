@@ -137,6 +137,7 @@ export class RaceScene {
   readonly stumbling = input(false);
   readonly rainbow = input(false);
   readonly finished = input(false);
+  readonly won = input(false);
   readonly countdown = input<string | null>(null);
   protected readonly confetti = Array.from({ length: 16 }, (_, index) => index);
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
@@ -153,6 +154,7 @@ export class RaceScene {
     stumbling: false,
     rainbow: false,
     finished: false,
+    won: false,
   };
   private destroyed = false;
   constructor() {
@@ -167,6 +169,7 @@ export class RaceScene {
         stumbling: this.stumbling(),
         rainbow: this.rainbow(),
         finished: this.finished(),
+        won: this.won(),
       };
       this.world?.setFrame(this.frame);
     });
@@ -192,7 +195,8 @@ export class RaceScene {
       this.built &&
       this.built.cup === course.cup &&
       this.built.length === course.length &&
-      this.built.racers.join() === course.racers.join()
+      this.built.racers.join() === course.racers.join() &&
+      this.built.outfit === course.outfit
     )
       return;
     const previous = this.canvasEl ?? this.canvas().nativeElement;

@@ -26,6 +26,7 @@ import {
 } from 'three';
 import { MAX_SPEED, RacerId, RacerState } from './race';
 import type { RaceCup } from './race-questions';
+import type { Outfit } from './race-store';
 /** Everything the scene needs to know per frame; the page owns the race, this only draws it. */
 export interface WorldFrame {
   readonly racers: readonly RacerState[];
@@ -33,12 +34,16 @@ export interface WorldFrame {
   readonly stumbling: boolean;
   readonly rainbow: boolean;
   readonly finished: boolean;
+  /** Finished in first place: the castle lets off fireworks. */
+  readonly won: boolean;
 }
 /** What a world is built for: which cup's scenery, how long the track is, who lines up. */
 export interface Course {
   readonly cup: RaceCup;
   readonly length: number;
   readonly racers: readonly RacerId[];
+  /** What Lumi wears, earned by completing a cup. */
+  readonly outfit: Outfit | null;
 }
 /** World metres per track unit. */
 const UNIT = 1.1;
@@ -140,7 +145,7 @@ interface Theme {
   readonly hemisphere: readonly [string, string, number];
   readonly sun: readonly [string, number];
   readonly orb: { readonly color: string; readonly moon: boolean };
-  readonly decor: 'flowers' | 'clouds' | 'stars' | 'lanterns';
+  readonly decor: 'flowers' | 'clouds' | 'stars' | 'lanterns' | 'rainbows';
 }
 const THEME: Readonly<Record<RaceCup, Theme>> = {
   meadow: {
@@ -227,6 +232,27 @@ const THEME: Readonly<Record<RaceCup, Theme>> = {
     orb: { color: '#ff9a4d', moon: false },
     decor: 'lanterns',
   },
+  rainbow: {
+    sky: '#ffe3f1',
+    fog: [30, 100],
+    ground: '#fff3f8',
+    hills: '#ffd1e6',
+    lane: {
+      cloud: '#e4ddff',
+      player: '#ffe0ef',
+      mint: '#dcf7ea',
+      peach: '#fff2d1',
+      storm: '#e4ddff',
+      shadow: '#efe6ff',
+    },
+    curb: '#ffd36b',
+    castleWall: '#fff8ff',
+    castleRoof: '#b79bff',
+    hemisphere: ['#ffffff', '#ffd9ea', 1.7],
+    sun: ['#fff4e0', 2.2],
+    orb: { color: '#ffe27a', moon: false },
+    decor: 'rainbows',
+  },
 };
 /** A deterministic pseudo-random so the scenery is the same every race. */
 function seeded(seed: number): () => number {
@@ -255,7 +281,7 @@ interface Pony {
   tilt: number;
 }
 /** One low-poly pony built from capsules and boxes, facing down the track (-z). */
-function makePony(id: RacerId): Pony {
+function makePony(id: RacerId, outfit: Outfit | null = null): Pony {
   const look = LOOK[id];
   const coat = lambert(look.coat, look.opacity);
   const shade = lambert(look.shade, look.opacity);
@@ -327,6 +353,7 @@ function makePony(id: RacerId): Pony {
     shaft.position.set(0.42, 0.78, 0.2);
     body.add(shaft);
   }
+  if (outfit) dress(body, outfit);
   const maneMaterials = look.mane.map((color) => lambert(color, look.opacity));
   const manePoints: readonly [number, number][] = [
     [1.92, -0.72],
@@ -368,6 +395,79 @@ function makePony(id: RacerId): Pony {
   root.position.x = LANE_X[id];
   return { id, root, body, legs, tag, shownZ: 0, phase: 0, tilt: 0 };
 }
+/** The keepsake from a finished cup, worn on top of Lumi's usual look. */
+function dress(body: Group, outfit: Outfit) {
+  switch (outfit) {
+    case 'wreath': {
+      const petals = ['#ff8fb8', '#ffd36b', '#ffffff', '#b79bff'].map((c) => lambert(c));
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const flower = new Mesh(new SphereGeometry(0.07, 7, 6), petals[i % 4]);
+        flower.position.set(Math.sin(angle) * 0.2, 1.93, -0.72 + Math.cos(angle) * 0.2);
+        body.add(flower);
+      }
+      return;
+    }
+    case 'wings': {
+      const feather = lambert('#ffffff');
+      for (const side of [-1, 1]) {
+        const wing = box(0.7, 0.05, 0.5, feather);
+        wing.position.set(side * 0.55, 1.3, 0.05);
+        wing.rotation.z = side * -0.6;
+        body.add(wing);
+        const tip = box(0.4, 0.04, 0.3, feather);
+        tip.position.set(side * 0.95, 1.55, 0.05);
+        tip.rotation.z = side * -0.9;
+        body.add(tip);
+      }
+      return;
+    }
+    case 'tiara': {
+      const silver = lambert('#e8e4ff');
+      const band = new Mesh(new TorusGeometry(0.17, 0.03, 6, 12, Math.PI), silver);
+      band.rotation.set(Math.PI / 2, 0, 0);
+      band.position.set(0, 1.98, -0.68);
+      body.add(band);
+      const star = new MeshBasicMaterial({ color: '#fff4c2' });
+      for (const [x, y] of [
+        [0, 2.14],
+        [-0.12, 2.08],
+        [0.12, 2.08],
+      ]) {
+        const point = new Mesh(new SphereGeometry(0.05, 6, 5), star);
+        point.position.set(x, y, -0.62);
+        body.add(point);
+      }
+      return;
+    }
+    case 'crown': {
+      const gold = lambert('#ffd54a');
+      const ring = new Mesh(new TorusGeometry(0.17, 0.045, 6, 12), gold);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(0, 2.0, -0.64);
+      body.add(ring);
+      for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2;
+        const point = new Mesh(new ConeGeometry(0.045, 0.16, 4), gold);
+        point.position.set(Math.sin(angle) * 0.15, 2.09, -0.64 + Math.cos(angle) * 0.15);
+        body.add(point);
+      }
+      const gem = new Mesh(new SphereGeometry(0.05, 6, 5), lambert('#ff6f91'));
+      gem.position.set(0, 2.02, -0.82);
+      body.add(gem);
+      return;
+    }
+    case 'cape': {
+      RAINBOW.forEach((color, index) => {
+        const stripe = box(0.12, 0.03, 0.9, lambert(color));
+        stripe.position.set(-0.3 + index * 0.12, 1.32, 0.25);
+        stripe.rotation.x = -0.25;
+        body.add(stripe);
+      });
+      return;
+    }
+  }
+}
 /** A floating name pill drawn onto a small canvas. */
 function makeTag(name: string): Sprite {
   const sprite = new Sprite(new SpriteMaterial({ depthTest: false, transparent: true }));
@@ -406,12 +506,16 @@ export class RaceWorld {
   private readonly theme: Theme;
   private readonly finishZ: number;
   private readonly twinkles: Mesh[] = [];
+  private readonly fireworks: { group: Group; born: number }[] = [];
+  private readonly sparkMaterials = RAINBOW.map((color) => new MeshBasicMaterial({ color }));
+  private nextFirework = 0;
   private frame: WorldFrame = {
     racers: [],
     running: false,
     stumbling: false,
     rainbow: false,
     finished: false,
+    won: false,
   };
   private readonly eye = new Vector3();
   private handle = 0;
@@ -430,7 +534,7 @@ export class RaceWorld {
     this.camera = new PerspectiveCamera(58, 1, 0.1, 180);
     this.camera.position.set(0.4, 4.3, 8.5);
     this.buildWorld();
-    this.ponies = course.racers.map(makePony);
+    this.ponies = course.racers.map((id) => makePony(id, id === 'player' ? course.outfit : null));
     for (const pony of this.ponies) this.scene.add(pony.root);
     this.trail = this.buildTrail();
     this.ponies.find((pony) => pony.id === 'player')!.root.add(this.trail);
@@ -618,6 +722,26 @@ export class RaceWorld {
         }
         return;
       }
+      case 'rainbows': {
+        const petals = ['#ff8fb8', '#ffd36b', '#ffffff', '#b79bff'].map((c) => lambert(c));
+        for (let i = 0; i < count / 2; i++) {
+          const head = new Mesh(new SphereGeometry(0.16, 7, 6), petals[i % 4]);
+          head.position.set(sideX(), 0.2, alongZ());
+          this.scene.add(head);
+        }
+        for (let i = 0; i < Math.max(3, Math.round(length / 60)); i++) {
+          const z = -8 - (i * (length - 30)) / Math.max(1, Math.round(length / 60));
+          RAINBOW.forEach((color, index) => {
+            const arc = new Mesh(
+              new TorusGeometry(9 - index * 0.35, 0.18, 8, 36, Math.PI),
+              lambert(color),
+            );
+            arc.position.set(0, 0, z);
+            this.scene.add(arc);
+          });
+        }
+        return;
+      }
       case 'lanterns': {
         const pole = lambert('#8c5a3c');
         const glow = new MeshBasicMaterial({ color: '#ffb347' });
@@ -667,7 +791,7 @@ export class RaceWorld {
       flag.position.set(x + 0.35, 10.4, 0.5);
       castle.add(flag);
     }
-    if (this.theme.decor === 'stars' || this.theme.decor === 'lanterns') {
+    if (this.theme.decor !== 'flowers' && this.theme.decor !== 'clouds') {
       const window = new MeshBasicMaterial({ color: '#ffe27a' });
       for (const [x, y] of [
         [-1.4, 3.2],
@@ -714,7 +838,7 @@ export class RaceWorld {
     this.renderer.render(this.scene, this.camera);
   }
   private animate(dt: number, now: number) {
-    const { racers, running, stumbling, rainbow, finished } = this.frame;
+    const { racers, running, stumbling, rainbow, finished, won } = this.frame;
     let playerZ = 0;
     let playerSpeed = 0;
     for (const pony of this.ponies) {
@@ -757,9 +881,53 @@ export class RaceWorld {
       this.trail.scale.z = stretch;
       this.trail.position.y = Math.sin(now * 6) * 0.05;
     }
+    if (finished && won) this.celebrate(now, dt);
     const lookZ = Math.max(this.finishZ - 6, playerZ - 9);
     const camZ = Math.min(9, playerZ + 8.5);
     this.camera.position.lerp(this.eye.set(0.4, 4.3, camZ), Math.min(1, dt * 6));
     this.camera.lookAt(0, 0.9, lookZ);
+    // A gallop widens the view a touch, so speed is felt and not just seen.
+    const fov = 58 + Math.min(10, Math.max(0, playerSpeed) * 1.3);
+    if (Math.abs(fov - this.camera.fov) > 0.05) {
+      this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * 3);
+      this.camera.updateProjectionMatrix();
+    }
+  }
+  /** Bursts of coloured sparks over the castle while the winner is on the line. */
+  private celebrate(now: number, dt: number) {
+    if (now >= this.nextFirework) {
+      this.nextFirework = now + 0.45;
+      const group = new Group();
+      const material = this.sparkMaterials[Math.floor(Math.random() * this.sparkMaterials.length)];
+      for (let i = 0; i < 14; i++) {
+        const spark = new Mesh(new SphereGeometry(0.12, 5, 4), material);
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        spark.userData['dir'] = new Vector3(
+          Math.sin(phi) * Math.cos(theta),
+          Math.cos(phi),
+          Math.sin(phi) * Math.sin(theta),
+        );
+        group.add(spark);
+      }
+      group.position.set((Math.random() - 0.5) * 12, 8 + Math.random() * 4, this.finishZ - 12);
+      this.scene.add(group);
+      this.fireworks.push({ group, born: now });
+    }
+    for (const firework of [...this.fireworks]) {
+      const age = now - firework.born;
+      if (age > 1.2) {
+        this.scene.remove(firework.group);
+        for (const spark of firework.group.children) (spark as Mesh).geometry.dispose();
+        this.fireworks.splice(this.fireworks.indexOf(firework), 1);
+        continue;
+      }
+      for (const spark of firework.group.children) {
+        const dir = spark.userData['dir'] as Vector3;
+        spark.position.addScaledVector(dir, dt * 4);
+        spark.position.y -= dt * age * 1.5;
+        spark.scale.setScalar(Math.max(0.1, 1 - age / 1.2));
+      }
+    }
   }
 }

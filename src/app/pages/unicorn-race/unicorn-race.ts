@@ -24,6 +24,7 @@ import {
   createRace,
   finalSparkles,
   gapTo,
+  inFinalStretch,
   isMastered,
   isRainbow,
   LINEUP,
@@ -40,7 +41,6 @@ import {
 import { raceText, RaceMessageKey } from './race-messages';
 import {
   cupStages,
-  FINAL_STAGE,
   RaceCup,
   raceCups,
   RaceLevel,
@@ -56,7 +56,7 @@ import { RaceOverview } from './race-overview';
 import { RaceScene } from './race-scene';
 import { RaceSounds } from './race-sounds';
 import { RacerArt } from './racer-art';
-import { Cup, cupFor, RaceStore } from './race-store';
+import { Cup, cupFor, Outfit, OUTFIT_CUP, outfits, RaceStore } from './race-store';
 import type { Course } from './race-world';
 type Phase = 'intro' | 'countdown' | 'racing' | 'finished';
 type Feedback =
@@ -64,7 +64,8 @@ type Feedback =
   | { readonly kind: 'gallop' }
   | { readonly kind: 'rainbow'; readonly streak: number }
   | { readonly kind: 'wrong' }
-  | { readonly kind: 'wrongAgain' };
+  | { readonly kind: 'wrongAgain' }
+  | { readonly kind: 'stretch' };
 export const TICK_MS = 100;
 const COUNT_MS = 800;
 const FEEDBACK_MS = 900;
@@ -75,6 +76,14 @@ const CUP_EMBLEM: Readonly<Record<RaceCup, string>> = {
   sky: '☁️',
   star: '🌙',
   castle: '🏰',
+  rainbow: '🌈',
+};
+const OUTFIT_EMBLEM: Readonly<Record<Outfit, string>> = {
+  wreath: '🌸',
+  wings: '🕊️',
+  tiara: '✨',
+  crown: '👑',
+  cape: '🌈',
 };
 const MODE_EMBLEM: Readonly<Record<RaceMode, string>> = { race: '🏁', chase: '🗝️', shadow: '👻' };
 /**
@@ -95,6 +104,7 @@ const MODE_EMBLEM: Readonly<Record<RaceMode, string>> = { race: '🏁', chase: '
     '[class.is-sky]': 'cup() === "sky"',
     '[class.is-star]': 'cup() === "star"',
     '[class.is-castle]': 'cup() === "castle"',
+    '[class.is-rainbow]': 'cup() === "rainbow"',
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
   },
@@ -109,6 +119,7 @@ export class UnicornRace {
   private readonly document = inject(DOCUMENT);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
   protected readonly cups = raceCups;
+  protected readonly outfits = outfits;
   protected readonly paces = paces;
   protected readonly stars = [1, 2, 3] as const;
   protected readonly total = TOTAL_STAGES;
@@ -122,7 +133,13 @@ export class UnicornRace {
     cup: this.cup(),
     length: this.stage().length,
     racers: this.lineup(),
+    outfit: this.outfit(),
   }));
+  protected readonly outfit = computed(() => this.store.save().outfit);
+  /** The keepsake just earned by finishing this race's cup, if any. */
+  protected readonly newOutfit = signal<Outfit | null>(null);
+  /** Rainbow streak pips: how many of the three steps toward a dash are lit. */
+  protected readonly pips = computed(() => Math.min(3, this.race().streak));
   /** Every route change (next race, level strip) lands back on that race's intro. */
   protected readonly phase = linkedSignal<string, Phase>({
     source: this.levelId,
@@ -232,6 +249,8 @@ export class UnicornRace {
         return this.t('wrong');
       case 'wrongAgain':
         return this.t('wrongAgain');
+      case 'stretch':
+        return this.t('finalStretch');
       default:
         return this.t('youAre', { place: this.t(this.placeKey()) });
     }
@@ -244,7 +263,7 @@ export class UnicornRace {
       ? 'ruleChase'
       : this.mode() === 'shadow'
         ? 'ruleShadow'
-        : this.level() === FINAL_STAGE
+        : this.stage().final
           ? 'ruleFinal'
           : null,
   );
@@ -258,12 +277,11 @@ export class UnicornRace {
   protected readonly nextLevel = computed<RaceLevel | undefined>(() =>
     this.level() < TOTAL_STAGES ? ((this.level() + 1) as RaceLevel) : undefined,
   );
-  /** A cup is complete once every race in it has earned any cup. */
-  protected readonly cupsComplete = computed(
-    () =>
-      raceCups.filter((cup) => cupStages(cup).every((stage) => !!this.store.record(stage.stage)))
-        .length,
-  );
+  protected readonly cupsComplete = computed(() => {
+    this.store.save();
+    return this.store.completedCups();
+  });
+  private stretchCalled = false;
   constructor() {
     this.progress.explore('tens');
     inject(DestroyRef).onDestroy(() => this.stopTimers());
@@ -311,6 +329,27 @@ export class UnicornRace {
   protected paceLabel(pace: Pace): RaceMessageKey {
     return `pace${pace.charAt(0).toUpperCase()}${pace.slice(1)}` as RaceMessageKey;
   }
+  protected outfitName(outfit: Outfit | null): RaceMessageKey {
+    return outfit
+      ? (`outfit${outfit.charAt(0).toUpperCase()}${outfit.slice(1)}` as RaceMessageKey)
+      : 'outfitNone';
+  }
+  protected outfitEmblem(outfit: Outfit): string {
+    return OUTFIT_EMBLEM[outfit];
+  }
+  protected outfitCup(outfit: Outfit): RaceCup {
+    return OUTFIT_CUP[outfit];
+  }
+  protected outfitEarned(outfit: Outfit): boolean {
+    this.store.save();
+    return this.store.earned(outfit);
+  }
+  protected wear(outfit: Outfit | null) {
+    this.store.wear(outfit);
+  }
+  protected starsOf(level: RaceLevel): number {
+    return this.progress.progress().stars?.[`unicorn-race-${level}`] ?? 0;
+  }
   protected cupKey(cup: Cup | undefined): RaceMessageKey {
     return cup ? (`cup${cup.charAt(0).toUpperCase()}${cup.slice(1)}` as RaceMessageKey) : 'cupNone';
   }
@@ -340,6 +379,8 @@ export class UnicornRace {
     this.placePop.set(false);
     this.lastPlace = playerPlace(this.race());
     this.gainBase = 0;
+    this.newOutfit.set(null);
+    this.stretchCalled = false;
     this.phase.set('countdown');
     const steps = ['3', '2', '1', this.t('go')];
     steps.forEach((step, index) =>
@@ -422,6 +463,12 @@ export class UnicornRace {
       this.flash(this.placePop, 500);
       this.announcement.set(this.t('youAre', { place: this.t(`place${place}` as RaceMessageKey) }));
     }
+    if (!this.stretchCalled && !next.done && inFinalStretch(next)) {
+      this.stretchCalled = true;
+      this.sounds.play('overtake');
+      this.flashFeedback({ kind: 'stretch' }, 1400);
+      this.announcement.set(this.t('finalStretch'));
+    }
     if (next.done && !this.crossed()) this.finish();
   }
   private finish() {
@@ -433,7 +480,15 @@ export class UnicornRace {
     this.finishStars.set(stars);
     const sparkles = finalSparkles(race);
     const level = this.level();
+    const cup = this.cup();
+    const hadCup = this.store.cupComplete(cup);
     this.newBest.set(this.store.recordRace(level, cupFor(place), sparkles, race.elapsedMs));
+    if (!hadCup && this.store.cupComplete(cup)) {
+      const keepsake = outfits.find((outfit) => OUTFIT_CUP[outfit] === cup) ?? null;
+      this.newOutfit.set(keepsake);
+      // The new keepsake goes straight on, so the next race shows it off.
+      this.store.wear(keepsake);
+    }
     const recorded = this.completion.finish({
       levelId: this.levelId(),
       completed: true,

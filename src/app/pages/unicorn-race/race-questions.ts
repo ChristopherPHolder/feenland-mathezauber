@@ -15,9 +15,9 @@ export type RaceSkill =
   | 'mixed';
 /** How a race is run: against three friends, chasing one thief, or beating your own shadow. */
 export type RaceMode = 'race' | 'chase' | 'shadow';
-/** Four cups of three races each; every cup has its own scenery. */
-export type RaceCup = 'meadow' | 'sky' | 'star' | 'castle';
-export const raceCups: readonly RaceCup[] = ['meadow', 'sky', 'star', 'castle'];
+/** Five cups of three races each; every cup has its own scenery. */
+export type RaceCup = 'meadow' | 'sky' | 'star' | 'castle' | 'rainbow';
+export const raceCups: readonly RaceCup[] = ['meadow', 'sky', 'star', 'castle', 'rainbow'];
 export interface RaceStage {
   readonly stage: RaceLevel;
   readonly cup: RaceCup;
@@ -28,9 +28,11 @@ export interface RaceStage {
   readonly length: number;
   /** Shadow races: the time the shadow runs until the child sets a faster best. */
   readonly parMs?: number;
+  /** A cup final: only a win masters it. */
+  readonly final?: boolean;
 }
-export type RaceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-export const raceLevels: readonly RaceLevel[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+export type RaceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
+export const raceLevels: readonly RaceLevel[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 export interface RaceQuestion {
   readonly text: string;
   readonly answer: number;
@@ -88,11 +90,36 @@ export const raceStages: readonly RaceStage[] = [
     length: 240,
     parMs: 100000,
   },
-  { stage: 12, cup: 'castle', mode: 'race', skill: 'mixed', example: '6 × 4', length: 260 },
+  {
+    stage: 12,
+    cup: 'castle',
+    mode: 'race',
+    skill: 'mixed',
+    example: '6 × 4',
+    length: 260,
+    final: true,
+  },
+  { stage: 13, cup: 'rainbow', mode: 'chase', skill: 'mixed', example: '8 × 3', length: 250 },
+  {
+    stage: 14,
+    cup: 'rainbow',
+    mode: 'shadow',
+    skill: 'mixed',
+    example: '56 − 8',
+    length: 250,
+    parMs: 95000,
+  },
+  {
+    stage: 15,
+    cup: 'rainbow',
+    mode: 'race',
+    skill: 'mixed',
+    example: '7 × 4',
+    length: 280,
+    final: true,
+  },
 ];
 export const TOTAL_STAGES = raceStages.length;
-/** The grand final: only a win takes the castle cup. */
-export const FINAL_STAGE: RaceLevel = 12;
 export function cupStages(cup: RaceCup): readonly RaceStage[] {
   return raceStages.filter((stage) => stage.cup === cup);
 }

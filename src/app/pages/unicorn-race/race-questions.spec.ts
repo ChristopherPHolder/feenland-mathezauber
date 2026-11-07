@@ -30,20 +30,21 @@ function evaluate(text: string): number {
   return Number(a) - result;
 }
 describe('race questions', () => {
-  it('lists twelve open races in four cups with stable ids', () => {
+  it('lists fifteen open races in five cups with stable ids', () => {
     expect(raceLevelEntries.map((level) => level.id)).toEqual(
-      Array.from({ length: 12 }, (_, index) => `unicorn-race-${index + 1}`),
+      Array.from({ length: 15 }, (_, index) => `unicorn-race-${index + 1}`),
     );
     expect(raceStage('unicorn-race-7')?.skill).toBe('easyTimes');
-    expect(raceStage('unicorn-race-12')?.mode).toBe('race');
-    expect(raceStage('unicorn-race-13')).toBeUndefined();
+    expect(raceStage('unicorn-race-12')?.final).toBe(true);
+    expect(raceStage('unicorn-race-15')?.final).toBe(true);
+    expect(raceStage('unicorn-race-16')).toBeUndefined();
     expect(raceStage('crocodile-1')).toBeUndefined();
     for (const cup of raceCups) expect(cupStages(cup)).toHaveLength(3);
     expect(raceStages.map((stage) => stage.mode).filter((mode) => mode === 'chase')).toHaveLength(
-      3,
+      4,
     );
     expect(raceStages.map((stage) => stage.mode).filter((mode) => mode === 'shadow')).toHaveLength(
-      3,
+      4,
     );
     // Later races are longer, so a race grows with the child.
     expect(raceStages[11].length).toBeGreaterThan(raceStages[0].length);

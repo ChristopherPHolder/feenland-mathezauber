@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import type { RacerId } from './race';
+import type { Outfit } from './race-store';
 /**
  * One side-view pony drawn from simple shapes, facing the finish. Each racer is the same
  * body in its own colours: Lumi is the white unicorn with the rainbow mane, Cloud a lavender
@@ -50,6 +51,41 @@ import type { RacerId } from './race';
     @if (kind() === 'peach') {
       <path class="bow" d="m112 18-8-6 1 10zm0 0 8-8-1 12z" />
       <circle class="bow" cx="112" cy="18" r="2.4" />
+    }
+    @switch (outfit()) {
+      @case ('wreath') {
+        <g class="wreath">
+          <circle cx="116" cy="16" r="3.2" fill="#ff8fb8" />
+          <circle cx="123" cy="12" r="3.2" fill="#ffd36b" />
+          <circle cx="131" cy="12" r="3.2" fill="#fff" />
+          <circle cx="138" cy="15" r="3.2" fill="#b79bff" />
+          <circle cx="110" cy="21" r="3.2" fill="#ffd36b" />
+        </g>
+      }
+      @case ('wings') {
+        <path
+          class="feather"
+          d="M62 50c4-20 28-30 50-20-10 2-14 8-14 15 14-6 26-2 30 8-16-6-28-2-34 8 12 2 18 10 20 18-24-8-44-6-52-29z"
+        />
+      }
+      @case ('tiara') {
+        <g class="tiara">
+          <path d="M118 20q14-8 26 0" fill="none" stroke="#e8e4ff" stroke-width="2.5" />
+          <path d="m131 6 2 5 5 0-4 3 2 5-5-3-5 3 2-5-4-3 5 0z" fill="#fff4c2" />
+        </g>
+      }
+      @case ('crown') {
+        <path class="crown" d="m118 20 3-10 5 6 4-8 4 8 5-6 3 10z" />
+        <circle cx="131" cy="12" r="2" fill="#ff6f91" />
+      }
+      @case ('cape') {
+        <g class="cape">
+          <path d="M50 52c-6 10-10 22-10 36h8c0-12 4-22 10-30z" fill="#ff6f91" />
+          <path d="M58 56c-6 10-10 20-10 32h8c0-10 4-18 10-26z" fill="#ffb347" />
+          <path d="M66 60c-6 8-9 16-9 26h8c0-8 3-14 9-20z" fill="#ffe066" />
+          <path d="M74 64c-5 6-7 12-7 20h8c0-6 2-10 7-14z" fill="#7ddf9b" />
+        </g>
+      }
     }
     @if (kind() === 'storm') {
       <path class="crown" d="m118 20 3-10 5 6 4-8 4 8 5-6 3 10z" />
@@ -127,6 +163,11 @@ import type { RacerId } from './race';
       fill: #ffd54a;
       stroke: #c99a1a;
       stroke-width: 1;
+    }
+    .feather {
+      fill: #ffffff;
+      stroke: #d9d0ff;
+      stroke-width: 1.2;
     }
     svg {
       display: block;
@@ -280,6 +321,8 @@ import type { RacerId } from './race';
 })
 export class RacerArt {
   readonly kind = input.required<RacerId>();
+  /** Lumi's keepsake from a finished cup; ignored for the other racers. */
+  readonly outfit = input<Outfit | null>(null);
   readonly running = input(false);
   readonly stumbling = input(false);
   readonly rainbow = input(false);

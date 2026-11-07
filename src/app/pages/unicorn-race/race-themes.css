@@ -48,3 +48,17 @@
   --cup-line: #ffd2b3;
   --cup-ink: #a04a2a;
 }
+/* Rainbow Cup: pink sky, golden curbs, rainbows across the track. */
+:host(.is-rainbow) {
+  --race-sky: #ffe3f1;
+  --race-meadow: #fff3f8;
+  --race-lilac: #ffe6f2;
+  --cup-ground: #fff0f7;
+  --cup-line: #ffc7e3;
+  --cup-ink: #a4305f;
+}
+.cup-section.is-rainbow {
+  --cup-ground: #fff0f7;
+  --cup-line: #ffc7e3;
+  --cup-ink: #a4305f;
+}
