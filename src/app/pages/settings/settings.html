@@ -4,7 +4,7 @@
   >
   <header class="settings-intro">
     <h1 id="settings-title">{{ i.t('settings') }}</h1>
-    <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" />
+    <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
   </header>
   <div class="settings-sections">
     <section class="panel language-panel" aria-labelledby="language-title">
@@ -23,13 +23,44 @@
       </div>
     </section>
     <div class="settings-notes">
-      <section aria-labelledby="audio-title">
+      <section class="panel switches" aria-labelledby="audio-title">
         <h2 id="audio-title">{{ i.t('audio') }}</h2>
-        <p>{{ i.t('audioHelp') }}</p>
+        <p id="audio-help">{{ i.t('audioHelp') }}</p>
+        <label class="switch-row">
+          <span>{{ i.t('settingsMusic') }}</span>
+          <input
+            type="checkbox"
+            switch
+            role="switch"
+            [checked]="audio().music"
+            (change)="sound.toggle('music')"
+          />
+        </label>
+        <label class="switch-row">
+          <span>{{ i.t('settingsEffects') }}</span>
+          <input
+            type="checkbox"
+            switch
+            role="switch"
+            [checked]="audio().effects"
+            (change)="sound.toggle('effects')"
+          />
+        </label>
       </section>
-      <section aria-labelledby="accessibility-title">
+      <section class="panel switches" aria-labelledby="accessibility-title">
         <h2 id="accessibility-title">{{ i.t('accessibility') }}</h2>
         <p>{{ i.t('accessibilityHelp') }}</p>
+        <label class="switch-row">
+          <span>{{ i.t('calmMotion') }}</span>
+          <input
+            #calm
+            type="checkbox"
+            switch
+            role="switch"
+            [checked]="motion.calm()"
+            (change)="motion.set(calm.checked)"
+          />
+        </label>
       </section>
       <section aria-labelledby="about-title">
         <h2 id="about-title">{{ i.t('about') }}</h2>

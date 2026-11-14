@@ -5,6 +5,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LocaleService } from '../../core/locale';
 import { Locale } from '../../core/messages';
 import { Icon } from '../../shared/icon';
+import { MotionPreference } from '../../core/motion';
+import { PlaytestStore } from '../fairy-defense/playtest-store';
 @Component({
   selector: 'app-settings',
   imports: [NgOptimizedImage, RouterLink, Icon],
@@ -13,6 +15,10 @@ import { Icon } from '../../shared/icon';
 })
 export class Settings {
   protected readonly i = inject(LocaleService);
+  /** Every game reads its music and effects from here, so these switches cover them all. */
+  protected readonly sound = inject(PlaytestStore);
+  protected readonly audio = this.sound.audio;
+  protected readonly motion = inject(MotionPreference);
   private readonly router = inject(Router);
   private readonly query = toSignal(inject(ActivatedRoute).queryParamMap);
   protected readonly backTarget = computed(() => {
