@@ -124,19 +124,24 @@ describe('the hungry crocodile game', () => {
         const wrong = (['<', '=', '>'] as const).filter((sign) => sign !== question.answer);
         pick(element, wrong[0]);
         fixture.detectChanges();
-        expect(element.querySelector('.instruction')!.textContent).toContain('Try again');
+        const instruction = () => element.querySelector('.instruction')!.textContent!;
+        expect(instruction()).toContain('Try again');
+        // Level 1 starts with Kiki's rule, whatever the right answer is.
+        expect(instruction()).toContain(crocodileTranslations.en.ruleBigger);
+        expect(element.querySelector('app-rule-hint .picture')).not.toBeNull();
         expect(element.querySelector('.slot-sign')).toBeNull();
         vi.advanceTimersByTime(900);
         fixture.detectChanges();
-        // The retry never gives the worked-out values away.
+        // The rule stays up for the retry and never gives the worked-out values away.
         expect(element.querySelector('.bars')).toBeNull();
         expect(element.querySelector('.side-value')).toBeNull();
-        expect(element.querySelector('.instruction')!.textContent).toContain('look again');
-        expect(element.querySelector('.instruction')!.textContent).not.toContain(
-          String(question.left),
-        );
+        expect(instruction()).toContain(crocodileTranslations.en.ruleBigger);
+        expect(instruction()).not.toMatch(/\d/);
         pick(element, wrong[1]);
         fixture.detectChanges();
+        // A second wrong pick offers a different way to compare, still without numbers.
+        expect(instruction()).toContain(crocodileTranslations.en.ruleCountUp);
+        expect(instruction()).not.toMatch(/\d{2}|[02-9]/);
       }
       pick(element, question.answer);
       fixture.detectChanges();
