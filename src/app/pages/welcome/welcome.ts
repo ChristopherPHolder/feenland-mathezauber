@@ -7,6 +7,8 @@ import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
 import { Emblem } from '../../shared/emblem';
 import { Icon } from '../../shared/icon';
+import { levels as wallLevels } from '../number-wall/number-wall';
+import { NumberWallStore } from '../number-wall/number-wall-store';
 import { DragonPortraits } from '../hatchery/dragon-portraits';
 import { EggIcon } from '../hatchery/egg-icon';
 import { HatcheryStore } from '../hatchery/hatchery-store';
@@ -156,19 +158,38 @@ export class Welcome {
     return hatcheryText(this.i.locale(), key, values);
   }
   private readonly catalog = inject(WORLD_CATALOG);
+  private readonly walls = inject(NumberWallStore);
   /** One card per game, straight from the catalog: adding a chapter adds a card. */
   protected readonly games = computed(() =>
     this.catalog.flatMap((world) =>
-      world.chapters.map((chapter: Chapter) => ({
-        chapter,
-        color: world.color,
-        ground: world.ground,
-        entry: entryLevel(chapter, this.p.progress())?.id ?? chapter.levels[0]?.id,
-        play: playLabels[chapter.levels[0]?.format ?? ''] ?? 'play',
-        levels: chapter.levels.length,
-        total: chapter.levels.length * 3,
-        stars: chapter.levels.reduce((sum, level) => sum + levelStars(level, this.p.progress()), 0),
-      })),
+      world.chapters.map((chapter: Chapter) => {
+        const { levels, stars } = this.tally(chapter);
+        return {
+          chapter,
+          color: world.color,
+          ground: world.ground,
+          entry: entryLevel(chapter, this.p.progress())?.id ?? chapter.levels[0]?.id,
+          play: playLabels[chapter.levels[0]?.format ?? ''] ?? 'play',
+          levels,
+          total: levels * 3,
+          stars,
+        };
+      }),
     ),
   );
+  /**
+   * Levels and earned stars of a game, as the games hub shows them. Magic walls is one
+   * catalog level with its own levels inside, each rated by the wall game's store.
+   */
+  private tally(chapter: Chapter) {
+    if (chapter.levels[0]?.format === 'number-wall')
+      return {
+        levels: wallLevels.length,
+        stars: wallLevels.reduce((sum, level) => sum + this.walls.rating(level), 0),
+      };
+    return {
+      levels: chapter.levels.length,
+      stars: chapter.levels.reduce((sum, level) => sum + levelStars(level, this.p.progress()), 0),
+    };
+  }
 }
