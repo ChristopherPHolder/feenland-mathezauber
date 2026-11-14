@@ -3,6 +3,7 @@ import { inject, Service, signal } from '@angular/core';
 import { Pace, paces } from './race';
 import {
   cupTracks,
+  KEEPSAKE_TRACKS,
   HeatNumber,
   heatNumbers,
   RaceCup,
@@ -89,9 +90,13 @@ export class RaceStore {
     this.state.update((save) => ({ ...save, pace }));
     this.persist();
   }
-  /** A cup is complete once every track in it has at least one finished heat. */
+  /**
+   * A cup is complete once three of its tracks have a finished heat. Cups grew to four tracks,
+   * and a keepsake Lumi already wears must never be taken away again.
+   */
   cupComplete(cup: RaceCup): boolean {
-    return cupTracks(cup).every((track) => this.heatsDone(track.stage) > 0);
+    const done = cupTracks(cup).filter((track) => this.heatsDone(track.stage) > 0).length;
+    return done >= Math.min(KEEPSAKE_TRACKS, cupTracks(cup).length);
   }
   completedCups(): number {
     return raceCups.filter((cup) => this.cupComplete(cup)).length;

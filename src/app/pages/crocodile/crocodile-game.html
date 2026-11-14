@@ -7,7 +7,7 @@
     [title]="t('title')"
     [detail]="
       stage()
-        ? t('level', { n: stage()!.stage, total: total }) + ' · ' + i.t(levelKey(stage()!.stage))
+        ? t('level', { n: stage()!.position, total: total }) + ' · ' + i.t(levelKey(stage()!.stage))
         : ''
     "
     [anchor]="levelId()"
@@ -24,9 +24,9 @@
             [routerLink]="link.route"
             [attr.aria-current]="link.stage === stage()?.stage ? 'page' : null"
             [attr.aria-label]="
-              t('level', { n: link.stage, total: total }) + ' · ' + i.t(levelKey(link.stage))
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
             "
-            >{{ link.stage }}</a
+            >{{ link.position }}</a
           >
         }
       </nav>
@@ -112,7 +112,7 @@
     >
       @if (stars() === 3) {
         <div class="confetti" aria-hidden="true">
-          @for (piece of snacks; track piece) {
+          @for (piece of snacks(); track piece) {
             <span [style.--i]="piece"></span>
           }
         </div>
@@ -143,7 +143,7 @@
         </p>
         <p class="outcome-help">
           {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
-          @if (stars() >= 2 && stage()?.stage === total) {
+          @if (stars() >= 2 && stage()?.position === total) {
             {{ t('lastLevel') }}
           }
         </p>
@@ -183,12 +183,12 @@
     <div class="hud">
       <div class="snack-bar">
         <ol class="snacks" [attr.aria-label]="t('snackBar')">
-          @for (snack of snacks; track snack) {
+          @for (snack of snacks(); track snack) {
             <li
               [class.eaten]="snack < round().index"
               [class.current]="snack === round().index"
               [class.golden]="round().golden.has(snack)"
-              [class.boss]="snack === roundLength - 1"
+              [class.boss]="snack === roundLength() - 1"
               aria-hidden="true"
             ></li>
           }

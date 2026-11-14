@@ -8,6 +8,8 @@ import {
   raceStage,
   RaceSkill,
   raceTracks,
+  trackAfter,
+  trackPosition,
 } from './race-questions';
 function seeded(seed: number) {
   let state = seed;
@@ -31,14 +33,24 @@ function evaluate(text: string): number {
   return Number(a) - result;
 }
 describe('race questions', () => {
-  it('lists fifteen open races in five cups with stable ids', () => {
+  it('lists nineteen open races in five cups, easiest first, with stable ids', () => {
     expect(raceLevelEntries.map((level) => level.id)).toEqual(
-      Array.from({ length: 15 }, (_, index) => `unicorn-race-${index + 1}`),
+      [16, 1, 2, 3, 4, 17, 5, 6, 7, 8, 9, 18, 10, 11, 19, 12, 13, 14, 15].map(
+        (n) => `unicorn-race-${n}`,
+      ),
     );
     expect(raceStage('unicorn-race-7')?.skill).toBe('easyTimes');
-    expect(raceStage('unicorn-race-16')).toBeUndefined();
+    expect(raceStage('unicorn-race-16')?.skill).toBe('bonds10');
+    expect(raceStage('unicorn-race-20')).toBeUndefined();
     expect(raceStage('crocodile-1')).toBeUndefined();
-    for (const cup of raceCups) expect(cupTracks(cup)).toHaveLength(3);
+    expect(raceCups.map((cup) => cupTracks(cup).length)).toEqual([4, 4, 4, 4, 3]);
+    // Cups stay in order: every track of a cup comes before the next cup's tracks.
+    expect(raceTracks.map((track) => raceCups.indexOf(track.cup))).toEqual(
+      raceTracks.map((track) => raceCups.indexOf(track.cup)).sort(),
+    );
+    expect(trackPosition(16)).toBe(1);
+    expect(trackAfter(16)).toBe(1);
+    expect(trackAfter(15)).toBeUndefined();
     // Every track runs six heats: two chases, one shadow run and three races, the last a final.
     expect(heats.map((heat) => heat.mode)).toEqual([
       'race',
@@ -50,10 +62,14 @@ describe('race questions', () => {
     ]);
     expect(heats[5].final).toBe(true);
     // Later tracks are longer, so a race grows with the child.
-    expect(raceTracks[11].length).toBeGreaterThan(raceTracks[0].length);
+    expect(raceTracks.at(-1)!.length).toBeGreaterThan(raceTracks[0].length);
   });
   it.each<[RaceSkill, (answer: number, text: string) => boolean]>([
+    ['bonds10', (answer, text) => answer >= 1 && answer <= 9 && text.endsWith('= 10')],
     ['plus10', (answer, text) => answer <= 10 && text.includes('+')],
+    ['crossTen', (answer) => answer >= 2 && answer <= 18],
+    ['times6789', (answer, text) => answer <= 100 && text.includes('×')],
+    ['twoDigitCarry', (answer) => answer >= 10 && answer <= 99],
     ['minus10', (answer, text) => answer >= 1 && answer <= 9 && text.includes('−')],
     ['plusMinus20', (answer) => answer >= 1 && answer <= 20],
     ['doubles', (answer, text) => answer <= 20 && text.includes('+')],
@@ -97,6 +113,19 @@ describe('race questions', () => {
         expect(onesA).toBeGreaterThan(onesB);
         expect(tensA).toBeGreaterThan(tensB);
       }
+    }
+  });
+  it('makes every crossing question cross a ten', () => {
+    const random = seeded(9);
+    for (let n = 0; n < 200; n++) {
+      for (const skill of ['crossTen', 'twoDigitCarry'] as const) {
+        const [left, op, right] = raceQuestion(skill, random).text.split(' ');
+        const [a, b] = [Number(left), Number(right)];
+        if (op === '+') expect((a % 10) + (b % 10)).toBeGreaterThanOrEqual(10);
+        else expect(a % 10).toBeLessThan(b % 10);
+      }
+      const [a, , b] = raceQuestion('times6789', random).text.split(' ');
+      expect(['6', '7', '8', '9'].includes(a!) || ['6', '7', '8', '9'].includes(b!)).toBe(true);
     }
   });
   it('avoids asking the same question twice in a row', () => {

@@ -1,14 +1,18 @@
 import type { Level } from '../../core/catalog';
 import type { MessageKey } from '../../core/messages';
 export type RaceSkill =
+  | 'bonds10'
   | 'plus10'
   | 'minus10'
   | 'plusMinus20'
+  | 'crossTen'
   | 'doubles'
   | 'plusMinus100'
   | 'twoDigit'
+  | 'twoDigitCarry'
   | 'easyTimes'
   | 'times34'
+  | 'times6789'
   | 'missingFactor'
   | 'missingAddend'
   | 'hardTimes'
@@ -82,8 +86,9 @@ export interface RaceStage {
   /** A cup final: only a win masters it. */
   readonly final?: boolean;
 }
-export type RaceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
-export const raceLevels: readonly RaceLevel[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+/** Track numbers are saved with results, so a track keeps its number when the list grows. */
+export type RaceLevel =
+  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19;
 export interface RaceQuestion {
   readonly text: string;
   readonly answer: number;
@@ -91,18 +96,26 @@ export interface RaceQuestion {
   readonly choices: readonly number[];
 }
 export const CHOICES = 4;
+/**
+ * Every track in play order, easiest first, cup by cup. Tracks 1 to 15 are the original five
+ * cups; 16 to 19 filled the gaps: bonds to ten, crossing ten, the big times tables and carrying.
+ */
 export const raceTracks: readonly RaceTrack[] = [
+  { stage: 16, cup: 'meadow', skill: 'bonds10', example: '6 + ? = 10', length: 200 },
   { stage: 1, cup: 'meadow', skill: 'plus10', example: '3 + 4', length: 200 },
   { stage: 2, cup: 'meadow', skill: 'minus10', example: '9 − 4', length: 200 },
   { stage: 3, cup: 'meadow', skill: 'plusMinus20', example: '15 − 7', length: 210 },
   { stage: 4, cup: 'sky', skill: 'doubles', example: '7 + 7', length: 220 },
+  { stage: 17, cup: 'sky', skill: 'crossTen', example: '8 + 5', length: 220 },
   { stage: 5, cup: 'sky', skill: 'plusMinus100', example: '48 + 30', length: 220 },
   { stage: 6, cup: 'sky', skill: 'twoDigit', example: '34 + 25', length: 220 },
   { stage: 7, cup: 'star', skill: 'easyTimes', example: '5 × 4', length: 230 },
   { stage: 8, cup: 'star', skill: 'times34', example: '4 × 6', length: 230 },
   { stage: 9, cup: 'star', skill: 'missingFactor', example: '5 × ? = 20', length: 230 },
+  { stage: 18, cup: 'star', skill: 'times6789', example: '7 × 8', length: 230 },
   { stage: 10, cup: 'castle', skill: 'missingAddend', example: '7 + ? = 12', length: 240 },
   { stage: 11, cup: 'castle', skill: 'hardTimes', example: '7 × 3', length: 240 },
+  { stage: 19, cup: 'castle', skill: 'twoDigitCarry', example: '37 + 25', length: 240 },
   { stage: 12, cup: 'castle', skill: 'mixed', example: '6 × 4', length: 250 },
   { stage: 13, cup: 'rainbow', skill: 'mixed', example: '8 × 3', length: 250 },
   { stage: 14, cup: 'rainbow', skill: 'mixed', example: '56 − 8', length: 250 },
@@ -132,6 +145,26 @@ export function stageFor(track: RaceTrack, heat: HeatNumber): RaceStage {
 /** Every track at its middle heat, for anything that only needs the maths and the cup. */
 export const raceStages: readonly RaceStage[] = raceTracks.map((track) => stageFor(track, 3));
 export const TOTAL_STAGES = raceTracks.length;
+/** Every track number, in play order. */
+export const raceLevels: readonly RaceLevel[] = raceTracks.map((track) => track.stage);
+/** Where a track sits in play order, from 1. */
+export function trackPosition(level: RaceLevel): number {
+  return raceLevels.indexOf(level) + 1;
+}
+/** The track after this one in play order, if there is one. */
+export function trackAfter(level: RaceLevel): RaceLevel | undefined {
+  return raceLevels[raceLevels.indexOf(level) + 1];
+}
+/** Tracks a cup needs finished before Lumi gets its keepsake. */
+export const KEEPSAKE_TRACKS = 3;
+/** Topic of each cup for the games hub. */
+export const cupGroup: Readonly<Record<RaceCup, MessageKey>> = {
+  meadow: 'raceGroupMeadow',
+  sky: 'raceGroupSky',
+  star: 'raceGroupStar',
+  castle: 'raceGroupCastle',
+  rainbow: 'raceGroupRainbow',
+};
 export function cupTracks(cup: RaceCup): readonly RaceTrack[] {
   return raceTracks.filter((track) => track.cup === cup);
 }
@@ -142,6 +175,7 @@ export const raceLevelEntries: readonly Level[] = raceTracks.map((config) => ({
   description: `race${config.stage}Help` as MessageKey,
   skills: ['fluency', config.skill],
   format: 'unicorn-race',
+  group: cupGroup[config.cup],
 }));
 export function raceTrack(id: string | null | undefined): RaceTrack | undefined {
   const match = /^unicorn-race-(\d{1,2})$/.exec(id ?? '');
@@ -169,6 +203,36 @@ function minus(random: Random, max: number): Fact {
   const a = int(random, 2, max);
   const b = int(random, 1, a - 1);
   return { text: `${a} − ${b}`, answer: a - b };
+}
+/** Bonds to ten: the missing part that makes 10, like 6 + ? = 10. */
+function bonds10(random: Random): Fact {
+  const a = int(random, 1, 9);
+  return random() < 0.5
+    ? { text: `${a} + ? = 10`, answer: 10 - a }
+    : { text: `? + ${a} = 10`, answer: 10 - a };
+}
+/** Adding or taking away across ten within 20: 8 + 5 or 13 − 6. */
+function crossTen(random: Random): Fact {
+  const a = int(random, 2, 9);
+  const b = int(random, 11 - a, 9);
+  return random() < 0.5
+    ? { text: `${a} + ${b}`, answer: a + b }
+    : { text: `${a + b} − ${b}`, answer: a };
+}
+/** Two two-digit numbers where the ones cross a ten: 37 + 25 or 62 − 28. */
+function twoDigitCarry(random: Random): Fact {
+  const onesA = int(random, 2, 9);
+  const onesB = int(random, 11 - onesA, 9);
+  if (random() < 0.5) {
+    const tensA = int(random, 1, 6);
+    const tensB = int(random, 1, 8 - tensA);
+    const a = tensA * 10 + onesA;
+    const b = tensB * 10 + onesB;
+    return { text: `${a} + ${b}`, answer: a + b };
+  }
+  const sum = int(random, 3, 9) * 10 + ((onesA + onesB) % 10);
+  const b = int(random, 1, Math.floor(sum / 10) - 2) * 10 + onesB;
+  return { text: `${sum} − ${b}`, answer: sum - b };
 }
 /** Doubles up to 10 + 10 and the near doubles beside them, the backbone of mental adding. */
 function doubles(random: Random): Fact {
@@ -262,6 +326,14 @@ function missingAddend(random: Random): Fact {
 }
 function fact(random: Random, skill: RaceSkill): Fact {
   switch (skill) {
+    case 'bonds10':
+      return bonds10(random);
+    case 'crossTen':
+      return crossTen(random);
+    case 'twoDigitCarry':
+      return twoDigitCarry(random);
+    case 'times6789':
+      return times(random, [6, 7, 8, 9], 100, [3, 4, 5, 6, 7, 8, 9]);
     case 'plus10':
       return plus(random, 10);
     case 'minus10':
@@ -299,9 +371,13 @@ function fact(random: Random, skill: RaceSkill): Fact {
 function distractors(random: Random, answer: number, skill: RaceSkill): number[] {
   const candidates = new Set<number>();
   const offsets =
-    skill === 'easyTimes' || skill === 'times34' || skill === 'hardTimes' || skill === 'mixed'
+    skill === 'easyTimes' ||
+    skill === 'times34' ||
+    skill === 'times6789' ||
+    skill === 'hardTimes' ||
+    skill === 'mixed'
       ? [1, -1, 2, -2, 10, -10, 5, -5]
-      : skill === 'plusMinus100' || skill === 'twoDigit'
+      : skill === 'plusMinus100' || skill === 'twoDigit' || skill === 'twoDigitCarry'
         ? [10, -10, 1, -1, 2, -2, 20, -20]
         : [1, -1, 2, -2, 3, -3, 10, -10];
   const swapped = Number(String(answer).split('').reverse().join(''));

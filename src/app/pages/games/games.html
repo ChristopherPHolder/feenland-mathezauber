@@ -50,46 +50,64 @@
           <p>{{ i.t(chapter.description) }}</p>
         </div>
       </header>
-      @switch (chapter.levels[0]?.format) {
-        @case ('number-wall') {
-          @let wall = chapter.levels[0];
+      @if (game.topics.length > 1) {
+        <div
+          class="topics"
+          role="tablist"
+          [attr.aria-label]="i.t('topics') + ' · ' + i.t(chapter.title)"
+        >
+          @for (topic of game.topics; track topic.id; let index = $index) {
+            @let active = selected()[chapter.id] === topic.key;
+            <button
+              type="button"
+              role="tab"
+              class="topic"
+              [id]="topic.id + '-tab'"
+              [attr.aria-selected]="active"
+              [attr.tabindex]="active ? 0 : -1"
+              (click)="choose(chapter.id, topic.key)"
+              (keydown)="onTopicKey($event, game, index)"
+            >
+              <span class="topic-name">{{ i.t(topic.key) }}</span>
+              <span class="topic-meta">
+                {{
+                  topic.cards.length === 1
+                    ? i.t('topicLevel')
+                    : i.t('topicLevels', { n: topic.cards.length })
+                }}
+                @if (topic.stars > 0) {
+                  · <app-icon kind="star" /><span class="sr-only">{{
+                    i.t('topicStars', { n: topic.stars, total: topic.maxStars })
+                  }}</span
+                  ><span aria-hidden="true">{{ topic.stars }}/{{ topic.maxStars }}</span>
+                }
+              </span>
+            </button>
+          }
+        </div>
+      }
+      @for (topic of game.topics; track topic.id) {
+        @let active = selected()[chapter.id] === topic.key;
+        <div
+          class="topic-panel"
+          [attr.role]="game.topics.length > 1 ? 'tabpanel' : null"
+          [attr.aria-labelledby]="game.topics.length > 1 ? topic.id + '-tab' : null"
+          [attr.hidden]="active ? null : 'until-found'"
+          (beforematch)="choose(chapter.id, topic.key)"
+        >
           <ol class="level-list">
-            @for (level of wallLevels; track level) {
-              <li>
+            @for (card of topic.cards; track card.id) {
+              <li [class.hero-item]="card.hero">
                 <a
                   class="level-card"
-                  [id]="level === 1 ? wall.id : wall.id + '-' + level"
-                  [class.recommended]="level === 1 && wall.id === nextId()"
-                  [class.mastered]="walls.rating(level) === 3"
-                  [routerLink]="['/adventure', wall.id]"
-                  [queryParams]="{ level: level }"
+                  [class.hero-card]="card.hero"
+                  [id]="card.id"
+                  [class.recommended]="card.recommended"
+                  [class.mastered]="card.state === 'mastered' && !card.hero"
+                  [routerLink]="card.link"
+                  [queryParams]="card.query"
                 >
-                  <span class="level-number">{{ i.t('levelLabel', { n: level }) }}</span>
-                  <span class="level-name">{{ i.t(wallTitle(level)) }}</span>
-                  <span class="level-help">{{ i.t(wallHelp(level)) }}</span>
-                  <span class="level-foot">
-                    <app-star-rating [stars]="walls.rating(level)" />
-                    @if (level === 1 && wall.id === nextId()) {
-                      <span class="level-badge">{{ i.t('recommended') }}</span>
-                    }
-                  </span>
-                  <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
-                </a>
-              </li>
-            }
-          </ol>
-        }
-        @default {
-          <ol class="level-list">
-            @for (level of chapter.levels; track level.id; let index = $index) {
-              @if (level.format === 'fairy-defense') {
-                <li class="hero-item">
-                  <a
-                    class="level-card hero-card"
-                    [id]="level.id"
-                    [class.recommended]="level.id === nextId()"
-                    [routerLink]="['/adventure', level.id]"
-                  >
+                  @if (card.hero) {
                     <span class="level-number">{{
                       i.t('castleWaves', { n: campaign.completed().length, total: totalWaves })
                     }}</span>
@@ -98,68 +116,43 @@
                         ? i.t('playAgain')
                         : i.t('continueWave', { n: campaign.nextWave() })
                     }}</span>
-                    <span class="level-help">{{ i.t(level.description) }}</span>
-                    <span class="level-foot">
-                      <app-star-rating [stars]="stars(level)" />
-                      @if (mastered(level)) {
-                        <span class="level-state"
-                          ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
-                        >
-                      }
-                      @if (level.id === nextId()) {
-                        <span class="level-badge">{{ i.t('recommended') }}</span>
-                      }
-                    </span>
-                    <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
-                  </a>
-                </li>
-              } @else {
-                <li>
-                  <a
-                    class="level-card"
-                    [id]="level.id"
-                    [class.recommended]="level.id === nextId()"
-                    [class.mastered]="mastered(level)"
-                    [routerLink]="['/adventure', level.id]"
-                  >
-                    <span class="level-number">{{
-                      i.t('levelLabel', { n: level.practice?.stage ?? index + 1 })
-                    }}</span>
-                    @if (example(level); as example) {
-                      <span class="level-example">{{ example }}</span>
+                  } @else {
+                    <span class="level-number">{{ i.t('levelLabel', { n: card.number }) }}</span>
+                    @if (card.example) {
+                      <span class="level-example">{{ card.example }}</span>
                     }
-                    <span class="level-name">{{ i.t(level.title) }}</span>
-                    <span class="level-help">
-                      @if (level.practice; as practice) {
-                        {{ i.t('upTo') }} {{ i.format(practice.max) }}
-                      } @else {
-                        {{ i.t(level.description) }}
-                      }
-                    </span>
-                    <span class="level-foot">
-                      <app-star-rating [stars]="stars(level)" />
-                      @if (best(level) > 0) {
-                        <span class="level-state">{{ i.t('bestPoints', { n: best(level) }) }}</span>
-                      } @else if (mastered(level)) {
-                        <span class="level-state"
-                          ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
-                        >
-                      } @else if (completed(level)) {
-                        <span class="level-state"
-                          ><app-icon kind="check" />{{ i.t('completedLabel') }}</span
-                        >
-                      }
-                      @if (level.id === nextId()) {
-                        <span class="level-badge">{{ i.t('recommended') }}</span>
-                      }
-                    </span>
-                    <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
-                  </a>
-                </li>
-              }
+                    <span class="level-name">{{ i.t(card.title) }}</span>
+                  }
+                  <span class="level-help">
+                    @if (card.upTo) {
+                      {{ i.t('upTo') }} {{ i.format(card.upTo) }}
+                    } @else {
+                      {{ i.t(card.help) }}
+                    }
+                  </span>
+                  <span class="level-foot">
+                    <app-star-rating [stars]="card.stars" />
+                    @if (card.best > 0) {
+                      <span class="level-state">{{ i.t('bestPoints', { n: card.best }) }}</span>
+                    } @else if (card.state === 'mastered') {
+                      <span class="level-state"
+                        ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
+                      >
+                    } @else if (card.state === 'completed') {
+                      <span class="level-state"
+                        ><app-icon kind="check" />{{ i.t('completedLabel') }}</span
+                      >
+                    }
+                    @if (card.recommended) {
+                      <span class="level-badge">{{ i.t('recommended') }}</span>
+                    }
+                  </span>
+                  <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
+                </a>
+              </li>
             }
           </ol>
-        }
+        </div>
       }
     </section>
   }

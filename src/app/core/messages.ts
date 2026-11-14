@@ -1,4 +1,6 @@
+import { curriculumDe, curriculumEn, curriculumEs, curriculumFr } from './curriculum-messages';
 export const en = {
+  ...curriculumEn,
   practicePath: 'Your path to 30',
   practiceHelp: 'Choose any stage. Follow the recommended path or practise a specific skill.',
   placeValue: 'Tens and ones',
@@ -238,6 +240,7 @@ export type Locale = (typeof locales)[number];
 export const translations: Record<Locale, Messages> = {
   en,
   de: {
+    ...curriculumDe,
     crocodileChapter: 'Das hungrige Krokodil',
     crocodileChapterHelp:
       'Lerne den Krokodil-Trick für größer, kleiner und gleich. Dann vergleiche Zahlen, Rechnungen und Einmaleins.',
@@ -476,6 +479,7 @@ export const translations: Record<Locale, Messages> = {
     wallThreeStars: 'Drei Sterne! Eine perfekte Zaubermauer!',
   },
   es: {
+    ...curriculumEs,
     crocodileChapter: 'El cocodrilo hambriento',
     crocodileChapterHelp:
       'Aprende el truco del cocodrilo para mayor, menor e igual. Luego compara números, cuentas y tablas de multiplicar.',
@@ -713,6 +717,7 @@ export const translations: Record<Locale, Messages> = {
     wallThreeStars: '¡Tres estrellas! ¡Un muro mágico perfecto!',
   },
   fr: {
+    ...curriculumFr,
     crocodileChapter: 'Le crocodile affamé',
     crocodileChapterHelp:
       'Apprends l’astuce du crocodile pour plus grand, plus petit et égal. Puis compare des nombres, des calculs et des tables de multiplication.',

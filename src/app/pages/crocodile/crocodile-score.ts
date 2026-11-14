@@ -28,22 +28,29 @@ export function snackPoints(kind: SnackKind, streak: number): number {
   return basePoints[kind] * comboFor(streak);
 }
 /** Which snacks shine gold: never the first one, never the big fish at the end. */
-export function goldenSnacks(random: () => number = Math.random): ReadonlySet<number> {
-  const candidates = Array.from({ length: ROUND_LENGTH - 2 }, (_, index) => index + 1);
+export function goldenSnacks(
+  random: () => number = Math.random,
+  length = ROUND_LENGTH,
+): ReadonlySet<number> {
+  const candidates = Array.from({ length: length - 2 }, (_, index) => index + 1);
   for (let i = candidates.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [candidates[i], candidates[j]] = [candidates[j]!, candidates[i]!];
   }
   return new Set(candidates.slice(0, GOLDEN_SNACKS));
 }
-export function snackKind(index: number, golden: ReadonlySet<number>): SnackKind {
-  return index === ROUND_LENGTH - 1 ? 'boss' : golden.has(index) ? 'golden' : 'plain';
+export function snackKind(
+  index: number,
+  golden: ReadonlySet<number>,
+  length = ROUND_LENGTH,
+): SnackKind {
+  return index === length - 1 ? 'boss' : golden.has(index) ? 'golden' : 'plain';
 }
 /** The best possible round: every snack first try, so the combo climbs as fast as it can. */
-export function perfectScore(golden: ReadonlySet<number>): number {
+export function perfectScore(golden: ReadonlySet<number>, length = ROUND_LENGTH): number {
   let total = 0;
-  for (let index = 0; index < ROUND_LENGTH; index++)
-    total += snackPoints(snackKind(index, golden), index + 1);
+  for (let index = 0; index < length; index++)
+    total += snackPoints(snackKind(index, golden, length), index + 1);
   return total;
 }
 export function earnedHats(progress: Progress): readonly Hat[] {

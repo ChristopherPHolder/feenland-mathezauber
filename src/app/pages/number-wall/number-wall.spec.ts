@@ -16,11 +16,14 @@ import {
   trollSeconds,
   valueOf,
   Wall,
-  WALLS_PER_WORLD,
+  WallLevel,
+  wallsFor,
+  levelAfter,
+  levelPosition,
 } from './number-wall';
 
 describe('number wall generator', () => {
-  const samples = (level: 1 | 2 | 3 | 4, count = 200) =>
+  const samples = (level: WallLevel, count = 200) =>
     Array.from({ length: count }, (_, seed) => generateWall(level, seededRandom(seed + 1)));
 
   it('builds every brick above as the sum of the two bricks below', () => {
@@ -32,14 +35,16 @@ describe('number wall generator', () => {
           );
   });
 
-  it('keeps bottom bricks between 0 and 10 and sums within the level range', () => {
+  it('keeps bottom bricks and the top brick within the level range', () => {
     for (const level of levels) {
       const rules = rulesFor(level);
+      const scale = rules.tens ? 10 : 1;
       for (const wall of samples(level)) {
         expect(wall.rows).toHaveLength(rules.rowCount);
         for (const value of wall.rows[0]!) {
-          expect(value).toBeGreaterThanOrEqual(0);
-          expect(value).toBeLessThanOrEqual(10);
+          expect(value).toBeGreaterThanOrEqual(rules.minBottom * scale);
+          expect(value).toBeLessThanOrEqual(rules.maxBottom * scale);
+          expect(value % scale).toBe(0);
         }
         expect(wall.rows[wall.rows.length - 1]![0]).toBeLessThanOrEqual(rules.maxTop);
         expect(wall.rows[0]!.filter((value) => value === 0).length).toBeLessThanOrEqual(1);
@@ -63,6 +68,32 @@ describe('number wall generator', () => {
       expect(wall.missing).toHaveLength(2);
       expect(wall.missing.some((brick) => brick.row === 0)).toBe(true);
       expect(wall.missing[0]).not.toEqual(wall.missing[1]);
+    }
+    // Build-up levels hide everything above the bottom row.
+    for (const level of [7, 9] as const)
+      for (const wall of samples(level, 50)) {
+        expect(wall.missing).toHaveLength(allBricks(wall).length - wall.rows[0]!.length);
+        expect(wall.missing.every((brick) => brick.row > 0)).toBe(true);
+      }
+    for (const level of [10, 11] as const)
+      for (const wall of samples(level, 50)) {
+        expect(wall.rows).toHaveLength(4);
+        expect(wall.missing).toHaveLength(3);
+        expect(wall.missing.some((brick) => brick.row === 0)).toBe(true);
+      }
+  });
+
+  it('orders levels from small walls to four rows and sizes each run', () => {
+    expect(levels).toHaveLength(11);
+    expect([...levels].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    const rowCounts = levels.map((level) => rulesFor(level).rowCount);
+    expect(rowCounts).toEqual([...rowCounts].sort());
+    expect(levelPosition(levels[0]!)).toBe(1);
+    expect(levelAfter(levels.at(-1)!)).toBeUndefined();
+    expect(levelAfter(5)).toBe(1);
+    for (const level of levels) {
+      expect(wallsFor(level)).toBeGreaterThanOrEqual(4);
+      expect(wallsFor(level)).toBeLessThanOrEqual(8);
     }
   });
 
@@ -99,7 +130,7 @@ describe('number wall generator', () => {
 
   it('creates a world of distinct consecutive walls', () => {
     const world = generateWorld(2, seededRandom(7));
-    expect(world).toHaveLength(WALLS_PER_WORLD);
+    expect(world).toHaveLength(wallsFor(2));
     for (let index = 1; index < world.length; index++)
       expect(world[index]!.rows[0]!.join()).not.toBe(world[index - 1]!.rows[0]!.join());
   });
