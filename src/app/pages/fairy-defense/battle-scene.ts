@@ -1,3 +1,4 @@
+import { EggChip } from '../hatchery/egg-chip';
 import { NgOptimizedImage } from '@angular/common';
 import {
   afterRenderEffect,
@@ -16,7 +17,7 @@ import { GemPouch } from './gem-pouch';
 import { gameText, GameMessageKey } from './game-messages';
 @Component({
   selector: 'app-battle-scene',
-  imports: [NgOptimizedImage, Icon, GemPouch],
+  imports: [NgOptimizedImage, Icon, EggChip, GemPouch],
   templateUrl: './battle-scene.html',
   styleUrls: ['./battle-scene.css', './battle-fx.css'],
   host: { '[class.fit]': 'fit()' },

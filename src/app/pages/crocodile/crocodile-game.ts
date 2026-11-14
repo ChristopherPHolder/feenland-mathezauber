@@ -1,3 +1,4 @@
+import { HatcheryStore } from '../hatchery/hatchery-store';
 import { DOCUMENT } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -99,6 +100,7 @@ const BOSS_EXTRA = 3000;
 export class CrocodileGame {
   protected readonly i = inject(LocaleService);
   private readonly p = inject(ProgressService);
+  private readonly hatchery = inject(HatcheryStore);
   private readonly completion = inject(CompletionService);
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
@@ -298,6 +300,7 @@ export class CrocodileGame {
       return;
     }
     this.wrongPick.set(null);
+    this.hatchery.warm();
     // Only a first-try snack keeps the combo growing; a corrected one still scores base points.
     const streak = round.attempts === 0 ? round.streak + 1 : 0;
     const bonus = this.shooHeron();
