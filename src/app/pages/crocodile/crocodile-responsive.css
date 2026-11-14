@@ -1,25 +1,23 @@
 /* While a round is on, phones and tablets give the pond the whole screen and keep the answers
    pinned at the bottom, where a thumb rests. */
-@media (max-width: 1024px) {
-  .game.playing {
-    min-height: calc(100dvh - 48px);
-  }
-  .playing .board {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .playing .sides {
-    flex: 1 1 auto;
-  }
-  .playing .choices {
-    flex: none;
-  }
+.game.playing {
+  min-height: calc(100dvh - 48px);
+}
+.playing .board {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.playing .sides {
+  flex: 1 1 auto;
+}
+.playing .choices {
+  flex: none;
 }
 
-/* Tablets in portrait: scale the pond up with the height */
-@media (min-width: 641px) and (max-width: 1024px) and (min-height: 900px) {
+/* Tablets, upright or on their side: scale the pond up with the height */
+@media (min-width: 641px) and (min-height: 780px) {
   .playing .sides {
     grid-template-columns: minmax(0, 1fr) 220px minmax(0, 1fr);
   }
@@ -289,5 +287,105 @@
   }
   .choice-croc {
     width: 88px;
+  }
+}
+
+/* A phone on its side: the pond on the left and the three answers stacked on the right, so the
+   whole question and every answer fit on one screen. */
+@media (orientation: landscape) and (max-height: 500px) {
+  :host {
+    padding: 8px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
+  }
+  .game.playing {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(140px, 22%);
+    /* header, scores, (heron), pond: the pond takes the rest of the height */
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 6px 12px;
+    max-width: none;
+    min-height: calc(100dvh - 16px);
+  }
+  .game.playing > * {
+    grid-column: 1;
+  }
+  .game.playing > app-game-header {
+    margin-bottom: 0;
+  }
+  .game.playing:has(.heron-strip) {
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+  }
+  .game.playing > .choices {
+    grid-column: 2;
+    grid-row: 1 / span 5;
+    grid-template-columns: 1fr;
+    align-self: stretch;
+    gap: 8px;
+  }
+  .playing .choice {
+    min-height: 0;
+    flex-direction: row;
+    gap: 10px;
+    padding: 6px;
+  }
+  .playing .choice-croc {
+    width: 72px;
+  }
+  .playing .choice-sign {
+    font-size: 30px;
+  }
+  .playing .board {
+    padding: 12px 14px 10px;
+  }
+  .playing .sides {
+    grid-template-columns: minmax(0, 1fr) 110px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .playing .side {
+    min-height: 84px;
+    padding: 8px;
+  }
+  .playing .slot {
+    min-height: 84px;
+  }
+  .playing .slot-croc {
+    max-width: 104px;
+  }
+  .playing .instruction {
+    margin-top: 8px;
+    min-height: 0;
+    padding: 4px 10px;
+    font-size: 15px;
+  }
+  .playing .snack-bar {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .playing .snacks {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .playing .heron-strip {
+    min-height: 40px;
+    padding-block: 0;
+  }
+  .playing:has(.heron-strip) .side,
+  .playing:has(.heron-strip) .slot {
+    min-height: 72px;
+  }
+  .playing .tile {
+    height: 56px;
+    font-size: 28px;
+  }
+  .playing .plain .tile,
+  .playing .boss .plain .tile {
+    min-width: 72px;
+    height: 72px;
+    font-size: 40px;
+  }
+  .playing .banner {
+    margin: -4px auto 6px;
+    font-size: 14px;
+    padding: 4px 12px;
   }
 }
