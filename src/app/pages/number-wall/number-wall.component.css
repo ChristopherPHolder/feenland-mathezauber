@@ -324,3 +324,12 @@ app-icon.earned {
     transform: scale(1);
   }
 }
+
+@media (orientation: landscape) and (max-height: 500px) {
+  :host {
+    padding-block: 8px;
+  }
+  app-game-header {
+    margin-bottom: 6px;
+  }
+}
