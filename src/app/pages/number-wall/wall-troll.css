@@ -48,8 +48,9 @@ svg {
 :host(.is-asleep) .eyes-shut {
   display: inline;
 }
-:host(.is-asleep) svg {
-  filter: hue-rotate(60deg) saturate(0.7) brightness(1.08);
+:host(.is-asleep) .leg,
+:host(.is-asleep) .torso {
+  filter: hue-rotate(60deg) saturate(0.7) brightness(1.08) drop-shadow(0 0 6px #c9ecff);
 }
 :host(.is-asleep) .leg,
 :host(.is-asleep) .club {
@@ -131,5 +132,18 @@ svg {
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
+  }
+}
+.sleep-clock {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: clock-in 0.5s ease-out;
+}
+@keyframes clock-in {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
   }
 }

@@ -86,6 +86,22 @@ import { Component, input } from '@angular/core';
           <circle cx="40" cy="54" r="4" fill="#f29b9b" opacity="0.6" />
         </g>
       </g>
+      @if (asleep()) {
+        <g class="sleep-clock">
+          <circle cx="100" cy="14" r="12" fill="#fff" stroke="#fff" stroke-width="4" />
+          <circle
+            cx="100"
+            cy="14"
+            r="6"
+            fill="none"
+            stroke="#7950b0"
+            stroke-width="12"
+            pathLength="1"
+            [attr.stroke-dasharray]="sleepLeft() + ' 1'"
+            transform="rotate(-90 100 14)"
+          />
+        </g>
+      }
     </svg>
   `,
 })
@@ -94,4 +110,6 @@ export class WallTroll {
   readonly bonking = input(false);
   readonly cheering = input(false);
   readonly angry = input(false);
+  /** Share of the fairy-dust nap still to come; drawn as a clock that runs out. */
+  readonly sleepLeft = input(0);
 }

@@ -323,6 +323,22 @@
   font-size: 0.5em;
   transform: scaleX(-1);
 }
+.frost {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.frost span {
+  position: absolute;
+  left: 40%;
+  top: 30%;
+  font-size: 0.32em;
+  opacity: 0;
+}
+/* The snore floats toward the wall so it is never cut off at the edge of the scene. */
+.zzz {
+  left: 0.9em;
+}
 .dust-cloud {
   position: absolute;
   left: -0.6em;

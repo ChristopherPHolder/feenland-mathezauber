@@ -79,6 +79,7 @@
       [bonking]="trollBump()"
       [cheering]="crumbled()"
       [angry]="danger()"
+      [sleepLeft]="sleepLeft()"
     />
     @if (!trollAsleep() && !trollBump() && !crumbled()) {
       <span class="dust-cloud" aria-hidden="true">💨</span>
@@ -96,6 +97,11 @@
     }
     @if (trollAsleep()) {
       <span class="zzz" aria-hidden="true">💤</span>
+      <span class="frost" aria-hidden="true">
+        @for (flake of frost; track $index) {
+          <span [style.--i]="$index">{{ flake }}</span>
+        }
+      </span>
     }
   </div>
 }

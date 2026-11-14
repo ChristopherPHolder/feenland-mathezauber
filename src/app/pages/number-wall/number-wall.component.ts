@@ -135,6 +135,9 @@ export class NumberWallComponent {
   protected readonly wallsDone = computed(() => this.wallIndex() + (this.built() ? 1 : 0));
   protected readonly combo = computed(() => (this.streak() >= DUST_EVERY ? this.streak() : 0));
   protected readonly trollAsleep = computed(() => this.frozenMs() > 0);
+  /** How much of the fairy-dust nap is left, from 1 down to 0, for the troll's sleep timer. */
+  protected readonly sleepLeft = computed(() => this.frozenMs() / FREEZE_MS);
+  protected readonly dustPop = signal(false);
   /**
    * From the second miss on a brick the help shows the rule as a picture and the pair to add
    * pulses harder. It never shows the result: the child keeps working the brick out.
@@ -362,7 +365,11 @@ export class NumberWallComponent {
     if (!wall || !brick || !this.canDust()) return;
     this.dust.update((count) => count - 1);
     if (this.timed()) this.frozenMs.set(FREEZE_MS);
-    this.feedback.set({ kind: 'hint', hint: hintFor(wall, brick, this.filled()), dust: true });
+    this.feedback.set({
+      kind: 'hint',
+      hint: hintFor(wall, brick, this.filled()),
+      dust: this.timed(),
+    });
     this.audio.effect('cast');
   }
   private place(brick: BrickId, value: number, firstTry: boolean) {
@@ -377,8 +384,10 @@ export class NumberWallComponent {
       this.firstTry.update((count) => count + 1);
       this.streak.update((count) => count + 1);
       this.store.recordStreak(this.streak());
-      if (this.streak() % DUST_EVERY === 0)
+      if (this.streak() % DUST_EVERY === 0) {
         this.dust.update((count) => Math.min(MAX_DUST, count + 1));
+        this.flash(this.dustPop, 900);
+      }
       if (this.streak() >= DUST_EVERY) this.golden.update((golden) => [...golden, brick]);
     }
     const remaining = fillOrder(wall).filter((id) => !this.isFilled(id));

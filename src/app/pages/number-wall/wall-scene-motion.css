@@ -394,6 +394,23 @@
 .troll.victory {
   animation: victory 0.5s ease-in-out infinite;
 }
+/* Fairy dust lands: sparkles and snowflakes burst out from the troll, then fade. */
+@keyframes frost-burst {
+  0% {
+    opacity: 1;
+    transform: rotate(calc(var(--i) * 45deg)) translateX(0) scale(0.4);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(calc(var(--i) * 45deg)) translateX(2.4em) scale(1.3);
+  }
+}
+.frost span {
+  animation: frost-burst 1.3s ease-out calc(var(--i) * 0.05s) 2 forwards;
+}
 .confetti span {
   animation: fall 1.4s ease-in calc(var(--i) * 0.08s) forwards;
 }
