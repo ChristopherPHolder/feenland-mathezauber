@@ -289,7 +289,7 @@
             data-side="center"
             [attr.aria-disabled]="round().phase !== 'ready'"
             [attr.aria-label]="t('tapEqual')"
-            [class.shake]="wrongPick() === '='"
+            [class.shake]="wrongPick() !== null"
             (click)="tap('center')"
             [class.to-left]="round().chosen === '>'"
             [class.to-right]="round().chosen === '<'"
@@ -349,8 +349,18 @@
       @for (float of floats(); track float.id) {
         <span class="points-float" aria-hidden="true">+{{ i.format(float.points) }}</span>
       }
-      <p class="instruction" role="status" aria-live="polite" aria-atomic="true">
-        {{ message() }}
+      <p
+        class="instruction"
+        [class.has-rule]="rule()"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        @if (rule(); as rule) {
+          <app-rule-hint [rule]="rule" />
+        } @else {
+          {{ message() }}
+        }
       </p>
     </section>
     <fieldset class="choices" tabindex="-1" [attr.aria-busy]="round().phase !== 'ready'">
