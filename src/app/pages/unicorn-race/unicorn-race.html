@@ -240,6 +240,7 @@
           [labels]="labels()"
           [placeLabels]="placeLabels()"
           [title]="t('standings')"
+          [started]="phase() !== 'countdown'"
         />
         <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
         @if (phase() === 'finished') {

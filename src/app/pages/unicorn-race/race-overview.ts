@@ -1,9 +1,29 @@
 import { Component, computed, input } from '@angular/core';
 import { RacerId, RacerState, standings } from './race';
 import { RacerArt } from './racer-art';
+/** The least room between two badges on the rail, as a share of its length. */
+const BADGE_GAP = 0.09;
 /**
- * The bird's-eye strip above the track: one line from the start to the castle with every
- * racer's marker on it, and the standings leader first. Reads at a glance who is where.
+ * Keeps badges from sitting on top of each other. Takes positions along the rail (0 to 1)
+ * from last place to first and nudges them apart, never changing their order and never
+ * leaving the rail, so four ponies on the start line or on the finish line stand side by side.
+ */
+export function spreadBadges(sorted: readonly number[], gap = BADGE_GAP): number[] {
+  const shown: number[] = [];
+  sorted.forEach((value, index) =>
+    shown.push(index ? Math.max(value, shown[index - 1] + gap) : value),
+  );
+  let limit = 1;
+  for (let index = shown.length - 1; index >= 0; index--) {
+    shown[index] = Math.min(shown[index], limit);
+    limit = shown[index] - gap;
+  }
+  return shown;
+}
+/**
+ * The progress rail above the track: one line from the start to the flag with a round badge
+ * per racer on it, Lumi's the biggest. Once the race is running each badge carries its place,
+ * so who is ahead reads at a glance without covering the track.
  */
 @Component({
   selector: 'app-race-overview',
@@ -14,61 +34,62 @@ import { RacerArt } from './racer-art';
       <span class="flag"></span>
       @for (marker of markers(); track marker.id) {
         <span
-          class="marker"
+          [class]="'marker is-' + marker.id"
           [class.me]="marker.id === 'player'"
-          [class.done]="marker.done"
-          [style.--p]="marker.fraction"
-          [style.--row]="marker.row"
+          [style.--p]="marker.shown"
+          [style.z-index]="marker.layer"
         >
-          <app-racer [kind]="marker.id" />
+          <app-racer [kind]="marker.id" bust />
+          @if (started()) {
+            <span class="place">{{ marker.place }}</span>
+          }
         </span>
       }
     </div>
     <ol class="standings" [attr.aria-label]="title()">
       @for (entry of order(); track entry.id) {
-        <li [class.me]="entry.id === 'player'" [class]="'entry is-' + entry.id">
-          <span class="pos">{{ placeLabels()[entry.place] }}</span>
-          <app-racer class="mini" [kind]="entry.id" bust aria-hidden="true" />
-          <span class="name">{{ names()[entry.id] }}</span>
-          <span class="sr-only">, {{ labels()[entry.id] }}</span>
+        <li class="entry">
+          @if (started()) {
+            <span class="pos">{{ placeLabels()[entry.place] }}</span>
+          }
+          <span class="name">{{ names()[entry.id] }}</span
+          ><span>, {{ labels()[entry.id] }}</span>
         </li>
       }
     </ol>
   `,
   styles: `
     :host {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 6px 10px;
-      padding: 6px 10px;
-      border-radius: var(--radius-button);
-      background: rgba(255, 255, 255, 0.78);
+      display: block;
+      container-type: inline-size;
+      padding: 3px 4px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.62);
       box-shadow: var(--shadow-rest);
-      backdrop-filter: blur(6px);
     }
     .rail {
       position: relative;
-      height: 46px;
-      margin: 0 22px 0 6px;
+      height: clamp(36px, 9.5cqi, 48px);
+      margin: 0 clamp(56px, 13.5cqi, 74px) 0 clamp(22px, 5.5cqi, 32px);
     }
     .line {
       position: absolute;
-      left: 0;
-      right: 0;
+      left: -12px;
+      right: clamp(-38px, -7.5cqi, -28px);
       top: 50%;
-      height: 6px;
-      margin-top: -3px;
-      border-radius: 3px;
+      height: 10px;
+      translate: 0 -50%;
+      border-radius: 5px;
       background: linear-gradient(90deg, #ff8fb8, #ffd36b, #7ddf9b, #7cc7ff, #b79bff);
-      opacity: 0.8;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
     }
     .flag {
       position: absolute;
-      right: -18px;
-      top: 4px;
+      left: calc(100% + clamp(30px, 8cqi, 40px));
+      top: 50%;
       width: 16px;
-      height: 14px;
+      height: 13px;
+      translate: 0 -100%;
       background:
         repeating-conic-gradient(#26224a 0 25%, #fff 0 50%) 0 0 / 8px 8px,
         #fff;
@@ -78,124 +99,88 @@ import { RacerArt } from './racer-art';
     .flag::after {
       content: '';
       position: absolute;
-      left: -2px;
-      top: -1px;
+      left: -3px;
+      top: -2px;
       width: 2px;
-      height: 38px;
+      height: 26px;
+      border-radius: 1px;
       background: #26224a;
     }
     .marker {
+      --size: clamp(24px, 6.6cqi, 34px);
+      --ring: #b9a3ef;
       position: absolute;
       left: calc(var(--p) * 100%);
-      top: calc(50% + (var(--row) - 1.5) * 9px);
-      width: 36px;
-      height: 26px;
-      margin: -13px 0 0 -18px;
+      top: 50%;
+      width: var(--size);
+      height: var(--size);
+      translate: -50% -50%;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow:
+        0 0 0 2.5px var(--ring),
+        0 2px 4px rgba(38, 34, 74, 0.3);
       transition: left 0.12s linear;
     }
     .marker app-racer {
       display: block;
-      width: 36px;
-      height: 26px;
-      filter: drop-shadow(0 1px 1px rgba(38, 34, 74, 0.35));
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
     }
     .marker.me {
-      z-index: 2;
-      width: 44px;
-      height: 32px;
-      margin: -16px 0 0 -22px;
+      --size: clamp(30px, 8.4cqi, 44px);
+      --ring: #ffc94d;
+      box-shadow:
+        0 0 0 3px var(--ring),
+        0 0 0 4.5px #4b3a70,
+        0 2px 5px rgba(38, 34, 74, 0.35);
     }
-    .marker.me app-racer {
-      width: 44px;
-      height: 32px;
+    .marker.is-mint {
+      --ring: #7fcf9f;
     }
-    .marker.done {
-      opacity: 0.7;
+    .marker.is-peach {
+      --ring: #f0b48e;
     }
-    .standings {
-      display: flex;
-      gap: 6px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
+    .marker.is-storm {
+      --ring: #6b739e;
     }
-    .entry {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 8px 3px 4px;
+    .marker.is-shadow {
+      --ring: #b09cf2;
+    }
+    .place {
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      translate: -50% 0;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 3px;
       border-radius: 999px;
-      background: var(--paper-veil);
-      font-size: 13px;
-      font-weight: 600;
-      color: #26224a;
-      white-space: nowrap;
-    }
-    .entry.me {
       background: #4b3a70;
       color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 16px;
+      text-align: center;
+      box-shadow: 0 0 0 1.5px #fff;
     }
-    .mini {
-      display: block;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #fff;
-    }
-    .pos {
-      display: inline-grid;
-      place-items: center;
-      min-width: 22px;
-      height: 22px;
-      padding: 0 4px;
-      border-radius: 999px;
-      background: #fff;
-      color: #4b3a70;
-      font-size: 12px;
-    }
-    .entry.is-cloud .pos {
-      background: #dccbff;
-    }
-    .entry.is-mint .pos {
-      background: #cdf3dd;
-    }
-    .entry.is-peach .pos {
-      background: #ffd8bb;
-    }
-    .entry.is-player .pos {
+    .marker.me .place {
       background: #ffd36b;
+      color: #4b3a70;
     }
-    .entry.is-storm .pos {
-      background: #c9cfe8;
-    }
-    .entry.is-shadow .pos {
-      background: #e4dbff;
-    }
-    .sr-only {
+    /* The standings are read out; the rail shows the same thing to the eye. */
+    .standings {
       position: absolute;
       width: 1px;
       height: 1px;
+      margin: 0;
+      padding: 0;
       overflow: hidden;
       clip-path: inset(50%);
       white-space: nowrap;
-    }
-    @media (max-width: 560px) {
-      :host {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .standings {
-        justify-content: space-between;
-      }
-      .entry {
-        padding: 2px 6px 2px 3px;
-        font-size: 12px;
-      }
-      .name {
-        display: none;
-      }
-      .entry.me .name {
-        display: inline;
-      }
+      list-style: none;
     }
     @media (prefers-reduced-motion: reduce) {
       .marker {
@@ -213,13 +198,24 @@ export class RaceOverview {
   readonly labels = input.required<Readonly<Record<RacerId, string>>>();
   readonly placeLabels = input.required<Readonly<Record<1 | 2 | 3 | 4, string>>>();
   readonly title = input.required<string>();
-  protected readonly markers = computed(() =>
-    this.racers().map((racer, row) => ({
-      id: racer.id,
-      row,
-      fraction: Math.min(1, racer.position / this.length()),
-      done: racer.finishedAt !== undefined,
-    })),
-  );
+  /** False on the start line, where everyone is level and a place would mean nothing. */
+  readonly started = input(false);
   protected readonly order = computed(() => standings({ racers: this.racers() }));
+  protected readonly markers = computed(() => {
+    const racers = this.racers();
+    // Last place first, so the badges are spread in the order they run.
+    const trailing = [...this.order()].reverse();
+    const shown = spreadBadges(
+      trailing.map((entry) =>
+        Math.min(1, racers.find((racer) => racer.id === entry.id)!.position / this.length()),
+      ),
+    );
+    return trailing.map((entry, index) => ({
+      id: entry.id,
+      place: entry.place,
+      shown: shown[index],
+      // Lumi always on top, then whoever is further ahead.
+      layer: entry.id === 'player' ? 9 : index + 1,
+    }));
+  });
 }

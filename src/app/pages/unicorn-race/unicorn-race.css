@@ -48,9 +48,10 @@ app-game-header {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto minmax(120px, 1fr) auto;
+  grid-template-rows: auto auto minmax(120px, 1fr) auto;
   grid-template-areas:
     'hud'
+    'rail'
     'scene'
     'quiz';
   gap: 10px;
@@ -62,18 +63,14 @@ app-race-scene {
   grid-area: scene;
   min-height: 0;
 }
+/* The progress rail has its own row above the track, so it never covers the ponies. */
 app-race-overview {
-  grid-area: scene;
-  align-self: start;
-  z-index: 2;
-  margin: 8px;
+  grid-area: rail;
+  min-width: 0;
 }
 .quiz {
   grid-area: quiz;
   min-height: 0;
-}
-.stage.finished {
-  grid-template-rows: auto minmax(120px, 1fr) auto;
 }
 /* Upright screens put the result under the track, so the ponies on the line stay in view. */
 .summary {
@@ -86,14 +83,12 @@ app-race-overview {
 @media (min-width: 700px) and (orientation: landscape) {
   .stage {
     grid-template-columns: minmax(0, 1fr) clamp(290px, 32vw, 430px);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     grid-template-areas:
       'hud quiz'
+      'rail quiz'
       'scene quiz';
     column-gap: 16px;
-  }
-  .stage.finished {
-    grid-template-rows: auto minmax(0, 1fr);
   }
   .summary {
     grid-area: quiz;
@@ -111,17 +106,19 @@ app-race-overview {
   }
   .stage {
     grid-template-columns: minmax(0, 1fr) clamp(250px, 36vw, 330px);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     grid-template-areas:
       'hud quiz'
+      'rail quiz'
       'scene quiz';
     gap: 6px 10px;
   }
   .stage.finished {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     grid-template-areas:
       'hud'
+      'rail'
       'scene';
   }
   .summary {
