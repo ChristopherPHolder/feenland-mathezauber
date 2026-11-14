@@ -45,6 +45,56 @@
   margin: 0;
   max-width: 55ch;
 }
+.switches p {
+  margin-bottom: 8px;
+}
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  padding: 8px 0;
+  border-top: 1px solid #e6dfc8;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+/* A big, friendly switch drawn the same in every browser. */
+.switch-row input {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 60px;
+  height: 34px;
+  margin: 0;
+  border-radius: 17px;
+  background: #6b7280;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.switch-row input::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 2px 4px #0003;
+  transition: transform 0.2s;
+}
+.switch-row input:checked {
+  background: var(--success);
+}
+.switch-row input:checked::before {
+  transform: translateX(26px);
+}
+.switch-row input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
 @media (max-width: 700px) {
   .settings-page {
     padding: 16px 20px 32px;
