@@ -1,7 +1,6 @@
 import {
   BoxGeometry,
   CanvasTexture,
-  CapsuleGeometry,
   Color,
   ConeGeometry,
   CylinderGeometry,
@@ -13,7 +12,6 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
-  Object3D,
   PerspectiveCamera,
   PlaneGeometry,
   Scene,
@@ -27,6 +25,7 @@ import {
 import { MAX_SPEED, RacerId, RacerState } from './race';
 import type { RaceCup, Sky } from './race-questions';
 import type { Outfit } from './race-store';
+import { Pony, RAINBOW } from './race-pony';
 /** Everything the scene needs to know per frame; the page owns the race, this only draws it. */
 export interface WorldFrame {
   readonly racers: readonly RacerState[];
@@ -59,6 +58,7 @@ function shade(hex: string, amount: number): Color {
 }
 /** World metres per track unit. */
 const UNIT = 1.1;
+const SUN_OFFSET = new Vector3(5, 12, 5);
 const LANE_WIDTH = 1.8;
 /** Lane order across the track, left to right; Lumi runs second from the left. */
 const LANE_X: Readonly<Record<RacerId, number>> = {
@@ -69,80 +69,6 @@ const LANE_X: Readonly<Record<RacerId, number>> = {
   storm: 0.9,
   shadow: 0.9,
 };
-interface Look {
-  coat: string;
-  shade: string;
-  mane: readonly [string, string, string];
-  horn: boolean;
-  wings: boolean;
-  bow: boolean;
-  crown: boolean;
-  /** Below 1 the pony is see-through, like a shadow. */
-  opacity: number;
-}
-const LOOK: Readonly<Record<RacerId, Look>> = {
-  player: {
-    coat: '#fffdfd',
-    shade: '#e7d8ee',
-    mane: ['#ff8fb8', '#ffd36b', '#8fd3ff'],
-    horn: true,
-    wings: false,
-    bow: false,
-    crown: false,
-    opacity: 1,
-  },
-  cloud: {
-    coat: '#dccbff',
-    shade: '#b9a3ef',
-    mane: ['#fdf6ff', '#ead9ff', '#c9b1ff'],
-    horn: false,
-    wings: true,
-    bow: false,
-    crown: false,
-    opacity: 1,
-  },
-  mint: {
-    coat: '#cdf3dd',
-    shade: '#9fd9b6',
-    mane: ['#ff9ed1', '#ffc3e3', '#ff7bbd'],
-    horn: true,
-    wings: false,
-    bow: false,
-    crown: false,
-    opacity: 1,
-  },
-  peach: {
-    coat: '#ffd8bb',
-    shade: '#f0b48e',
-    mane: ['#fff0b8', '#ffe58a', '#ffd766'],
-    horn: false,
-    wings: false,
-    bow: true,
-    crown: false,
-    opacity: 1,
-  },
-  storm: {
-    coat: '#8f98c4',
-    shade: '#6b739e',
-    mane: ['#4b3a70', '#6d4a9a', '#3a2f5c'],
-    horn: false,
-    wings: true,
-    bow: false,
-    crown: true,
-    opacity: 1,
-  },
-  shadow: {
-    coat: '#c9b8ff',
-    shade: '#b09cf2',
-    mane: ['#e2d6ff', '#d2c2ff', '#efe8ff'],
-    horn: true,
-    wings: false,
-    bow: false,
-    crown: false,
-    opacity: 0.5,
-  },
-};
-const RAINBOW = ['#ff6f91', '#ffb347', '#ffe066', '#7ddf9b', '#7cc7ff', '#b79bff'];
 const INK = '#26224a';
 /** Each cup has its own scenery: a meadow, a path above the clouds, a starry night, a sunset. */
 interface Theme {
@@ -282,232 +208,12 @@ function lambert(color: string, opacity = 1): MeshLambertMaterial {
 function box(w: number, h: number, d: number, material: Material): Mesh {
   return new Mesh(new BoxGeometry(w, h, d), material);
 }
-interface Pony {
+/** A pony on the track, with its name tag and where the scene is showing it. */
+interface Runner {
   readonly id: RacerId;
-  readonly root: Group;
-  readonly body: Group;
-  readonly legs: readonly Object3D[];
-  readonly wings: readonly Object3D[];
-  readonly tail: Object3D;
-  readonly head: Group;
+  readonly pony: Pony;
   readonly tag: Sprite;
   shownZ: number;
-  phase: number;
-  tilt: number;
-}
-/** One low-poly pony built from capsules and boxes, facing down the track (-z). */
-function makePony(id: RacerId, outfit: Outfit | null = null): Pony {
-  const look = LOOK[id];
-  const coat = lambert(look.coat, look.opacity);
-  const shade = lambert(look.shade, look.opacity);
-  const root = new Group();
-  const body = new Group();
-  root.add(body);
-  const torso = new Mesh(new CapsuleGeometry(0.34, 0.8, 4, 12), coat);
-  torso.rotation.x = Math.PI / 2;
-  torso.position.set(0, 0.95, 0);
-  body.add(torso);
-  const neck = new Mesh(new CylinderGeometry(0.17, 0.22, 0.6, 10), coat);
-  neck.position.set(0, 1.3, -0.5);
-  neck.rotation.x = 0.55;
-  body.add(neck);
-  // The head hangs off a pivot at the top of the neck so it can nod and dip.
-  const headGroup = new Group();
-  headGroup.position.set(0, 1.5, -0.62);
-  body.add(headGroup);
-  const head = new Mesh(new CapsuleGeometry(0.2, 0.3, 4, 10), coat);
-  head.rotation.x = Math.PI / 2 - 0.25;
-  head.position.set(0, 0.12, -0.16);
-  headGroup.add(head);
-  const muzzle = new Mesh(new SphereGeometry(0.15, 10, 8), shade);
-  muzzle.position.set(0, 0.05, -0.43);
-  headGroup.add(muzzle);
-  const eyeMaterial = lambert(INK, look.opacity);
-  for (const side of [-1, 1]) {
-    const eye = new Mesh(new SphereGeometry(0.045, 8, 6), eyeMaterial);
-    eye.position.set(side * 0.17, 1.7, -0.86);
-    body.add(eye);
-    const ear = new Mesh(new ConeGeometry(0.07, 0.2, 6), coat);
-    ear.position.set(side * 0.12, 1.9, -0.62);
-    body.add(ear);
-  }
-  if (look.horn) {
-    const horn = new Mesh(new ConeGeometry(0.06, 0.4, 8), lambert('#ffd54a', look.opacity));
-    horn.position.set(0, 1.98, -0.8);
-    horn.rotation.x = -0.35;
-    body.add(horn);
-  }
-  const wings: Object3D[] = [];
-  if (look.wings) {
-    const wingMaterial = lambert(id === 'storm' ? '#b6bde0' : '#fdf6ff');
-    for (const side of [-1, 1]) {
-      // Pivot at the shoulder so the wing flaps around its root, not its middle.
-      const pivot = new Group();
-      pivot.position.set(side * 0.25, 1.25, 0.05);
-      const wing = box(0.55, 0.05, 0.45, wingMaterial);
-      wing.position.x = side * 0.3;
-      pivot.add(wing);
-      pivot.rotation.z = side * -0.5;
-      pivot.userData['side'] = side;
-      body.add(pivot);
-      wings.push(pivot);
-    }
-  }
-  if (look.bow) {
-    const bowMaterial = lambert('#ff6fa6');
-    for (const side of [-1, 1]) {
-      const loop = new Mesh(new SphereGeometry(0.08, 8, 6), bowMaterial);
-      loop.position.set(side * 0.1, 1.95, -0.55);
-      body.add(loop);
-    }
-  }
-  if (look.crown) {
-    const gold = lambert('#ffd54a');
-    const ring = new Mesh(new TorusGeometry(0.16, 0.04, 6, 12), gold);
-    ring.rotation.x = Math.PI / 2;
-    ring.position.set(0, 2.0, -0.62);
-    body.add(ring);
-    for (const angle of [0, 2, 4]) {
-      const point = new Mesh(new ConeGeometry(0.04, 0.14, 4), gold);
-      point.position.set(Math.sin(angle) * 0.14, 2.08, -0.62 + Math.cos(angle) * 0.14);
-      body.add(point);
-    }
-    const key = new Mesh(new TorusGeometry(0.09, 0.03, 6, 10), gold);
-    key.position.set(0.42, 1.0, 0.2);
-    body.add(key);
-    const shaft = box(0.05, 0.28, 0.05, gold);
-    shaft.position.set(0.42, 0.78, 0.2);
-    body.add(shaft);
-  }
-  if (outfit) dress(body, outfit);
-  const maneMaterials = look.mane.map((color) => lambert(color, look.opacity));
-  const manePoints: readonly [number, number][] = [
-    [1.92, -0.72],
-    [1.78, -0.55],
-    [1.6, -0.38],
-    [1.42, -0.22],
-  ];
-  manePoints.forEach(([y, z], index) => {
-    const tuft = new Mesh(new SphereGeometry(0.13, 8, 6), maneMaterials[index % 3]);
-    tuft.position.set(0, y, z);
-    body.add(tuft);
-  });
-  const tailPivot = new Group();
-  tailPivot.position.set(0, 1.05, 0.45);
-  body.add(tailPivot);
-  const tail = new Mesh(new ConeGeometry(0.14, 0.6, 8), maneMaterials[0]);
-  tail.position.set(0, -0.05, 0.27);
-  tail.rotation.x = -Math.PI / 2 + 0.5;
-  tailPivot.add(tail);
-  const legs: Object3D[] = [];
-  const hoof = lambert(INK, look.opacity);
-  for (const [x, z] of [
-    [-0.2, -0.32],
-    [0.2, -0.32],
-    [-0.2, 0.32],
-    [0.2, 0.32],
-  ]) {
-    const pivot = new Group();
-    pivot.position.set(x, 0.72, z);
-    const leg = box(0.15, 0.6, 0.15, coat);
-    leg.position.y = -0.3;
-    pivot.add(leg);
-    const shoe = box(0.17, 0.08, 0.17, hoof);
-    shoe.position.y = -0.6;
-    pivot.add(shoe);
-    body.add(pivot);
-    legs.push(pivot);
-  }
-  const tag = makeTag('');
-  tag.position.set(0, 2.55, -0.2);
-  root.add(tag);
-  root.position.x = LANE_X[id];
-  return {
-    id,
-    root,
-    body,
-    legs,
-    wings,
-    tail: tailPivot,
-    head: headGroup,
-    tag,
-    shownZ: 0,
-    phase: 0,
-    tilt: 0,
-  };
-}
-/** The keepsake from a finished cup, worn on top of Lumi's usual look. */
-function dress(body: Group, outfit: Outfit) {
-  switch (outfit) {
-    case 'wreath': {
-      const petals = ['#ff8fb8', '#ffd36b', '#ffffff', '#b79bff'].map((c) => lambert(c));
-      for (let i = 0; i < 8; i++) {
-        const angle = (i / 8) * Math.PI * 2;
-        const flower = new Mesh(new SphereGeometry(0.07, 7, 6), petals[i % 4]);
-        flower.position.set(Math.sin(angle) * 0.2, 1.93, -0.72 + Math.cos(angle) * 0.2);
-        body.add(flower);
-      }
-      return;
-    }
-    case 'wings': {
-      const feather = lambert('#ffffff');
-      for (const side of [-1, 1]) {
-        const wing = box(0.7, 0.05, 0.5, feather);
-        wing.position.set(side * 0.55, 1.3, 0.05);
-        wing.rotation.z = side * -0.6;
-        body.add(wing);
-        const tip = box(0.4, 0.04, 0.3, feather);
-        tip.position.set(side * 0.95, 1.55, 0.05);
-        tip.rotation.z = side * -0.9;
-        body.add(tip);
-      }
-      return;
-    }
-    case 'tiara': {
-      const silver = lambert('#e8e4ff');
-      const band = new Mesh(new TorusGeometry(0.17, 0.03, 6, 12, Math.PI), silver);
-      band.rotation.set(Math.PI / 2, 0, 0);
-      band.position.set(0, 1.98, -0.68);
-      body.add(band);
-      const star = new MeshBasicMaterial({ color: '#fff4c2' });
-      for (const [x, y] of [
-        [0, 2.14],
-        [-0.12, 2.08],
-        [0.12, 2.08],
-      ]) {
-        const point = new Mesh(new SphereGeometry(0.05, 6, 5), star);
-        point.position.set(x, y, -0.62);
-        body.add(point);
-      }
-      return;
-    }
-    case 'crown': {
-      const gold = lambert('#ffd54a');
-      const ring = new Mesh(new TorusGeometry(0.17, 0.045, 6, 12), gold);
-      ring.rotation.x = Math.PI / 2;
-      ring.position.set(0, 2.0, -0.64);
-      body.add(ring);
-      for (let i = 0; i < 5; i++) {
-        const angle = (i / 5) * Math.PI * 2;
-        const point = new Mesh(new ConeGeometry(0.045, 0.16, 4), gold);
-        point.position.set(Math.sin(angle) * 0.15, 2.09, -0.64 + Math.cos(angle) * 0.15);
-        body.add(point);
-      }
-      const gem = new Mesh(new SphereGeometry(0.05, 6, 5), lambert('#ff6f91'));
-      gem.position.set(0, 2.02, -0.82);
-      body.add(gem);
-      return;
-    }
-    case 'cape': {
-      RAINBOW.forEach((color, index) => {
-        const stripe = box(0.12, 0.03, 0.9, lambert(color));
-        stripe.position.set(-0.3 + index * 0.12, 1.32, 0.25);
-        stripe.rotation.x = -0.25;
-        body.add(stripe);
-      });
-      return;
-    }
-  }
 }
 /** A floating name pill drawn onto a small canvas. */
 function makeTag(name: string): Sprite {
@@ -541,7 +247,8 @@ export class RaceWorld {
   private readonly renderer: WebGLRenderer;
   private readonly scene = new Scene();
   private readonly camera: PerspectiveCamera;
-  private readonly ponies: readonly Pony[];
+  private readonly runners: readonly Runner[];
+  private readonly sun = new DirectionalLight();
   private readonly trail: Group;
   private readonly observer: ResizeObserver;
   private readonly theme: Theme;
@@ -588,16 +295,24 @@ export class RaceWorld {
     this.finishZ = -course.length * UNIT;
     this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.shadowMap.enabled = true;
     const sky = shade(this.theme.sky, this.dusk);
     this.scene.background = sky;
     this.scene.fog = new Fog(sky, ...this.theme.fog);
     this.camera = new PerspectiveCamera(58, 1, 0.1, 180);
     this.camera.position.set(0.4, 4.3, 8.5);
     this.buildWorld();
-    this.ponies = course.racers.map((id) => makePony(id, id === 'player' ? course.outfit : null));
-    for (const pony of this.ponies) this.scene.add(pony.root);
+    this.runners = course.racers.map((id) => {
+      const pony = new Pony(id, id === 'player' ? course.outfit : null);
+      pony.root.position.x = LANE_X[id];
+      const tag = makeTag('');
+      tag.position.set(0, 2.75, -0.5);
+      pony.root.add(tag);
+      this.scene.add(pony.root);
+      return { id, pony, tag, shownZ: 0 };
+    });
     this.trail = this.buildTrail();
-    const lumi = this.ponies.find((pony) => pony.id === 'player')!;
+    const lumi = this.runners.find((runner) => runner.id === 'player')!.pony;
     lumi.root.add(this.trail);
     for (const side of [-1, 1])
       for (const row of [0, 1]) {
@@ -625,7 +340,7 @@ export class RaceWorld {
     this.frame = frame;
   }
   setNames(names: Readonly<Record<RacerId, string>>) {
-    for (const pony of this.ponies) paintTag(pony.tag, names[pony.id]);
+    for (const runner of this.runners) paintTag(runner.tag, names[runner.id]);
   }
   dispose() {
     cancelAnimationFrame(this.handle);
@@ -656,9 +371,22 @@ export class RaceWorld {
     this.scene.add(
       new HemisphereLight(theme.hemisphere[0], theme.hemisphere[1], theme.hemisphere[2] * dim),
     );
-    const sun = new DirectionalLight(theme.sun[0], theme.sun[1] * dim);
-    sun.position.set(6, 12, 4);
-    this.scene.add(sun);
+    // The sun follows Lumi so the ponies near her always cast a crisp shadow on the lanes.
+    const sun = this.sun;
+    sun.color.set(theme.sun[0]);
+    sun.intensity = theme.sun[1] * dim;
+    sun.position.copy(SUN_OFFSET);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.camera.left = -9;
+    sun.shadow.camera.right = 9;
+    sun.shadow.camera.top = 12;
+    sun.shadow.camera.bottom = -12;
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 40;
+    sun.shadow.bias = -0.0005;
+    sun.shadow.radius = 4;
+    this.scene.add(sun, sun.target);
     const length = this.course.length * UNIT + 40;
     const meadow = new Mesh(
       new PlaneGeometry(140, length + 80),
@@ -666,11 +394,13 @@ export class RaceWorld {
     );
     meadow.rotation.x = -Math.PI / 2;
     meadow.position.set(0, -0.02, finishZ / 2 - 10);
+    meadow.receiveShadow = true;
     this.scene.add(meadow);
     for (const id of this.course.racers) {
       const lane = new Mesh(new PlaneGeometry(LANE_WIDTH, length), lambert(theme.lane[id]));
       lane.rotation.x = -Math.PI / 2;
       lane.position.set(LANE_X[id], 0, finishZ / 2 - 2);
+      lane.receiveShadow = true;
       this.scene.add(lane);
     }
     const twoLanes = this.course.racers.length === 2;
@@ -940,7 +670,7 @@ export class RaceWorld {
     const { racers, running, stumbling, rainbow, finished, won, pulse, stumbles } = this.frame;
     let playerZ = 0;
     let playerSpeed = 0;
-    const lumi = this.ponies.find((pony) => pony.id === 'player')!;
+    const lumi = this.runners.find((runner) => runner.id === 'player')!;
     if (!this.synced) {
       this.synced = true;
       this.seenPulse = pulse;
@@ -948,95 +678,55 @@ export class RaceWorld {
     }
     if (pulse !== this.seenPulse) {
       // A right answer: a puff of gold and pink sparkles and a moment of speed lines.
-      {
-        this.burst(
-          new Vector3(lumi.root.position.x, 1.2, lumi.shownZ),
-          [this.goldMaterial, this.sparkMaterials[0], this.sparkMaterials[4]],
-          18,
-          0.7,
-          3,
-          0.13,
-        );
-        this.lineUntil = now + 0.5;
-      }
+      this.burst(
+        new Vector3(lumi.pony.root.position.x, 1.4, lumi.shownZ),
+        [this.goldMaterial, this.sparkMaterials[0], this.sparkMaterials[4]],
+        18,
+        0.7,
+        3,
+        0.13,
+      );
+      this.lineUntil = now + 0.5;
       this.seenPulse = pulse;
     }
     if (stumbles !== this.seenStumbles) {
-      {
-        this.burst(
-          new Vector3(lumi.root.position.x, 0.2, lumi.shownZ + 0.3),
-          [this.dustMaterial],
-          12,
-          0.9,
-          1.4,
-          0.24,
-        );
-        this.shakeUntil = now + 0.45;
-      }
+      this.burst(
+        new Vector3(lumi.pony.root.position.x, 0.2, lumi.shownZ - 0.5),
+        [this.dustMaterial],
+        12,
+        0.9,
+        1.4,
+        0.24,
+      );
+      this.shakeUntil = now + 0.45;
       this.seenStumbles = stumbles;
     }
-    for (const pony of this.ponies) {
-      const state = racers.find((racer) => racer.id === pony.id);
+    for (const runner of this.runners) {
+      const state = racers.find((racer) => racer.id === runner.id);
       const targetZ = -(state?.position ?? 0) * UNIT;
-      const previous = pony.shownZ;
-      pony.shownZ += (targetZ - pony.shownZ) * Math.min(1, dt * 7);
-      const velocity = dt > 0 ? (previous - pony.shownZ) / dt / UNIT : 0;
+      const previous = runner.shownZ;
+      runner.shownZ += (targetZ - runner.shownZ) * Math.min(1, dt * 7);
+      const velocity = dt > 0 ? (previous - runner.shownZ) / dt / UNIT : 0;
       const done = state?.finishedAt !== undefined;
-      const moving = running && !done && velocity > 0.05;
-      const stride = moving ? velocity : 0;
-      pony.phase += stride * dt * 2.4;
-      const swing = Math.sin(pony.phase) * Math.min(0.7, 0.25 + stride * 0.08);
-      const isPlayer = pony.id === 'player';
-      const waiting = !running && !finished && !done;
-      if (waiting) {
-        // At the line the ponies paw the ground and toss their heads, eager to go.
-        const paw = Math.max(0, Math.sin(now * 3 + pony.root.position.x)) * 0.5;
-        pony.legs[0].rotation.x = paw;
-        pony.legs[1].rotation.x = 0;
-        pony.legs[2].rotation.x = 0;
-        pony.legs[3].rotation.x = 0;
-        pony.head.rotation.x = Math.sin(now * 2 + pony.root.position.x) * 0.12;
-      } else {
-        pony.legs[0].rotation.x = swing;
-        pony.legs[3].rotation.x = swing;
-        pony.legs[1].rotation.x = -swing;
-        pony.legs[2].rotation.x = -swing;
-        pony.head.rotation.x = moving ? Math.sin(pony.phase * 2) * 0.08 : 0;
-      }
-      const bob = moving
-        ? Math.abs(Math.sin(pony.phase)) * Math.min(0.1, 0.02 + stride * 0.012)
-        : 0;
-      pony.tail.rotation.y = Math.sin(pony.phase * 1.5 + now * 2) * (moving ? 0.4 : 0.15);
-      pony.tail.rotation.x = moving ? -Math.min(0.5, stride * 0.08) : 0;
-      for (const wing of pony.wings) {
-        const side = wing.userData['side'] as number;
-        const flap = moving ? Math.sin(pony.phase * 2) * 0.45 : Math.sin(now * 2) * 0.1;
-        wing.rotation.z = side * (-0.5 + flap);
-      }
-      const stumbleNow = isPlayer && stumbling;
-      const tilt = stumbleNow ? 0.45 : -Math.min(0.12, stride * 0.02);
-      pony.tilt += (tilt - pony.tilt) * Math.min(1, dt * 10);
-      pony.body.rotation.x = pony.tilt;
-      pony.body.rotation.z = stumbleNow ? Math.sin(now * 40) * 0.08 : 0;
-      if (stumbleNow) pony.head.rotation.x = 0.5 + Math.sin(now * 30) * 0.1;
-      let y = pony.id === 'shadow' ? 0.15 + Math.sin(now * 3) * 0.05 : bob;
-      if (stumbleNow) y -= 0.12;
-      if (isPlayer && finished && won) {
-        // The winner rears up and bounces on the line.
-        const hop = Math.abs(Math.sin(now * 5));
-        y = hop * 0.35;
-        pony.body.rotation.x = -0.55 - hop * 0.15;
-        pony.legs[0].rotation.x = -1.1;
-        pony.legs[1].rotation.x = -0.8;
-      }
-      pony.body.position.y = y;
-      pony.root.position.z = pony.shownZ;
-      pony.tag.visible = !finished || !done;
+      const isPlayer = runner.id === 'player';
+      runner.pony.update({
+        now,
+        dt,
+        speed: velocity,
+        moving: running && !done && velocity > 0.05,
+        waiting: !running && !finished && !done,
+        stumbling: isPlayer && stumbling,
+        celebrating: isPlayer && finished && won,
+      });
+      runner.pony.root.position.z = runner.shownZ;
+      runner.tag.visible = !finished || !done;
       if (isPlayer) {
-        playerZ = pony.shownZ;
+        playerZ = runner.shownZ;
         playerSpeed = velocity;
       }
     }
+    this.sun.position.set(SUN_OFFSET.x, SUN_OFFSET.y, playerZ + SUN_OFFSET.z);
+    this.sun.target.position.set(0, 0, playerZ - 3);
     for (let i = 0; i < this.twinkles.length; i++) {
       const scale = 0.8 + 0.4 * Math.abs(Math.sin(now * 2 + i));
       this.twinkles[i].scale.setScalar(scale);
@@ -1052,9 +742,9 @@ export class RaceWorld {
       if (dizzyNow) {
         const angle = now * 6 + (index * Math.PI * 2) / 3;
         star.position.set(
-          Math.cos(angle) * 0.3,
-          2.2 + Math.sin(now * 8) * 0.04,
-          -0.6 + Math.sin(angle) * 0.3,
+          Math.cos(angle) * 0.32,
+          1.75 + Math.sin(now * 8) * 0.04,
+          -1.3 + Math.sin(angle) * 0.32,
         );
       }
     });
