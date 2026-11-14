@@ -223,6 +223,20 @@ describe('Unicorn race game', () => {
     // The struck choice stays out; the question itself stays, so the child works it out.
     expect(element.querySelector('.equation')?.textContent).toContain(component.question().text);
   });
+  it('words the summary line in the singular for a single stumble', () => {
+    const { element, component, wait, answerRight, answerWrong, start } = setup();
+    start();
+    answerWrong();
+    wait(1200);
+    for (let n = 0; n < 60 && !component.race().done; n++) {
+      answerRight();
+      wait(1200);
+    }
+    wait(1400);
+    const line = () => element.querySelector('.summary-line')?.textContent?.trim() ?? '';
+    expect(line()).toContain('1 stumble ·');
+    expect(line()).toMatch(/\d+ right · 1 stumble · \d+ seconds/);
+  });
   it('lets a child answer with the number keys', () => {
     const { component, start } = setup();
     start();

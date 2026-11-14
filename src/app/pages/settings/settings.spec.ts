@@ -41,3 +41,39 @@ describe('Settings return navigation', () => {
     }
   });
 });
+
+describe('Settings switches', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.classList.remove('calm-motion');
+    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+  });
+  const switchFor = (page: HTMLElement, label: string) =>
+    [...page.querySelectorAll<HTMLLabelElement>('.switch-row')]
+      .find((row) => row.textContent?.includes(label))!
+      .querySelector('input')!;
+  it('turns music and sound effects off for every game', async () => {
+    const h = await RouterTestingHarness.create('/settings');
+    const page = h.routeNativeElement!;
+    expect(switchFor(page, 'Music').checked).toBe(true);
+    switchFor(page, 'Music').click();
+    switchFor(page, 'Sound effects').click();
+    h.detectChanges();
+    expect(JSON.parse(localStorage.getItem('feenland.playtest.audio')!)).toEqual({
+      music: false,
+      effects: false,
+      speech: false,
+    });
+    expect(switchFor(page, 'Music').checked).toBe(false);
+  });
+  it('remembers calm motion and marks the whole page with it', async () => {
+    const h = await RouterTestingHarness.create('/settings');
+    const page = h.routeNativeElement!;
+    expect(switchFor(page, 'Calm motion').getAttribute('role')).toBe('switch');
+    switchFor(page, 'Calm motion').click();
+    h.detectChanges();
+    await h.fixture.whenStable();
+    expect(localStorage.getItem('feenland.calm-motion')).toBe('true');
+    expect(document.documentElement.classList.contains('calm-motion')).toBe(true);
+  });
+});

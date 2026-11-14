@@ -55,7 +55,8 @@ describe('Number wall game', () => {
       vi.advanceTimersByTime(ms);
       fixture.detectChanges();
     };
-    const status = () => element.querySelector('[role="status"]')?.textContent?.trim() ?? '';
+    const status = () =>
+      element.querySelector('[role="status"] > span:last-child')?.textContent?.trim() ?? '';
     const openBricks = () => [...element.querySelectorAll<HTMLButtonElement>('.brick.open')];
     const typeNumber = (value: number) => {
       for (const digit of String(value)) {
@@ -101,6 +102,17 @@ describe('Number wall game', () => {
     click('Cozy');
     expect(element.querySelector('.chip[aria-pressed="true"]')?.textContent).toContain('Cozy');
     expect(JSON.parse(localStorage.getItem('feenland.number-wall.v1')!).pace).toBe('relaxed');
+  });
+
+  it('starts the first level without a star from the big button', () => {
+    localStorage.setItem(
+      'feenland.number-wall.v1',
+      JSON.stringify({ version: 1, ratings: { 1: 3 }, bestStreak: 0, gems: 0, pace: 'relaxed' }),
+    );
+    const { element, click } = setup();
+    expect(element.querySelector('.start-wall')?.textContent).toContain('Level 2');
+    click('Build the magic wall');
+    expect(element.querySelector('.level-tag')?.textContent).toContain('Level 2');
   });
 
   it('builds five fast walls, collects gems, earns three stars and unlocks level 2', () => {
@@ -198,34 +210,40 @@ describe('Number wall game', () => {
     expect(element.querySelector('.troll')).toBeTruthy();
   });
 
-  it('gives a gentle retry, then the trick with a number line, then an answer', () => {
+  it('gives a gentle retry, then the rule as a picture, and never gives the answer away', () => {
     localStorage.setItem(
       'feenland.number-wall.v1',
       JSON.stringify({ version: 1, stars: [1], bestStreak: 0 }),
     );
-    const { element, click, key, status, openBricks, answerFor } = setup();
+    const { element, click, key, status, openBricks, answerFor, typeNumber } = setup();
     expect(TestBed.inject(NumberWallStore).rating(1)).toBe(1);
     click('Level 2');
     const brick = openBricks()[0]!;
     const answer = answerFor(brick);
     const wrong = answer === 10 ? 11 : 10;
-    key(String(Math.floor(wrong / 10)));
-    key(String(wrong % 10));
+    const miss = () => {
+      key(String(Math.floor(wrong / 10)));
+      key(String(wrong % 10));
+    };
+    miss();
     expect(status()).toMatch(/^Not quite\. Try again! Trick: \d+ \+ \? = \d+\. Count up from/);
-    expect(element.querySelector('.number-line')).toBeTruthy();
     expect(element.querySelector('.brick.wobble')).toBeTruthy();
     expect(sound.effect).toHaveBeenLastCalledWith('wrong');
-    expect(element.querySelector('.show-me')).toBeNull();
-    key(String(Math.floor(wrong / 10)));
-    key(String(wrong % 10));
+    expect(element.querySelector('.hint-wall')).toBeNull();
+    miss();
     expect(status()).toMatch(/^Trick: \d+ \+ \? = \d+\. Count up from/);
-    key(String(Math.floor(wrong / 10)));
-    key(String(wrong % 10));
-    click('Show me');
-    expect(status()).toMatch(/^The brick is \d+, because .* Wall built! \+2 gems! Super fast!$/);
-    key('Enter');
-    expect(element.querySelector('.progress-brick.done')).toBeTruthy();
+    expect(element.querySelector('.status .hint-wall .ask')?.textContent).toBe('?');
+    expect(element.querySelector('app-wall-scene')?.classList).toContain('is-hinting');
+    for (let attempt = 0; attempt < 4; attempt++) miss();
+    // However many misses, the help names the rule and the two bricks, never the result, and
+    // there is no button that fills the brick in.
+    expect(status()).toMatch(/^Trick: \d+ \+ \? = \d+\. Count up from \d+ to \d+\.$/);
+    expect(element.querySelector('.show-me')).toBeNull();
+    expect(element.querySelector('.number-line')).toBeNull();
     expect(openBricks()).toHaveLength(1);
+    typeNumber(answer);
+    expect(element.querySelector('app-wall-scene')?.classList).not.toContain('is-hinting');
+    expect(status()).toMatch(/^Wall built! \+\d gems!/);
   });
 
   it('lets the child choose which glowing brick to fill in level 4, in German and without a troll', () => {

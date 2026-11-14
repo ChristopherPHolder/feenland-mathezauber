@@ -5,6 +5,7 @@ import { Chapter, entryLevel, levelStars, WORLD_CATALOG } from '../../core/catal
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
+import { Emblem } from '../../shared/emblem';
 import { Icon } from '../../shared/icon';
 import { DragonPortraits } from '../hatchery/dragon-portraits';
 import { EggIcon } from '../hatchery/egg-icon';
@@ -18,7 +19,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
 };
 @Component({
   selector: 'app-welcome',
-  imports: [RouterLink, NgOptimizedImage, Icon, EggIcon],
+  imports: [RouterLink, NgOptimizedImage, Icon, Emblem, EggIcon],
   template: ` <section class="home" aria-labelledby="welcome-title">
     <div class="hero">
       <div class="hero-copy">
@@ -89,7 +90,9 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
             [style.--world-color]="game.color"
             [style.--world-ground]="game.ground"
           >
-            <span class="game-emblem" aria-hidden="true">{{ game.chapter.emblem }}</span>
+            <span class="game-emblem"
+              ><app-emblem [id]="game.chapter.id" [fallback]="game.chapter.emblem"
+            /></span>
             <div class="game-copy">
               <h3 [id]="'game-' + game.chapter.id">{{ i.t(game.chapter.title) }}</h3>
               <p>{{ i.t(game.chapter.description) }}</p>

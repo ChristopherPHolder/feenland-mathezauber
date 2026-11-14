@@ -16,8 +16,9 @@
             [style.--world-color]="game.world.color"
             [style.--world-ground]="game.world.ground"
             [attr.aria-current]="game.chapter.id === inView() ? 'location' : null"
-            ><span aria-hidden="true">{{ game.chapter.emblem }}</span
-            >{{ i.t(game.chapter.title) }}</a
+            ><app-emblem [id]="game.chapter.id" [fallback]="game.chapter.emblem" />{{
+              i.t(game.chapter.title)
+            }}</a
           >
         </li>
       }
@@ -36,9 +37,15 @@
       <!-- The world id keeps old /worlds/:id links landing on that world's first game. -->
       <span class="world-anchor" [id]="game.world.id" aria-hidden="true"></span>
       <header class="game-head">
-        <span class="game-emblem" aria-hidden="true">{{ chapter.emblem }}</span>
+        <span class="game-emblem"
+          ><app-emblem [id]="chapter.id" [fallback]="chapter.emblem"
+        /></span>
         <div class="game-copy">
-          <p class="world-name">{{ game.world.emblem }} {{ i.t(game.world.title) }}</p>
+          <p class="world-name">
+            <app-emblem [id]="game.world.id" [fallback]="game.world.emblem" />{{
+              i.t(game.world.title)
+            }}
+          </p>
           <h2 [id]="'title-' + chapter.id">{{ i.t(chapter.title) }}</h2>
           <p>{{ i.t(chapter.description) }}</p>
         </div>

@@ -25,6 +25,15 @@
               <span class="brick">2</span><span class="plus">+</span><span class="brick">3</span>
             </div>
           </div>
+          <button type="button" class="button primary start-wall" (click)="start(suggestedLevel())">
+            <span
+              >{{ i.t('numberWallPlay')
+              }}<small
+                >{{ t('wallLevelLabel', { n: suggestedLevel() }) }} ·
+                {{ i.t(levelTitle(suggestedLevel())) }}</small
+              ></span
+            ><app-icon kind="arrow" />
+          </button>
           <p class="rule">{{ i.t('wallRule') }}</p>
           <p class="rule"><span aria-hidden="true">🧌</span> {{ i.t('wallTrollHelp') }}</p>
         </div>
@@ -32,13 +41,19 @@
           <legend>{{ i.t('wallPace') }}</legend>
           <div class="pace-options">
             @for (option of paces; track option) {
+              @let label = i.t(paceLabel(option)).split(' · ');
               <button
                 type="button"
                 class="chip"
+                [attr.data-pace]="option"
                 [attr.aria-pressed]="pace() === option"
                 (click)="choosePace(option)"
               >
-                {{ i.t(paceLabel(option)) }}
+                <strong>{{ label[0] }}</strong>
+                @if (label[1]) {
+                  <span class="chip-detail">{{ label[1] }}</span>
+                }
+                <span class="chip-picture" aria-hidden="true">{{ pacePicture[option] }}</span>
               </button>
             }
           </div>
@@ -161,6 +176,7 @@
             [cracks]="maxHearts - hearts()"
             [crumbled]="crumbled()"
             [combo]="combo() > 0"
+            [hinting]="hinting()"
             (select)="select($event)"
           />
           <div class="dock">
@@ -169,8 +185,18 @@
               role="status"
               [class.happy]="feedback().kind === 'correct' || built()"
               [class.alert]="feedback().kind === 'troll' || crumbled()"
+              [class.hint]="hinting()"
             >
-              @if (built()) {
+              @if (hinting()) {
+                @let below = hintKind() === 'complete';
+                <span class="hint-wall" aria-hidden="true">
+                  <span class="hint-brick" [class.ask]="!below">{{ below ? '' : '?' }}</span>
+                  <span class="hint-row"
+                    ><span class="hint-brick"></span><span class="hint-plus">+</span
+                    ><span class="hint-brick" [class.ask]="below">{{ below ? '?' : '' }}</span></span
+                  >
+                </span>
+              } @else if (built()) {
                 <app-icon kind="star" />
               } @else if (feedback().kind === 'correct') {
                 <app-icon kind="check" />
@@ -179,19 +205,6 @@
               }
               <span>{{ status() }}</span>
             </p>
-            @if (numberLine(); as line) {
-              <div
-                class="number-line"
-                role="img"
-                [attr.aria-label]="t('wallNumberLine', { a: line.from, t: line.to })"
-              >
-                <span class="dot start">{{ i.format(line.from) }}</span>
-                @for (step of line.steps; track step) {
-                  <span class="hop" aria-hidden="true"></span>
-                  <span class="dot" [class.end]="step === line.to">{{ i.format(step) }}</span>
-                }
-              </div>
-            }
             <div class="dock-rule" aria-hidden="true">
               <div class="demo-wall">
                 <div class="row"><span class="brick filled">5</span></div>
@@ -237,11 +250,6 @@
                   <app-icon kind="check" />
                 </button>
               </div>
-              @if (canShow()) {
-                <button type="button" class="button secondary show-me" (click)="showMe()">
-                  {{ i.t('wallShowMe') }}
-                </button>
-              }
             }
           </div>
         </div>

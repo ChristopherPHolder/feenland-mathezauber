@@ -51,7 +51,6 @@ type Feedback =
   | { readonly kind: 'correct'; readonly value: number; readonly streak: number }
   | { readonly kind: 'wrong'; readonly hint: Hint }
   | { readonly kind: 'hint'; readonly hint: Hint; readonly dust?: boolean }
-  | { readonly kind: 'shown'; readonly value: number; readonly hint: Hint }
   | { readonly kind: 'troll'; readonly hearts: number }
   | { readonly kind: 'crumbled' }
   | {
@@ -59,7 +58,6 @@ type Feedback =
       readonly gems: number;
       readonly fast: boolean;
       readonly perfect: boolean;
-      readonly explanation?: string;
     };
 const TICK_MS = 100;
 @Component({
@@ -83,6 +81,16 @@ export class NumberWallComponent {
   private readonly document = inject(DOCUMENT);
   protected readonly levels = levels;
   protected readonly paces = paces;
+  /** A picture per troll speed: asleep, on his way, running. */
+  protected readonly pacePicture: Readonly<Record<Pace, string>> = {
+    relaxed: '😴',
+    steady: '🧌',
+    quick: '⚡',
+  };
+  /** The level the big start button opens: the first one without a star yet. */
+  protected readonly suggestedLevel = computed(
+    () => levels.find((level) => !this.store.hasStar(level)) ?? levels[0]!,
+  );
   protected readonly stars = [1, 2, 3] as const;
   protected readonly confetti = Array.from({ length: 12 }, (_, index) => index);
   protected readonly total = WALLS_PER_WORLD;
@@ -127,7 +135,15 @@ export class NumberWallComponent {
   protected readonly wallsDone = computed(() => this.wallIndex() + (this.built() ? 1 : 0));
   protected readonly combo = computed(() => (this.streak() >= DUST_EVERY ? this.streak() : 0));
   protected readonly trollAsleep = computed(() => this.frozenMs() > 0);
-  protected readonly canShow = computed(() => this.misses() >= 3 && !this.locked());
+  /**
+   * From the second miss on a brick the help shows the rule as a picture and the pair to add
+   * pulses harder. It never shows the result: the child keeps working the brick out.
+   */
+  protected readonly hinting = computed(() => this.feedback().kind === 'hint');
+  protected readonly hintKind = computed(() => {
+    const feedback = this.feedback();
+    return feedback.kind === 'hint' ? feedback.hint.kind : undefined;
+  });
   protected readonly canDust = computed(
     () => this.dust() > 0 && !this.locked() && !this.trollAsleep() && !!this.selected(),
   );
@@ -156,15 +172,12 @@ export class NumberWallComponent {
         return (
           (feedback.dust ? this.t('wallTrollFrozen') + ' ' : '') + this.hintText(feedback.hint)
         );
-      case 'shown':
-        return this.shownText(feedback.value, feedback.hint);
       case 'troll':
         return this.t('wallTrollArrived', { n: feedback.hearts });
       case 'crumbled':
         return this.t('wallTrollCrumbled');
       case 'built':
         return [
-          feedback.explanation,
           this.t('wallBuilt'),
           this.t('wallGemsWon', { n: feedback.gems }),
           feedback.fast ? this.t('wallFast') : '',
@@ -173,19 +186,6 @@ export class NumberWallComponent {
           .filter(Boolean)
           .join(' ');
     }
-  });
-  protected readonly numberLine = computed(() => {
-    const feedback = this.feedback();
-    const hint =
-      feedback.kind === 'wrong' || feedback.kind === 'hint' || feedback.kind === 'shown'
-        ? feedback.hint
-        : undefined;
-    if (hint?.kind !== 'complete' || hint.target - hint.known > 12) return undefined;
-    return {
-      from: hint.known,
-      to: hint.target,
-      steps: Array.from({ length: hint.target - hint.known }, (_, index) => hint.known + index + 1),
-    };
   });
   private readonly nextButton = viewChild<ElementRef<HTMLButtonElement>>('nextButton');
   private readonly summaryPanel = viewChild<ElementRef<HTMLElement>>('summary');
@@ -356,12 +356,6 @@ export class NumberWallComponent {
     this.feedback.set(this.misses() >= 2 ? { kind: 'hint', hint } : { kind: 'wrong', hint });
     this.flash(this.wobbling, 500);
   }
-  protected showMe() {
-    const wall = this.wall();
-    const brick = this.selected();
-    if (!wall || !brick || !this.canShow()) return;
-    this.place(brick, valueOf(wall, brick), false, hintFor(wall, brick, this.filled()));
-  }
   protected useDust() {
     const wall = this.wall();
     const brick = this.selected();
@@ -371,7 +365,7 @@ export class NumberWallComponent {
     this.feedback.set({ kind: 'hint', hint: hintFor(wall, brick, this.filled()), dust: true });
     this.audio.effect('cast');
   }
-  private place(brick: BrickId, value: number, firstTry: boolean, shown?: Hint) {
+  private place(brick: BrickId, value: number, firstTry: boolean) {
     const wall = this.wall()!;
     this.filled.update((filled) => [...filled, brick]);
     this.justFilled.set(brick);
@@ -390,11 +384,7 @@ export class NumberWallComponent {
     const remaining = fillOrder(wall).filter((id) => !this.isFilled(id));
     if (remaining.length) {
       this.selected.set(remaining[0]);
-      this.feedback.set(
-        shown
-          ? { kind: 'shown', value, hint: shown }
-          : { kind: 'correct', value, streak: firstTry ? this.streak() : 0 },
-      );
+      this.feedback.set({ kind: 'correct', value, streak: firstTry ? this.streak() : 0 });
       this.audio.effect('correct');
       return;
     }
@@ -409,7 +399,6 @@ export class NumberWallComponent {
       gems,
       fast: isFast(outcome),
       perfect: this.wallMisses === 0,
-      ...(shown ? { explanation: this.shownText(value, shown) } : {}),
     });
     this.audio.effect('complete');
   }
@@ -477,12 +466,5 @@ export class NumberWallComponent {
       case 'fillOther':
         return this.t('wallHintOther');
     }
-  }
-  private shownText(value: number, hint: Hint): string {
-    if (hint.kind === 'add')
-      return this.t('wallShown', { n: value, a: hint.left, b: hint.right, t: hint.sum });
-    if (hint.kind === 'complete')
-      return this.t('wallShown', { n: value, a: hint.known, b: value, t: hint.target });
-    return this.t('wallCorrect', { n: value });
   }
 }

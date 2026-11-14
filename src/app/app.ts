@@ -5,6 +5,7 @@ import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
+import { MotionPreference } from './core/motion';
 import { Icon } from './shared/icon';
 @Component({
   selector: 'app-root',
@@ -27,9 +28,8 @@ import { Icon } from './shared/icon';
             routerLink="/settings"
             [queryParams]="{ returnTo: settingsReturnTarget() }"
             routerLinkActive="active"
-            [attr.aria-label]="i.t('settings')"
-            ><app-icon kind="gear"
-          /></a>
+            ><app-icon kind="gear" /><span>{{ i.t('settings') }}</span></a
+          >
         </nav>
       </header>
     }
@@ -49,6 +49,8 @@ export class App {
   protected readonly i = inject(LocaleService);
   protected readonly p = inject(ProgressService);
   private readonly router = inject(Router);
+  /** Created at start so a saved calm-motion choice applies before any game draws. */
+  private readonly motion = inject(MotionPreference);
   /** Game routes declare `focusedGame` so the shell steps aside and the game fills the screen. */
   protected readonly focusedGame = toSignal(
     this.router.events.pipe(
