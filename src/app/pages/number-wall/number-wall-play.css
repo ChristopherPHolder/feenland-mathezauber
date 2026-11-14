@@ -319,3 +319,51 @@
     justify-content: space-between;
   }
 }
+
+/* Short screens (small phones, phones on their side): the whole wall and keypad still fit on
+   one screen. */
+@media (max-height: 760px) {
+  .hud {
+    margin-bottom: 8px;
+  }
+  .play-area {
+    grid-template-rows: minmax(180px, 1fr) auto;
+    gap: 10px;
+  }
+  .dock {
+    gap: 8px;
+  }
+  .status {
+    min-height: 0;
+    padding: 8px 14px;
+    font-size: 16px;
+  }
+  .pad {
+    grid-auto-rows: minmax(46px, 1fr);
+    gap: 8px;
+  }
+}
+@media (max-height: 760px) and (max-width: 480px) {
+  .hud {
+    gap: 4px 14px;
+  }
+  .hud .hearts,
+  .hud .gems,
+  .hud .streak {
+    min-height: 36px;
+    padding-block: 4px;
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .play-area {
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .hud {
+    padding-block: 4px;
+  }
+  /* Four keys a row: three rows of keys fit beside the wall at full touch size. */
+  .pad {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(48px, 1fr);
+  }
+}
