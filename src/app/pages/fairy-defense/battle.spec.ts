@@ -39,7 +39,28 @@ describe('Wave 1 battle rules', () => {
       phase: 'ready',
       spell: null,
       damaged: false,
+      gems: 0,
+      streak: 0,
     });
+  });
+  it('fills the gem pouch: two gems for a first try, one after a slip, and counts the streak', () => {
+    // Wave 1 is 9 then 8: the first creature needs 1, the second 2.
+    let state = answer(freshBattle(), 1);
+    expect(state.gems).toBe(2);
+    expect(state.streak).toBe(1);
+    state = answer(state, 5);
+    expect(state.streak).toBe(0);
+    expect(state.gems).toBe(2);
+    state = answer(state, 2);
+    expect(state.gems).toBe(3);
+    expect(state.streak).toBe(0);
+    expect(state.phase).toBe('complete');
+  });
+  it('builds a streak across creatures from first tries only', () => {
+    let state = answer(freshBattle(), 1);
+    state = answer(state, 2);
+    expect(state.streak).toBe(2);
+    expect(state.gems).toBe(4);
   });
   it('locks input through cast, feedback, and transformation', () => {
     const casting = cast(freshBattle(), 1);

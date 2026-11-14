@@ -42,7 +42,7 @@ import {
   Scenery,
 } from './wall-models';
 import { Sparks } from './wall-sparks';
-import { Troll } from './wall-troll';
+import { Troll } from './wall-troll-model';
 
 const FOV = 40;
 /** The camera looks down on the wall by this much (radians). */

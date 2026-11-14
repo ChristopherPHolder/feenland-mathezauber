@@ -1,0 +1,163 @@
+<section class="hatchery" aria-labelledby="hatchery-title">
+  <header class="intro">
+    <h1 id="hatchery-title">{{ t('title') }}</h1>
+    <p>{{ t('intro') }}</p>
+  </header>
+
+  <div class="stage-row">
+    <div
+      #stage
+      class="stage"
+      [class.is-ready]="view() === 'egg' && store.ready()"
+      [class.is-dragon]="view() !== 'egg'"
+    >
+      <app-three-stage class="nest" [world]="loadWorld" [state]="frame()">
+        <div class="flat-nest" aria-hidden="true">
+          @if (view() !== 'egg' && shown(); as dragon) {
+            @if (portraits.pictures()[dragon.id]; as picture) {
+              <img [src]="picture" width="256" height="256" alt="" />
+            } @else {
+              <app-egg-icon class="flat-egg" [dragon]="dragon" [warmth]="1" />
+            }
+          } @else {
+            <app-egg-icon class="flat-egg" [dragon]="store.egg()" [warmth]="warmth()" />
+          }
+        </div>
+      </app-three-stage>
+      @if (view() === 'egg' && store.ready()) {
+        <button
+          class="egg-tap"
+          type="button"
+          [attr.aria-label]="t('crackLabel', { n: crackTaps - cracks() })"
+          (click)="tap()"
+        >
+          <span class="tap-hint" aria-hidden="true">{{ tapHint() }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="panel">
+      @if (view() === 'egg') {
+        @if (store.ready()) {
+          <h2>{{ t('readyTitle') }}</h2>
+          <p>{{ tapHint() }}</p>
+          <div class="crack-pips" aria-hidden="true">
+            @for (pip of [0, 1, 2]; track pip) {
+              <span [class.is-on]="pip < cracks()"></span>
+            }
+          </div>
+        } @else {
+          <h2>{{ t('homeTitle') }}</h2>
+          <div
+            class="meter"
+            role="progressbar"
+            [attr.aria-valuenow]="store.hatchery().warmth"
+            aria-valuemin="0"
+            [attr.aria-valuemax]="store.needed()"
+            [attr.aria-valuetext]="
+              t('warmth', { n: n(store.hatchery().warmth), total: n(store.needed()) })
+            "
+            [attr.aria-label]="t('homeTitle')"
+          >
+            <app-egg-icon class="meter-egg" [dragon]="store.egg()" [warmth]="warmth()" />
+            <div class="meter-track">
+              <span class="meter-fill" [style.inline-size.%]="warmth() * 100"></span>
+            </div>
+            <strong class="meter-text">{{
+              t('warmth', { n: n(store.hatchery().warmth), total: n(store.needed()) })
+            }}</strong>
+          </div>
+          <p>{{ t('warmHelp') }}</p>
+          <a class="button primary" routerLink="/games"
+            >{{ t('warmGo') }}<app-icon kind="arrow"
+          /></a>
+        }
+        <p class="answers">
+          <app-icon kind="star" />{{ t('answers', { n: n(store.hatchery().answers) }) }}
+        </p>
+      } @else {
+        @if (shown(); as dragon) {
+          @if (view() === 'reveal') {
+            <p class="badge">{{ t(isNew() ? 'newDragon' : 'oldFriend') }}</p>
+          }
+          <h2 #dragonHeading tabindex="-1">{{ name(dragon) }}</h2>
+          <p>{{ meet(dragon) }}</p>
+          @if (store.hatchery().favorite === dragon.id) {
+            <p class="favorite-note">
+              <span aria-hidden="true">💖</span>{{ t('isFavorite', { name: name(dragon) }) }}
+            </p>
+          } @else {
+            <button class="button secondary" type="button" (click)="favorite(dragon)">
+              <span aria-hidden="true">💖</span>{{ t('makeFavorite', { name: name(dragon) }) }}
+            </button>
+          }
+          <button class="button primary" type="button" (click)="backToEgg()">
+            <app-egg-icon [dragon]="store.egg()" [warmth]="warmth()" />{{
+              t(view() === 'reveal' ? 'nextEgg' : 'backToEgg')
+            }}
+          </button>
+        }
+      }
+    </div>
+  </div>
+
+  <section class="book" aria-labelledby="book-title">
+    <div class="book-head">
+      <h2 id="book-title">{{ t('book') }}</h2>
+      <p class="count">{{ t('bookCount', { n: n(found()), total: n(totalDragons) }) }}</p>
+    </div>
+    @if (found()) {
+      <p class="book-help">{{ t('chooseFavorite') }}</p>
+    }
+    <ul class="book-grid">
+      @for (dragon of dayDragons; track dragon.id) {
+        <ng-container
+          *ngTemplateOutlet="slot; context: { $implicit: dragon, mystery: 'mystery' }"
+        />
+      }
+    </ul>
+    <h3>{{ t('starlightTitle') }}</h3>
+    @if (!awake()) {
+      <p class="book-help">{{ t('starlightHint') }}</p>
+    }
+    <ul class="book-grid is-night">
+      @for (dragon of starlightDragons; track dragon.id) {
+        <ng-container
+          *ngTemplateOutlet="slot; context: { $implicit: dragon, mystery: 'starlightMystery' }"
+        />
+      }
+    </ul>
+  </section>
+  <p class="sr-only" role="status">{{ announcement() }}</p>
+</section>
+
+<ng-template #slot let-dragon let-mystery="mystery">
+  <li>
+    @if (isFound(dragon)) {
+      <button
+        class="dragon-card"
+        type="button"
+        [class.is-shown]="shown()?.id === dragon.id"
+        [attr.aria-pressed]="shown()?.id === dragon.id"
+        [style.--card-tint]="dragon.shell"
+        (click)="show(dragon)"
+      >
+        @if (portraits.pictures()[dragon.id]; as picture) {
+          <img [src]="picture" width="256" height="256" alt="" />
+        } @else {
+          <app-egg-icon class="card-egg" [dragon]="dragon" [warmth]="1" />
+        }
+        <span class="card-name">{{ name(dragon) }}</span>
+        <span class="card-element">{{ t(dragon.element) }}</span>
+        @if (store.hatchery().favorite === dragon.id) {
+          <span class="card-favorite"><span aria-hidden="true">💖</span>{{ t('favorite') }}</span>
+        }
+      </button>
+    } @else {
+      <div class="dragon-card is-mystery">
+        <app-egg-icon class="card-egg" />
+        <span class="sr-only">{{ t(mystery) }}</span>
+      </div>
+    }
+  </li>
+</ng-template>

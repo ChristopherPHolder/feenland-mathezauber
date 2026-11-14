@@ -2,13 +2,14 @@ import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../core/locale';
 import { Icon } from './icon';
+import { EggChip } from '../pages/hatchery/egg-chip';
 /**
  * The bar every game shows above its menu: the way back to the games hub (landing on this
  * game's section), the game's name, and an optional sound toggle.
  */
 @Component({
   selector: 'app-game-header',
-  imports: [RouterLink, Icon],
+  imports: [RouterLink, Icon, EggChip],
   template: `<a class="games-link" routerLink="/games" [fragment]="anchor()">
       <app-icon kind="back" /><span>{{ i.t('allGames') }}</span>
     </a>
@@ -20,6 +21,7 @@ import { Icon } from './icon';
     </div>
     <div class="actions">
       <ng-content />
+      <app-egg-chip />
       @if (sound() !== undefined) {
         <button
           class="sound-button"

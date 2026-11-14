@@ -1,4 +1,13 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import {
+  afterRenderEffect,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  output,
+} from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { LocaleService } from '../../core/locale';
 import {
   BrickId,
@@ -10,12 +19,14 @@ import {
   WALLS_PER_WORLD,
 } from './number-wall';
 import { wallText } from './wall-text';
+import { WallTroll } from './wall-troll';
 /**
  * The castle scene: bricks, the fairy, the growing towers, and the troll marching down the
  * road that ends at the wall. Every head-butt leaves a crack; the third tumbles the wall.
  */
 @Component({
   selector: 'app-wall-scene',
+  imports: [NgOptimizedImage, WallTroll],
   templateUrl: './wall-scene.html',
   styleUrls: ['./wall-scene.css', './wall-scene-motion.css'],
   host: {
@@ -41,6 +52,8 @@ export class WallScene {
   readonly wallsDone = input(0);
   readonly trollProgress = input<number | undefined>(undefined);
   readonly trollAsleep = input(false);
+  /** The share of the fairy-dust nap still to come (1 = just fell asleep). */
+  readonly sleepLeft = input(0);
   readonly trollBump = input(false);
   /** Head-butts the wall has taken so far; each one leaves a crack. */
   readonly cracks = input(0);
@@ -50,6 +63,30 @@ export class WallScene {
   readonly hinting = input(false);
   readonly select = output<BrickId>();
   protected readonly i = inject(LocaleService);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  constructor() {
+    // The fairy flies from her perch to the brick that was just placed: measure the trip once
+    // the brick is on screen and hand it to the dive animation as two custom properties.
+    afterRenderEffect({
+      write: () => {
+        const brick = this.justFilled();
+        const root = this.host.nativeElement;
+        const fairy = root.querySelector<HTMLElement>('.fairy');
+        const target =
+          brick && root.querySelector(`.brick[data-row="${brick.row}"][data-col="${brick.col}"]`);
+        if (!fairy || !target) return;
+        const from = fairy.getBoundingClientRect();
+        const to = target.getBoundingClientRect();
+        // The new brick is still dropping in, so its row tells where it will land.
+        const row = (target.parentElement ?? target).getBoundingClientRect();
+        // Her wand is on the right of the picture: land its tip on the brick's top left.
+        const x = to.left + to.width * 0.25 - (from.left + from.width * 0.86);
+        const y = row.top + row.height * 0.15 - (from.top + from.height * 0.32);
+        fairy.style.setProperty('--fly-x', `${Math.round(x)}px`);
+        fairy.style.setProperty('--fly-y', `${Math.round(y)}px`);
+      },
+    });
+  }
   protected readonly total = WALLS_PER_WORLD;
   protected readonly rows = computed(() =>
     this.wall()
@@ -58,6 +95,8 @@ export class WallScene {
   );
   protected readonly confetti = ['✦', '★', '✦', '✧', '★', '✦'];
   protected readonly gems = [0, 1, 2];
+  /** The sparkle burst that puts the troll to sleep when fairy dust lands on him. */
+  protected readonly frost = ['✨', '❄️', '✨', '⭐', '❄️', '✨', '⭐', '✨'];
   protected readonly crackList = computed(() => [1, 2].slice(0, Math.min(2, this.cracks())));
   /** The left brick of the pair that makes (or completes) the glowing brick. */
   private readonly pair = computed<BrickId | undefined>(() => {

@@ -114,9 +114,6 @@
 .side:hover:not([aria-disabled='true']) {
   background: var(--parchment);
 }
-.side.shake {
-  animation: shake 0.4s;
-}
 .side.snatched {
   transform: translateY(-40px) scale(0.6) rotate(8deg);
   opacity: 0;

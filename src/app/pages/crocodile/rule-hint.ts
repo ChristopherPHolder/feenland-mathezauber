@@ -180,6 +180,30 @@ import { RuleHint } from './rule-hints';
         font-size: 24px;
       }
     }
+    @media (orientation: landscape) and (max-height: 500px) {
+      :host {
+        gap: 8px;
+      }
+      .picture {
+        width: 76px;
+        height: 38px;
+        padding: 2px 4px;
+      }
+      .pile {
+        width: 18px;
+      }
+      .croc {
+        max-width: 34px;
+      }
+      .slate {
+        width: 20px;
+        height: 24px;
+        font-size: 14px;
+      }
+      .words strong {
+        display: inline;
+      }
+    }
     @keyframes rule-in {
       from {
         transform: scale(0.85);

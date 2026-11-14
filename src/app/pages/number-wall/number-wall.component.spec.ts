@@ -217,7 +217,7 @@ describe('Number wall game', () => {
   });
 
   it('earns fairy dust after three bricks in a row and uses it to freeze the troll', () => {
-    const { element, click, wait, status, solveSelected } = setup();
+    const { fixture, element, click, wait, status, solveSelected } = setup();
     click('Level 1');
     expect(element.querySelector<HTMLButtonElement>('.dust')?.disabled).toBe(true);
     for (let wall = 0; wall < 3; wall++) {
@@ -225,14 +225,21 @@ describe('Number wall game', () => {
       click('Next wall');
     }
     expect(element.querySelector('.dust strong')?.textContent).toBe('1');
-    click('Fairy dust · 1 / 3');
-    expect(status()).toMatch(
-      /^Fairy dust! The troll fell asleep for a moment\. Trick: \d+ \+ \d+ = \?/,
-    );
+    expect(element.querySelector('.dust')?.classList).toContain('ready');
+    const dust = element.querySelector<HTMLButtonElement>('button.dust')!;
+    expect(dust.textContent?.replace(/\s+/g, ' ').trim()).toBe('🪄Fairy dust 1 / 3');
+    dust.click();
+    fixture.detectChanges();
+    expect(status()).toMatch(/^Fairy dust! The troll is asleep\. Trick: \d+ \+ \d+ = \?/);
+    expect(element.querySelector('.dust')?.classList).not.toContain('ready');
+    expect(element.querySelector('app-wall-troll .sleep-clock')).toBeTruthy();
+    expect(element.querySelectorAll('.troll .frost span').length).toBeGreaterThan(0);
     expect(element.querySelector('.troll.asleep')).toBeTruthy();
+    expect(element.querySelector('app-wall-troll')?.classList).toContain('is-asleep');
     expect(element.querySelector('.dust strong')?.textContent).toBe('0');
     wait(8_000);
     expect(element.querySelector('.troll.asleep')).toBeNull();
+    expect(element.querySelector('app-wall-troll')?.classList).not.toContain('is-asleep');
     expect(element.querySelector('.troll')).toBeTruthy();
   });
 

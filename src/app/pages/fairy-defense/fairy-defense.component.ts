@@ -1,3 +1,4 @@
+import { HatcheryStore } from '../hatchery/hatchery-store';
 import { form, FormField } from '@angular/forms/signals';
 import { Difficulty, Pace, PracticeConfig, practiceLevels } from '../../core/practice';
 import { practiceBattle, practiceSpells, withCampaignMath } from './practice-battle';
@@ -79,6 +80,7 @@ export class FairyDefenseComponent {
   protected readonly i = inject(LocaleService);
   protected readonly campaign = inject(CampaignStore);
   private readonly completion = inject(CompletionService);
+  private readonly hatchery = inject(HatcheryStore);
   private readonly router = inject(Router);
   protected readonly store = inject(PlaytestStore);
   protected readonly audio = inject(GameAudio);
@@ -245,6 +247,7 @@ export class FairyDefenseComponent {
       this.instructionOverride.set(null);
       const resolved = resolveSpell(this.battle());
       this.battle.set(resolved);
+      if (resolved.phase === 'transforming') this.hatchery.warm();
       this.audio.effect(
         resolved.phase === 'lost' || resolved.damaged
           ? 'damage'

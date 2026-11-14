@@ -108,13 +108,49 @@
   animation: pop 0.5s ease-out;
 }
 .dust {
-  border: 2px solid var(--violet);
+  border: 2px solid transparent;
   font-weight: 600;
 }
 .dust:disabled {
   opacity: 0.55;
   cursor: default;
-  border-color: transparent;
+}
+/* Charged fairy dust: a glowing violet button that asks to be tapped. */
+.dust.ready {
+  background: linear-gradient(135deg, var(--violet), var(--pink));
+  color: var(--paper);
+  border-color: var(--paper);
+  box-shadow: 0 0 0 3px #7950b055;
+  animation: dust-glow 1.4s ease-in-out infinite;
+}
+.dust.pop {
+  animation: pop 0.6s ease-out 2;
+}
+.dust-label {
+  font-size: 15px;
+}
+.streak.combo strong {
+  font-size: 21px;
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes dust-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px #7950b055;
+  }
+  50% {
+    box-shadow: 0 0 0 8px #7950b022;
+  }
 }
 
 .play-area {
@@ -334,6 +370,21 @@
   .hud {
     padding: 8px 10px 8px 14px;
   }
+  /* Leaves room for a three-line hint without pushing the keypad off screen. */
+  .play-area {
+    grid-template-rows: minmax(220px, 1fr) auto;
+  }
+  .scene {
+    min-height: 220px;
+  }
+  .dust-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .counters {
     grid-column: 1 / -1;
     justify-content: space-between;
@@ -364,10 +415,6 @@
   }
 }
 @media (max-height: 760px) and (max-width: 480px) {
-  /* Leaves room for a three-line hint without pushing the keypad off screen. */
-  .scene {
-    min-height: 228px;
-  }
   .hud {
     gap: 4px 14px;
   }

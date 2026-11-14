@@ -17,7 +17,7 @@
           </p>
           <div class="lineup" aria-hidden="true">
             @for (id of lineup(); track id) {
-              <span class="lineup-racer" [class.lead]="id === 'player'">
+              <span class="lineup-racer" [class.is-lumi]="id === 'player'">
                 <app-racer
                   [kind]="id"
                   [outfit]="id === 'player' ? outfit() : null"
@@ -240,6 +240,7 @@
           [labels]="labels()"
           [placeLabels]="placeLabels()"
           [title]="t('standings')"
+          [started]="phase() !== 'countdown'"
         />
         <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
         @if (phase() === 'finished') {
