@@ -12,6 +12,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
+  Object3D,
   PerspectiveCamera,
   PlaneGeometry,
   Scene,
@@ -59,6 +60,17 @@ function shade(hex: string, amount: number): Color {
 /** World metres per track unit. */
 const UNIT = 1.1;
 const SUN_OFFSET = new Vector3(5, 12, 5);
+/** Rivals further than this from Lumi no longer pull the camera round. */
+const PACK_REACH = 12;
+/** The camera circles a point a little left of the middle lanes, nearer Lumi's lane. */
+const CAMERA_X = -0.3;
+/** Tangent of half the vertical field of view: from a 46 to a 68 degree lens. */
+const LENS_MIN = 0.424;
+const LENS_MAX = 0.675;
+function smooth(value: number): number {
+  const t = Math.max(0, Math.min(1, value));
+  return t * t * (3 - 2 * t);
+}
 const LANE_WIDTH = 1.8;
 /** Lane order across the track, left to right; Lumi runs second from the left. */
 const LANE_X: Readonly<Record<RacerId, number>> = {
@@ -218,7 +230,7 @@ interface Runner {
 /** A floating name pill drawn onto a small canvas. */
 function makeTag(name: string): Sprite {
   const sprite = new Sprite(new SpriteMaterial({ depthTest: false, transparent: true }));
-  sprite.scale.set(1.5, 0.5, 1);
+  sprite.scale.set(1.26, 0.42, 1);
   sprite.renderOrder = 10;
   paintTag(sprite, name);
   return sprite;
@@ -282,7 +294,15 @@ export class RaceWorld {
     pulse: 0,
     stumbles: 0,
   };
-  private readonly eye = new Vector3();
+  /** The camera's place round Lumi, eased toward where frameShot wants it. */
+  private orbit = 0;
+  private reach = 6;
+  private height = 3;
+  private lookZ = -5;
+  private framed = false;
+  /** The field of view that fits the lanes into this scene, and how far to step back if it cannot. */
+  private fov = 58;
+  private stepBack = 1;
   private handle = 0;
   private last = 0;
   constructor(
@@ -300,13 +320,12 @@ export class RaceWorld {
     this.scene.background = sky;
     this.scene.fog = new Fog(sky, ...this.theme.fog);
     this.camera = new PerspectiveCamera(58, 1, 0.1, 180);
-    this.camera.position.set(0.4, 4.3, 8.5);
     this.buildWorld();
     this.runners = course.racers.map((id) => {
       const pony = new Pony(id, id === 'player' ? course.outfit : null);
       pony.root.position.x = LANE_X[id];
       const tag = makeTag('');
-      tag.position.set(0, 2.75, -0.5);
+      tag.position.set(0, 2.7, -0.5);
       pony.root.add(tag);
       this.scene.add(pony.root);
       return { id, pony, tag, shownZ: 0 };
@@ -316,11 +335,12 @@ export class RaceWorld {
     lumi.root.add(this.trail);
     for (const side of [-1, 1])
       for (const row of [0, 1]) {
+        // Streaks that start behind the tail, so they never cut across the pony from the side.
         const line = new Mesh(
-          new BoxGeometry(0.05, 0.05, 1.6),
+          new BoxGeometry(0.05, 0.05, 1.6).translate(0, 0, 0.8),
           new MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.8 }),
         );
-        line.position.set(side * (0.7 + row * 0.25), 0.7 + row * 0.5, 0.6);
+        line.position.set(side * (0.55 + row * 0.25), 0.8 + row * 0.5, 1.5);
         line.visible = false;
         lumi.root.add(line);
         this.speedLines.push(line);
@@ -361,7 +381,16 @@ export class RaceWorld {
     const width = Math.max(1, this.host.clientWidth);
     const height = Math.max(1, this.host.clientHeight);
     this.renderer.setSize(width, height, false);
-    this.camera.aspect = width / height;
+    const aspect = width / height;
+    this.camera.aspect = aspect;
+    // Fit every lane across the picture at Lumi's distance: widen the lens on a narrow scene,
+    // and step back once it is as wide as looks natural.
+    const lanes = this.course.racers.length === 2 ? 2.7 : 4.2;
+    const wanted = lanes / 6.4 / aspect;
+    const lens = Math.max(LENS_MIN, Math.min(LENS_MAX, wanted));
+    this.stepBack = Math.max(1, wanted / lens);
+    this.fov = (Math.atan(lens) * 360) / Math.PI;
+    this.camera.fov = this.fov;
     this.camera.updateProjectionMatrix();
   }
   private buildWorld() {
@@ -678,13 +707,15 @@ export class RaceWorld {
     }
     if (pulse !== this.seenPulse) {
       // A right answer: a puff of gold and pink sparkles and a moment of speed lines.
+      // The sparkles travel with Lumi, so they stay round her at a gallop.
       this.burst(
-        new Vector3(lumi.pony.root.position.x, 1.4, lumi.shownZ),
+        new Vector3(0, 1.4, -0.2),
         [this.goldMaterial, this.sparkMaterials[0], this.sparkMaterials[4]],
         18,
         0.7,
         3,
         0.13,
+        lumi.pony.root,
       );
       this.lineUntil = now + 0.5;
       this.seenPulse = pulse;
@@ -759,17 +790,75 @@ export class RaceWorld {
     }
     if (finished && won) this.celebrate(now);
     this.tickBursts(now, dt);
-    const lookZ = Math.max(this.finishZ - 6, playerZ - 9);
-    const camZ = Math.min(9, playerZ + 8.5);
+    this.frameShot(dt, now, playerZ, playerSpeed);
+  }
+  /**
+   * Where the camera stands. It circles Lumi to keep the nearest ponies in the picture: in
+   * front of the whole line-up before the start, behind her while there is someone to catch,
+   * and round to her side and front once she leads, looking back at the ponies chasing her.
+   */
+  private frameShot(dt: number, now: number, playerZ: number, playerSpeed: number) {
+    const { running, finished } = this.frame;
+    // Where the rivals are from Lumi, the near ones counting most: above zero, they are behind.
+    let pack = 0;
+    let weights = 0;
+    for (const runner of this.runners) {
+      if (runner.id === 'player') continue;
+      const gap = runner.shownZ - playerZ;
+      const weight = 1 / (1 + Math.abs(gap) / 6);
+      pack += Math.max(-PACK_REACH, Math.min(PACK_REACH, gap)) * weight;
+      weights += weight;
+    }
+    pack = weights ? pack / weights : 0;
+    let orbit: number;
+    let reach: number;
+    let height: number;
+    let lookZ: number;
+    if (!running && !finished) {
+      // The line-up, seen from in front so every face shows.
+      orbit = 2.45;
+      reach = 8.2;
+      height = 2.1;
+      lookZ = -0.2;
+    } else if (finished) {
+      // Back behind Lumi for the rainbow, the castle and the fireworks.
+      orbit = 0.3;
+      reach = 6.4;
+      height = 2.9;
+      lookZ = -6;
+    } else {
+      const turn = smooth((pack + 1.5) / 6.5);
+      orbit = 0.12 + turn * 1.8;
+      reach = 6 - turn * 0.6;
+      height = 3 - turn * 1.2;
+      lookZ = -5 + turn * (5.6 + pack * 0.14);
+    }
+    if (!this.framed) {
+      this.framed = true;
+      this.orbit = orbit;
+      this.reach = reach;
+      this.height = height;
+      this.lookZ = lookZ;
+    }
+    const ease = Math.min(1, dt * 1.7);
+    this.orbit += (orbit - this.orbit) * ease;
+    this.reach += (reach - this.reach) * ease;
+    this.height += (height - this.height) * ease;
+    this.lookZ += (lookZ - this.lookZ) * ease;
+    const span = this.reach * this.stepBack;
+    this.camera.position.set(
+      CAMERA_X - Math.sin(this.orbit) * span,
+      this.height,
+      playerZ + Math.cos(this.orbit) * span,
+    );
     const shake = now < this.shakeUntil ? (this.shakeUntil - now) * 0.25 : 0;
-    this.camera.position.lerp(this.eye.set(0.4, 4.3, camZ), Math.min(1, dt * 6));
     if (shake) {
       this.camera.position.x += (Math.random() - 0.5) * shake;
       this.camera.position.y += (Math.random() - 0.5) * shake;
     }
-    this.camera.lookAt(0, 0.9, lookZ);
+    this.camera.lookAt(0, 1.15, Math.max(this.finishZ - 8, playerZ + this.lookZ));
     // A gallop widens the view a touch, so speed is felt and not just seen.
-    const fov = 58 + Math.min(10, Math.max(0, playerSpeed) * 1.3);
+    const fov = this.fov + Math.min(8, Math.max(0, playerSpeed) * 1.1);
     if (Math.abs(fov - this.camera.fov) > 0.05) {
       this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * 3);
       this.camera.updateProjectionMatrix();
@@ -783,6 +872,7 @@ export class RaceWorld {
     life: number,
     speed: number,
     size: number,
+    parent: Object3D = this.scene,
   ) {
     const group = new Group();
     for (let i = 0; i < count; i++) {
@@ -797,14 +887,14 @@ export class RaceWorld {
       group.add(spark);
     }
     group.position.copy(at);
-    this.scene.add(group);
+    parent.add(group);
     this.bursts.push({ group, born: performance.now() / 1000, life, speed });
   }
   private tickBursts(now: number, dt: number) {
     for (const burst of [...this.bursts]) {
       const age = now - burst.born;
       if (age > burst.life) {
-        this.scene.remove(burst.group);
+        burst.group.removeFromParent();
         for (const spark of burst.group.children) (spark as Mesh).geometry.dispose();
         this.bursts.splice(this.bursts.indexOf(burst), 1);
         continue;
