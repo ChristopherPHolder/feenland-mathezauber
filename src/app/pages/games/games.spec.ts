@@ -53,6 +53,9 @@ describe('Games hub', () => {
         'castleMixed',
       ].map((key) => i.t(key as never)),
     );
+    expect(tabs('friends-of-ten')[0]!.querySelector('.topic-meta')?.textContent?.trim()).toBe(
+      i.t('topicLevel'),
+    );
     expect(tabs('compare-crocodile')).toHaveLength(4);
     expect(tabs('number-walls')).toHaveLength(3);
     expect(tabs('unicorn-race')).toHaveLength(5);

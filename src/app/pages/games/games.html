@@ -70,7 +70,11 @@
             >
               <span class="topic-name">{{ i.t(topic.key) }}</span>
               <span class="topic-meta">
-                {{ i.t('topicLevels', { n: topic.cards.length }) }}
+                {{
+                  topic.cards.length === 1
+                    ? i.t('topicLevel')
+                    : i.t('topicLevels', { n: topic.cards.length })
+                }}
                 @if (topic.stars > 0) {
                   · <app-icon kind="star" /><span class="sr-only">{{
                     i.t('topicStars', { n: topic.stars, total: topic.maxStars })

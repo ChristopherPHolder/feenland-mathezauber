@@ -5,6 +5,7 @@
  */
 export const curriculumEn = {
   topics: 'Topics',
+  topicLevel: '1 level',
   topicLevels: '{n} levels',
   topicStars: '{n} of {total} stars',
 
@@ -80,6 +81,7 @@ type CurriculumMessages = { readonly [K in CurriculumKey]: string };
 
 export const curriculumDe: CurriculumMessages = {
   topics: 'Themen',
+  topicLevel: '1 Stufe',
   topicLevels: '{n} Stufen',
   topicStars: '{n} von {total} Sternen',
 
@@ -149,6 +151,7 @@ export const curriculumDe: CurriculumMessages = {
 
 export const curriculumEs: CurriculumMessages = {
   topics: 'Temas',
+  topicLevel: '1 nivel',
   topicLevels: '{n} niveles',
   topicStars: '{n} de {total} estrellas',
 
@@ -218,6 +221,7 @@ export const curriculumEs: CurriculumMessages = {
 
 export const curriculumFr: CurriculumMessages = {
   topics: 'Thèmes',
+  topicLevel: '1 niveau',
   topicLevels: '{n} niveaux',
   topicStars: '{n} étoiles sur {total}',
 
