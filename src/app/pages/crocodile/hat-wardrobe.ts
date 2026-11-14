@@ -2,6 +2,7 @@ import { Component, inject, input } from '@angular/core';
 import { LocaleService } from '../../core/locale';
 import { CrocodileArt } from './crocodile-art';
 import { crocodileText, CrocodileMessageKey } from './crocodile-messages';
+import { comparisonStage } from './comparison';
 import { Hat, hats } from './crocodile-score';
 /** Kiki’s hat collection: one hat per level, earned with two stars. */
 @Component({
@@ -15,7 +16,7 @@ import { Hat, hats } from './crocodile-score';
           <span class="hat-art">
             <app-crocodile kind="hat" [hat]="entry.id" />
             @if (!owns(entry)) {
-              <span class="hat-level">{{ t('hatLevel', { n: entry.stage }) }}</span>
+              <span class="hat-level">{{ t('hatLevel', { n: position(entry.stage) }) }}</span>
             }
           </span>
           <span class="hat-name" aria-hidden="true">{{ t(entry.name) }}</span>
@@ -153,10 +154,14 @@ export class HatWardrobe {
   protected owns(hat: Hat) {
     return this.owned().includes(hat);
   }
+  /** Hats belong to level ids; the child sees the level's place in the list. */
+  protected position(stage: number) {
+    return comparisonStage(`crocodile-${stage}`)?.position ?? stage;
+  }
   protected label(hat: Hat) {
     return this.t(this.owns(hat) ? 'hatOwned' : 'hatLocked', {
       hat: this.t(hat.name),
-      n: hat.stage,
+      n: this.position(hat.stage),
     });
   }
 }

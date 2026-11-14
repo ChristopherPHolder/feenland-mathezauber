@@ -11,7 +11,7 @@
 <div class="tower left" aria-hidden="true"></div>
 <div class="tower right" aria-hidden="true"></div>
 <div class="road" aria-hidden="true"></div>
-@if (wallsDone() >= total) {
+@if (wallsDone() >= total()) {
   <div class="flag" aria-hidden="true">🚩</div>
 }
 <div class="wall" [class.hit]="trollBump()" [class.crumble]="crumbled()">

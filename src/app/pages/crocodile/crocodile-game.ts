@@ -23,6 +23,8 @@ import {
   Comparison,
   ComparisonQuestion,
   comparisonStage,
+  comparisonStages,
+  nextComparisonStage,
   createComparisonRound,
   isMastered,
   ROUND_LENGTH,
@@ -109,7 +111,8 @@ export class CrocodileGame {
   protected readonly scores = inject(CrocodileScores);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
   protected readonly total = TOTAL_STAGES;
-  protected readonly roundLength = ROUND_LENGTH;
+  /** Snacks in this level's round; quick plain-number levels run a little longer. */
+  protected readonly roundLength = computed(() => this.stage()?.snacks ?? ROUND_LENGTH);
   protected readonly stage = computed(() => comparisonStage(this.params()?.get('id')));
   protected readonly levelId = computed(() => `crocodile-${this.stage()?.stage ?? 1}`);
   protected readonly round = linkedSignal<Round>(() => this.fresh());
@@ -140,12 +143,16 @@ export class CrocodileGame {
     () => this.round().chosen ?? (this.round().phase === 'ready' ? this.peek() : null),
   );
   protected readonly question = computed(
-    () => this.round().questions[Math.min(this.round().index, ROUND_LENGTH - 1)],
+    () => this.round().questions[Math.min(this.round().index, this.roundLength() - 1)],
   );
-  protected readonly snacks = Array.from({ length: ROUND_LENGTH }, (_, index) => index);
+  protected readonly snacks = computed(() =>
+    Array.from({ length: this.roundLength() }, (_, index) => index),
+  );
   protected readonly stars = computed(() => roundStars(this.round().mistakes));
   protected readonly starSlots = [1, 2, 3];
-  protected readonly kind = computed(() => snackKind(this.round().index, this.round().golden));
+  protected readonly kind = computed(() =>
+    snackKind(this.round().index, this.round().golden, this.roundLength()),
+  );
   protected readonly combo = computed(() => comboFor(this.round().streak));
   protected readonly frenzy = computed(() => this.combo() === 3);
   /** Kiki wears the newest hat she has earned; the wardrobe shows the whole collection. */
@@ -167,14 +174,14 @@ export class CrocodileGame {
   });
   protected readonly nextLink = computed(() => {
     const stage = this.stage();
-    return stage && stage.stage < TOTAL_STAGES
-      ? ['/adventure', `crocodile-${stage.stage + 1}`]
-      : null;
+    const next = stage && nextComparisonStage(stage);
+    return next ? ['/adventure', `crocodile-${next.stage}`] : null;
   });
   /** Every crocodile level is one tap away from the intro, in any order. */
-  protected readonly levelLinks = Array.from({ length: TOTAL_STAGES }, (_, index) => ({
-    stage: index + 1,
-    route: ['/adventure', `crocodile-${index + 1}`],
+  protected readonly levelLinks = comparisonStages.map((stage) => ({
+    stage: stage.stage,
+    position: stage.position,
+    route: ['/adventure', `crocodile-${stage.stage}`],
   }));
   protected readonly message = computed(() => {
     const round = this.round();
@@ -230,7 +237,7 @@ export class CrocodileGame {
     });
   }
   protected t(key: CrocodileMessageKey, values: Record<string, string | number> = {}) {
-    return crocodileText(this.i.locale(), key, { total: ROUND_LENGTH, ...values });
+    return crocodileText(this.i.locale(), key, { total: this.roundLength(), ...values });
   }
   protected levelKey(stage: number) {
     return `crocodile${stage}` as MessageKey;
@@ -417,10 +424,10 @@ export class CrocodileGame {
     this.floats.set([]);
     this.peek.set(null);
     this.stopHeron();
-    if (round.index + 1 < ROUND_LENGTH) {
+    if (round.index + 1 < this.roundLength()) {
       const index = round.index + 1;
       this.round.set({ ...round, index, attempts: 0, phase: 'ready', chosen: null });
-      const kind = snackKind(index, round.golden);
+      const kind = snackKind(index, round.golden, this.roundLength());
       if (kind === 'boss') this.callout('bossSnack');
       else if (kind === 'golden') this.callout('goldenSnack');
       this.launchHeron();
@@ -468,12 +475,12 @@ export class CrocodileGame {
     return {
       questions: stage
         ? createComparisonRound(stage)
-        : Array<ComparisonQuestion>(ROUND_LENGTH).fill({
+        : Array<ComparisonQuestion>(this.roundLength()).fill({
             left: { text: '1', value: 1 },
             right: { text: '2', value: 2 },
             answer: '<',
           }),
-      golden: goldenSnacks(),
+      golden: goldenSnacks(Math.random, this.roundLength()),
       index: 0,
       mistakes: 0,
       stolen: 0,

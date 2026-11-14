@@ -101,7 +101,7 @@ export class FairyDefenseComponent {
   /** Where the games hub lands when leaving: this game's section, or the practice stage. */
   protected readonly gamesAnchor = computed(() => {
     const training = this.training();
-    return training ? `practice-30-${training.stage}` : 'friends-of-ten';
+    return training ? (training.id ?? `practice-30-${training.stage}`) : 'friends-of-ten';
   });
   private readonly dialog = viewChild.required(GamePause);
   private readonly spellBar = viewChild(SpellBar);
@@ -340,7 +340,7 @@ export class FairyDefenseComponent {
     const training = this.training();
     if (training)
       return this.completion.finish({
-        levelId: `practice-30-${training.stage}`,
+        levelId: training.id ?? `practice-30-${training.stage}`,
         completed: true,
         mastered: true,
       });
@@ -359,7 +359,9 @@ export class FairyDefenseComponent {
     if (this.recordCompletion())
       void this.router.navigate([
         '/complete',
-        this.training() ? `practice-30-${this.training()!.stage}` : 'defend-fairy-castle',
+        this.training()
+          ? (this.training()!.id ?? `practice-30-${this.training()!.stage}`)
+          : 'defend-fairy-castle',
       ]);
   }
   protected visibilityChanged() {

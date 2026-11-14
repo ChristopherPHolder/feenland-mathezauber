@@ -10,6 +10,8 @@ export interface Spell {
 /** One level of the treasure lock: the dial, the spells, and how many hops a lock should take. */
 export interface LockStage {
   readonly stage: number;
+  /** The topic the level sits in on the games hub. */
+  readonly group: MessageKey;
   /** The mental maths trick the level practises; also picks its hint. */
   readonly trick: LockTrick;
   /** The worked example on the level card, in hops: "+5 +5 −1 → 9". */
@@ -37,6 +39,7 @@ const ones = (target: number) => target % 10;
 export const lockStages: readonly LockStage[] = [
   {
     stage: 1,
+    group: 'lockTwenty',
     trick: 'fives',
     example: '+5 +5 −1 → 9',
     max: 20,
@@ -47,6 +50,7 @@ export const lockStages: readonly LockStage[] = [
   },
   {
     stage: 2,
+    group: 'lockTwenty',
     trick: 'partitions',
     example: '+3 +3 +2 → 8',
     max: 20,
@@ -57,6 +61,7 @@ export const lockStages: readonly LockStage[] = [
   },
   {
     stage: 3,
+    group: 'lockTens',
     trick: 'tens',
     example: '+10 +10 +1 → 21',
     max: 50,
@@ -68,6 +73,7 @@ export const lockStages: readonly LockStage[] = [
   },
   {
     stage: 4,
+    group: 'lockTens',
     trick: 'nines',
     example: '+10 +10 −1 → 19',
     max: 50,
@@ -79,6 +85,7 @@ export const lockStages: readonly LockStage[] = [
   },
   {
     stage: 5,
+    group: 'lockTens',
     trick: 'back',
     example: '50 −10 −1 → 39',
     max: 50,
@@ -89,6 +96,7 @@ export const lockStages: readonly LockStage[] = [
   },
   {
     stage: 6,
+    group: 'lockDoubles',
     trick: 'doubles',
     example: '1 +1 ×2 ×2 → 8',
     max: 40,
@@ -100,6 +108,7 @@ export const lockStages: readonly LockStage[] = [
   },
   {
     stage: 7,
+    group: 'lockDoubles',
     trick: 'mixed',
     example: '+10 ×2 ×2 −1 → 39',
     max: 100,
@@ -118,6 +127,7 @@ export const lockLevels: readonly Level[] = lockStages.map((stage) => ({
   description: `lock${stage.stage}Help` as MessageKey,
   skills: ['mental-strategies', stage.trick],
   format: 'treasure-lock',
+  group: stage.group,
 }));
 
 export function lockStage(id: string | null | undefined): LockStage | undefined {

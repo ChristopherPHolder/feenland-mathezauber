@@ -41,7 +41,10 @@ import {
   valueOf,
   Wall,
   WallLevel,
-  WALLS_PER_WORLD,
+  wallsFor,
+  isWallLevel,
+  levelAfter,
+  levelPosition,
 } from './number-wall';
 import { NumberWallStore } from './number-wall-store';
 import { WallScene } from './wall-scene';
@@ -94,7 +97,8 @@ export class NumberWallComponent {
   );
   protected readonly stars = [1, 2, 3] as const;
   protected readonly confetti = Array.from({ length: 12 }, (_, index) => index);
-  protected readonly total = WALLS_PER_WORLD;
+  /** Walls in the current level's run. */
+  protected readonly total = computed(() => wallsFor(this.level()));
   protected readonly maxDust = MAX_DUST;
   protected readonly maxHearts = MAX_HEARTS;
   protected readonly heartSlots = Array.from({ length: MAX_HEARTS }, (_, index) => index + 1);
@@ -203,7 +207,7 @@ export class NumberWallComponent {
     const requested = Number(
       inject(ActivatedRoute, { optional: true })?.snapshot.queryParamMap.get('level'),
     );
-    if (levels.includes(requested as WallLevel)) this.start(requested as WallLevel);
+    if (isWallLevel(requested)) this.start(requested);
     effect(() => this.audio.updateVoice(this.i.locale()));
     effect(() => {
       if (this.locked()) this.nextButton()?.nativeElement.focus();
@@ -215,6 +219,9 @@ export class NumberWallComponent {
   }
   protected t(key: MessageKey, params: Record<string, string | number> = {}): string {
     return wallText(this.i, key, params);
+  }
+  protected position(level: WallLevel): number {
+    return levelPosition(level);
   }
   protected levelTitle(level: WallLevel): MessageKey {
     return `wallLevel${level}` as MessageKey;
@@ -427,7 +434,7 @@ export class NumberWallComponent {
   }
   private finishWorld() {
     const level = this.level();
-    const rating = ratingFor(this.gems(), this.timed());
+    const rating = ratingFor(this.gems(), this.timed(), this.total());
     this.rating.set(rating);
     this.store.recordWorld(level, rating, this.gems());
     const starred = this.store.starredLevels();
@@ -441,8 +448,7 @@ export class NumberWallComponent {
     this.phase.set('summary');
   }
   protected nextLevel(): WallLevel | undefined {
-    const level = this.level();
-    return level < 4 ? ((level + 1) as WallLevel) : undefined;
+    return levelAfter(this.level());
   }
   protected chooseLevel() {
     this.phase.set('intro');

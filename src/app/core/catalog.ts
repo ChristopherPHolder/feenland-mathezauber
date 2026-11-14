@@ -12,6 +12,8 @@ export interface Level {
   readonly skills: readonly string[];
   readonly format: string;
   readonly playtest?: boolean;
+  /** The topic this level belongs to inside its game, like "Adding" or "Times tables". */
+  readonly group?: MessageKey;
 }
 /** A chapter is one game: its levels are the game's selectable levels. */
 export interface Chapter {
@@ -52,6 +54,7 @@ export const worlds: readonly World[] = [
             description: 'fairyBattleDescription',
             skills: ['make-ten'],
             format: 'fairy-defense',
+            group: 'castleWaveTopic',
           },
           // The path to 30 stages are castle battles with their own question sets.
           ...practiceLevels,

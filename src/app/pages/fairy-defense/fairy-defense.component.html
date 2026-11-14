@@ -9,7 +9,7 @@
   } @else {
     <app-game-header
       class="game-header"
-      [title]="training() ? i.t(training()!.skill) : t('title')"
+      [title]="training() ? i.t(training()!.title ?? training()!.skill) : t('title')"
       [detail]="
         training()
           ? i.t('stage') +
@@ -37,7 +37,7 @@
     @if (!started()) {
       <div class="start-curtain">
         <div class="story-panel">
-          <h2>{{ training() ? i.t(training()!.skill) : t('intro') }}</h2>
+          <h2>{{ training() ? i.t(training()!.title ?? training()!.skill) : t('intro') }}</h2>
           @if (!training() && mathRange() === '10') {
             <p>{{ t('briefing') }}</p>
           }
@@ -111,7 +111,8 @@
     <div class="learning-dock">
       @if (training(); as config) {
         <p class="training-position">
-          {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} · {{ i.t(config.skill) }} ·
+          {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} ·
+          {{ i.t(config.title ?? config.skill) }} ·
           {{ i.t('upTo') }}
           {{ config.max }}
         </p>

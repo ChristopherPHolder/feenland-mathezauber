@@ -1,4 +1,6 @@
+import { curriculumDe, curriculumEn, curriculumEs, curriculumFr } from './curriculum-messages';
 export const en = {
+  ...curriculumEn,
   practicePath: 'Your path to 30',
   practiceHelp: 'Choose any stage. Follow the recommended path or practise a specific skill.',
   placeValue: 'Tens and ones',
@@ -137,6 +139,9 @@ export const en = {
   lockChapterHelp:
     'Hop Pip the firefly along a magic dial to open treasure chests. Find the shortest way with mental maths tricks.',
   lockPlay: 'Open the treasure',
+  lockTwenty: 'Hops to 20',
+  lockTens: 'Tens tricks',
+  lockDoubles: 'Doubling',
   lock1: 'Hops of five',
   lock1Help: 'Hop +5, then fix it with +1 or −1, on a dial up to 20.',
   lock2: 'Threes and twos',
@@ -256,6 +261,7 @@ export type Locale = (typeof locales)[number];
 export const translations: Record<Locale, Messages> = {
   en,
   de: {
+    ...curriculumDe,
     crocodileChapter: 'Das hungrige Krokodil',
     crocodileChapterHelp:
       'Lerne den Krokodil-Trick für größer, kleiner und gleich. Dann vergleiche Zahlen, Rechnungen und Einmaleins.',
@@ -398,6 +404,9 @@ export const translations: Record<Locale, Messages> = {
     lockChapterHelp:
       'Lass Glühwürmchen Pip über ein Zauberrad hüpfen und öffne Schatztruhen. Finde mit Kopfrechentricks den kürzesten Weg.',
     lockPlay: 'Schatz öffnen',
+    lockTwenty: 'Hüpfer bis 20',
+    lockTens: 'Zehnertricks',
+    lockDoubles: 'Verdoppeln',
     lock1: 'Fünferhüpfer',
     lock1Help: 'Hüpf +5 und korrigiere mit +1 oder −1, auf einem Rad bis 20.',
     lock2: 'Dreier und Zweier',
@@ -512,6 +521,7 @@ export const translations: Record<Locale, Messages> = {
     wallThreeStars: 'Drei Sterne! Eine perfekte Zaubermauer!',
   },
   es: {
+    ...curriculumEs,
     crocodileChapter: 'El cocodrilo hambriento',
     crocodileChapterHelp:
       'Aprende el truco del cocodrilo para mayor, menor e igual. Luego compara números, cuentas y tablas de multiplicar.',
@@ -652,6 +662,9 @@ export const translations: Record<Locale, Messages> = {
     lockChapterHelp:
       'Haz saltar a la luciérnaga Pip por un disco mágico para abrir cofres. Encuentra el camino más corto con trucos de cálculo mental.',
     lockPlay: 'Abrir el tesoro',
+    lockTwenty: 'Saltos hasta 20',
+    lockTens: 'Trucos de decenas',
+    lockDoubles: 'Dobles',
     lock1: 'Saltos de cinco',
     lock1Help: 'Salta +5 y ajusta con +1 o −1, en un disco hasta 20.',
     lock2: 'Treses y doses',
@@ -767,6 +780,7 @@ export const translations: Record<Locale, Messages> = {
     wallThreeStars: '¡Tres estrellas! ¡Un muro mágico perfecto!',
   },
   fr: {
+    ...curriculumFr,
     crocodileChapter: 'Le crocodile affamé',
     crocodileChapterHelp:
       'Apprends l’astuce du crocodile pour plus grand, plus petit et égal. Puis compare des nombres, des calculs et des tables de multiplication.',
@@ -908,6 +922,9 @@ export const translations: Record<Locale, Messages> = {
     lockChapterHelp:
       'Fais sauter Pip la luciole sur un cadran magique pour ouvrir des coffres. Trouve le chemin le plus court avec des astuces de calcul mental.',
     lockPlay: 'Ouvrir le trésor',
+    lockTwenty: 'Sauts jusqu’à 20',
+    lockTens: 'Astuces des dizaines',
+    lockDoubles: 'Doubler',
     lock1: 'Sauts de cinq',
     lock1Help: 'Saute +5, puis corrige avec +1 ou −1, sur un cadran jusqu’à 20.',
     lock2: 'Des trois et des deux',

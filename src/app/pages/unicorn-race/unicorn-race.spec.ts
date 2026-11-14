@@ -106,7 +106,7 @@ describe('Unicorn race game', () => {
       chooseHeat,
     };
   }
-  it('shows the intro with the pace choice and all fifteen races open in five cups', () => {
+  it('shows the intro with the pace choice and all nineteen races open in five cups', () => {
     const { element } = setup();
     expect(element.querySelector('h1')?.textContent).toContain('Unicorn Rainbow Race');
     const chips = [...element.querySelectorAll('.pace:not(.wardrobe) .chip')];
@@ -121,9 +121,11 @@ describe('Unicorn race game', () => {
       '🌈 Rainbow Cup',
     ]);
     const cards = [...element.querySelectorAll<HTMLAnchorElement>('.level-card')];
-    expect(cards).toHaveLength(15);
-    expect(cards[0].getAttribute('aria-current')).toBe('page');
-    expect(cards[1].textContent).toContain('0 of 6 heats');
+    expect(cards).toHaveLength(19);
+    // Daisy dell (bonds to ten) comes first; race 1 is the second card.
+    expect(cards[1].getAttribute('aria-current')).toBe('page');
+    expect(cards[1].textContent).toContain('Race 2');
+    expect(cards[2].textContent).toContain('0 of 6 heats');
     const heats = [...element.querySelectorAll('.heat')];
     expect(heats).toHaveLength(6);
     expect(heats[0].getAttribute('aria-pressed')).toBe('true');
@@ -135,7 +137,7 @@ describe('Unicorn race game', () => {
       'Night chase',
       'Cup final',
     ]);
-    expect(cards[14].getAttribute('href')).toBe('/adventure/unicorn-race-15');
+    expect(cards[18].getAttribute('href')).toBe('/adventure/unicorn-race-15');
     expect(element.textContent).toContain('0 of 5 cups complete');
     // Keepsakes stay locked until a whole cup is finished.
     expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(5);
@@ -143,7 +145,7 @@ describe('Unicorn race game', () => {
       'Just Lumi',
     );
   });
-  it('hands out the cup keepsake once all three races are finished and lets Lumi wear it', () => {
+  it('hands out the cup keepsake once three races of a cup are finished and lets Lumi wear it', () => {
     const { element, component, wait, answerRight, start, click, fixture } = setup(
       'en',
       'unicorn-race-3',
@@ -169,7 +171,7 @@ describe('Unicorn race game', () => {
     expect(store.save().outfit).toBeNull();
     expect(element.querySelector('.lineup app-racer .wreath')).toBeNull();
     expect(
-      [...element.querySelectorAll('.level-card')][2].querySelectorAll('.level-stars .earned'),
+      [...element.querySelectorAll('.level-card')][3].querySelectorAll('.level-stars .earned'),
     ).toHaveLength(3);
   });
   it('lights the streak pips and calls the final stretch', () => {
@@ -396,7 +398,7 @@ describe('Unicorn race game', () => {
       'Key chase',
     );
     expect(element.querySelector('.cup-tag')?.textContent).toContain('Key chase');
-    expect([...element.querySelectorAll('.level-card')][0].textContent).toContain('1 of 6 heats');
+    expect([...element.querySelectorAll('.level-card')][1].textContent).toContain('1 of 6 heats');
   });
   it('speaks German on the intro and during the race', () => {
     const { element, status, start } = setup('de');
