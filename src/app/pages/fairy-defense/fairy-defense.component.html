@@ -42,11 +42,7 @@
             <p>{{ t('briefing') }}</p>
           }
           @if (training(); as config) {
-            <p>
-              {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} ·
-              {{ i.t(config.skill) }} · {{ i.t('upTo') }} {{ config.max }}
-            </p>
-            <p>{{ config.example }}</p>
+            <p class="intro-example">{{ config.example }}</p>
           } @else {
             <p class="rule-copy">{{ mathRange() === '10' ? t('rules') : i.t('mixedMathHelp') }}</p>
           }
@@ -62,9 +58,6 @@
               )
             }}<app-icon kind="arrow" />
           </button>
-          @if (!training()) {
-            <p class="playtest-note">{{ t('playtest') }}</p>
-          }
         </div>
       </div>
     }
