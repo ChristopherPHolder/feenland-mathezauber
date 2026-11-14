@@ -369,3 +369,12 @@
   left: calc(38% + var(--i) * 10%);
   color: inherit;
 }
+/* After a second miss the pair to add stands out even without motion. */
+:host(.is-hinting) .brick.pair {
+  outline: 4px solid var(--brick-filled);
+  outline-offset: 2px;
+}
+:host(.is-hinting) .plus {
+  color: var(--brick-filled);
+  font-size: calc(var(--brick-h) * 0.55);
+}
