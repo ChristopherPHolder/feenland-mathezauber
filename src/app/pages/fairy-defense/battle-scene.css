@@ -28,6 +28,8 @@
   z-index: 6;
 }
 .wave {
+  min-width: 0;
+  max-width: 60%;
   background: #152f4a;
   color: var(--paper);
   padding: 10px 16px;
@@ -41,7 +43,8 @@
   margin-top: 7px;
 }
 .encounter-track span {
-  width: 32px;
+  flex: 0 1 32px;
+  min-width: 6px;
   height: 5px;
   border-radius: 4px;
   background: #a1b1c2;
@@ -473,6 +476,7 @@
 }
 
 .battle-actions {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -504,34 +508,69 @@
   justify-content: flex-end;
 }
 
-@media (min-width: 600px) and (min-height: 500px) {
-  :host.fit .battlefield {
-    height: 100%;
-    min-height: 0;
+/* While playing, the page gives the scene a height (see :host.playing in the game) and the
+   characters size themselves to it. */
+:host.fit .battlefield {
+  height: 100%;
+  min-height: 0;
+}
+:host.fit .monster-position,
+:host.fit .monster-position.boss {
+  height: min(calc(100% - 32px), 300px);
+}
+:host.fit .fairy {
+  width: auto;
+  max-width: 30%;
+  max-height: calc(100% - 110px);
+}
+:host.fit .monster {
+  width: auto;
+  max-width: 100%;
+  max-height: calc(100% - 88px);
+}
+:host.fit .boss.transforming .number-badge {
+  visibility: hidden;
+}
+:host.fit .boss .equation {
+  top: 0;
+}
+/* The badge rides on the monster's head instead of the top of its box. */
+:host.fit .number-badge {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  margin-bottom: 8px;
+}
+/* Upright screens have height to spare: bigger characters. */
+@media (orientation: portrait) {
+  :host.fit .fairy {
+    max-width: 42%;
   }
   :host.fit .monster-position {
-    height: min(calc(100% - 32px), 300px);
+    width: 32%;
+    height: min(calc(100% - 32px), 60%);
   }
   :host.fit .monster-position.boss {
-    height: min(calc(100% - 32px), 300px);
+    width: 38%;
+    height: min(calc(100% - 32px), 66%);
   }
 }
-
-@media (min-width: 600px) and (min-height: 500px) {
+/* Short scenes (a phone on its side) keep the HUD and badge compact. */
+@media (max-height: 500px) {
+  :host.fit .battle-hud {
+    top: 10px;
+    left: 12px;
+    right: 12px;
+  }
   :host.fit .fairy {
-    width: auto;
-    max-width: 30%;
-    max-height: calc(100% - 110px);
+    max-height: calc(100% - 70px);
   }
   :host.fit .monster {
-    width: auto;
-    max-width: 100%;
-    max-height: calc(100% - 88px);
+    max-height: calc(100% - 64px);
   }
-  :host.fit .boss.transforming .number-badge {
-    visibility: hidden;
-  }
-  :host.fit .boss .equation {
-    top: 0;
+  :host.fit .number-badge {
+    font-size: 26px;
+    padding: 4px 12px;
   }
 }

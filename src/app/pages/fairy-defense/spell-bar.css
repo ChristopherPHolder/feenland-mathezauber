@@ -88,7 +88,7 @@
   border-radius: 50%;
   background: var(--earth);
 }
-@media (min-width: 1000px) {
+@container spells (min-width: 1000px) {
   .spell-bar {
     position: relative;
     flex-wrap: wrap;
@@ -101,7 +101,7 @@
     flex-basis: 100px;
   }
 }
-@media (max-width: 600px) {
+@container spells (max-width: 600px) {
   .spell-bar {
     flex-wrap: wrap;
     gap: 8px;
@@ -122,11 +122,13 @@
     width: 38px;
   }
 }
-@media (max-height: 450px) and (min-width: 601px) {
-}
 :host {
   display: block;
+  /* The bar sits full width on a phone and in a side column on a phone held sideways, so it
+     lays its spells out by its own width, not the screen's. */
+  container: spells / inline-size;
 }
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
@@ -150,7 +152,7 @@
 .expanded .gem-art {
   max-width: 46px;
 }
-@media (max-width: 700px) {
+@container spells (max-width: 700px) {
   .spell-bar.expanded {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -180,4 +182,14 @@
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* A short screen (a phone on its side) keeps every spell in reach without scrolling. */
+@media (max-height: 500px) {
+  .spell-bar .spell {
+    min-height: 82px;
+  }
+  .spell-bar {
+    padding-bottom: 10px;
+  }
 }

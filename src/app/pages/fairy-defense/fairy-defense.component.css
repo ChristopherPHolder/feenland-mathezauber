@@ -120,9 +120,12 @@
   border: 0;
 }
 .math-prompt {
-  font-size: 24px;
+  /* The sum is the one thing the child must read: it scales with the screen. */
+  font-size: clamp(2rem, 1.2rem + 3.5vmin, 3.5rem);
+  line-height: 1.1;
   font-weight: 600;
   margin: 0;
+  text-align: center;
 }
 .math-prompt span {
   color: #ae1652;
@@ -200,10 +203,6 @@
     justify-content: center;
     gap: 20px;
   }
-  .math-prompt {
-    font-size: 22px;
-    margin: 0;
-  }
   .ten-frame {
     grid-template-columns: repeat(5, 21px);
     gap: 6px;
@@ -255,24 +254,56 @@
   }
 }
 
-@media (min-width: 600px) and (min-height: 500px) {
+/* While a wave runs the game is exactly one screen tall: the scene takes what the sum and the
+   spells leave over, so nothing scrolls and nothing sits in a blank band. */
+:host.playing {
+  height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: 0;
+}
+:host.playing .game {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+:host.playing app-battle-scene {
+  /* The scene takes the free height first; only past its cap does the sum's dock grow. */
+  flex: 1000 1 0%;
+  min-height: 0;
+  /* A phone is much taller than the picture; past this the sum and spells get the room. */
+  max-height: 125vw;
+}
+:host.playing .learning-dock {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+:host.playing app-spell-bar,
+:host.playing .audio-notice {
+  flex: none;
+}
+/* A phone on its side: the scene on the left, the sum and the spells on the right. */
+@media (orientation: landscape) and (max-height: 500px) {
   :host.playing {
-    height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    min-height: 0;
+    padding: 0;
+    background: var(--parchment);
   }
   :host.playing .game {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    max-width: none;
+    border-radius: 0;
   }
   :host.playing app-battle-scene {
-    flex: 1 1 0%;
-    min-height: 0;
+    grid-row: 1 / -1;
+    max-height: none;
   }
-  :host.playing .learning-dock,
-  :host.playing app-spell-bar,
+  :host.playing .learning-dock {
+    padding: 8px 16px;
+  }
   :host.playing .audio-notice {
-    flex: none;
+    grid-column: 2;
   }
 }
 
@@ -441,6 +472,6 @@
 .training-position {
   margin: 0;
   text-align: center;
-  font-size: 16px;
-  color: var(--ink);
+  font-size: 15px;
+  color: var(--moss-ink);
 }
