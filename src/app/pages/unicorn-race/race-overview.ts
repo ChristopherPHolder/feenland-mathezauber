@@ -28,7 +28,7 @@ import { RacerArt } from './racer-art';
       @for (entry of order(); track entry.id) {
         <li [class.me]="entry.id === 'player'" [class]="'entry is-' + entry.id">
           <span class="pos">{{ placeLabels()[entry.place] }}</span>
-          <app-racer class="mini" [kind]="entry.id" aria-hidden="true" />
+          <app-racer class="mini" [kind]="entry.id" bust aria-hidden="true" />
           <span class="name">{{ names()[entry.id] }}</span>
           <span class="sr-only">, {{ labels()[entry.id] }}</span>
         </li>
@@ -137,8 +137,10 @@ import { RacerArt } from './racer-art';
     }
     .mini {
       display: block;
-      width: 26px;
-      height: 19px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
     }
     .pos {
       display: inline-grid;
