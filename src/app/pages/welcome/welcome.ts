@@ -7,6 +7,10 @@ import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
 import { Emblem } from '../../shared/emblem';
 import { Icon } from '../../shared/icon';
+import { DragonPortraits } from '../hatchery/dragon-portraits';
+import { EggIcon } from '../hatchery/egg-icon';
+import { HatcheryStore } from '../hatchery/hatchery-store';
+import { hatcheryText } from '../hatchery/hatchery-messages';
 const playLabels: Readonly<Record<string, MessageKey>> = {
   'fairy-defense': 'fairyPlay',
   crocodile: 'crocodilePlay',
@@ -15,7 +19,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
 };
 @Component({
   selector: 'app-welcome',
-  imports: [RouterLink, NgOptimizedImage, Icon, Emblem],
+  imports: [RouterLink, NgOptimizedImage, Icon, Emblem, EggIcon],
   template: ` <section class="home" aria-labelledby="welcome-title">
     <div class="hero">
       <div class="hero-copy">
@@ -46,6 +50,33 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
         >
       </div>
     </div>
+    <a class="hatchery-card" routerLink="/hatchery" [class.is-ready]="hatchery.ready()">
+      <span class="hatchery-art" aria-hidden="true">
+        @if (hatchery.favorite(); as dragon) {
+          @if (portraits.pictures()[dragon.id]; as picture) {
+            <img [src]="picture" width="256" height="256" alt="" />
+          }
+        }
+        <app-egg-icon class="hatchery-egg" [dragon]="hatchery.egg()" [warmth]="eggWarmth()" />
+      </span>
+      <span class="hatchery-copy">
+        <strong>{{ h('homeTitle') }}</strong>
+        <span>{{
+          hatchery.ready()
+            ? h('homeReady')
+            : h('warmth', {
+                n: i.format(hatchery.hatchery().warmth),
+                total: i.format(hatchery.needed()),
+              })
+        }}</span>
+        <small>{{
+          hatchery.favorite()
+            ? h('homeFavorite', { name: hatchery.name(hatchery.favorite()!) })
+            : h('homeNoDragon')
+        }}</small>
+      </span>
+      <span class="hatchery-go">{{ h('homeAction') }}<app-icon kind="arrow" /></span>
+    </a>
     <section class="games" aria-labelledby="games-title">
       <div class="section-head">
         <h2 id="games-title">{{ i.t('homeGames') }}</h2>
@@ -110,6 +141,20 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
 export class Welcome {
   protected readonly i = inject(LocaleService);
   protected readonly p = inject(ProgressService);
+  protected readonly hatchery = inject(HatcheryStore);
+  protected readonly portraits = inject(DragonPortraits);
+  protected readonly eggWarmth = computed(
+    () => this.hatchery.hatchery().warmth / this.hatchery.needed(),
+  );
+  constructor() {
+    if (this.hatchery.favorite()) this.portraits.load();
+  }
+  protected h(
+    key: Parameters<typeof hatcheryText>[1],
+    values: Record<string, string | number> = {},
+  ) {
+    return hatcheryText(this.i.locale(), key, values);
+  }
   private readonly catalog = inject(WORLD_CATALOG);
   /** One card per game, straight from the catalog: adding a chapter adds a card. */
   protected readonly games = computed(() =>

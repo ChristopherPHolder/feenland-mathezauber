@@ -21,6 +21,8 @@ import { Icon } from './shared/icon';
             ><app-icon kind="home" /><span>{{ i.t('home') }}</span></a
           ><a routerLink="/games" routerLinkActive="active"
             ><app-icon kind="grid" /><span>{{ i.t('games') }}</span></a
+          ><a routerLink="/hatchery" routerLinkActive="active"
+            ><app-icon kind="egg" /><span>{{ i.t('dragons') }}</span></a
           ><a
             class="settings-link"
             routerLink="/settings"

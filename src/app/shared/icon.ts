@@ -39,6 +39,7 @@ export class Icon {
     | 'home'
     | 'play'
     | 'grid'
+    | 'egg'
   >('star');
   protected readonly paths = {
     check: 'm5 12 4 4 10-10',
@@ -53,5 +54,6 @@ export class Icon {
     home: 'm3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
     play: 'M7 4v16l13-8z',
     grid: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z',
+    egg: 'M12 2.5C8 2.5 4.5 9 4.5 14a7.5 7.5 0 0 0 15 0c0-5-3.5-11.5-7.5-11.5zM9 11.5l1.5 1.5 1.5-1.5 1.5 1.5 1.5-1.5',
   };
 }
