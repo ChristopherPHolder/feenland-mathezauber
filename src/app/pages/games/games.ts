@@ -21,6 +21,8 @@ import { TOTAL_WAVES } from '../fairy-defense/waves';
 import { comparisonStage } from '../crocodile/comparison';
 import { raceStage } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
+import { lockStage } from '../treasure-lock/lock-puzzles';
+import { LockScores } from '../treasure-lock/lock-scores';
 import {
   levelPosition,
   levels as wallLevels,
@@ -82,6 +84,7 @@ export class Games {
   private readonly catalog = inject(WORLD_CATALOG);
   protected readonly campaign = inject(CampaignStore);
   protected readonly scores = inject(CrocodileScores);
+  private readonly lockScores = inject(LockScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
   protected readonly nextId = computed(() => this.p.next()?.id);
@@ -221,7 +224,7 @@ export class Games {
       help: level.description,
       ...(level.practice ? { upTo: level.practice.max } : {}),
       stars: levelStars(level, progress),
-      best: this.scores.best()[level.id] ?? 0,
+      best: this.scores.best()[level.id] ?? this.lockScores.best()[level.id] ?? 0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
       recommended: level.id === this.nextId(),
       hero: level.format === 'fairy-defense',
@@ -253,6 +256,7 @@ export class Games {
       level.practice?.example ??
       comparisonStage(level.id)?.example ??
       raceStage(level.id)?.example ??
+      lockStage(level.id)?.example ??
       ''
     );
   }

@@ -1,0 +1,178 @@
+:host {
+  display: block;
+  height: 100%;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.disc {
+  fill: #2f2466;
+  stroke: #c9a24a;
+  stroke-width: 6;
+}
+.disc-inner {
+  fill: #3b2f7d;
+}
+.ring {
+  fill: none;
+  stroke: #594aa8;
+  stroke-width: 22;
+  stroke-linecap: round;
+}
+.tick {
+  stroke: #b8b0e8;
+  stroke-width: 1.5;
+}
+.tick.major {
+  stroke: #fff4c2;
+  stroke-width: 3;
+}
+.label {
+  fill: #fff4c2;
+  font: 600 15px var(--font-sans);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.label.target {
+  fill: var(--gold);
+}
+.keyhole circle:first-child {
+  fill: var(--gold);
+  stroke: #8a5a00;
+  stroke-width: 3;
+}
+.hole {
+  fill: #3b2a07;
+}
+.gem {
+  fill: #6fe0ff;
+  stroke: #0b6c8c;
+  stroke-width: 2;
+}
+.thorn {
+  fill: #d8476a;
+  stroke: #6b1029;
+  stroke-width: 2;
+}
+.current {
+  fill: #fff;
+  font: 600 64px var(--font-sans);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.chest-body,
+.chest-lid {
+  fill: #a8623a;
+  stroke: #5b2e14;
+  stroke-width: 4;
+}
+:host(.is-big) .chest-body,
+:host(.is-big) .chest-lid {
+  fill: #d49a2a;
+}
+.chest-band {
+  stroke: #e8b44c;
+  stroke-width: 6;
+}
+.plate {
+  fill: var(--gold);
+  stroke: #8a5a00;
+  stroke-width: 3;
+}
+.plate-number {
+  fill: #3b2a07;
+  font: 600 22px var(--font-sans);
+  text-anchor: middle;
+}
+.crystal {
+  fill: #ff9ad5;
+  stroke: #8c1c5a;
+  stroke-width: 2;
+  transition: opacity 0.6s;
+}
+.crystal.faded {
+  opacity: 0.25;
+}
+.lid {
+  transform-box: view-box;
+  transform-origin: 150px 318px;
+  transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.chest.opened .lid {
+  transform: rotate(-28deg);
+}
+.pip {
+  transform-box: view-box;
+  transform-origin: 200px 200px;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.pip-body {
+  transform-box: view-box;
+  transform-origin: 200px 50px;
+}
+.wing {
+  fill: #e8f6ff;
+  opacity: 0.85;
+}
+.pip-light {
+  fill: #ffe066;
+  stroke: #b77f00;
+  stroke-width: 2;
+}
+.pip-head {
+  fill: #4a3a8c;
+}
+.coin {
+  fill: var(--gold);
+  stroke: #8a5a00;
+  stroke-width: 2;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hop-a {
+    animation: hop-a 0.45s ease-out;
+  }
+  .hop-b {
+    animation: hop-b 0.45s ease-out;
+  }
+  .coin {
+    animation: coin 1s ease-out both;
+    animation-delay: calc(var(--i) * 40ms);
+  }
+  :host(.is-fever) .pip-glow {
+    animation: fever 0.6s ease-in-out infinite alternate;
+  }
+}
+@keyframes hop-a {
+  50% {
+    transform: translateY(-26px) scale(1.1);
+  }
+}
+@keyframes hop-b {
+  50% {
+    transform: translateY(-26px) scale(1.1);
+  }
+}
+@keyframes coin {
+  from {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc((var(--i) - 3.5) * 22px), -120px);
+    opacity: 0;
+  }
+}
+@keyframes fever {
+  to {
+    transform: scale(1.4);
+  }
+}
+:host-context(.calm-motion) .hop-a,
+:host-context(.calm-motion) .hop-b,
+:host-context(.calm-motion) .coin,
+:host-context(.calm-motion) .pip-glow {
+  animation: none;
+}

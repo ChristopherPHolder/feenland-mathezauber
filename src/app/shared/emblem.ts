@@ -71,6 +71,24 @@ import { Component, input } from '@angular/core';
         <circle cx="24" cy="34" r="3" fill="#f4a0c0" stroke="none" opacity=".8" />
       </svg>
     }
+    @case ('treasure-lock') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M10 34a22 22 0 1 1 44 0" class="violet-line" stroke-width="6" />
+        <path
+          d="M10 34a22 22 0 1 1 44 0"
+          stroke="#fff4c2"
+          stroke-width="1.5"
+          stroke-dasharray="2 5"
+        />
+        <path d="M14 38h36v18H14z" fill="#c07a46" />
+        <path d="M14 38v-4a8 8 0 0 1 8-8h20a8 8 0 0 1 8 8v4z" fill="#a8623a" />
+        <path d="M14 43h36" class="gold-line" stroke-width="3" />
+        <rect x="27" y="40" width="10" height="11" rx="2" class="gold" />
+        <circle cx="32" cy="45" r="1.5" class="dot" />
+        <circle cx="47" cy="15" r="5" class="gold" />
+        <path d="M43 11c-2-3-6-2-6 0m14 0c2-3 6-2 6 0" stroke-width="1.5" />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />
@@ -113,6 +131,9 @@ import { Component, input } from '@angular/core';
     }
     .gold-line {
       stroke: var(--star-fill);
+    }
+    .violet-line {
+      stroke: var(--violet);
     }
     .cream {
       fill: var(--cream);

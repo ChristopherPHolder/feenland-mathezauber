@@ -23,6 +23,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Hungry Crocodile | 15 snacks (plain numbers), 12 (one sum), 10 (two sums or tables) | 15 × 6 s ≈ 1.5–2.5 min; 10 × 15 s ≈ 2.5–3.5 min   |
 | Magic walls          | 8 two-brick walls, 5–6 three-row walls, 4 four-row walls         | 8 × 15 s ≈ 2 min … 4 × 60 s ≈ 4 min               |
 | Unicorn Rainbow Race | one heat (six per track)                                         | 60–90 s per heat; two or three heats in a sitting |
+| The Treasure Lock    | 6 chests of 2–6 hops each, the big chest last                    | 6 × 20–30 s ≈ 2–3 min                             |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -77,6 +78,16 @@ Every wall is checked to have exactly one solution. Missing-brick patterns are `
 | Rainbow · everything     | rainbow run · dream ride · grand prix                                                     |
 
 A cup's keepsake needs three of its tracks finished, so the keepsakes children already earned stay theirs now that cups have four tracks.
+
+### The Treasure Lock: 7 levels (`pages/treasure-lock/lock-puzzles.ts`)
+
+| Topic       | Levels, easiest first                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| Hops to 20  | hops of five +5 +5 −1 → 9 · threes and twos +3 +3 +2 → 8                                       |
+| Tens tricks | tens and ones +10 +10 +1 → 21 · the nine trick +10 +10 −1 → 19 · hopping back 50 −10 −1 → 39   |
+| Doubling    | doubling magic 1 +1 ×2 ×2 → 8 · treasure master on a dial to 100 with thorns +10 ×2 ×2 −1 → 39 |
+
+Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets whose fewest hops fall in the level's `par` range, so a round never asks for more hops than its level allows.
 
 ## Adding a level
 

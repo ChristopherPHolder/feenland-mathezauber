@@ -1,0 +1,260 @@
+<section
+  class="game"
+  [class.playing]="started() && round().phase !== 'complete'"
+  aria-labelledby="game-title"
+>
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: stage().stage, total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.stage, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.stage }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <div class="intro-dial"><app-lock-dial [frame]="frame()" /></div>
+        <div class="intro-copy">
+          <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
+          <p>{{ t('story') }} {{ t('storyHops') }}</p>
+          <div class="trick-card">
+            <h3>{{ t('trickTitle') }}</h3>
+            <p>{{ t(stage().trick) }}</p>
+            <p class="example">{{ stage().example }}</p>
+          </div>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+        </div>
+      </div>
+      <fieldset class="pace" aria-describedby="pace-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="pace-help">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id) {
+            <label class="pace-choice" [class.selected]="pace() === option.id">
+              <input
+                type="radio"
+                name="lock-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceUnlimited')
+                  : t('paceSeconds', { n: paceSeconds(option.id) })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+      </fieldset>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<app-icon kind="arrow" />
+        </button>
+      </div>
+    </section>
+  } @else if (round().phase === 'complete') {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <div class="outcome-dial"><app-lock-dial [frame]="frame()" /></div>
+      <div class="outcome-copy">
+        <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (star of keySlots; track star) {
+            <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
+              ><app-icon kind="star"
+            /></span>
+          }
+        </div>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+        <p>{{ t('keysWon', { n: keysWon() }) }}</p>
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        </p>
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('nextLevel') }}<app-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<app-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <div
+        class="chests"
+        role="img"
+        [attr.aria-label]="t('keysLabel', { n: keysWon(), total: roundLength * 3 })"
+      >
+        @for (chest of chests; track chest) {
+          <span
+            class="chest-slot"
+            [class.done]="chest < round().keys.length"
+            [class.current]="chest === round().index"
+            [class.big]="chest === roundLength - 1"
+          >
+            @if (chest >= round().keys.length) {
+              <app-icon kind="lock" />
+            } @else {
+              @for (slot of keySlots; track slot) {
+                <svg class="key" [class.won]="slot <= round().keys[chest]" viewBox="0 0 12 24">
+                  <circle cx="6" cy="5" r="4" />
+                  <path d="M6 9v13m0-4h4m-4 3h3" />
+                </svg>
+              }
+            }
+          </span>
+        }
+      </div>
+      <p class="coins" [class.bump]="round().phase === 'opened'">
+        <span>{{ t('coins') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (fever()) {
+        <p class="fever-chip">{{ t('fever') }}</p>
+      }
+    </div>
+    @if (timed()) {
+      <section class="hourglass" [attr.aria-label]="t('hourglass')">
+        <span class="hourglass-label">{{ t('hourglass') }}</span>
+        <span
+          class="sand"
+          [class.empty]="round().crystal === 'faded'"
+          [class.urgent]="round().crystal === 'shining' && secondsLeft() <= 5"
+          aria-hidden="true"
+          ><span [style.--sand]="sandShare()"></span
+        ></span>
+        <span class="seconds" role="timer" aria-live="off">{{
+          round().crystal === 'shining' ? t('secondsLeft', { n: secondsLeft() }) : ''
+        }}</span>
+        <button type="button" class="hourglass-off" (click)="selectPace('off')">
+          {{ t('hourglassOff') }}
+        </button>
+      </section>
+    }
+    <div class="play-area">
+      <section
+        class="board"
+        [class.opened]="round().phase === 'opened'"
+        [class.big]="big()"
+        [attr.aria-label]="t('dialLabel')"
+      >
+        <app-three-stage class="dial-stage" [world]="loadWorld" [state]="frame()">
+          <app-lock-dial [frame]="frame()" />
+        </app-three-stage>
+      </section>
+      <div class="controls">
+        <div class="goal">
+          <p class="chest-name">
+            {{
+              big() ? t('bigChest') : t('chestCount', { n: round().index + 1, total: roundLength })
+            }}
+          </p>
+          <p class="goal-line">
+            <span class="goal-text">{{ t('goal', { target: lock().target }) }}</span>
+            <span class="goal-numbers" aria-hidden="true">
+              <span class="now"
+                ><small>{{ t('pip') }}</small
+                >{{ round().value }}</span
+              >
+              <span class="target"
+                ><small>{{ t('keyhole') }}</small
+                >{{ lock().target }}</span
+              >
+            </span>
+          </p>
+          <p class="where">{{ t('onNumber', { n: round().value }) }}</p>
+          <p class="hop-count">
+            <span
+              >{{ t('hops') }}: <strong>{{ round().hops.length }}</strong></span
+            >
+            <span class="par">{{ t('parGoal', { n: lock().par }) }}</span>
+          </p>
+        </div>
+        <p class="trail">{{ t('path', { path: pathText() }) }}</p>
+        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+          @if (showHint()) {
+            <strong>{{ t('hintLead') }}</strong> {{ t(stage().trick) }}
+          } @else {
+            {{ statusText() }}
+          }
+        </p>
+        <fieldset class="spells" [attr.aria-busy]="round().phase !== 'ready'">
+          <legend class="sr-only">{{ t('spellsLabel') }}</legend>
+          @for (spell of lock().spells; track $index) {
+            <button
+              type="button"
+              class="spell"
+              [attr.data-op]="spell.op"
+              [disabled]="!canCast(spell)"
+              [attr.aria-disabled]="round().phase !== 'ready' ? true : null"
+              [attr.aria-label]="t('hopLabel', { spell: spellText(spell) })"
+              [title]="canCast(spell) ? '' : t('tooFar')"
+              (click)="hop(spell)"
+            >
+              {{ spellText(spell) }}
+            </button>
+          }
+        </fieldset>
+        <div class="lock-actions">
+          @if (round().phase === 'opened') {
+            <button class="button primary" type="button" (click)="advance()">
+              {{ t('next') }}<app-icon kind="arrow" />
+            </button>
+          } @else {
+            <button
+              class="button secondary restart"
+              type="button"
+              [disabled]="round().value === lock().start || round().phase !== 'ready'"
+              (click)="restart()"
+            >
+              {{ t('startAgain') }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>

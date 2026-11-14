@@ -1,0 +1,82 @@
+<svg viewBox="0 0 400 400" focusable="false">
+  <defs>
+    <radialGradient id="lock-glow">
+      <stop offset="0" stop-color="#fff7b0" />
+      <stop offset="0.45" stop-color="#ffe066" stop-opacity="0.75" />
+      <stop offset="1" stop-color="#ffe066" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle class="disc" [attr.cx]="center" [attr.cy]="center" r="188" />
+  <circle class="disc-inner" [attr.cx]="center" [attr.cy]="center" r="118" />
+  <path class="ring" [attr.d]="ringPath()" />
+  @for (tick of ticks(); track tick.value) {
+    <line
+      class="tick"
+      [class.major]="tick.major"
+      [attr.x1]="tick.line.x1"
+      [attr.y1]="tick.line.y1"
+      [attr.x2]="tick.line.x2"
+      [attr.y2]="tick.line.y2"
+    />
+    @if (tick.label; as label) {
+      <text
+        class="label"
+        [class.target]="tick.value === frame().target"
+        [attr.x]="label.x"
+        [attr.y]="label.y"
+      >
+        {{ tick.value }}
+      </text>
+    }
+  }
+  <g class="keyhole" [attr.transform]="'translate(' + keyhole().x + ' ' + keyhole().y + ')'">
+    <circle r="15" />
+    <circle class="hole" cy="-3" r="4" />
+    <path class="hole" d="M-3 0h6l2 8h-10z" />
+  </g>
+  @if (gem(); as gem) {
+    <path
+      class="gem"
+      [attr.transform]="'translate(' + gem.x + ' ' + gem.y + ')'"
+      d="M0-11 9-3 0 11-9-3z"
+    />
+  }
+  @for (thorn of thorns(); track thorn.value) {
+    <path
+      class="thorn"
+      [attr.transform]="'translate(' + thorn.x + ' ' + thorn.y + ')'"
+      d="M0-13 3-4 12-6 5 1 10 10 0 5-10 10-5 1-12-6-3-4z"
+    />
+  }
+  <text class="current" [attr.x]="center" y="196">{{ frame().value }}</text>
+  <g class="chest" [class.opened]="frame().opened">
+    @if (frame().opened) {
+      @for (coin of coins; track coin) {
+        <circle class="coin" cx="200" cy="320" r="7" [style.--i]="coin" />
+      }
+    }
+    <rect class="chest-body" x="150" y="318" width="100" height="56" rx="10" />
+    <path class="chest-band" d="M150 336h100" />
+    <g class="lid">
+      <path class="chest-lid" d="M146 320v-16a20 20 0 0 1 20-20h68a20 20 0 0 1 20 20v16z" />
+      @if (frame().crystal !== 'none') {
+        <path
+          class="crystal"
+          [class.faded]="frame().crystal === 'faded'"
+          d="M200 280l8 8-8 10-8-10z"
+        />
+      }
+    </g>
+    <rect class="plate" x="178" y="328" width="44" height="34" rx="8" />
+    <text class="plate-number" x="200" y="352">{{ frame().target }}</text>
+  </g>
+  <g class="pip" [style.transform]="'rotate(' + pipAngle() + 'deg)'">
+    <g class="pip-body" [class]="'hop-' + hopPhase()">
+      <circle class="pip-glow" cx="200" cy="50" r="28" fill="url(#lock-glow)" />
+      <ellipse class="wing" cx="190" cy="42" rx="9" ry="6" />
+      <ellipse class="wing" cx="210" cy="42" rx="9" ry="6" />
+      <circle class="pip-light" cx="200" cy="52" r="10" />
+      <circle class="pip-head" cx="200" cy="40" r="7" />
+    </g>
+  </g>
+</svg>
