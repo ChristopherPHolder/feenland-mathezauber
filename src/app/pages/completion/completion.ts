@@ -6,10 +6,11 @@ import { CompletionService } from '../../core/completion';
 import { findLevel, nextLevel, WORLD_CATALOG } from '../../core/catalog';
 import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
+import { Emblem } from '../../shared/emblem';
 import { Icon } from '../../shared/icon';
 @Component({
   selector: 'app-completion',
-  imports: [RouterLink, Icon, NgOptimizedImage],
+  imports: [RouterLink, Icon, NgOptimizedImage, Emblem],
   templateUrl: './completion.html',
   styleUrl: './completion.css',
 })
@@ -26,8 +27,13 @@ export class Completion {
   protected g(key: GameMessageKey, values: Record<string, number> = {}) {
     return gameText(this.i.locale(), key, values);
   }
-  /** The following level of the same game first, then the catalog-wide recommendation. */
+  /** The level to play next, with its game so the button can show where it leads. */
   protected readonly next = computed(() => {
+    const level = this.nextLevel();
+    return level && { level, chapter: findLevel(this.catalog, level.id)?.chapter };
+  });
+  /** The following level of the same game first, then the catalog-wide recommendation. */
+  private readonly nextLevel = computed(() => {
     const result = this.result();
     const context = this.context();
     if (!result) return undefined;

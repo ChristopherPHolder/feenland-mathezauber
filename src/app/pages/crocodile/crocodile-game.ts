@@ -46,6 +46,8 @@ import { CrocodileSounds } from './crocodile-sounds';
 import { HatWardrobe } from './hat-wardrobe';
 import { Heron } from './heron';
 import { PondScene } from './pond-scene';
+import { RuleHintCard } from './rule-hint';
+import { ruleHint } from './rule-hints';
 interface Round {
   readonly questions: readonly ComparisonQuestion[];
   readonly golden: ReadonlySet<number>;
@@ -70,7 +72,16 @@ const BANNER_DELAY = 1800;
 const BOSS_EXTRA = 3000;
 @Component({
   selector: 'app-crocodile-game',
-  imports: [RouterLink, Icon, GameHeader, CrocodileArt, PondScene, HatWardrobe, Heron],
+  imports: [
+    RouterLink,
+    Icon,
+    GameHeader,
+    CrocodileArt,
+    PondScene,
+    HatWardrobe,
+    Heron,
+    RuleHintCard,
+  ],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
   styleUrls: [
@@ -181,10 +192,17 @@ export class CrocodileGame {
       const shoo = this.heron()?.state === 'shooed' ? ' ' + this.t('shoo') : '';
       return praise + ' ' + this.t('points', { n: points }) + shoo;
     }
-    // A retry never shows the worked-out values: the child does the sums, the banner says the rest.
-    if (this.wrongPick()) return this.t(answer === '=' ? 'wrongEqual' : 'wrong');
-    if (round.attempts > 0) return this.t('hint');
     return this.t(this.needsMaths() ? 'computeFirst' : 'question');
+  });
+  /**
+   * After a wrong pick Kiki holds up a rule card until the snack is eaten. The rule depends on the
+   * level and the number of tries, never on the answer, and never shows a worked-out value.
+   */
+  protected readonly rule = computed(() => {
+    const round = this.round();
+    const stage = this.stage();
+    if (round.phase !== 'ready' || round.attempts === 0 || !stage) return null;
+    return ruleHint(stage.skill, this.needsMaths(), round.attempts);
   });
   private readonly outcome = viewChild<ElementRef<HTMLElement>>('outcome');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
