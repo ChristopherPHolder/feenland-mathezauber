@@ -176,16 +176,12 @@ export function generateWorld(level: WallLevel, random: Random = Math.random): r
   return walls;
 }
 export type Hint =
-  | { readonly kind: 'add'; readonly left: number; readonly right: number; readonly sum: number }
-  | {
-      readonly kind: 'complete';
-      readonly known: number;
-      readonly target: number;
-      readonly answer: number;
-    }
+  | { readonly kind: 'add'; readonly left: number; readonly right: number }
+  | { readonly kind: 'complete'; readonly known: number; readonly target: number }
   | { readonly kind: 'fillOther' };
 /**
- * Explain how to find one brick from the bricks that are currently visible.
+ * Explain how to find one brick from the bricks that are currently visible. A hint names the
+ * rule and the two bricks it uses, never the brick's own value: the child does the maths.
  * `filled` lists missing bricks the player has already solved.
  */
 export function hintFor(wall: Wall, brick: BrickId, filled: readonly BrickId[]): Hint {
@@ -196,7 +192,6 @@ export function hintFor(wall: Wall, brick: BrickId, filled: readonly BrickId[]):
       kind: 'add',
       left: valueOf(wall, below[0]),
       right: valueOf(wall, below[1]),
-      sum: valueOf(wall, brick),
     };
   const above = parentOf(wall, brick);
   if (above && visible(above.parent) && visible(above.sibling))
@@ -204,7 +199,6 @@ export function hintFor(wall: Wall, brick: BrickId, filled: readonly BrickId[]):
       kind: 'complete',
       known: valueOf(wall, above.sibling),
       target: valueOf(wall, above.parent),
-      answer: valueOf(wall, brick),
     };
   return { kind: 'fillOther' };
 }

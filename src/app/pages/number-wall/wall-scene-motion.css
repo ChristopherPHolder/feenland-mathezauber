@@ -35,6 +35,15 @@
     transform: translate(0, 0) rotate(0);
   }
 }
+@keyframes pair-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-14%);
+  }
+}
 @keyframes pair-pulse {
   0%,
   100% {
@@ -330,6 +339,12 @@
 }
 .brick.pair {
   animation: pair-pulse 1.2s ease-in-out infinite;
+}
+:host(.is-hinting) .brick.pair {
+  animation: pair-hop 0.9s ease-in-out infinite;
+}
+:host(.is-hinting) .brick.pair + .brick.pair {
+  animation-delay: 0.15s;
 }
 .brick.sparkle {
   animation: drop 0.55s cubic-bezier(0.3, 1.4, 0.5, 1);

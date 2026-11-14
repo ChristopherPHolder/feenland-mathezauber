@@ -26,6 +26,7 @@ import { wallText } from './wall-text';
     '[style.--p]': 'trollProgress() ?? 0',
     '[class.danger]': 'danger()',
     '[class.combo]': 'combo()',
+    '[class.is-hinting]': 'hinting()',
   },
 })
 export class WallScene {
@@ -45,6 +46,8 @@ export class WallScene {
   readonly cracks = input(0);
   readonly crumbled = input(false);
   readonly combo = input(false);
+  /** The child has missed this brick twice: the pair to add pulses harder. */
+  readonly hinting = input(false);
   readonly select = output<BrickId>();
   protected readonly i = inject(LocaleService);
   protected readonly total = WALLS_PER_WORLD;
