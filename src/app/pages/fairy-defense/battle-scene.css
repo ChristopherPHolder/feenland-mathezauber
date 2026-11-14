@@ -500,12 +500,12 @@
   fill: none;
 }
 
-.intro .wave,
-.intro .hearts {
+/* Before a wave starts nothing in the scene is a control or a clue: no pause button, and the
+   monster's badge and steps do not peek out from behind the intro card. */
+.intro .battle-hud,
+.intro .number-badge,
+.intro .steps {
   display: none;
-}
-.intro .battle-hud {
-  justify-content: flex-end;
 }
 
 /* While playing, the page gives the scene a height (see :host.playing in the game) and the

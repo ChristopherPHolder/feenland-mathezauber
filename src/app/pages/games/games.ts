@@ -1,5 +1,13 @@
-import { NgOptimizedImage } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { NgOptimizedImage, ViewportScroller } from '@angular/common';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Chapter, Level, levelStars, WORLD_CATALOG, World } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
@@ -43,6 +51,39 @@ export class Games {
     this.catalog.flatMap((world) => world.chapters.map((chapter) => ({ world, chapter }))),
   );
   protected readonly nextId = computed(() => this.p.next()?.id);
+  /** The game section filling most of the screen, highlighted in the jump bar. */
+  protected readonly inView = signal('');
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const destroyRef = inject(DestroyRef);
+    // Anchor jumps land below the sticky game chips instead of under them.
+    const scroller = inject(ViewportScroller);
+    scroller.setOffset(() => [
+      0,
+      (host.querySelector<HTMLElement>('.game-jump')?.offsetHeight ?? 0) + 12,
+    ]);
+    destroyRef.onDestroy(() => scroller.setOffset([0, 0]));
+    afterNextRender(() => {
+      if (typeof IntersectionObserver === 'undefined') return;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            this.inView.set(entry.target.id);
+            // Keep the highlighted chip visible in the sideways-scrolling row.
+            const row = host.querySelector<HTMLElement>('.game-jump ul');
+            const chip = row?.querySelector<HTMLElement>(`a[href$="#${entry.target.id}"]`);
+            if (row && chip) row.scrollTo({ left: chip.offsetLeft - row.offsetLeft - 16 });
+          }
+        },
+        // A section counts once it crosses the band a third of the way down the screen.
+        { rootMargin: '-33% 0px -66% 0px' },
+      );
+      host.querySelectorAll('section.game').forEach((section) => observer.observe(section));
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
   protected stars(level: Level) {
     return levelStars(level, this.p.progress());
   }
