@@ -25,6 +25,84 @@
   background: var(--leaf);
 }
 
+/* The animations live beside their keyframes: Angular scopes keyframe names per stylesheet, so a
+   rule in another file would ask for a name that does not exist. */
+.score.bump strong {
+  animation: bump 0.5s ease-out;
+}
+.combo.frenzy {
+  animation: shimmer 1.2s linear infinite;
+}
+.banner {
+  animation: pop 0.4s ease-out;
+}
+.side.eaten .expression {
+  animation: gulp 0.7s ease-in 0.1s forwards;
+}
+.side .tile {
+  animation: bob 3.4s ease-in-out infinite;
+}
+.side .operator {
+  animation: bob 3.4s ease-in-out -0.7s infinite;
+}
+.side.eaten .splash {
+  animation: splash 0.6s ease-out;
+}
+.slot-croc {
+  animation: bob 2.6s ease-in-out infinite;
+}
+.slot-croc.surfaced {
+  animation: surface 0.5s ease-out;
+}
+.slot-sign {
+  animation: pop 0.3s ease-out;
+}
+.points-float {
+  animation: float-up 1.3s ease-out forwards;
+}
+.choice:hover .choice-croc,
+.choice:focus-visible .choice-croc {
+  animation: bob 1s ease-in-out infinite;
+}
+.choice.shake {
+  animation: shake 0.4s;
+}
+.outcome-croc {
+  animation: bob 2.4s ease-in-out infinite;
+}
+.perfect .outcome-croc {
+  animation: dance 0.8s ease-in-out infinite;
+}
+.new-best {
+  animation: pop 0.5s ease-out;
+}
+.stars app-icon.earned {
+  animation: pop 0.5s ease-out calc(var(--i, 1) * 0.3s) both;
+}
+.hat-unlocked {
+  animation: pop 0.5s ease-out;
+}
+.side.shake {
+  animation: shake 0.4s;
+}
+.slot-croc.shake {
+  animation: head-shake 0.5s ease-in-out;
+}
+@keyframes head-shake {
+  20% {
+    rotate: -9deg;
+  }
+  40% {
+    rotate: 8deg;
+  }
+  60% {
+    rotate: -6deg;
+  }
+  80% {
+    rotate: 4deg;
+  }
+}
+
 @keyframes shake {
   25% {
     transform: translateX(-6px);
