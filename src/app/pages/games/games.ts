@@ -20,6 +20,8 @@ import { TOTAL_WAVES } from '../fairy-defense/waves';
 import { comparisonStage } from '../crocodile/comparison';
 import { raceStage } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
+import { lockStage } from '../treasure-lock/lock-puzzles';
+import { LockScores } from '../treasure-lock/lock-scores';
 import { levels as wallLevels, WallLevel } from '../number-wall/number-wall';
 import { NumberWallStore } from '../number-wall/number-wall-store';
 import { MessageKey } from '../../core/messages';
@@ -45,6 +47,7 @@ export class Games {
   private readonly catalog = inject(WORLD_CATALOG);
   protected readonly campaign = inject(CampaignStore);
   protected readonly scores = inject(CrocodileScores);
+  private readonly lockScores = inject(LockScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
   protected readonly wallLevels = wallLevels;
@@ -100,11 +103,12 @@ export class Games {
       level.practice?.example ??
       comparisonStage(level.id)?.example ??
       raceStage(level.id)?.example ??
+      lockStage(level.id)?.example ??
       ''
     );
   }
   protected best(level: Level) {
-    return this.scores.best()[level.id] ?? 0;
+    return this.scores.best()[level.id] ?? this.lockScores.best()[level.id] ?? 0;
   }
   protected wallTitle(level: WallLevel): MessageKey {
     return `wallLevel${level}` as MessageKey;

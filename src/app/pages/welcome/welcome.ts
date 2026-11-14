@@ -18,6 +18,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
   crocodile: 'crocodilePlay',
   'number-wall': 'numberWallPlay',
   'unicorn-race': 'racePlay',
+  'treasure-lock': 'lockPlay',
 };
 @Component({
   selector: 'app-welcome',
