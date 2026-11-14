@@ -95,9 +95,11 @@
         </div>
         <p class="pace-rule">{{ t(timed() ? 'bubbleHelp' : 'paceCalmHelp') }}</p>
       </fieldset>
-      <button class="button primary" type="button" (click)="play()">
-        {{ t('start') }}<app-icon kind="arrow" />
-      </button>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<app-icon kind="arrow" />
+        </button>
+      </div>
       <app-hat-wardrobe [owned]="ownedHats()" [fresh]="newHat()" />
     </section>
   } @else if (round().phase === 'complete') {
