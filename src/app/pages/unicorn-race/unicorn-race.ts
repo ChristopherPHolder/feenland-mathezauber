@@ -214,6 +214,18 @@ export class UnicornRace {
     this.phase() === 'finished' ? finalSparkles(this.race()) : this.race().sparkles,
   );
   protected readonly seconds = computed(() => Math.round(this.race().elapsedMs / 1000));
+  /** "24 right · 1 stumble · 16 seconds", with each count in the singular or plural it needs. */
+  protected readonly summaryLine = computed(() => {
+    const plural = new Intl.PluralRules(this.i.locale());
+    const part = (key: 'summaryRight' | 'summaryStumbles' | 'summarySeconds', n: number) =>
+      this.t(plural.select(n) === 'one' ? `${key}One` : key, { n });
+    const race = this.race();
+    return [
+      part('summaryRight', race.correct),
+      part('summaryStumbles', race.mistakes),
+      part('summarySeconds', this.seconds()),
+    ].join(' · ');
+  });
   /** A missing-number question already carries its equals sign. */
   protected readonly equation = computed(() => {
     const text = this.question().text;

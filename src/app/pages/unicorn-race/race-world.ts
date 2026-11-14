@@ -46,6 +46,9 @@ export interface Course {
 const SUN_OFFSET = new Vector3(5, 12, 5);
 /** Rivals further than this from Lumi no longer pull the camera round. */
 const PACK_REACH = 12;
+/** How long the others take to reach the line once Lumi has crossed it, and to turn round. */
+const RUN_IN_SECONDS = 2.6;
+const TURN_SECONDS = 0.9;
 /** The camera circles a point a little left of the middle lanes, nearer Lumi's lane. */
 const CAMERA_X = -0.3;
 /** Tangent of half the vertical field of view: from a 46 to a 68 degree lens. */
@@ -61,6 +64,10 @@ interface Runner {
   readonly pony: Pony;
   readonly tag: Sprite;
   shownZ: number;
+  /** How fast it gallops in once the race is decided, in metres a second; 0 until then. */
+  runIn: number;
+  /** From 0 to 1 as it turns round on the finish line to face the camera. */
+  turn: number;
 }
 /** A floating name pill drawn onto a small canvas. */
 function makeTag(name: string): Sprite {
@@ -158,7 +165,7 @@ export class RaceWorld {
       tag.position.set(0, 2.7, -0.5);
       pony.root.add(tag);
       this.scene.add(pony.root);
-      return { id, pony, tag, shownZ: 0 };
+      return { id, pony, tag, shownZ: 0, runIn: 0, turn: 0 };
     });
     this.trail = this.buildTrail();
     const lumi = this.runners.find((runner) => runner.id === 'player')!.pony;
@@ -283,23 +290,42 @@ export class RaceWorld {
     }
     for (const runner of this.runners) {
       const state = racers.find((racer) => racer.id === runner.id);
-      const targetZ = -(state?.position ?? 0) * UNIT;
-      const previous = runner.shownZ;
-      runner.shownZ += (targetZ - runner.shownZ) * Math.min(1, dt * 7);
-      const velocity = dt > 0 ? (previous - runner.shownZ) / dt / UNIT : 0;
       const done = state?.finishedAt !== undefined;
       const isPlayer = runner.id === 'player';
+      const previous = runner.shownZ;
+      let onLine = finished && done;
+      if (finished && !done) {
+        // The race is decided, but the others still gallop in and take their place on the line.
+        if (!runner.runIn)
+          runner.runIn = Math.max(6, (runner.shownZ - this.finishZ) / RUN_IN_SECONDS);
+        runner.shownZ = Math.max(this.finishZ, runner.shownZ - runner.runIn * dt);
+        onLine = runner.shownZ <= this.finishZ + 0.01;
+      } else {
+        runner.runIn = 0;
+        const targetZ = -(state?.position ?? 0) * UNIT;
+        runner.shownZ += (targetZ - runner.shownZ) * Math.min(1, dt * 7);
+      }
+      const velocity = dt > 0 ? (previous - runner.shownZ) / dt / UNIT : 0;
+      // On the line each pony turns round to face us, and then shows how it feels.
+      runner.turn = onLine ? Math.min(1, runner.turn + dt / TURN_SECONDS) : 0;
+      const turning = runner.turn > 0 && runner.turn < 1;
+      const root = runner.pony.root;
+      const facing = Math.atan2(
+        root.position.x - this.camera.position.x,
+        runner.shownZ - this.camera.position.z,
+      );
+      root.rotation.y = facing * smooth(runner.turn);
       runner.pony.update({
         now,
         dt,
-        speed: velocity,
-        moving: running && !done && velocity > 0.05,
+        speed: turning ? 2.2 : Math.min(MAX_SPEED, velocity),
+        moving: turning || (!onLine && (running || finished) && !done && velocity > 0.05),
         waiting: !running && !finished && !done,
-        stumbling: isPlayer && stumbling,
-        celebrating: isPlayer && finished && won,
+        stumbling: isPlayer && stumbling && !finished,
+        celebrating: runner.turn >= 1 && isPlayer && won,
+        cheering: runner.turn >= 1 && !(isPlayer && won),
       });
-      runner.pony.root.position.z = runner.shownZ;
-      runner.tag.visible = !finished || !done;
+      root.position.z = runner.shownZ;
       if (isPlayer) {
         playerZ = runner.shownZ;
         playerSpeed = velocity;
@@ -368,11 +394,12 @@ export class RaceWorld {
       height = 2.1;
       lookZ = -0.2;
     } else if (finished) {
-      // Back behind Lumi for the rainbow, the castle and the fireworks.
-      orbit = 0.3;
-      reach = 6.4;
-      height = 2.9;
-      lookZ = -6;
+      // Low on the track side of the line, where the ponies turn to face us in front of the
+      // rainbow, the castle and the fireworks.
+      orbit = 0.34;
+      reach = 6.3;
+      height = 1.9;
+      lookZ = -1.5;
     } else {
       const turn = smooth((pack + 1.5) / 6.5);
       orbit = 0.12 + turn * 1.8;
@@ -403,7 +430,7 @@ export class RaceWorld {
       this.camera.position.x += (Math.random() - 0.5) * shake;
       this.camera.position.y += (Math.random() - 0.5) * shake;
     }
-    this.camera.lookAt(0, 1.15, Math.max(this.finishZ - 8, playerZ + this.lookZ));
+    this.camera.lookAt(0, finished ? 1.5 : 1.15, Math.max(this.finishZ - 8, playerZ + this.lookZ));
     // A gallop widens the view a touch, so speed is felt and not just seen.
     const fov = this.fov + Math.min(8, Math.max(0, playerSpeed) * 1.1);
     if (Math.abs(fov - this.camera.fov) > 0.05) {
