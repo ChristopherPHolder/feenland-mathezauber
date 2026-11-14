@@ -24,12 +24,17 @@
     top: 28%;
   }
 }
+/* Swoop down to the new brick, tap it with the wand, flutter back up to her perch. */
 @keyframes dive {
   0% {
     transform: translate(0, 0) rotate(0);
   }
-  45% {
-    transform: translate(60px, 70px) rotate(35deg) scale(1.2);
+  35%,
+  50% {
+    transform: translate(var(--fly-x, 60px), var(--fly-y, 70px)) rotate(12deg) scale(0.9);
+  }
+  42% {
+    transform: translate(var(--fly-x, 60px), var(--fly-y, 70px)) rotate(28deg) scale(0.9);
   }
   100% {
     transform: translate(0, 0) rotate(0);
@@ -298,11 +303,16 @@
 }
 .fairy.dive {
   animation:
-    dive 0.7s ease-out,
-    hover 2.4s ease-in-out 0.7s infinite;
+    dive 1.1s ease-in-out,
+    hover 2.4s ease-in-out 1.1s infinite;
 }
 :host(.celebrating) .fairy {
   animation: cheer 0.6s ease-in-out 3;
+}
+:host(.celebrating) .fairy.dive {
+  animation:
+    dive 1.1s ease-in-out,
+    cheer 0.6s ease-in-out 1.1s 3;
 }
 :host(.combo) .fairy::after,
 :host(.combo) .fairy::before {
