@@ -13,6 +13,10 @@ export const routes: Routes = [
   },
   { path: 'games', loadComponent: () => import('./pages/games/games').then((m) => m.Games) },
   {
+    path: 'hatchery',
+    loadComponent: () => import('./pages/hatchery/hatchery').then((m) => m.Hatchery),
+  },
+  {
     path: 'settings',
     loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
   },

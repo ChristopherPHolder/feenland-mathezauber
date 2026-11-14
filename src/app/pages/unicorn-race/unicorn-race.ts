@@ -1,3 +1,4 @@
+import { HatcheryStore } from '../hatchery/hatchery-store';
 import {
   Component,
   computed,
@@ -125,6 +126,7 @@ export class UnicornRace {
   protected readonly sounds = inject(RaceSounds);
   private readonly completion = inject(CompletionService);
   private readonly progress = inject(ProgressService);
+  private readonly hatchery = inject(HatcheryStore);
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
@@ -489,6 +491,7 @@ export class UnicornRace {
     const next = answer(this.race(), correct);
     this.race.set(next);
     if (correct) {
+      this.hatchery.warm();
       const rainbow = isRainbow(next);
       this.sounds.play(rainbow ? 'rainbow' : 'gallop');
       this.flashFeedback(rainbow ? { kind: 'rainbow', streak: next.streak } : { kind: 'gallop' });
