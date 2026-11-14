@@ -1,3 +1,4 @@
+import { EggChip } from '../hatchery/egg-chip';
 import { NgOptimizedImage } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
 import { LocaleService } from '../../core/locale';
@@ -6,7 +7,7 @@ import { Battle } from './battle';
 import { gameText, GameMessageKey } from './game-messages';
 @Component({
   selector: 'app-battle-scene',
-  imports: [NgOptimizedImage, Icon],
+  imports: [NgOptimizedImage, Icon, EggChip],
   templateUrl: './battle-scene.html',
   styleUrl: './battle-scene.css',
   host: { '[class.fit]': 'fit()' },

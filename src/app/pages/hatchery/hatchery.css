@@ -1,0 +1,326 @@
+.hatchery {
+  max-width: 1240px;
+  margin: auto;
+  padding: 16px 40px 40px;
+}
+.intro h1 {
+  margin: 0;
+}
+.intro p {
+  margin: 8px 0 20px;
+  max-width: 60ch;
+  font-size: 18px;
+  color: var(--muted);
+}
+.stage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.stage {
+  position: relative;
+  min-height: 440px;
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 22% 18%, #ffffffb3 0 6%, transparent 7%),
+    radial-gradient(circle at 78% 26%, #ffffff99 0 4%, transparent 5%),
+    linear-gradient(#fbe2f1, #e9e1ff 45%, #d7f2e4);
+  box-shadow: var(--shadow-panel);
+}
+.stage.is-ready {
+  background:
+    radial-gradient(circle at 50% 62%, #ffd9a0aa 0 18%, transparent 42%),
+    linear-gradient(var(--pink-ground), #efe2ff 45%, #d7f2e4);
+}
+.nest {
+  position: absolute;
+  inset: 0;
+}
+.egg-tap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 18px;
+  border: 0;
+  background: transparent;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.egg-tap:focus-visible {
+  outline-offset: -6px;
+}
+.tap-hint {
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  color: var(--pink-deep);
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: var(--shadow-rest);
+  animation: hint-bob 1.6s ease-in-out infinite;
+}
+@keyframes hint-bob {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px;
+  border-radius: var(--radius-panel);
+  background: var(--paper);
+  box-shadow: var(--shadow-panel);
+}
+.panel h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.15;
+}
+.panel h2:focus {
+  outline: none;
+}
+.panel p {
+  margin: 0;
+  font-size: 17px;
+}
+.panel .button {
+  justify-content: center;
+}
+.panel .button app-egg-icon {
+  font-size: 18px;
+}
+.badge {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--warm-ground);
+  color: var(--amber-ink);
+  font-weight: 600;
+}
+.favorite-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--pink-deep);
+}
+.meter {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 6px;
+}
+.meter-egg {
+  grid-row: span 2;
+  font-size: 30px;
+}
+.meter-track {
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--warm-ground);
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px #0000001f;
+}
+.meter-fill {
+  display: block;
+  height: 100%;
+  min-inline-size: 18px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sun), #ff8a3c);
+  transition: inline-size 0.6s ease;
+}
+.meter-text {
+  font-size: 16px;
+}
+.answers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 15px !important;
+}
+.answers app-icon {
+  color: var(--star-ink);
+}
+.crack-pips {
+  display: flex;
+  gap: 10px;
+}
+.crack-pips span {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--sun);
+  background: var(--paper);
+}
+.crack-pips span.is-on {
+  background: var(--sun);
+}
+
+/* Dragon book */
+.book {
+  margin-top: 32px;
+}
+.book-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.book h2 {
+  margin: 0;
+  font-size: 26px;
+}
+.book h3 {
+  margin: 28px 0 4px;
+  font-size: 20px;
+}
+.count {
+  margin: 0;
+  font-weight: 600;
+  color: var(--muted);
+}
+.book-help {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+.book-grid {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+.dragon-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  inline-size: 100%;
+  block-size: 100%;
+  min-height: 150px;
+  padding: 10px 8px 14px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-card, 22px);
+  background: linear-gradient(var(--card-tint, var(--cream)), var(--paper) 70%);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+  transition: transform 0.15s;
+}
+button.dragon-card:hover {
+  transform: translateY(-3px);
+}
+.dragon-card.is-shown {
+  border-color: var(--pink);
+}
+.dragon-card img {
+  inline-size: 100%;
+  max-inline-size: 140px;
+  block-size: auto;
+  aspect-ratio: 1;
+}
+.card-egg {
+  font-size: 46px;
+  margin: 12px 0;
+}
+.card-name {
+  font-weight: 600;
+  font-size: 17px;
+}
+.card-element {
+  font-size: 13px;
+  color: var(--muted);
+}
+.card-favorite {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--pink-ground);
+  color: var(--pink-deep);
+  font-size: 12px;
+  font-weight: 600;
+}
+.is-mystery {
+  justify-content: center;
+  background: #ffffff8c;
+  border: 3px dashed #c9bfa8;
+  box-shadow: none;
+}
+.is-night .is-mystery {
+  background: #2b2160;
+  border-color: #6f63b0;
+}
+.is-night button.dragon-card {
+  background: linear-gradient(#2b2160, #4a3d8f 70%);
+  color: var(--paper);
+}
+.is-night .card-element {
+  color: #e2dcff;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+  .book-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) and (orientation: portrait), (max-width: 700px) {
+  .stage-row {
+    grid-template-columns: 1fr;
+  }
+  .stage {
+    min-height: min(56vh, 520px);
+  }
+}
+@media (max-width: 700px) {
+  .hatchery {
+    padding: 8px 16px 32px;
+  }
+  .intro p {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+  .stage {
+    min-height: min(50vh, 400px);
+  }
+  .panel {
+    padding: 20px;
+  }
+  .book-grid {
+    gap: 10px;
+  }
+  .dragon-card {
+    min-height: 120px;
+  }
+  .card-name {
+    font-size: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tap-hint {
+    animation: none;
+  }
+}

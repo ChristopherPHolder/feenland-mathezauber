@@ -1,3 +1,4 @@
+import { HatcheryStore } from '../hatchery/hatchery-store';
 import {
   Component,
   computed,
@@ -78,6 +79,7 @@ export class NumberWallComponent {
   protected readonly sound = inject(PlaytestStore);
   private readonly audio = inject(GameAudio);
   private readonly progress = inject(ProgressService);
+  private readonly hatchery = inject(HatcheryStore);
   private readonly document = inject(DOCUMENT);
   protected readonly levels = levels;
   protected readonly paces = paces;
@@ -373,6 +375,7 @@ export class NumberWallComponent {
     const wall = this.wall()!;
     this.filled.update((filled) => [...filled, brick]);
     this.justFilled.set(brick);
+    this.hatchery.warm();
     this.entry.set('');
     this.misses.set(0);
     this.brickMissed = false;

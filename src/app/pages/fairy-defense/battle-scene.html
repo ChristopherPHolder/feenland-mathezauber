@@ -30,6 +30,7 @@
       </div>
     </div>
     <div class="battle-actions">
+      <app-egg-chip />
       <div class="hearts" role="img" [attr.aria-label]="t('health', { n: battle().hearts })">
         @for (heart of hearts; track heart) {
           <svg viewBox="0 0 32 30" [class.empty]="heart > battle().hearts" aria-hidden="true">
