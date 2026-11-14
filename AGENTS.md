@@ -57,3 +57,14 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## Modern Web Guidance
+
+Google Chrome's `modern-web-guidance` skill lives in `.agents/skills/modern-web-guidance` (symlinked into `.claude/skills`, pinned in `skills-lock.json`). Before writing or changing HTML, CSS or client-side browser code, search it for the pattern at hand and follow the guide:
+
+```sh
+npx -y modern-web-guidance@latest search "<2-5 word query>"
+npx -y modern-web-guidance@latest retrieve "<id>"
+```
+
+Update it with `npx -y modern-web-guidance@latest update`.
