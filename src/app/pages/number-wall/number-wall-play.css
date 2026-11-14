@@ -156,42 +156,41 @@
 .status.happy app-icon {
   color: var(--star-ink);
 }
-.number-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 12px;
-  border-radius: var(--radius-surface);
-  background: var(--warm-ground);
+/* The rule as a tiny wall: which two bricks go together, never what they make. */
+.status.hint {
+  background: var(--success-ground);
 }
-.dot {
-  min-width: 34px;
-  height: 34px;
+.hint-wall {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+}
+.hint-row {
+  display: flex;
+  align-items: center;
+}
+.hint-brick {
   display: grid;
   place-items: center;
-  border-radius: 50%;
+  width: 26px;
+  height: 20px;
+  border: 2px solid var(--brick-filled);
+  border-radius: 5px;
+  background: #f0fbea;
+  font-size: 14px;
+  line-height: 1;
+}
+.hint-brick.ask {
+  border: 2px dashed var(--pink);
   background: var(--paper);
-  border: 2px solid var(--star-ink);
-  font-weight: 600;
-  font-size: 15px;
+  color: var(--pink);
 }
-.dot.start {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
-}
-.dot.end {
-  background: var(--pink);
-  color: var(--paper);
-  border-color: var(--pink);
-}
-.hop {
-  width: 10px;
-  height: 10px;
-  border-top: 3px solid var(--star-ink);
-  border-radius: 10px 10px 0 0;
-  margin: 0 1px 12px;
+.hint-plus {
+  width: 14px;
+  text-align: center;
+  font-size: 16px;
+  color: var(--brick-filled);
 }
 .pad {
   display: grid;
@@ -234,7 +233,6 @@
   width: 36px;
   height: 36px;
 }
-.show-me,
 .next {
   width: 100%;
 }
@@ -344,6 +342,10 @@
   }
 }
 @media (max-height: 760px) and (max-width: 480px) {
+  /* Leaves room for a three-line hint without pushing the keypad off screen. */
+  app-wall-scene {
+    min-height: 228px;
+  }
   .hud {
     gap: 4px 14px;
   }

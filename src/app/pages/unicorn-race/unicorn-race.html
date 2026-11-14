@@ -17,7 +17,7 @@
           </p>
           <div class="lineup" aria-hidden="true">
             @for (id of lineup(); track id) {
-              <span class="lineup-racer" [class.is-lumi]="id === 'player'">
+              <span class="lineup-racer" [class.lead]="id === 'player'">
                 <app-racer
                   [kind]="id"
                   [outfit]="id === 'player' ? outfit() : null"
