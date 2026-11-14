@@ -193,7 +193,9 @@
                   <span class="hint-brick" [class.ask]="!below">{{ below ? '' : '?' }}</span>
                   <span class="hint-row"
                     ><span class="hint-brick"></span><span class="hint-plus">+</span
-                    ><span class="hint-brick" [class.ask]="below">{{ below ? '?' : '' }}</span></span
+                    ><span class="hint-brick" [class.ask]="below">{{
+                      below ? '?' : ''
+                    }}</span></span
                   >
                 </span>
               } @else if (built()) {

@@ -78,6 +78,8 @@ const en = {
   save: 'Your choices could not be saved on this device. You can keep playing.',
   progress: 'Battle progress',
   restored: 'The castle’s three hearts are restored!',
+  gems: '{n} gems in the pouch',
+  streak: '{n} first tries in a row!',
 };
 type GameMessages = { readonly [K in keyof typeof en]: string };
 export const gameMessages: Record<Locale, GameMessages> = {
@@ -161,6 +163,8 @@ export const gameMessages: Record<Locale, GameMessages> = {
     save: 'Deine Auswahl konnte auf diesem Gerät nicht gespeichert werden. Du kannst weiterspielen.',
     progress: 'Abenteuerfortschritt',
     restored: 'Das Schloss hat wieder drei Herzen!',
+    gems: '{n} Edelsteine im Beutel',
+    streak: '{n}-mal hintereinander beim ersten Versuch!',
   },
   es: {
     continueWave: 'Continuar · Oleada {n}',
@@ -241,6 +245,8 @@ export const gameMessages: Record<Locale, GameMessages> = {
     save: 'No se pudo guardar tu selección en este dispositivo. Puedes seguir jugando.',
     progress: 'Progreso de la batalla',
     restored: '¡El castillo recupera sus tres corazones!',
+    gems: '{n} gemas en la bolsa',
+    streak: '¡{n} aciertos seguidos al primer intento!',
   },
   fr: {
     continueWave: 'Continuer · Vague {n}',
@@ -321,6 +327,8 @@ export const gameMessages: Record<Locale, GameMessages> = {
     save: 'Tes choix n’ont pas pu être enregistrés sur cet appareil. Tu peux continuer à jouer.',
     progress: 'Progression de la bataille',
     restored: 'Le château retrouve ses trois cœurs !',
+    gems: '{n} gemmes dans la bourse',
+    streak: '{n} réussites d’affilée du premier coup !',
   },
 };
 export type GameMessageKey = keyof GameMessages;
