@@ -103,6 +103,17 @@ describe('Number wall game', () => {
     expect(JSON.parse(localStorage.getItem('feenland.number-wall.v1')!).pace).toBe('relaxed');
   });
 
+  it('starts the first level without a star from the big button', () => {
+    localStorage.setItem(
+      'feenland.number-wall.v1',
+      JSON.stringify({ version: 1, ratings: { 1: 3 }, bestStreak: 0, gems: 0, pace: 'relaxed' }),
+    );
+    const { element, click } = setup();
+    expect(element.querySelector('.start-wall')?.textContent).toContain('Level 2');
+    click('Build the magic wall');
+    expect(element.querySelector('.level-tag')?.textContent).toContain('Level 2');
+  });
+
   it('builds five fast walls, collects gems, earns three stars and unlocks level 2', () => {
     const { element, click, status, solveSelected, gems } = setup();
     click('Level 1');

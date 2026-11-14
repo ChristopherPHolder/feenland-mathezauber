@@ -25,6 +25,15 @@
               <span class="brick">2</span><span class="plus">+</span><span class="brick">3</span>
             </div>
           </div>
+          <button type="button" class="button primary start-wall" (click)="start(suggestedLevel())">
+            <span
+              >{{ i.t('numberWallPlay')
+              }}<small
+                >{{ t('wallLevelLabel', { n: suggestedLevel() }) }} ·
+                {{ i.t(levelTitle(suggestedLevel())) }}</small
+              ></span
+            ><app-icon kind="arrow" />
+          </button>
           <p class="rule">{{ i.t('wallRule') }}</p>
           <p class="rule"><span aria-hidden="true">🧌</span> {{ i.t('wallTrollHelp') }}</p>
         </div>
@@ -32,13 +41,19 @@
           <legend>{{ i.t('wallPace') }}</legend>
           <div class="pace-options">
             @for (option of paces; track option) {
+              @let label = i.t(paceLabel(option)).split(' · ');
               <button
                 type="button"
                 class="chip"
+                [attr.data-pace]="option"
                 [attr.aria-pressed]="pace() === option"
                 (click)="choosePace(option)"
               >
-                {{ i.t(paceLabel(option)) }}
+                <strong>{{ label[0] }}</strong>
+                @if (label[1]) {
+                  <span class="chip-detail">{{ label[1] }}</span>
+                }
+                <span class="chip-picture" aria-hidden="true">{{ pacePicture[option] }}</span>
               </button>
             }
           </div>
