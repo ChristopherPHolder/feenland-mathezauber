@@ -259,7 +259,8 @@ dialog::backdrop {
     padding: 10px 12px;
     font-size: 14px;
   }
-  nav > a:first-child span {
+  nav > a:first-child span,
+  nav > .settings-link span {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -291,6 +292,16 @@ dialog::backdrop {
     animation: none !important;
     scroll-behavior: auto !important;
   }
+}
+/* The calm-motion switch in Settings: decorations stop where they are. Durations shrink instead
+   of animations being removed, so anything waiting for an animation to end still hears it. */
+:root.calm-motion *,
+:root.calm-motion *::before,
+:root.calm-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 @supports (padding: max(0px)) {
   body {
