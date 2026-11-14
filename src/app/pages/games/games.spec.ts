@@ -34,6 +34,15 @@ describe('Games hub', () => {
     expect(page.querySelector('.recommended')?.id).toBe('defend-fairy-castle');
     expect(TestBed.inject(ProgressService).progress().mastered).toEqual([]);
   });
+  it('offers a chip per game that jumps to its section', async () => {
+    const h = await RouterTestingHarness.create('/games');
+    const page = h.routeNativeElement!;
+    const chips = [...page.querySelectorAll<HTMLAnchorElement>('nav.game-jump a')];
+    const chapters = worlds.flatMap((world) => world.chapters);
+    expect(chips.map((chip) => chip.getAttribute('href'))).toEqual(
+      chapters.map((chapter) => `/games#${chapter.id}`),
+    );
+  });
   it('opens any level directly, in any order, without recording progress', async () => {
     const h = await RouterTestingHarness.create('/adventure/crocodile-6');
     const router = TestBed.inject(Router);

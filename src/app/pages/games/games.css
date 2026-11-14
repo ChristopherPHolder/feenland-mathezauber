@@ -27,13 +27,58 @@
   justify-self: end;
   border-radius: 48% 48% 24px 24px;
 }
+/* A sticky row of game chips: one tap to any game, and it shows which one you are in. */
+.game-jump {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin: 0 -8px 20px;
+  padding: 8px;
+  background: var(--ground);
+}
+.game-jump ul {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.game-jump li {
+  flex: none;
+  scroll-snap-align: start;
+}
+.game-jump a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 16px 6px 10px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-button);
+  background: var(--world-ground);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.game-jump a span {
+  font-size: 22px;
+  line-height: 1;
+}
+.game-jump a[aria-current] {
+  border-color: var(--world-color);
+  background: var(--paper);
+}
 .game {
   position: relative;
+  scroll-margin-top: 76px;
   margin-bottom: 28px;
   padding: 24px 28px 28px;
   border-radius: var(--radius-panel);
   background: var(--world-ground);
-  scroll-margin-top: 16px;
 }
 .world-anchor {
   position: absolute;
@@ -224,12 +269,47 @@
   .game-copy h2 {
     font-size: 24px;
   }
+  .game-jump {
+    margin-inline: -20px;
+    padding-inline: 20px;
+  }
+  /* Phones: compact tiles two to a row, so a game's levels fit in a screen or two. */
   .level-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
   .level-card {
     min-height: 0;
+    gap: 4px;
+    padding: 12px;
+    border-radius: var(--radius-tile);
+  }
+  .level-card:not(.hero-card) .level-help {
+    display: none;
+  }
+  .level-card:not(.hero-card) .level-go {
+    top: auto;
+    bottom: 10px;
+    right: 10px;
+    transform: none;
+    width: 34px;
+    height: 34px;
+  }
+  .level-card:not(.hero-card) .level-go app-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .level-example {
+    font-size: 20px;
+  }
+  .level-name {
+    font-size: 16px;
+  }
+  .level-card:not(.hero-card) .level-foot {
+    padding-right: 40px;
+    min-height: 34px;
+  }
+  .hero-card {
     padding: 16px 60px 16px 16px;
   }
 }
