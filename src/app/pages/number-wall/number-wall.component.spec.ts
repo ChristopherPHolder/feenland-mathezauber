@@ -204,9 +204,11 @@ describe('Number wall game', () => {
       /^Fairy dust! The troll fell asleep for a moment\. Trick: \d+ \+ \d+ = \?/,
     );
     expect(element.querySelector('.troll.asleep')).toBeTruthy();
+    expect(element.querySelector('app-wall-troll')?.classList).toContain('is-asleep');
     expect(element.querySelector('.dust strong')?.textContent).toBe('0');
     wait(8_000);
     expect(element.querySelector('.troll.asleep')).toBeNull();
+    expect(element.querySelector('app-wall-troll')?.classList).not.toContain('is-asleep');
     expect(element.querySelector('.troll')).toBeTruthy();
   });
 

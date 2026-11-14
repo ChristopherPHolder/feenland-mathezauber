@@ -24,6 +24,8 @@ export function practiceBattle(config: PracticeConfig, difficulty: Difficulty): 
     phase: 'ready',
     spell: null,
     damaged: false,
+    gems: 0,
+    streak: 0,
   };
 }
 export function practiceSpells(answer: number): readonly number[] {

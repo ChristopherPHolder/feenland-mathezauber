@@ -365,6 +365,22 @@
     flex-wrap: nowrap;
     gap: 4px;
   }
+  /* One HUD row whatever the streak: smaller snack pips, and the combo pill keeps its ×n while
+     the "in a row" words give way, so the count never squeezes into a column of letters. */
+  .playing .snacks li {
+    width: 20px;
+    height: 15px;
+  }
+  .playing .snacks li.boss {
+    width: 26px;
+    height: 18px;
+  }
+  .playing .hud {
+    gap: 8px;
+  }
+  .playing .combo .streak {
+    display: none;
+  }
   .playing .heron-strip {
     min-height: 40px;
     padding-block: 0;
@@ -383,8 +399,13 @@
     height: 72px;
     font-size: 40px;
   }
+  /* Callouts float over the top of the pond instead of pushing the sums down. */
   .playing .banner {
-    margin: -4px auto 6px;
+    position: absolute;
+    top: 4px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
     font-size: 14px;
     padding: 4px 12px;
   }

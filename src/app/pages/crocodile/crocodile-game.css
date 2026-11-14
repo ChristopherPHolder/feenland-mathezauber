@@ -85,6 +85,7 @@ app-game-header {
   margin: 0;
   font-size: 14px;
   color: var(--muted);
+  white-space: nowrap;
 }
 .score {
   display: flex;

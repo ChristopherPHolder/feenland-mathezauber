@@ -198,6 +198,10 @@ describe('Unicorn race game', () => {
     click('Start the race');
     wait(100);
     expect(element.querySelector('.countdown')?.textContent?.trim()).toBe('3');
+    // Everyone is level on the start line, so the rail shows no places yet.
+    expect(element.querySelectorAll('app-race-overview .marker')).toHaveLength(4);
+    expect(element.querySelector('app-race-overview .place')).toBeNull();
+    expect(element.querySelector('app-race-overview .pos')).toBeNull();
     wait(4 * 800 + 200);
     expect(element.querySelector('.countdown')).toBeNull();
     expect(answers()).toHaveLength(4);
@@ -302,12 +306,15 @@ describe('Unicorn race game', () => {
     expect(TestBed.inject(RaceStore).save().sparkles).toBe(sparkles);
     expect(sounds.play.mock.calls.filter(([kind]) => kind === 'win')).toHaveLength(1);
   });
-  it('keeps everyone running from the start and shows the standings over the track', () => {
+  it('keeps everyone running from the start and shows the standings on the rail', () => {
     const { element, component, click, wait, start } = setup();
     click('Fast');
     expect(TestBed.inject(RaceStore).save().pace).toBe('fast');
     start();
     wait(3000);
+    // One badge per racer on the rail, each with its place now that the race is on.
+    expect(element.querySelectorAll('app-race-overview .marker')).toHaveLength(4);
+    expect(element.querySelectorAll('app-race-overview .marker .place')).toHaveLength(4);
     const cloud = component.race().racers.find((racer) => racer.id === 'cloud')!;
     const player = component.race().racers.find((racer) => racer.id === 'player')!;
     expect(cloud.position).toBeGreaterThan(5);
