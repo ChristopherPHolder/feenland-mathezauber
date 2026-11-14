@@ -12,6 +12,7 @@ import { RouterLink } from '@angular/router';
 import { Chapter, Level, levelStars, WORLD_CATALOG, World } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
+import { Emblem } from '../../shared/emblem';
 import { Icon } from '../../shared/icon';
 import { StarRating } from '../../shared/star-rating';
 import { CampaignStore } from '../fairy-defense/campaign';
@@ -34,7 +35,7 @@ export interface GameEntry {
  */
 @Component({
   selector: 'app-games',
-  imports: [RouterLink, Icon, NgOptimizedImage, StarRating],
+  imports: [RouterLink, Icon, NgOptimizedImage, StarRating, Emblem],
   templateUrl: './games.html',
   styleUrl: './games.css',
 })
