@@ -2,7 +2,8 @@
  * Pure number-wall puzzle logic. A wall is a pyramid of bricks: each brick above
  * holds the sum of the two bricks it rests on. Rows count from the bottom (row 0).
  */
-export type WallLevel = 1 | 2 | 3 | 4;
+/** Level numbers are saved with star ratings, so a level keeps its number when the list grows. */
+export type WallLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 export interface BrickId {
   readonly row: number;
   readonly col: number;
@@ -14,8 +15,156 @@ export interface Wall {
   readonly missing: readonly BrickId[];
 }
 export type Random = () => number;
+/** The usual number of walls in a level; quick small walls come in longer runs. */
 export const WALLS_PER_WORLD = 5;
-export const levels: readonly WallLevel[] = [1, 2, 3, 4];
+export type WallGroup = 'wallsSmall' | 'wallsThree' | 'wallsFour';
+/** Which bricks are hidden: the top, one bottom brick, any one brick, everything above the
+ * bottom row (build it up), or one bottom brick plus others (work up and down). */
+export type MissingPattern = 'top' | 'bottom' | 'any' | 'buildUp' | 'mixed';
+export interface LevelRules {
+  /** Bricks in the bottom row, which is also the number of rows. */
+  readonly rowCount: 2 | 3 | 4;
+  readonly minBottom: number;
+  readonly maxBottom: number;
+  readonly maxTop: number;
+  /** Bottom bricks are whole tens: 30 and 40 make 70. */
+  readonly tens?: boolean;
+  readonly pattern: MissingPattern;
+  /** Hidden bricks for the `any` and `mixed` patterns. */
+  readonly missingCount: number;
+  /** Walls in one run of this level: about two to four minutes of building. */
+  readonly walls: number;
+  readonly group: WallGroup;
+}
+const RULES: Readonly<Record<WallLevel, LevelRules>> = {
+  5: {
+    rowCount: 2,
+    minBottom: 0,
+    maxBottom: 5,
+    maxTop: 10,
+    pattern: 'top',
+    missingCount: 1,
+    walls: 8,
+    group: 'wallsSmall',
+  },
+  1: {
+    rowCount: 2,
+    minBottom: 0,
+    maxBottom: 10,
+    maxTop: 20,
+    pattern: 'top',
+    missingCount: 1,
+    walls: 8,
+    group: 'wallsSmall',
+  },
+  2: {
+    rowCount: 2,
+    minBottom: 0,
+    maxBottom: 10,
+    maxTop: 20,
+    pattern: 'bottom',
+    missingCount: 1,
+    walls: 8,
+    group: 'wallsSmall',
+  },
+  6: {
+    rowCount: 2,
+    minBottom: 1,
+    maxBottom: 9,
+    maxTop: 100,
+    tens: true,
+    pattern: 'any',
+    missingCount: 1,
+    walls: 8,
+    group: 'wallsSmall',
+  },
+  7: {
+    rowCount: 3,
+    minBottom: 0,
+    maxBottom: 5,
+    maxTop: 20,
+    pattern: 'buildUp',
+    missingCount: 3,
+    walls: 6,
+    group: 'wallsThree',
+  },
+  3: {
+    rowCount: 3,
+    minBottom: 0,
+    maxBottom: 10,
+    maxTop: 30,
+    pattern: 'any',
+    missingCount: 1,
+    walls: 6,
+    group: 'wallsThree',
+  },
+  4: {
+    rowCount: 3,
+    minBottom: 0,
+    maxBottom: 10,
+    maxTop: 30,
+    pattern: 'mixed',
+    missingCount: 2,
+    walls: 5,
+    group: 'wallsThree',
+  },
+  8: {
+    rowCount: 3,
+    minBottom: 2,
+    maxBottom: 30,
+    maxTop: 100,
+    pattern: 'mixed',
+    missingCount: 2,
+    walls: 5,
+    group: 'wallsThree',
+  },
+  9: {
+    rowCount: 4,
+    minBottom: 0,
+    maxBottom: 5,
+    maxTop: 40,
+    pattern: 'buildUp',
+    missingCount: 6,
+    walls: 4,
+    group: 'wallsFour',
+  },
+  10: {
+    rowCount: 4,
+    minBottom: 0,
+    maxBottom: 6,
+    maxTop: 50,
+    pattern: 'mixed',
+    missingCount: 3,
+    walls: 4,
+    group: 'wallsFour',
+  },
+  11: {
+    rowCount: 4,
+    minBottom: 1,
+    maxBottom: 15,
+    maxTop: 100,
+    pattern: 'mixed',
+    missingCount: 3,
+    walls: 4,
+    group: 'wallsFour',
+  },
+};
+/** Every level in play order, easiest first. Levels 1 to 4 are the original four. */
+export const levels: readonly WallLevel[] = [5, 1, 2, 6, 7, 3, 4, 8, 9, 10, 11];
+/** Where a level sits in the list, from 1. */
+export function levelPosition(level: WallLevel): number {
+  return levels.indexOf(level) + 1;
+}
+/** The level after this one in play order, if there is one. */
+export function levelAfter(level: WallLevel): WallLevel | undefined {
+  return levels[levels.indexOf(level) + 1];
+}
+export function wallsFor(level: WallLevel): number {
+  return RULES[level].walls;
+}
+export function isWallLevel(value: unknown): value is WallLevel {
+  return typeof value === 'number' && levels.includes(value as WallLevel);
+}
 const MAX_ATTEMPTS = 500;
 
 export function brickKey(brick: BrickId): string {
@@ -115,59 +264,69 @@ function randomInt(random: Random, min: number, max: number): number {
 function pick<T>(random: Random, items: readonly T[]): T {
   return items[Math.min(items.length - 1, Math.floor(random() * items.length))]!;
 }
-export interface LevelRules {
-  readonly rowCount: 2 | 3;
-  readonly maxBottom: number;
-  readonly maxTop: number;
-  readonly missingCount: 1 | 2;
-}
 export function rulesFor(level: WallLevel): LevelRules {
-  return level <= 2
-    ? { rowCount: 2, maxBottom: 10, maxTop: 20, missingCount: 1 }
-    : { rowCount: 3, maxBottom: 10, maxTop: 30, missingCount: level === 3 ? 1 : 2 };
+  return RULES[level];
 }
 function chooseMissing(
-  level: WallLevel,
+  rules: LevelRules,
   rows: readonly (readonly number[])[],
   random: Random,
 ): BrickId[] {
-  const top = { row: rows.length - 1, col: 0 };
-  if (level === 1) return [top];
-  if (level === 2) return [{ row: 0, col: randomInt(random, 0, 1) }];
   const bricks = rows.flatMap((row, rowIndex) => row.map((_, col) => ({ row: rowIndex, col })));
-  if (level === 3) return [pick(random, bricks)];
-  const bottom = pick(
-    random,
-    bricks.filter((brick) => brick.row === 0),
-  );
-  const other = pick(
-    random,
-    bricks.filter((brick) => !sameBrick(brick, bottom)),
-  );
-  return [bottom, other];
+  switch (rules.pattern) {
+    case 'top':
+      return [{ row: rows.length - 1, col: 0 }];
+    case 'bottom':
+      return [{ row: 0, col: randomInt(random, 0, rows[0]!.length - 1) }];
+    case 'buildUp':
+      return bricks.filter((brick) => brick.row > 0);
+    case 'any':
+      return [pick(random, bricks)];
+    case 'mixed': {
+      const chosen = [
+        pick(
+          random,
+          bricks.filter((brick) => brick.row === 0),
+        ),
+      ];
+      while (chosen.length < rules.missingCount) {
+        const other = pick(
+          random,
+          bricks.filter((brick) => !chosen.some((taken) => sameBrick(taken, brick))),
+        );
+        chosen.push(other);
+      }
+      return chosen;
+    }
+  }
 }
 /** Deterministic for a given random source; always returns a uniquely solvable wall. */
 export function generateWall(level: WallLevel, random: Random = Math.random): Wall {
   const rules = rulesFor(level);
+  const scale = rules.tens ? 10 : 1;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const bottom = Array.from({ length: rules.rowCount }, () =>
-      randomInt(random, 0, rules.maxBottom),
+    const bottom = Array.from(
+      { length: rules.rowCount },
+      () => randomInt(random, rules.minBottom, rules.maxBottom) * scale,
     );
-    if (bottom.filter((value) => value === 0).length > 1 || bottom.every((value) => value < 2))
+    if (
+      bottom.filter((value) => value === 0).length > 1 ||
+      bottom.every((value) => value < 2 * scale)
+    )
       continue;
     const rows = buildRows(bottom);
     if (rows[rows.length - 1]![0]! > rules.maxTop) continue;
-    const wall: Wall = { level, rows, missing: chooseMissing(level, rows, random) };
+    const wall: Wall = { level, rows, missing: chooseMissing(rules, rows, random) };
     if (isSolvable(wall)) return wall;
   }
   // Every level has plenty of valid walls; this fallback keeps the type honest.
-  const rows = buildRows(rules.rowCount === 2 ? [4, 7] : [3, 4, 5]);
+  const rows = buildRows([3, 4, 5, 2].slice(0, rules.rowCount));
   return { level, rows, missing: [{ row: rows.length - 1, col: 0 }] };
 }
 /** Avoid showing the same wall twice in a row within a world. */
 export function generateWorld(level: WallLevel, random: Random = Math.random): readonly Wall[] {
   const walls: Wall[] = [];
-  while (walls.length < WALLS_PER_WORLD) {
+  while (walls.length < wallsFor(level)) {
     const wall = generateWall(level, random);
     const previous = walls[walls.length - 1];
     if (previous && previous.rows[0]!.join() === wall.rows[0]!.join()) continue;
@@ -245,11 +404,11 @@ export function gemsFor(outcome: WallOutcome): number {
 export function isFast(outcome: WallOutcome): boolean {
   return outcome.trollProgress !== undefined && outcome.trollProgress < 0.5;
 }
-export function maxGems(timed: boolean): number {
-  return WALLS_PER_WORLD * (timed ? 3 : 2);
+export function maxGems(timed: boolean, walls = WALLS_PER_WORLD): number {
+  return walls * (timed ? 3 : 2);
 }
 export type Rating = 1 | 2 | 3;
-export function ratingFor(gems: number, timed: boolean): Rating {
-  const ratio = gems / maxGems(timed);
+export function ratingFor(gems: number, timed: boolean, walls = WALLS_PER_WORLD): Rating {
+  const ratio = gems / maxGems(timed, walls);
   return ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1;
 }

@@ -11,6 +11,13 @@ describe('Kiki’s rule hints', () => {
     expect(ruleHint('twoSides', true, 2)).toBe('ruleBigger');
     expect(ruleHint('times', true, 1)).toBe('ruleTimes');
   });
+  it('fits the rule to the new levels: counting up for small numbers, times for every table', () => {
+    expect(ruleHint('numbers10', false, 2)).toBe('ruleCountUp');
+    expect(ruleHint('numbers1000', false, 2)).toBe('ruleTens');
+    expect(ruleHint('easyTimes', true, 1)).toBe('ruleTimes');
+    expect(ruleHint('times100', true, 1)).toBe('ruleTimes');
+    expect(ruleHint('twoSides100', true, 1)).toBe('ruleWorkOut');
+  });
   it('treats a plain pair in the mixed level like two-digit numbers', () => {
     expect(ruleHint('mixed', false, 2)).toBe('ruleTens');
   });

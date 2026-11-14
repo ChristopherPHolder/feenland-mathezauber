@@ -95,7 +95,7 @@ describe('Number wall game', () => {
 
   it('opens every level, shows the demo wall and remembers the troll speed', () => {
     const { element, click } = setup();
-    expect(element.querySelectorAll('button.level-card')).toHaveLength(4);
+    expect(element.querySelectorAll('button.level-card')).toHaveLength(11);
     expect(element.querySelector('.level-card.locked')).toBeNull();
     expect(element.querySelector('.demo-wall')?.textContent?.replace(/\s+/g, '')).toBe('52+3');
     expect(element.querySelector('.chip[aria-pressed="true"]')?.textContent).toContain('Brisk');
@@ -107,44 +107,52 @@ describe('Number wall game', () => {
   it('starts the first level without a star from the big button', () => {
     localStorage.setItem(
       'feenland.number-wall.v1',
-      JSON.stringify({ version: 1, ratings: { 1: 3 }, bestStreak: 0, gems: 0, pace: 'relaxed' }),
+      JSON.stringify({
+        version: 1,
+        ratings: { 5: 3, 1: 3 },
+        bestStreak: 0,
+        gems: 0,
+        pace: 'relaxed',
+      }),
     );
     const { element, click } = setup();
-    expect(element.querySelector('.start-wall')?.textContent).toContain('Level 2');
+    // Levels are listed easiest first: tiny walls (5), then the original levels 1 and 2.
+    expect(element.querySelector('.start-wall')?.textContent).toContain('Level 3');
     click('Build the magic wall');
-    expect(element.querySelector('.level-tag')?.textContent).toContain('Level 2');
+    expect(element.querySelector('.level-tag')?.textContent).toContain('Level 3');
   });
 
-  it('builds five fast walls, collects gems, earns three stars and unlocks level 2', () => {
+  it('builds eight fast walls, collects gems, earns three stars and offers the next level', () => {
     const { element, click, status, solveSelected, gems } = setup();
-    click('Level 1');
+    click('Level 2');
+    expect(element.querySelector('.level-tag')?.textContent).toContain('The top brick');
     expect(sound.start).toHaveBeenCalled();
     expect(element.querySelector('.troll')).toBeTruthy();
-    for (let wall = 0; wall < 5; wall++) {
+    for (let wall = 0; wall < 8; wall++) {
       solveSelected();
       expect(status()).toContain('Wall built! +3 gems! Super fast!');
       expect(element.querySelector('.brick.filled')).toBeTruthy();
       expect(gems()).toBe(String((wall + 1) * 3));
-      click(wall < 4 ? 'Next wall' : 'You earned a star!');
+      click(wall < 7 ? 'Next wall' : 'You earned a star!');
     }
     expect(element.textContent).toContain('Three stars!');
     expect(element.textContent).toContain(
-      'You built 5 walls. +15 gems! 5 bricks right on the first try.',
+      'You built 8 walls. +24 gems! 8 bricks right on the first try.',
     );
     expect(element.querySelectorAll('.star-row app-icon.earned')).toHaveLength(3);
     const store = TestBed.inject(NumberWallStore);
     expect(store.rating(1)).toBe(3);
-    expect(store.save()).toMatchObject({ gems: 15, bestStreak: 5 });
+    expect(store.save()).toMatchObject({ gems: 24, bestStreak: 8 });
     expect(TestBed.inject(ProgressService).progress().completed).toContain('number-wall');
     expect(TestBed.inject(ProgressService).progress().mastered).toEqual([]);
     click('Next level');
-    expect(element.querySelector('.level-tag')?.textContent).toContain('Level 2');
+    expect(element.querySelector('.level-tag')?.textContent).toContain('Level 3');
   });
 
   it('lets the troll bonk the wall, break hearts and knock it down after three hits', () => {
     const { element, click, wait, status, solveSelected, gems, openBricks } = setup();
     const hearts = () => element.querySelectorAll('.heart:not(.lost)').length;
-    click('Level 1');
+    click('Level 2');
     expect(hearts()).toBe(3);
     solveSelected();
     expect(gems()).toBe('3');
@@ -182,7 +190,7 @@ describe('Number wall game', () => {
     solveSelected();
     expect(status()).toContain('Wall built! +3 gems! Super fast!');
     expect(gems()).toBe('6');
-    for (let wall = 2; wall < 5; wall++) {
+    for (let wall = 2; wall < 8; wall++) {
       click('Next wall');
       solveSelected();
     }
@@ -224,7 +232,7 @@ describe('Number wall game', () => {
     );
     const { element, click, key, status, openBricks, answerFor, typeNumber } = setup();
     expect(TestBed.inject(NumberWallStore).rating(1)).toBe(1);
-    click('Level 2');
+    click('Level 3');
     const brick = openBricks()[0]!;
     const answer = answerFor(brick);
     const wrong = answer === 10 ? 11 : 10;
@@ -259,7 +267,7 @@ describe('Number wall game', () => {
       JSON.stringify({ version: 1, ratings: { 1: 2, 2: 1, 3: 3 }, bestStreak: 2, pace: 'relaxed' }),
     );
     const { fixture, element, click, key, status, openBricks, answerFor } = setup('de');
-    click('Level 4');
+    click('Level 7');
     expect(element.querySelector('.troll')).toBeNull();
     expect(openBricks()).toHaveLength(2);
     const second = openBricks().find((brick) => brick.getAttribute('aria-pressed') === 'false')!;

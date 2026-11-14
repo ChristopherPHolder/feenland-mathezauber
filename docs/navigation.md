@@ -18,6 +18,17 @@ The shared site header (Home · Games · Settings gear) is shown on every screen
 
 The earlier world map and its drill-down (`/worlds`, `/worlds/:id`, `/worlds/:worldId/chapters/:chapterId`) are gone. Those URLs redirect to the hub: a world link lands on that world's first game, a chapter link on that chapter's section. Bookmarks keep working and nothing has to be re-learned.
 
+## Topics inside a game
+
+Each game's levels are grouped into topics (`Level.group` in the catalog, a message key such as `castleAdding` or `crocTimes`). The hub shows them as a row of tabs (`role="tablist"`) above the level cards:
+
+- The selected topic is the one holding the recommended level, else the first topic with an unplayed level, else the first topic. Tapping a tab changes it; arrow keys, Home and End move along the row and select as they go.
+- Every topic's cards are rendered. Unselected panels are `hidden="until-found"`, so find-in-page still finds them and opens their tab (`beforematch`).
+- A link to a level (`/games#crocodile-7`) opens that level's topic first, so the card it lands on is visible.
+- Levels are listed easiest first. Level ids never change: new levels got new ids (`crocodile-8`, `practice-30-12`, wall level 5 …) and were slotted into the order, so the number on a card is its position, not its id.
+
+Magic walls keeps its own list (`levels` in `number-wall.ts`, each with a `group` in its rules); the hub turns it into cards the same way.
+
 ## Inside a game
 
 Every game shows `GameHeader` (`src/app/shared/game-header.ts`) above its menu:
@@ -28,10 +39,10 @@ Every game shows `GameHeader` (`src/app/shared/game-header.ts`) above its menu:
 
 Switching levels never requires leaving the game:
 
-- **The Hungry Crocodile** has a level strip 1–6 on its intro; the current level is marked with `aria-current="page"`.
-- **Magic walls** lists its four levels on the intro and also accepts `?level=n` (`/adventure/number-wall?level=3`) so the hub can open a level directly.
+- **The Hungry Crocodile** has a level strip 1–14 on its intro (two rows of seven on a phone); the current level is marked with `aria-current="page"`.
+- **Magic walls** lists its eleven levels on the intro and also accepts `?level=n` (`/adventure/number-wall?level=3`) so the hub can open a level directly.
 - **The Unicorn Rainbow Race** has five race routes (`/adventure/unicorn-race-1` … `-5`); its intro lists all five as cards with the current one marked `aria-current="page"`, and the finish offers the next race directly.
-- **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the eleven path-to-30 stages. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
+- **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the twenty-four practice stages. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
 - Finishing a round offers Next level, Play again and All games.
 
 ## Where the data comes from

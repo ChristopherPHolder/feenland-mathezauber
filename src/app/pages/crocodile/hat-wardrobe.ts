@@ -3,6 +3,7 @@ import { LocaleService } from '../../core/locale';
 import { Icon } from '../../shared/icon';
 import { CrocodileArt } from './crocodile-art';
 import { crocodileText, CrocodileMessageKey } from './crocodile-messages';
+import { comparisonStage } from './comparison';
 import { Hat, hats } from './crocodile-score';
 /** Kiki’s hat collection: one hat per level, earned with two stars. */
 @Component({
@@ -120,7 +121,7 @@ export class HatWardrobe {
   protected label(hat: Hat) {
     return this.t(this.owns(hat) ? 'hatOwned' : 'hatLocked', {
       hat: this.t(hat.name),
-      n: hat.stage,
+      n: comparisonStage(`crocodile-${hat.stage}`)?.position ?? hat.stage,
     });
   }
 }

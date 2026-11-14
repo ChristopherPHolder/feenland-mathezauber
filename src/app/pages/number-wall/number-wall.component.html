@@ -29,7 +29,7 @@
             <span
               >{{ i.t('numberWallPlay')
               }}<small
-                >{{ t('wallLevelLabel', { n: suggestedLevel() }) }} ·
+                >{{ t('wallLevelLabel', { n: position(suggestedLevel()) }) }} ·
                 {{ i.t(levelTitle(suggestedLevel())) }}</small
               ></span
             ><app-icon kind="arrow" />
@@ -69,7 +69,7 @@
                 [class.starred]="store.hasStar(option)"
                 (click)="start(option)"
               >
-                <span class="level-number">{{ t('wallLevelLabel', { n: option }) }}</span>
+                <span class="level-number">{{ t('wallLevelLabel', { n: position(option) }) }}</span>
                 <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
                 <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
                 <span
@@ -97,15 +97,15 @@
       @if (wall(); as current) {
         <div class="hud">
           <p class="level-tag">
-            {{ t('wallLevelLabel', { n: level() }) }} · {{ i.t(levelTitle(level())) }}
+            {{ t('wallLevelLabel', { n: position(level()) }) }} · {{ i.t(levelTitle(level())) }}
           </p>
           <div
             class="progress"
             role="progressbar"
             [attr.aria-valuemin]="0"
-            [attr.aria-valuemax]="total"
+            [attr.aria-valuemax]="total()"
             [attr.aria-valuenow]="wallsDone()"
-            [attr.aria-label]="t('wallProgress', { n: wallIndex() + 1, total: total })"
+            [attr.aria-label]="t('wallProgress', { n: wallIndex() + 1, total: total() })"
           >
             @for (step of walls(); track $index) {
               <span
@@ -164,9 +164,10 @@
             tabindex="-1"
             role="group"
             [attr.aria-label]="
-              i.t('wallScene') + ' · ' + t('wallProgress', { n: wallIndex() + 1, total: total })
+              i.t('wallScene') + ' · ' + t('wallProgress', { n: wallIndex() + 1, total: total() })
             "
             [wall]="current"
+            [total]="total()"
             [filled]="filled()"
             [golden]="golden()"
             [selected]="selected()"
@@ -282,7 +283,7 @@
           {{ rating() === 3 ? i.t('wallThreeStars') : i.t('wallWorldDone') }}
         </h2>
         <p>
-          {{ t('wallSummary', { n: total }) }} {{ t('wallGemsWon', { n: gems() }) }}
+          {{ t('wallSummary', { n: total() }) }} {{ t('wallGemsWon', { n: gems() }) }}
           {{ t('wallFirstTry', { n: firstTry() }) }}
           @if (knockedDown() > 0) {
             {{ t('wallKnockedDown', { n: knockedDown() }) }}

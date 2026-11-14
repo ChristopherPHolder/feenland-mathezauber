@@ -32,8 +32,10 @@ import { WallTroll } from './wall-troll';
   host: {
     '[class.celebrating]': 'built()',
     '[class.three-rows]': 'wall().rows.length === 3',
+    '[class.four-rows]': 'wall().rows.length === 4',
     '[style.--cols]': 'wall().rows[0]?.length ?? 2',
-    '[style.--built]': 'wallsDone()',
+    // Towers grow on the same scale whether a level has four walls or eight.
+    '[style.--built]': '(wallsDone() * 5) / total()',
     '[style.--p]': 'trollProgress() ?? 0',
     '[class.danger]': 'danger()',
     '[class.combo]': 'combo()',
@@ -50,6 +52,8 @@ export class WallScene {
   readonly wobbling = input(false);
   readonly built = input(false);
   readonly wallsDone = input(0);
+  /** Walls in this run; the flag goes up when the last one stands. */
+  readonly total = input(WALLS_PER_WORLD);
   readonly trollProgress = input<number | undefined>(undefined);
   readonly trollAsleep = input(false);
   /** The share of the fairy-dust nap still to come (1 = just fell asleep). */
@@ -87,7 +91,7 @@ export class WallScene {
       },
     });
   }
-  protected readonly total = WALLS_PER_WORLD;
+
   protected readonly rows = computed(() =>
     this.wall()
       .rows.map((row, rowIndex) => ({ rowIndex, cols: row.map((_, col) => col) }))

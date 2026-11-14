@@ -10,9 +10,11 @@ export type RuleHint = 'ruleBigger' | 'ruleCountUp' | 'ruleTens' | 'ruleWorkOut'
  * comes first; the second offers a different way to see it.
  */
 export function ruleHint(skill: ComparisonSkill, needsMaths: boolean, attempts: number): RuleHint {
+  const times = skill === 'times' || skill === 'times100' || skill === 'easyTimes';
+  const small = skill === 'numbers10' || skill === 'numbers20';
   const rules: readonly RuleHint[] = needsMaths
-    ? [skill === 'times' ? 'ruleTimes' : 'ruleWorkOut', 'ruleBigger']
-    : skill === 'numbers20'
+    ? [times ? 'ruleTimes' : 'ruleWorkOut', 'ruleBigger']
+    : small
       ? ['ruleBigger', 'ruleCountUp']
       : ['ruleBigger', 'ruleTens'];
   return rules[Math.max(0, attempts - 1) % rules.length]!;

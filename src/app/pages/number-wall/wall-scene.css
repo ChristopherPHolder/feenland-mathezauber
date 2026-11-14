@@ -35,6 +35,9 @@
 :host(.three-rows) {
   --brick-h: clamp(44px, min(16cqh, 12cqw), 116px);
 }
+:host(.four-rows) {
+  --brick-h: clamp(34px, min(13cqh, 9cqw), 100px);
+}
 :host(.danger) {
   --sky-top: #f2b99a;
   --sky-bottom: #fde6d6;
