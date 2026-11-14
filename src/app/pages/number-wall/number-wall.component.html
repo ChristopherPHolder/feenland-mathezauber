@@ -138,7 +138,8 @@
               <span aria-hidden="true">⚡</span>
               <span class="sr-only">{{ i.t('wallStreak') }}: </span>
               @if (combo() > 0) {
-                <strong>{{ t('wallCombo', { n: combo() }) }}</strong>
+                <span class="sr-only">{{ t('wallCombo', { n: combo() }) }}</span>
+                <strong aria-hidden="true">×{{ i.format(combo()) }}</strong>
               } @else {
                 <strong>{{ i.format(streak()) }}</strong>
               }
@@ -146,11 +147,15 @@
             <button
               type="button"
               class="dust"
+              [class.ready]="canDust()"
+              [class.pop]="dustPop()"
               [disabled]="!canDust()"
-              [attr.aria-label]="i.t('wallDust') + ' · ' + i.format(dust()) + ' / ' + maxDust"
               (click)="useDust()"
             >
-              <span aria-hidden="true">🪄</span><strong>{{ i.format(dust()) }}</strong>
+              <span aria-hidden="true">🪄</span>
+              <span class="dust-label">{{ i.t('wallDust') + ' ' }}</span>
+              <strong>{{ i.format(dust()) }}</strong
+              ><span class="sr-only"> / {{ i.format(maxDust) }}</span>
             </button>
           </div>
         </div>
@@ -172,6 +177,7 @@
             [wallsDone]="wallsDone()"
             [trollProgress]="trollProgress()"
             [trollAsleep]="trollAsleep()"
+            [sleepLeft]="sleepLeft()"
             [trollBump]="trollBump()"
             [cracks]="maxHearts - hearts()"
             [crumbled]="crumbled()"

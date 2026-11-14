@@ -52,6 +52,8 @@ export class WallScene {
   readonly wallsDone = input(0);
   readonly trollProgress = input<number | undefined>(undefined);
   readonly trollAsleep = input(false);
+  /** The share of the fairy-dust nap still to come (1 = just fell asleep). */
+  readonly sleepLeft = input(0);
   readonly trollBump = input(false);
   /** Head-butts the wall has taken so far; each one leaves a crack. */
   readonly cracks = input(0);
@@ -93,6 +95,8 @@ export class WallScene {
   );
   protected readonly confetti = ['✦', '★', '✦', '✧', '★', '✦'];
   protected readonly gems = [0, 1, 2];
+  /** The sparkle burst that puts the troll to sleep when fairy dust lands on him. */
+  protected readonly frost = ['✨', '❄️', '✨', '⭐', '❄️', '✨', '⭐', '✨'];
   protected readonly crackList = computed(() => [1, 2].slice(0, Math.min(2, this.cracks())));
   /** The left brick of the pair that makes (or completes) the glowing brick. */
   private readonly pair = computed<BrickId | undefined>(() => {
