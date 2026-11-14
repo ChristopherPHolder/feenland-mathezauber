@@ -42,11 +42,18 @@
 .example {
   font-weight: 600;
 }
-.intro .button {
+/* The start button stays in reach while the page scrolls, on a band of its own so the pace
+   cards slide under the band instead of showing through around the button. */
+.start-dock {
   position: sticky;
-  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  bottom: 0;
   z-index: 2;
-  margin: 20px auto 0;
+  margin-top: 12px;
+  padding: 20px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 24px);
+}
+.intro .button {
+  margin: 0 auto;
   max-width: 360px;
 }
 .demo {
