@@ -258,15 +258,7 @@
                 <app-icon kind="cup" /><span>{{ t(cupKey(cupBadge())) }}</span>
               </p>
               <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
-              <p class="summary-line">
-                {{
-                  t('summary', {
-                    correct: race().correct,
-                    mistakes: race().mistakes,
-                    seconds: seconds(),
-                  })
-                }}
-              </p>
+              <p class="summary-line">{{ summaryLine() }}</p>
               <p class="summary-sparkles">
                 <span
                   ><span aria-hidden="true">✨</span>

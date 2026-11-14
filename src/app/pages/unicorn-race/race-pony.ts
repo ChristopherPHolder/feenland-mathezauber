@@ -224,6 +224,8 @@ export interface PonyPose {
   readonly stumbling: boolean;
   /** Rearing on the finish line after a win. */
   readonly celebrating: boolean;
+  /** Standing on the finish line, pleased with the race: little hops and a nodding head. */
+  readonly cheering: boolean;
 }
 /**
  * One racer, modelled like a real horse: a lofted body, an arched neck and a long face,
@@ -315,7 +317,7 @@ export class Pony {
   }
   /** Moves the pony for one frame. */
   update(pose: PonyPose) {
-    const { now, dt, speed, moving, waiting, stumbling, celebrating } = pose;
+    const { now, dt, speed, moving, waiting, stumbling, celebrating, cheering } = pose;
     const ease = (rate: number) => Math.min(1, dt * rate);
     const stride = moving ? speed : 0;
     // How hard it is running, 0 at a stand and 1 at a flat-out gallop.
@@ -359,6 +361,17 @@ export class Pony {
           leg.hip.rotation.x = 0.3;
           leg.knee.rotation.x = 0;
         }
+    }
+    if (cheering) {
+      const beat = now * 4.5 + seed * 1.3;
+      const hop = Math.abs(Math.sin(beat));
+      const paw = Math.max(0, Math.sin(beat * 0.5));
+      lift = hop * 0.07;
+      pitch = 0.03;
+      neck = 0.08;
+      nod = Math.sin(beat) * 0.24;
+      this.legs[1].hip.rotation.x = paw * 0.45;
+      this.legs[1].knee.rotation.x = -paw * 1;
     }
     if (celebrating) {
       // The winner rears up, paws the air and tosses its head.
@@ -411,6 +424,7 @@ export class Pony {
       waiting: false,
       stumbling: false,
       celebrating: false,
+      cheering: false,
     });
   }
   private buildHead(
