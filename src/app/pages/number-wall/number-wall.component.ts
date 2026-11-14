@@ -81,6 +81,16 @@ export class NumberWallComponent {
   private readonly document = inject(DOCUMENT);
   protected readonly levels = levels;
   protected readonly paces = paces;
+  /** A picture per troll speed: asleep, on his way, running. */
+  protected readonly pacePicture: Readonly<Record<Pace, string>> = {
+    relaxed: '😴',
+    steady: '🧌',
+    quick: '⚡',
+  };
+  /** The level the big start button opens: the first one without a star yet. */
+  protected readonly suggestedLevel = computed(
+    () => levels.find((level) => !this.store.hasStar(level)) ?? levels[0]!,
+  );
   protected readonly stars = [1, 2, 3] as const;
   protected readonly confetti = Array.from({ length: 12 }, (_, index) => index);
   protected readonly total = WALLS_PER_WORLD;
