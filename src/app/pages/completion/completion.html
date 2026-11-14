@@ -1,61 +1,86 @@
 <section class="completion-page" aria-labelledby="completion-title">
   @if (result(); as result) {
     <div class="celebration">
-      <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
-      <div class="celebration-copy">
-        <h1 id="completion-title">{{ castle() ? g('castleSaved') : i.t('wellDone') }}</h1>
-        @if (context(); as context) {
-          <h2>{{ i.t(context.level.title) }}</h2>
-        }
-        @if (castle()) {
-          <p>{{ g(result.mastered ? 'mastery' : 'growing') }}</p>
-          <div
-            class="castle-stars"
-            role="img"
-            [attr.aria-label]="g('starsLabel', { n: result.stars ?? 1 })"
-          >
-            @for (star of starSlots; track star) {
-              <app-icon kind="star" [class.earned]="star <= (result.stars ?? 1)" />
+      <div class="scene">
+        <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
+      </div>
+      <div class="card">
+        <div class="headline">
+          @if (context(); as context) {
+            <p class="game-name" [style.--world-color]="context.world.color">
+              <app-emblem [id]="context.chapter.id" [fallback]="context.chapter.emblem" />{{
+                i.t(context.chapter.title)
+              }}
+            </p>
+          }
+          <h1 id="completion-title">{{ castle() ? g('castleSaved') : i.t('wellDone') }}</h1>
+          @if (context(); as context) {
+            @if (context.level.title !== context.chapter.title) {
+              <h2>{{ i.t(context.level.title) }}</h2>
             }
-          </div>
-          <p>{{ g(result.stars === 3 ? 'allStars' : 'starHelp') }}</p>
-        } @else {
-          <p>{{ i.t('completionHelp') }}</p>
-        }
-        <ul class="awards">
-          <li><app-icon kind="book" />{{ i.t('completedLabel') }}</li>
-          @if (result.mastered) {
-            <li><app-icon kind="star" />{{ i.t('masteryEarned') }}</li>
           }
           @if (result.stars !== undefined) {
-            <li><app-icon kind="star" />{{ i.t('starsEarned') }}: {{ i.format(result.stars) }}</li>
+            <div class="stars" role="img" [attr.aria-label]="i.t('starsOf', { n: result.stars })">
+              @for (star of starSlots; track star) {
+                <span class="star" [class.earned]="star <= result.stars" [style.--i]="star"
+                  ><app-icon kind="star"
+                /></span>
+              }
+            </div>
+            <p class="stars-caption" aria-hidden="true">
+              {{ i.t('starsOf', { n: result.stars }) }}
+            </p>
           }
-          @if (chapterEarned()) {
-            <li><app-icon kind="cup" />{{ i.t('chapterAward') }}</li>
-          }
-        </ul>
-        <div class="actions">
+        </div>
+        <div class="outcome">
           @if (castle()) {
-            <a class="button primary" routerLink="/adventure/defend-fairy-castle"
-              >{{ g('again') }}<app-icon kind="arrow"
-            /></a>
+            <p class="message">
+              {{ g(result.mastered ? 'mastery' : 'growing') }}
+              {{ g(result.stars === 3 ? 'allStars' : 'starHelp') }}
+            </p>
           } @else {
-            @if (next(); as next) {
-              <a class="button primary" [routerLink]="['/adventure', next.id]"
-                >{{ i.t('nextLevel') }}<app-icon kind="arrow"
+            <p class="message">{{ i.t('completionHelp') }}</p>
+          }
+          <ul class="awards">
+            <li><app-icon kind="check" />{{ i.t('completedLabel') }}</li>
+            @if (result.mastered) {
+              <li class="mastery"><app-icon kind="star" />{{ i.t('masteryEarned') }}</li>
+            }
+            @if (chapterEarned()) {
+              <li class="chapter"><app-icon kind="cup" />{{ i.t('chapterAward') }}</li>
+            }
+          </ul>
+          <div class="actions">
+            @if (castle()) {
+              <a class="button primary next" routerLink="/adventure/defend-fairy-castle"
+                ><span>{{ g('again') }}</span
+                ><app-icon kind="arrow"
               /></a>
             } @else {
-              <p class="caught">
-                <strong>{{ i.t('caught') }}</strong>
-              </p>
+              @if (next(); as next) {
+                <a class="button primary next" [routerLink]="['/adventure', next.level.id]">
+                  @if (next.chapter) {
+                    <span class="next-emblem"
+                      ><app-emblem [id]="next.chapter.id" [fallback]="next.chapter.emblem"
+                    /></span>
+                  }
+                  <span
+                    >{{ i.t('nextLevel') }}<small>{{ i.t(next.level.title) }}</small></span
+                  ><app-icon kind="arrow"
+                /></a>
+              } @else {
+                <p class="caught">
+                  <strong>{{ i.t('caught') }}</strong>
+                </p>
+              }
+              <a class="button secondary" [routerLink]="['/adventure', result.levelId]">{{
+                i.t('playAgain')
+              }}</a>
             }
-            <a class="button secondary" [routerLink]="['/adventure', result.levelId]">{{
-              i.t('playAgain')
-            }}</a>
-          }
-          <a class="button secondary" routerLink="/games" [fragment]="result.levelId"
-            ><app-icon kind="grid" />{{ i.t('allGames') }}</a
-          >
+            <a class="button secondary" routerLink="/games" [fragment]="result.levelId"
+              ><app-icon kind="grid" />{{ i.t('allGames') }}</a
+            >
+          </div>
           <a class="home-link" routerLink="/"><app-icon kind="home" />{{ i.t('home') }}</a>
         </div>
       </div>
