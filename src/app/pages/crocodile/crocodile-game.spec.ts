@@ -93,9 +93,12 @@ describe('the hungry crocodile game', () => {
     expect(seen).toEqual(new Set(['<', '=', '>']));
     expect(element.textContent).toContain(`Perfect pond! ${expectedScore} points.`);
     expect(element.querySelector('.score-line')?.textContent).toContain('New best score!');
-    expect(element.querySelector('.hat-unlocked')?.textContent).toContain(
-      'New hat for Kiki: Party hat!',
-    );
+    const unlocked = element.querySelector('.hat-unlocked')!;
+    expect(unlocked.textContent).toContain('New hat for Kiki!');
+    expect(unlocked.querySelector('strong')?.textContent).toBe('Party hat');
+    // Kiki shows off the new hat in the reveal, and three filled stars land one after another.
+    expect(unlocked.querySelector('app-crocodile svg.front')).not.toBeNull();
+    expect(element.querySelectorAll('.stars .star.earned').length).toBe(3);
     expect(element.querySelectorAll('.hat-slot.owned').length).toBe(1);
     expect(element.querySelectorAll('.confetti span').length).toBe(10);
     expect(JSON.parse(localStorage.getItem('feenland.crocodile-scores.v1')!).best).toEqual({
