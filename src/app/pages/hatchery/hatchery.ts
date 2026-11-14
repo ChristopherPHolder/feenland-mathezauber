@@ -9,7 +9,7 @@ import { EggIcon } from './egg-icon';
 import { HatcheryStore } from './hatchery-store';
 import { HatcheryMessageKey, hatcheryText } from './hatchery-messages';
 import type { NestFrame } from './hatchery-world';
-import { NestScene } from './nest-scene';
+import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 
 /** Taps that crack a ready egg open. */
 export const CRACK_TAPS = 3;
@@ -20,7 +20,7 @@ export const CRACK_TAPS = 3;
  */
 @Component({
   selector: 'app-hatchery',
-  imports: [NgTemplateOutlet, RouterLink, Icon, EggIcon, NestScene],
+  imports: [NgTemplateOutlet, RouterLink, Icon, EggIcon, ThreeStage],
   templateUrl: './hatchery.html',
   styleUrl: './hatchery.css',
 })
@@ -54,7 +54,11 @@ export class Hatchery {
     cracks: this.cracks(),
     dragon: this.shown(),
     hatches: this.hatches(),
+    cheers: this.cheers(),
   }));
+  /** Three.js only downloads when the hatchery opens. */
+  protected readonly loadWorld: WorldLoader<NestFrame> = () =>
+    import('./hatchery-world').then((m) => m.HatcheryWorld);
   protected readonly tapHint = computed(() => {
     const left = CRACK_TAPS - this.cracks();
     return this.cracks() === 0

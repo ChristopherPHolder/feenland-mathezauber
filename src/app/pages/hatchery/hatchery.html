@@ -11,7 +11,19 @@
       [class.is-ready]="view() === 'egg' && store.ready()"
       [class.is-dragon]="view() !== 'egg'"
     >
-      <app-nest-scene class="nest" [frame]="frame()" [cheers]="cheers()" />
+      <app-three-stage class="nest" [world]="loadWorld" [state]="frame()">
+        <div class="flat-nest" aria-hidden="true">
+          @if (view() !== 'egg' && shown(); as dragon) {
+            @if (portraits.pictures()[dragon.id]; as picture) {
+              <img [src]="picture" width="256" height="256" alt="" />
+            } @else {
+              <app-egg-icon class="flat-egg" [dragon]="dragon" [warmth]="1" />
+            }
+          } @else {
+            <app-egg-icon class="flat-egg" [dragon]="store.egg()" [warmth]="warmth()" />
+          }
+        </div>
+      </app-three-stage>
       @if (view() === 'egg' && store.ready()) {
         <button
           class="egg-tap"

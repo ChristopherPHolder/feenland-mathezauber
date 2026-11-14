@@ -363,23 +363,26 @@ export class DragonModel {
     this.cheerAt = now;
   }
 
-  update(now: number, blink = true) {
+  /** `calm` holds the idle sway and breathing; hops and blinks stay. */
+  update(now: number, blink = true, calm = false) {
     const t = now + this.phase;
     const since = now - this.cheerAt;
     const hop = since < 0.9 ? Math.sin((since / 0.9) * Math.PI) * 0.35 : 0;
     const flapSpeed = since < 1.2 ? 16 : 3.2;
     this.body.position.y = hop;
-    this.body.scale.set(1 + Math.sin(t * 2) * 0.012, 1 - Math.sin(t * 2) * 0.012, 1);
+    const idle = calm ? 0 : 1;
+    this.body.scale.set(1 + Math.sin(t * 2) * 0.012 * idle, 1 - Math.sin(t * 2) * 0.012 * idle, 1);
     for (const [index, hinge] of this.wings.entries()) {
       const side = index ? 1 : -1;
-      hinge.rotation.y = side * (0.25 + Math.sin(t * flapSpeed) * (since < 1.2 ? 0.55 : 0.18));
+      hinge.rotation.y =
+        side * (0.25 + Math.sin(t * flapSpeed) * (since < 1.2 ? 0.55 : 0.18 * idle));
       hinge.rotation.z = side * -0.1;
     }
     this.tail.forEach((segment, index) => {
-      segment.rotation.y = Math.sin(t * 2.2 - index * 0.5) * 0.14;
+      segment.rotation.y = Math.sin(t * 2.2 - index * 0.5) * 0.14 * idle;
     });
-    this.head.rotation.z = Math.sin(t * 0.9) * 0.06;
-    this.head.rotation.x = Math.sin(t * 0.7) * 0.04 - (since < 0.9 ? 0.15 : 0);
+    this.head.rotation.z = Math.sin(t * 0.9) * 0.06 * idle;
+    this.head.rotation.x = Math.sin(t * 0.7) * 0.04 * idle - (since < 0.9 ? 0.15 : 0);
     // Blink every few seconds.
     if (t > this.blinkAt + 0.14) this.blinkAt = t + 2.5 + ((t * 7.3) % 2.5);
     const closed = blink && t > this.blinkAt && t < this.blinkAt + 0.14;

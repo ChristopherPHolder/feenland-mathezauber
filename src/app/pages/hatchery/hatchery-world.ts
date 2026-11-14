@@ -24,11 +24,15 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
+import { Stage } from '../../shared/three/stage';
+import type { StateWorld } from '../../shared/three/three-stage';
 import { DragonModel, RAINBOW } from './dragon-model';
 import type { Dragon } from './dragons';
 
 /** What the page asks the nest to show; the page owns the hatchery, this only draws it. */
 export interface NestFrame {
+  /** Counts cheers; each new one makes the dragon in the nest hop. */
+  readonly cheers: number;
   /** The egg in the nest, or a dragon sitting in it. */
   readonly view: 'egg' | 'dragon';
   readonly egg: Dragon;
@@ -208,11 +212,7 @@ interface Spark {
  * A cosy nest on a little floating meadow: the egg sits in it, glows as it warms, wobbles when
  * it is ready, cracks on each tap and pops open to let a baby dragon out.
  */
-export class HatcheryWorld {
-  private readonly renderer: WebGLRenderer;
-  private readonly scene = new Scene();
-  private readonly camera = new PerspectiveCamera(34, 1, 0.1, 60);
-  private readonly observer: ResizeObserver;
+export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
   private readonly glow = new PointLight('#ff9a3c', 0, 1.6, 1.4);
   private readonly ember: Mesh;
   private readonly holder = new Group();
@@ -227,31 +227,20 @@ export class HatcheryWorld {
   private frame?: NestFrame;
   private shakeAt = -10;
   private hatchAt = -10;
-  private handle = 0;
-  private now = 0;
-  private visible = true;
 
-  constructor(
-    canvas: HTMLCanvasElement,
-    private readonly host: HTMLElement,
-  ) {
-    this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.shadowMap.enabled = true;
+  constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
+    super(canvas, host, { shadows: true, fov: 34 });
     this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.setClearColor(0x000000, 0);
-
-    this.scene.add(new HemisphereLight('#fff6fb', '#7fb07a', 1.5));
-    const sun = new DirectionalLight('#fff3e0', 2.2);
-    sun.position.set(2.5, 5, 3.5);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
-    sun.shadow.camera.left = -2;
-    sun.shadow.camera.right = 2;
-    sun.shadow.camera.top = 2.5;
-    sun.shadow.camera.bottom = -1;
-    sun.shadow.radius = 4;
-    this.scene.add(sun);
+    this.fill.intensity = 0.5;
+    this.scene.add(new HemisphereLight('#fff6fb', '#7fb07a', 1.3));
+    this.sun.color.set('#fff3e0');
+    this.sun.intensity = 2.2;
+    this.sun.position.set(2.5, 5, 3.5);
+    this.sun.shadow.camera.left = -2;
+    this.sun.shadow.camera.right = 2;
+    this.sun.shadow.camera.top = 2.5;
+    this.sun.shadow.camera.bottom = -1;
+    this.sun.shadow.radius = 4;
     const rim = new DirectionalLight('#c9b8ff', 1.1);
     rim.position.set(-3, 2.5, -3);
     this.scene.add(rim);
@@ -269,16 +258,12 @@ export class HatcheryWorld {
     this.scene.add(this.glow);
     this.holder.position.y = 0.04;
     this.scene.add(this.holder);
-
-    this.observer = new ResizeObserver(() => this.resize());
-    this.observer.observe(host);
-    this.resize();
-    this.handle = requestAnimationFrame((time) => this.loop(time));
   }
 
-  setFrame(frame: NestFrame) {
+  setState(frame: NestFrame) {
     const previous = this.frame;
     this.frame = frame;
+    if (previous && frame.cheers > previous.cheers) this.cheer();
     if (frame.view === 'egg') {
       if (!this.egg || this.egg.dragon.id !== frame.egg.id || previous?.view !== 'egg') {
         this.clearDragon();
@@ -287,7 +272,7 @@ export class HatcheryWorld {
         this.holder.add(this.egg.root);
       }
       if (previous && frame.cracks > previous.cracks) {
-        this.shakeAt = this.now;
+        this.shakeAt = this.elapsed;
         this.burst(new Vector3(0, 0.75, 0.2), 6, ['#fffefc', frame.egg.shell], 0.9);
       }
       if (!previous || frame.cracks !== previous.cracks || previous.egg.id !== frame.egg.id)
@@ -302,41 +287,29 @@ export class HatcheryWorld {
     this.dragon = new DragonModel(dragon);
     this.holder.add(this.dragon.root);
     if (hatching && this.egg) {
-      this.hatchAt = this.now;
+      this.hatchAt = this.elapsed;
       this.egg.open();
       this.dragon.root.scale.setScalar(0.01);
       this.burst(new Vector3(0, 0.8, 0), 40, [...RAINBOW, '#ffe27a'], 2.6);
     } else {
       this.clearEgg();
       this.dragon.root.scale.setScalar(0.78);
-      this.dragon.cheer(this.now);
+      this.dragon.cheer(this.elapsed);
     }
   }
 
   /** The dragon in the nest does a happy hop. */
-  cheer() {
-    this.dragon?.cheer(this.now);
+  private cheer() {
+    this.dragon?.cheer(this.elapsed);
     this.burst(new Vector3(0, 1.2, 0), 14, ['#ffe27a', '#ff8cbf', '#fffefc'], 1.6);
   }
 
-  dispose() {
-    cancelAnimationFrame(this.handle);
-    this.observer.disconnect();
-    this.scene.traverse((object) => {
-      if (object instanceof Mesh) {
-        object.geometry.dispose();
-        const materials: Material[] = Array.isArray(object.material)
-          ? object.material
-          : [object.material];
-        for (const material of materials) {
-          if ('map' in material && material.map) (material.map as CanvasTexture).dispose();
-          material.dispose();
-        }
-      }
-    });
+  override dispose() {
+    for (const spark of this.sparks) (spark.mesh.material as Material).dispose();
+    this.sparks.length = 0;
     this.sparkGeometry.dispose();
     for (const material of this.sparkMaterials) material.dispose();
-    this.renderer.dispose();
+    super.dispose();
   }
 
   private clearEgg() {
@@ -463,49 +436,37 @@ export class HatcheryWorld {
         Math.sin(angle) * 0.7 + 0.3,
       ).multiplyScalar(speed * (0.5 + Math.random() * 0.6));
       this.scene.add(mesh);
-      this.sparks.push({ mesh, velocity, born: this.now, life: 0.9 + Math.random() * 0.5 });
+      this.sparks.push({ mesh, velocity, born: this.elapsed, life: 0.9 + Math.random() * 0.5 });
     }
   }
 
-  private resize() {
-    const width = Math.max(1, this.host.clientWidth);
-    const height = Math.max(1, this.host.clientHeight);
-    this.renderer.setSize(width, height, false);
-    this.camera.aspect = width / height;
+  protected override layout(aspect: number) {
+    this.camera.aspect = aspect;
     // Keep the nest and a standing dragon in frame: about 2.5 units tall and 3.2 wide.
     const tan = Math.tan((this.camera.fov * Math.PI) / 360);
-    const distance = Math.max(2.5 / (2 * tan), 3.2 / (2 * tan * this.camera.aspect));
+    const distance = Math.max(2.5 / (2 * tan), 3.2 / (2 * tan * aspect));
     this.camera.position.set(0, 0.85 + distance * 0.32, distance);
     this.camera.lookAt(0, 0.82, 0);
     this.camera.updateProjectionMatrix();
   }
 
-  private loop(time: number) {
-    this.handle = requestAnimationFrame((next) => this.loop(next));
-    const hidden = typeof document !== 'undefined' && document.hidden;
-    if (hidden) return;
-    const dt = this.now ? Math.min(0.1, time / 1000 - this.now) : 0.016;
-    this.now = time / 1000;
-    this.animate(dt);
-    if (this.visible) this.renderer.render(this.scene, this.camera);
-  }
-
-  private animate(dt: number) {
-    const now = this.now;
+  protected override update(dt: number, now: number) {
     const frame = this.frame;
+    const calm = this.calm;
     const warmth = frame?.view === 'egg' ? frame.warmth : 0;
     const ready = frame?.view === 'egg' && frame.ready;
     // Warmth glows from under the egg; a ready egg glows strongest and pulses.
-    const pulse = ready ? 0.75 + Math.sin(now * 4) * 0.25 : 1;
+    const pulse = ready && !calm ? 0.75 + Math.sin(now * 4) * 0.25 : 1;
     this.glow.intensity = (0.2 + warmth * 1.4) * pulse * (frame?.view === 'egg' ? 1 : 0.2);
     (this.ember.material as MeshBasicMaterial).opacity = (0.05 + warmth * 0.3) * pulse;
     if (this.egg) {
       const since = now - this.shakeAt;
       const shake = since < 0.5 ? Math.sin(since * 40) * 0.18 * (1 - since / 0.5) : 0;
       // A ready egg rocks now and then, as if something inside is wriggling.
-      const wiggle = ready ? Math.max(0, Math.sin(now * 2.2)) ** 6 * Math.sin(now * 22) * 0.1 : 0;
+      const wiggle =
+        ready && !calm ? Math.max(0, Math.sin(now * 2.2)) ** 6 * Math.sin(now * 22) * 0.1 : 0;
       this.egg.root.rotation.z = shake + wiggle;
-      this.egg.root.position.y = ready ? Math.max(0, Math.sin(now * 2.2)) ** 8 * 0.05 : 0;
+      this.egg.root.position.y = ready && !calm ? Math.max(0, Math.sin(now * 2.2)) ** 8 * 0.05 : 0;
       for (const material of this.egg.shellMaterial) {
         material.emissive.set(frame?.egg.spots ?? '#ffb35c');
         material.emissiveIntensity = ready ? 0.12 + Math.sin(now * 4) * 0.06 : warmth * 0.08;
@@ -534,8 +495,9 @@ export class HatcheryWorld {
         this.dragon.root.position.y = 0;
       }
     }
-    this.dragon?.update(now);
+    this.dragon?.update(now, true, calm);
     for (const [index, fly] of this.floaters.entries()) {
+      fly.visible = !calm;
       const angle = now * (0.3 + index * 0.05) + index;
       fly.position.set(
         Math.cos(angle) * (1 + index * 0.12),
