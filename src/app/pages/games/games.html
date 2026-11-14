@@ -6,6 +6,23 @@
     </div>
     <img ngSrc="/images/feenland.webp" width="1536" height="1024" alt="" priority />
   </header>
+  <nav class="game-jump" [attr.aria-label]="i.t('jumpToGame')">
+    <ul>
+      @for (game of games(); track game.chapter.id) {
+        <li>
+          <a
+            routerLink="/games"
+            [fragment]="game.chapter.id"
+            [style.--world-color]="game.world.color"
+            [style.--world-ground]="game.world.ground"
+            [attr.aria-current]="game.chapter.id === inView() ? 'location' : null"
+            ><span aria-hidden="true">{{ game.chapter.emblem }}</span
+            >{{ i.t(game.chapter.title) }}</a
+          >
+        </li>
+      }
+    </ul>
+  </nav>
   @for (game of games(); track game.chapter.id) {
     @let chapter = game.chapter;
     <section
