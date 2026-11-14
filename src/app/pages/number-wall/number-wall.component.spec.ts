@@ -136,9 +136,14 @@ describe('Number wall game', () => {
       click(wall < 7 ? 'Next wall' : 'You earned a star!');
     }
     expect(element.textContent).toContain('Three stars!');
-    expect(element.textContent).toContain(
-      'You built 8 walls. +24 gems! 8 bricks right on the first try.',
-    );
+    expect(element.querySelector('.summary-lead')?.textContent?.trim()).toBe('You built 8 walls.');
+    const reward = (name: string) =>
+      element.querySelector(`.reward.${name}`)?.textContent?.replace(/\s+/g, ' ').trim();
+    expect(reward('gems')).toBe('💎+24 Gems');
+    expect(reward('first-try')).toBe('✨8 / 8 Right first time');
+    expect(reward('streak')).toBe('⚡8 Best streak');
+    expect(reward('troll')).toBe('0 Knocked down');
+    expect(element.querySelector('.summary-fairy img')).toBeTruthy();
     expect(element.querySelectorAll('.star-row app-icon.earned')).toHaveLength(3);
     const store = TestBed.inject(NumberWallStore);
     expect(store.rating(1)).toBe(3);
@@ -195,7 +200,10 @@ describe('Number wall game', () => {
       solveSelected();
     }
     click('You earned a star!');
-    expect(element.textContent).toContain('Walls the troll knocked down: 1.');
+    expect(element.querySelector('.reward.troll strong')?.textContent).toBe('1');
+    expect(element.querySelector('.reward.troll app-wall-troll')?.classList).toContain(
+      'is-cheering',
+    );
   });
 
   it('earns fairy dust after three bricks in a row and uses it to freeze the troll', () => {

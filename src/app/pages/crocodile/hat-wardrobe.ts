@@ -1,6 +1,5 @@
 import { Component, inject, input } from '@angular/core';
 import { LocaleService } from '../../core/locale';
-import { Icon } from '../../shared/icon';
 import { CrocodileArt } from './crocodile-art';
 import { crocodileText, CrocodileMessageKey } from './crocodile-messages';
 import { comparisonStage } from './comparison';
@@ -8,7 +7,7 @@ import { Hat, hats } from './crocodile-score';
 /** Kiki’s hat collection: one hat per level, earned with two stars. */
 @Component({
   selector: 'app-hat-wardrobe',
-  imports: [Icon, CrocodileArt],
+  imports: [CrocodileArt],
   template: `<section class="wardrobe" aria-labelledby="hats-title">
     <h3 id="hats-title">{{ t('hats') }}</h3>
     <ul class="hat-list">
@@ -17,7 +16,7 @@ import { Hat, hats } from './crocodile-score';
           <span class="hat-art">
             <app-crocodile kind="hat" [hat]="entry.id" />
             @if (!owns(entry)) {
-              <app-icon kind="lock" />
+              <span class="hat-level">{{ t('hatLevel', { n: position(entry.stage) }) }}</span>
             }
           </span>
           <span class="hat-name" aria-hidden="true">{{ t(entry.name) }}</span>
@@ -58,19 +57,31 @@ import { Hat, hats } from './crocodile-score';
     .hat-art {
       position: relative;
       display: block;
-      width: 52px;
+      width: 56px;
+    }
+    /* A hat still to win is a soft silhouette with the level that wins it, not a padlock. */
+    .hat-slot:not(.owned) {
+      background: #f4f1e8;
     }
     .hat-slot:not(.owned) app-crocodile {
-      filter: grayscale(1);
-      opacity: 0.35;
+      filter: brightness(0);
+      opacity: 0.16;
     }
-    app-icon {
+    .owned {
+      box-shadow: inset 0 0 0 2px #f2d27a;
+    }
+    .hat-level {
       position: absolute;
-      right: -6px;
-      bottom: -2px;
-      width: 20px;
-      height: 20px;
+      left: 50%;
+      bottom: -4px;
+      translate: -50% 0;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #fff;
       color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
     }
     .hat-slot.new {
       background: #ffe3ee;
@@ -105,6 +116,31 @@ import { Hat, hats } from './crocodile-score';
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
     }
+    /* A phone on its side: the seven hats in one row, names left out (each has a label). */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .wardrobe {
+        margin-top: 6px;
+        padding-top: 4px;
+      }
+      h3 {
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+      .hat-list {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 4px;
+      }
+      .hat-slot {
+        padding: 6px 2px;
+      }
+      .hat-art {
+        width: 34px;
+      }
+      .hat-name,
+      .hats-help {
+        display: none;
+      }
+    }
   `,
 })
 export class HatWardrobe {
@@ -118,10 +154,14 @@ export class HatWardrobe {
   protected owns(hat: Hat) {
     return this.owned().includes(hat);
   }
+  /** Hats belong to level ids; the child sees the level's place in the list. */
+  protected position(stage: number) {
+    return comparisonStage(`crocodile-${stage}`)?.position ?? stage;
+  }
   protected label(hat: Hat) {
     return this.t(this.owns(hat) ? 'hatOwned' : 'hatLocked', {
       hat: this.t(hat.name),
-      n: comparisonStage(`crocodile-${hat.stage}`)?.position ?? hat.stage,
+      n: this.position(hat.stage),
     });
   }
 }

@@ -48,6 +48,7 @@ import {
 } from './number-wall';
 import { NumberWallStore } from './number-wall-store';
 import { WallScene } from './wall-scene';
+import { WallTroll } from './wall-troll';
 import { wallText } from './wall-text';
 type Feedback =
   | { readonly kind: 'idle' }
@@ -65,10 +66,10 @@ type Feedback =
 const TICK_MS = 100;
 @Component({
   selector: 'app-number-wall',
-  imports: [RouterLink, Icon, GameHeader, WallScene, NgOptimizedImage],
+  imports: [RouterLink, Icon, GameHeader, WallScene, WallTroll, NgOptimizedImage],
   providers: [GameAudio],
   templateUrl: './number-wall.component.html',
-  styleUrls: ['./number-wall.component.css', './number-wall-play.css'],
+  styleUrls: ['./number-wall.component.css', './number-wall-play.css', './number-wall-summary.css'],
   host: {
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
@@ -106,6 +107,10 @@ export class NumberWallComponent {
   protected readonly walls = signal<readonly Wall[]>([]);
   protected readonly wallIndex = signal(0);
   protected readonly wall = computed(() => this.walls()[this.wallIndex()]);
+  /** Every brick the child had to find in this level, for the first-try reward. */
+  protected readonly totalBricks = computed(() =>
+    this.walls().reduce((sum, wall) => sum + wall.missing.length, 0),
+  );
   protected readonly filled = signal<readonly BrickId[]>([]);
   protected readonly golden = signal<readonly BrickId[]>([]);
   protected readonly selected = signal<BrickId | undefined>(undefined);

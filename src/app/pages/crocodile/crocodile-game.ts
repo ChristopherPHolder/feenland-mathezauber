@@ -93,6 +93,7 @@ const BOSS_EXTRA = 3000;
     './crocodile-motion.css',
     './crocodile-responsive.css',
     './crocodile-heron.css',
+    './crocodile-outcome.css',
   ],
   host: {
     '(document:keydown)': 'onKey($event)',
