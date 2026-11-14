@@ -1,15 +1,25 @@
 import { EggChip } from '../hatchery/egg-chip';
 import { NgOptimizedImage } from '@angular/common';
-import { Component, computed, inject, input, output } from '@angular/core';
+import {
+  afterRenderEffect,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { LocaleService } from '../../core/locale';
 import { Icon } from '../../shared/icon';
-import { Battle } from './battle';
+import { Battle, gemsFor } from './battle';
+import { GemPouch } from './gem-pouch';
 import { gameText, GameMessageKey } from './game-messages';
 @Component({
   selector: 'app-battle-scene',
-  imports: [NgOptimizedImage, Icon, EggChip],
+  imports: [NgOptimizedImage, Icon, EggChip, GemPouch],
   templateUrl: './battle-scene.html',
-  styleUrl: './battle-scene.css',
+  styleUrls: ['./battle-scene.css', './battle-fx.css'],
   host: { '[class.fit]': 'fit()' },
 })
 export class BattleScene {
@@ -33,6 +43,11 @@ export class BattleScene {
     }
   });
   protected readonly hearts = [1, 2, 3];
+  protected readonly rays = Array.from({ length: 12 }, (_, index) => index);
+  /** Gems the rescued creature drops: the same rule the battle adds to the pouch. */
+  protected readonly dropped = computed(() => gemsFor(this.battle().attempts));
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly flight = viewChild<ElementRef<HTMLElement>>('flight');
   protected readonly fireflies = [0, 1, 2, 3, 4, 5, 6];
   protected readonly heartsAndSpells = Array.from({ length: 10 }, (_, index) => index);
   protected readonly encounter = computed(
@@ -47,6 +62,18 @@ export class BattleScene {
   protected readonly shieldLayers = computed(() =>
     Array.from({ length: this.battle().wave.encounters.length }, (_, index) => index),
   );
+  constructor() {
+    // The dropped gem flies from the creature to wherever the pouch sits on this screen.
+    afterRenderEffect(() => {
+      const gem = this.flight()?.nativeElement;
+      const pouch = this.host.nativeElement.querySelector('app-gem-pouch .gem-art');
+      if (!gem || !pouch) return;
+      const from = (gem.querySelector('.gem-art') ?? gem).getBoundingClientRect();
+      const to = pouch.getBoundingClientRect();
+      gem.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
+      gem.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
+    });
+  }
   protected t(key: GameMessageKey, values: Record<string, number> = {}) {
     return gameText(this.i.locale(), key, values);
   }

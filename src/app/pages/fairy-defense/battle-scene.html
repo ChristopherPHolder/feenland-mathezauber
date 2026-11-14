@@ -31,6 +31,7 @@
     </div>
     <div class="battle-actions">
       <app-egg-chip />
+      <app-gem-pouch [gems]="battle().gems" [streak]="battle().streak" />
       <div class="hearts" role="img" [attr.aria-label]="t('health', { n: battle().hearts })">
         @for (heart of hearts; track heart) {
           <svg viewBox="0 0 32 30" [class.empty]="heart > battle().hearts" aria-hidden="true">
@@ -71,6 +72,22 @@
       [class.boss]="battle().wave.boss"
       [class.wobble]="battle().phase === 'wrong'"
     >
+      @if (battle().phase === 'wrong') {
+        <div class="dust" aria-hidden="true"><span></span><span></span><span></span></div>
+      }
+      @if (battle().phase === 'transforming') {
+        <div class="burst" aria-hidden="true">
+          @for (ray of rays; track ray) {
+            <span [style.--a]="ray * 30 + 'deg'"></span>
+          }
+        </div>
+        <div #flight class="gem-flight" aria-hidden="true">
+          <span class="gem-art"
+            ><img ngSrc="/images/fairy-defense/crystals.webp" width="2172" height="724" alt=""
+          /></span>
+          <span class="gem-gain">+{{ i.format(dropped()) }}</span>
+        </div>
+      }
       @if (battle().phase !== 'transforming' || shieldBreaking()) {
         <span class="number-badge">{{
           encounter().question ? '?' : i.format(encounter().energy)
