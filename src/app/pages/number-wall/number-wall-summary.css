@@ -1,0 +1,277 @@
+/*
+ * The end of a level: big stars, the fairy celebrating, and the rewards as tiles a child can
+ * read at a glance. Stacked on phones held upright, side by side on tablets and sideways
+ * phones, always with the next-level button on screen.
+ */
+.summary {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  overflow: hidden;
+  padding: 24px 20px;
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+  text-align: center;
+  outline: none;
+}
+.summary-hero,
+.summary-body {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.summary-fairy img {
+  display: block;
+  width: clamp(130px, 22vh, 300px);
+  height: auto;
+  filter: drop-shadow(0 6px 10px #1f2a4426);
+}
+.summary h2 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.15;
+}
+.summary-lead,
+.summary .best {
+  margin: 0;
+}
+.rewards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.reward {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  padding: 12px 6px 10px;
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+  font-size: 14px;
+  line-height: 1.25;
+}
+.reward strong {
+  font-size: 28px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.reward small {
+  font-size: 16px;
+  color: var(--muted);
+}
+.reward-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+app-wall-troll.reward-icon {
+  font-size: 24px;
+}
+.reward.gems {
+  background: var(--world-tens-ground);
+}
+.summary-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 460px;
+}
+.summary-actions .primary,
+.summary-actions > :last-child {
+  grid-column: 1 / -1;
+}
+.summary-actions .button {
+  padding-inline: 10px;
+}
+
+/* Confetti and a dancing fairy for three stars; tiles pop in one after another. */
+.summary-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.summary-confetti span {
+  position: absolute;
+  top: -16px;
+  left: calc(4% + var(--i) * 8%);
+  width: 10px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--pink);
+  animation: confetti-fall 2.8s ease-in calc(var(--i) * 0.15s) infinite;
+}
+.summary-confetti span:nth-child(3n) {
+  background: var(--sun);
+}
+.summary-confetti span:nth-child(3n + 1) {
+  background: var(--sky);
+}
+.summary-confetti span:nth-child(4n) {
+  background: var(--leaf);
+}
+.summary-fairy {
+  animation: fairy-hover 2.4s ease-in-out infinite;
+}
+.summary-fairy.party {
+  animation: fairy-party 0.9s ease-in-out infinite;
+}
+.reward {
+  animation: reward-in 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.reward:nth-child(2) {
+  animation-delay: 0.9s;
+}
+.reward:nth-child(3) {
+  animation-delay: 1.05s;
+}
+.reward:nth-child(4) {
+  animation-delay: 1.2s;
+}
+.reward:first-child {
+  animation-delay: 0.75s;
+}
+@keyframes reward-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.8);
+  }
+}
+@keyframes fairy-hover {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes fairy-party {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(8deg) scale(1.06);
+  }
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(520px) rotate(380deg);
+    opacity: 0;
+  }
+}
+
+/* Short phones: a smaller fairy and stars so the buttons stay in view. */
+@media (max-height: 760px) {
+  .summary {
+    gap: 10px;
+    padding: 16px 14px;
+  }
+  .summary-hero,
+  .summary-body {
+    gap: 8px;
+  }
+  .summary-fairy img {
+    width: 120px;
+  }
+  .summary .star-row app-icon {
+    width: 42px;
+    height: 42px;
+  }
+  .summary h2 {
+    font-size: 24px;
+  }
+  .reward {
+    padding: 8px 4px;
+  }
+  .reward strong {
+    font-size: 24px;
+  }
+  .reward-icon {
+    font-size: 22px;
+  }
+  .summary-actions {
+    gap: 8px;
+  }
+}
+
+/* Tablets and sideways phones: the celebration on the left, rewards and buttons on the right. */
+@media (orientation: landscape) and (min-width: 700px) {
+  .summary {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    align-items: center;
+    padding: 28px 36px;
+  }
+  .summary-fairy img {
+    width: clamp(160px, 46vh, 420px);
+  }
+  .summary .star-row app-icon {
+    width: clamp(44px, 9vh, 76px);
+    height: clamp(44px, 9vh, 76px);
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .summary {
+    padding: 12px 20px;
+  }
+  .summary-fairy img {
+    width: clamp(110px, 34vh, 160px);
+  }
+  .summary h2 {
+    font-size: 22px;
+  }
+  .summary-lead {
+    display: none;
+  }
+  .summary-actions {
+    max-width: none;
+  }
+  .summary .star-row app-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .reward {
+    padding: 6px 4px;
+    font-size: 13px;
+  }
+  .reward strong {
+    font-size: 20px;
+  }
+  .reward-icon {
+    font-size: 18px;
+  }
+  app-wall-troll.reward-icon {
+    font-size: 16px;
+  }
+  .summary-actions .button {
+    min-height: 44px;
+    padding-block: 6px;
+  }
+}
+@media (max-width: 480px) {
+  .rewards {
+    gap: 6px;
+  }
+  .reward {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .summary * {
+    animation: none !important;
+  }
+}
