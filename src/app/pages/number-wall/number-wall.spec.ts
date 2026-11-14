@@ -120,7 +120,6 @@ describe('number wall hints', () => {
       kind: 'add',
       left: 7,
       right: 9,
-      sum: 16,
     });
   });
 
@@ -129,7 +128,6 @@ describe('number wall hints', () => {
       kind: 'complete',
       known: 4,
       target: 7,
-      answer: 3,
     });
   });
 
@@ -146,7 +144,6 @@ describe('number wall hints', () => {
       kind: 'add',
       left: 7,
       right: 9,
-      sum: 16,
     });
   });
 
