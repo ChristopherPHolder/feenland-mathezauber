@@ -6,14 +6,17 @@ const assert = require('node:assert/strict');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const page = await browser.newPage();
+    await page.addInitScript(() => {
+      localStorage.setItem('feenland.crocodile-coached.v1', '1');
+    });
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       for (let choice = 0; choice < 3; choice++) {
         for (const edge of ['bottom', 'left']) {
           await page.goto(
-            (process.env.CROCODILE_BASE_URL || 'http://127.0.0.1:4200') +
-              '/adventure/crocodile-1',
+            (process.env.CROCODILE_BASE_URL || 'http://127.0.0.1:4200') + '/adventure/crocodile-1',
           );
+          await page.locator('[data-pace="off"]').click();
           await page.locator('.intro .primary').click();
           const button = page.locator('.choice').nth(choice);
           await button.scrollIntoViewIfNeeded();

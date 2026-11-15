@@ -22,6 +22,36 @@
   flex: none;
 }
 
+/* Keep tablet hit targets still as feedback, callouts and streaks change. */
+@media (min-width: 641px) and (min-height: 501px) {
+  .playing .score strong {
+    min-inline-size: 4ch;
+  }
+  .playing .combo {
+    display: grid;
+    grid-template-rows: repeat(2, 1lh);
+    inline-size: 16ch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .playing .combo .streak {
+    grid-row: 2;
+    margin: 0;
+  }
+  .playing .banner {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+  }
+  .playing .instruction {
+    /* Four text lines or the 76px rule illustration, plus the card's padding.
+       A minimum lets larger text grow rather than clipping the live feedback. */
+    min-block-size: max(calc(5.8em + 16px), 92px);
+  }
+}
+
 /* Tablets, upright or on their side: scale the pond up with the height */
 @media (min-width: 641px) and (min-height: 780px) {
   .playing .sides {
