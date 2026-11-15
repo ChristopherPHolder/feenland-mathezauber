@@ -20,6 +20,40 @@ describe('Feenland navigation', () => {
     expect(current.map((link: HTMLAnchorElement) => link.getAttribute('href'))).toEqual(['/games']);
     expect(current[0].classList).toContain('active');
   });
+  it('keeps the loading splash up until the first page itself is showing', async () => {
+    const splash = document.createElement('div');
+    splash.id = 'boot-splash';
+    document.body.append(splash);
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('header, main, footer')).toBeNull();
+    await TestBed.inject(Router).navigateByUrl('/games');
+    await fixture.whenStable();
+    for (const part of ['header', 'main', 'footer']) {
+      expect(fixture.nativeElement.querySelector(part)).toBeTruthy();
+    }
+    const page = () =>
+      fixture.nativeElement.querySelector('main a[href="/adventure/defend-fairy-castle"]');
+    if (!page()) expect(document.getElementById('boot-splash')).toBe(splash);
+    await vi.waitFor(async () => {
+      await fixture.whenStable();
+      expect(page()).toBeTruthy();
+    });
+    expect(document.getElementById('boot-splash')).toBeNull();
+  });
+  it('opens a game straight from the splash, with no header or footer flashing first', async () => {
+    const fixture = TestBed.createComponent(App);
+    const seen: boolean[] = [];
+    const observer = new MutationObserver(() =>
+      seen.push(!!fixture.nativeElement.querySelector('header, footer')),
+    );
+    observer.observe(fixture.nativeElement, { childList: true, subtree: true });
+    await TestBed.inject(Router).navigateByUrl('/adventure/crocodile-1');
+    await fixture.whenStable();
+    observer.disconnect();
+    expect(fixture.nativeElement.querySelector('main.focused-game')).toBeTruthy();
+    expect(seen).not.toContain(true);
+  });
   it('starts with real zero counts and recommends the first open game', async () => {
     const h = await openRoute('/');
     expect(h.routeNativeElement?.textContent).toContain('Feenland');
