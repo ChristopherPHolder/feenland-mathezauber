@@ -575,3 +575,44 @@
     padding: 4px 12px;
   }
 }
+
+/* A narrow phone with a streak chip has no room for "Wave 1 of 20": a short "1 / 20" keeps the
+   chip on one line, clear of the thinking ring below it. Screen readers still get the label. */
+.wave-short {
+  display: none;
+}
+@media (max-width: 480px) {
+  .battle-hud {
+    left: 8px;
+    right: 8px;
+  }
+  .wave {
+    flex: none;
+    white-space: nowrap;
+  }
+  .wave-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .wave-short {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .wave {
+    padding-inline: 9px;
+  }
+  .battle-actions {
+    gap: 4px;
+  }
+  .hearts {
+    padding: 8px 6px;
+  }
+  .hearts svg {
+    width: 19px;
+    height: 19px;
+  }
+}

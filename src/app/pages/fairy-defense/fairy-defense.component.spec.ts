@@ -150,6 +150,14 @@ describe('Wave 1 playable integration', () => {
       /^(Yes! A new friend!|Sparkly magic!|Brilliant spell!)$/,
     );
   });
+  it('keeps a short wave label for narrow phones next to the full one for screen readers', () => {
+    const { element, click } = setup();
+    click('Play');
+    expect(element.querySelector('.wave-label')?.textContent?.trim()).toBe('Wave 1 of 20');
+    const short = element.querySelector('.wave-short');
+    expect(short?.textContent?.trim()).toBe('1 / 20');
+    expect(short?.getAttribute('aria-hidden')).toBe('true');
+  });
   it('shows no ring at the relaxed pace, however long the child thinks', () => {
     const { fixture, element, click } = setup();
     click('Play');
