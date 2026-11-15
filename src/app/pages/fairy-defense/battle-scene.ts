@@ -16,6 +16,7 @@ import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 import { Battle, gemsFor } from './battle';
 import { castleFrame, CastleFrame } from './castle-frame';
 import { GemPouch } from './gem-pouch';
+import { TOTAL_WAVES } from './waves';
 import { gameText, GameMessageKey } from './game-messages';
 @Component({
   selector: 'app-battle-scene',
@@ -46,6 +47,10 @@ export class BattleScene {
         return { width: 1312, height: 1199 };
     }
   });
+  /** "3 / 20" for a narrow phone, where the full label would squeeze into a column. */
+  protected readonly shortLabel = computed(
+    () => this.stageLabel().replace(/^\D+/, '') || `${this.battle().wave.number} / ${TOTAL_WAVES}`,
+  );
   protected readonly hearts = [1, 2, 3];
   protected readonly rays = Array.from({ length: 12 }, (_, index) => index);
   /** Gems the rescued creature drops: the same rule the battle adds to the pouch. */

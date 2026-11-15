@@ -1,6 +1,7 @@
 import {
   CapsuleGeometry,
   CatmullRomCurve3,
+  Color,
   ConeGeometry,
   CylinderGeometry,
   DoubleSide,
@@ -42,6 +43,36 @@ export function makeLilyPad(color = '#4ca25f', rim = '#2f7a44'): Group {
   const edge = new Mesh(
     new CylinderGeometry(1.02, 0.98, 0.05, 28, 1, false, 0.35, Math.PI * 2 - 0.7),
     toon(rim),
+  );
+  edge.position.y = -0.03;
+  pad.add(edge, top);
+  return pad;
+}
+
+/**
+ * The golden snack's pad: polished gold that catches the sun, with a warm glow of its own and a
+ * brighter rim, so it reads as treasure even from across the pond. Same size as a lily pad.
+ */
+export function makeGoldenPad(): Group {
+  const pad = new Group();
+  const top = new Mesh(
+    new CylinderGeometry(1, 1, 0.07, 32, 1, false, 0.35, Math.PI * 2 - 0.7),
+    toon('#ffc93c', {
+      metalness: 0.45,
+      roughness: 0.3,
+      emissive: new Color('#b8740a'),
+      emissiveIntensity: 0.55,
+    }),
+  );
+  top.receiveShadow = true;
+  const edge = new Mesh(
+    new CylinderGeometry(1.05, 1, 0.06, 32, 1, false, 0.35, Math.PI * 2 - 0.7),
+    toon('#e29a12', {
+      metalness: 0.5,
+      roughness: 0.35,
+      emissive: new Color('#7a4a00'),
+      emissiveIntensity: 0.4,
+    }),
   );
   edge.position.y = -0.03;
   pad.add(edge, top);
