@@ -1163,6 +1163,10 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
         rest.y += lift;
       }
       star.group.position.copy(rest);
+      // Keep the number fully on screen when Nova stands near either end of the bridge.
+      const half = this.width / 2 / this.ppu;
+      const room = half - (this.labelH * (320 / 144)) / 2 - 28 / this.ppu;
+      star.tag.position.x = Math.max(-room - rest.x, Math.min(room - rest.x, 0));
       const pop = t - this.bornAt;
       star.group.scale.setScalar(pop < 0.45 ? Math.max(0.001, easeOutBack(pop / 0.45)) : 1);
       star.sprite.material.rotation = calm ? 0 : t * 0.6;
