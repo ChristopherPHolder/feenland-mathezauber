@@ -104,6 +104,9 @@ export class FairyDefenseComponent {
     heart: ['slipHeart'],
     cheer: ['cheerFriend', 'cheerSparkle', 'cheerBrilliant'],
     shield: ['cheerShield'],
+    wave: ['goWave'],
+    practice: ['goPractice'],
+    boss: ['goBoss'],
   };
   /** The bubble over the battlefield after a spell; the id restarts its pop for a new one. */
   protected readonly slip = signal<{ kind: SlipKind; id: number } | null>(null);
@@ -293,6 +296,7 @@ export class FairyDefenseComponent {
     this.store.write('tutorial-seen', 'true');
     this.audio.start();
     this.audio.speak(this.message());
+    this.showSlip(training ? 'practice' : this.battle().wave.boss ? 'boss' : 'wave');
     this.focusSpells();
   }
   /** A picture card is a play button: one tap picks the game and starts it. */
@@ -380,7 +384,10 @@ export class FairyDefenseComponent {
     clearTimeout(this.slipTimer);
     this.slip.set(kind ? { kind, id: (this.slip()?.id ?? 0) + 1 } : null);
     if (kind)
-      this.slipTimer = setTimeout(() => this.slip.set(null), kind === 'heart' ? 2600 : 1900);
+      this.slipTimer = setTimeout(
+        () => this.slip.set(null),
+        kind === 'heart' || kind === 'boss' ? 2600 : 1900,
+      );
   }
   protected help(full = false) {
     if (this.battle().phase !== 'ready') return;

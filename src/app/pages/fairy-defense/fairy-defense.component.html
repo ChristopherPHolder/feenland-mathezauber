@@ -74,7 +74,11 @@
       @for (bubble of [shown]; track bubble.id) {
         <app-slip-callout
           [kind]="bubble.kind"
-          [text]="t(calloutText[bubble.kind][bubble.id % calloutText[bubble.kind].length])"
+          [text]="
+            t(calloutText[bubble.kind][bubble.id % calloutText[bubble.kind].length], {
+              n: battle().wave.number,
+            })
+          "
         />
       }
     }

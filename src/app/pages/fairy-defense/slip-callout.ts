@@ -1,10 +1,11 @@
 import { Component, input } from '@angular/core';
 
-export type SlipKind = 'wrong' | 'time' | 'heart' | 'cheer' | 'shield';
+export type SlipKind =
+  'wrong' | 'time' | 'heart' | 'cheer' | 'shield' | 'wave' | 'practice' | 'boss';
 
 /**
- * A big speech bubble over the battlefield after a spell: a cheer for a right one, or what went
- * wrong after a slip (a wrong spell, the ring running out, a lost heart), never the answer. Screen readers already hear the full
+ * A big speech bubble over the battlefield: who is coming at the start of a wave, a cheer for a
+ * right spell, or what went wrong after a slip (a wrong spell, the ring running out, a lost heart), never the answer. Screen readers already hear the full
  * message from the live region, so the bubble itself is hidden from them.
  */
 @Component({
@@ -15,6 +16,8 @@ export type SlipKind = 'wrong' | 'time' | 'heart' | 'cheer' | 'shield';
     '[class.is-heart]': "kind() === 'heart'",
     '[class.is-time]': "kind() === 'time'",
     '[class.is-cheer]': "kind() === 'cheer' || kind() === 'shield'",
+    '[class.is-go]': "kind() === 'wave' || kind() === 'practice'",
+    '[class.is-boss]': "kind() === 'boss'",
   },
   styles: `
     :host {
@@ -47,6 +50,16 @@ export type SlipKind = 'wrong' | 'time' | 'heart' | 'cheer' | 'shield';
       background: #146b4a;
       animation-name: slip-pop, cheer-bounce;
       animation-duration: 380ms, 600ms;
+      animation-delay: 0s, 380ms;
+    }
+    :host(.is-go) .bubble {
+      background: #ffd95e;
+      color: #152f4a;
+    }
+    :host(.is-boss) .bubble {
+      background: #4b2a8a;
+      animation-name: slip-pop, slip-shake;
+      animation-duration: 380ms, 420ms;
       animation-delay: 0s, 380ms;
     }
     :host(.is-heart) .bubble {
