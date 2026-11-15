@@ -4,6 +4,7 @@ import { comparisonLevels } from '../pages/crocodile/comparison';
 import { raceLevelEntries } from '../pages/unicorn-race/race-questions';
 import { lockLevels } from '../pages/treasure-lock/lock-puzzles';
 import { potionLevels } from '../pages/potions/potion-puzzles';
+import { gondolaLevels } from '../pages/gondola/gondola-levels';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
@@ -113,6 +114,13 @@ export const worlds: readonly World[] = [
         description: 'potionChapterHelp',
         emblem: '🧪',
         levels: potionLevels,
+      },
+      {
+        id: 'gondola',
+        title: 'gondolaChapter',
+        description: 'gondolaChapterHelp',
+        emblem: '🚡',
+        levels: gondolaLevels,
       },
     ],
   },

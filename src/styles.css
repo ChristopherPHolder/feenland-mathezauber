@@ -460,6 +460,11 @@ main.focused-game {
   --loader-star: var(--gold);
   --loader-dot: var(--bronze);
 }
+.is-route-tone[data-tone='gondola'] {
+  --loader-ground: linear-gradient(#cfe8fb, #eaf5ff 45%, #f7fbff);
+  --loader-star: var(--sky-deep);
+  --loader-dot: var(--pink);
+}
 .is-route-tone[data-tone='potion'] {
   --loader-ground: linear-gradient(#e6e0ff, #f4eefc 40%, #e9f6ee);
   --loader-star: var(--violet);

@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 96 selectable levels across six games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 108 selectable levels across seven games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -25,6 +25,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | Unicorn Rainbow Race | one heat (six per track)                                         | 60–90 s per heat; two or three heats in a sitting |
 | The Treasure Lock    | 6 chests of 2–6 hops each, the big chest last                    | 6 × 20–30 s ≈ 2–3 min                             |
 | The Potion Cauldron  | 6 potions of 2–4 bottles, the big cauldron last                  | 6 × 20–40 s ≈ 2–4 min                             |
+| The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min       |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -105,6 +106,17 @@ Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets wh
 | Sharing and all spells | sharing potions 12 ÷ 3 + 2 → 6 · potion master with all four spells 8 ÷ 2 × 3 + 1 → 13   |
 
 A potion is built by mixing random bottles with random spells, so it always brews, and the solver in `potion-puzzles.ts` then checks it: the potion never equals one of its bottles, and a level's `needs` spells (− for three bottles, × for the times levels, ÷ for sharing, × or ÷ for the master) must be part of every recipe. The built recipe keeps to table facts (no ×1, nothing past 10 × 10, sharing only within the tables), though a child may brew a potion any way that works. A bottle never goes empty or below zero, never holds more than the level's limit, and only shares evenly; a bottle the chosen spell cannot pour in is greyed out with a line saying why.
+
+### The Mountain Gondola: 12 levels (`pages/gondola/gondola-levels.ts`)
+
+| Topic             | Levels, easiest first                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Fill the cabin    | one empty seat 9 + 4 → 10 + 3 · two empty seats 8 + 5 · sevens and sixes 7 + 6 · either order 5 + 8 → 8 + 5        |
+| Down the mountain | back to ten 13 − 5 → 10 − 2 · take from the ten 13 − 9 → 1 + 3                                                     |
+| Bigger mountains  | bigger mountain up 47 + 6 → 50 + 3 · bigger mountain down 43 − 6 → 40 − 3 · tens and a bridge 38 + 25 → 40 + 23    |
+| Clever tricks     | the express 34 + 9 → 44 − 1 · express both ways 63 − 9 → 53 + 1 · mountain master (mixed, numbers only)            |
+
+Every cabin holds ten, in two rows of five. Every item crosses a ten (the generator filters for it), no item repeats in a round, and the last cabin is a big summit cabin from a harder pool that pays double. Single-digit levels (1–6) play 8 or 10 cabins with four answer buttons; levels 1 and 2 have only 8 different sums, so they play 8. Two-digit levels play 8 cabins with a number pad laid out in fives. The split must fill the cabin exactly (or, from level 6, take everything from a full ten; from level 10, send the express): a wrong split bounces a bunny off or jams the door, and after two slips Gusti shows a picture card with other numbers. Levels 1–6 show bunnies, 7–9 show full tens as "10" cabins, and 10–12 show numbers with a split diagram and a "Show the bunnies" button. Within a level, three quick first-try turns in a row bring a snow tarp over the cabins until the next miss. Level 10 asks for +9 and +8 rather than the issue's +11, because +11 only crosses a ten after a number ending in 9. Round stars come from first-try splits (three for 75%, two for half), and the master level needs three to be mastered.
 
 ## Adding a level
 

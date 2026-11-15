@@ -1,0 +1,330 @@
+/* The page, the intro and the finish card. Play layout lives in gondola-play.css. */
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  display: block;
+  min-height: calc(100dvh - var(--safe-y));
+  background: linear-gradient(#cfe8fb, #eaf5ff 45%, #f7fbff);
+  padding: 12px max(12px, env(safe-area-inset-right)) 20px max(12px, env(safe-area-inset-left));
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.game {
+  max-width: 1240px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow-panel);
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+
+/* Intro */
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(6 * 46px + 5 * 8px);
+  margin: 0 auto 16px;
+  padding: 0;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  min-height: 46px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--sky-deep);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--lagoon-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+@media (min-width: 760px) {
+  .level-strip {
+    max-width: none;
+  }
+}
+.intro-grid,
+.outcome {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(16px, 3vw, 28px);
+}
+.intro-art,
+.outcome-art {
+  aspect-ratio: 8 / 5;
+  width: 100%;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  background: linear-gradient(#9fd0f2, #e8f5ff);
+}
+.intro h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  margin: 0 0 8px;
+}
+.intro p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.trick-card {
+  margin: 14px 0 6px;
+  padding: 14px 18px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-card h3,
+.village h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.village h3 {
+  color: var(--sky-deep);
+}
+.trick-card .example {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--sky-deep);
+}
+.village {
+  margin-top: 12px;
+}
+.village-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.house-slot {
+  width: 26px;
+  height: 26px;
+}
+.house-slot svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #9bb3cc;
+  stroke-width: 1.8;
+  stroke-dasharray: 3 2;
+}
+.house-slot.built svg {
+  fill: var(--sun);
+  stroke: var(--amber-ink);
+  stroke-dasharray: none;
+}
+.village-line {
+  color: var(--muted);
+}
+.pace {
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+.pace legend {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 0;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice:hover {
+  background: var(--ground);
+}
+.pace-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.pace-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--success-strong);
+}
+.pace-art {
+  width: 64px;
+  height: 36px;
+}
+.pace-art .sun {
+  fill: var(--sun);
+}
+.pace-art .cloud-icon {
+  fill: color-mix(in srgb, #7a8796 calc(var(--dark) * 100%), var(--paper));
+  stroke: #6a7686;
+  stroke-width: 1.5;
+}
+.pace-art .speed {
+  stroke: var(--sky-deep);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.pace-choice strong {
+  font-size: 18px;
+}
+.pace-choice span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.pace-rule {
+  color: var(--muted);
+}
+.start-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 8px;
+  padding: 16px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 24px);
+}
+.start-dock .button {
+  margin: 0 auto;
+  max-width: 360px;
+}
+
+/* Outcome */
+.outcome:focus {
+  outline: none;
+}
+.outcome h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.stars {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+.star {
+  width: 52px;
+  height: 52px;
+  color: var(--star-empty);
+}
+.star app-icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.star.earned {
+  color: var(--star-earned-big);
+}
+.score-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+}
+.new-best {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 600;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin: 14px 0 6px;
+}
+.tile {
+  padding: 8px 12px;
+  border-radius: var(--radius-chip);
+  background: var(--lagoon-ground);
+  border: 2px solid #b9d9e8;
+}
+.tile dt {
+  font-size: 14px;
+  color: var(--muted);
+}
+.tile dd {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.building-line {
+  padding: 8px 14px;
+  border-radius: var(--radius-chip);
+  background: var(--warm-ground);
+  font-weight: 600;
+}
+.outcome-help {
+  color: var(--muted);
+}
+.save-note {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: #fff2d2;
+}
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 720px) {
+  .intro-grid,
+  .outcome {
+    grid-template-columns: 1fr;
+  }
+  .intro-art,
+  .outcome-art {
+    max-width: 420px;
+    margin: auto;
+  }
+  .pace-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

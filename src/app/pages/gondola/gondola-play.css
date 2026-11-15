@@ -1,0 +1,442 @@
+/* A round in play. The page fills the screen (minus the notch and home bar); the station scene
+   takes whatever room the controls leave. Upright screens stack scene over controls; wide ones
+   put them side by side, and the controls scroll inside their column if a phone is very short. */
+.game.playing {
+  min-height: calc(100dvh - var(--safe-y) - 32px);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* HUD: cabins of the round, points, the golden express and the cocoa, on one row */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.cabin-strip {
+  display: flex;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cabin-slot {
+  flex: 1 1 0;
+  min-width: 12px;
+  max-width: 34px;
+}
+.cabin-slot svg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+.cabin-slot rect {
+  fill: #ffffffb3;
+  stroke: #9bb3cc;
+  stroke-width: 2;
+}
+.cabin-slot .hang {
+  stroke: #9bb3cc;
+  stroke-width: 2;
+}
+.cabin-slot.current rect {
+  fill: var(--paper);
+  stroke: var(--pink);
+  stroke-width: 2.6;
+}
+.cabin-slot.done rect {
+  fill: #cfe7ff;
+  stroke: var(--sky-deep);
+}
+.cabin-slot.big rect {
+  stroke: var(--gold-deep);
+  stroke-width: 2.6;
+}
+.cabin-slot .slot-star {
+  fill: var(--star-earned-big);
+}
+.points,
+.golden-chip,
+.cocoa-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+  white-space: nowrap;
+}
+.points span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.points strong {
+  min-width: 3ch;
+  font-size: 22px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.golden-chip {
+  background: linear-gradient(90deg, #ffe066, var(--gold));
+  border: 2px solid var(--gold-deep);
+  color: var(--ink);
+  font-weight: 600;
+}
+.cocoa-chip {
+  font-size: 15px;
+}
+.cocoa-chip svg {
+  width: 22px;
+  height: 22px;
+}
+.cocoa-chip .mug {
+  fill: var(--confetti-pink);
+}
+.cocoa-chip .mug-handle,
+.cocoa-chip .steam {
+  fill: none;
+  stroke: #7d0e3b;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.cocoa-chip .steam {
+  stroke: #9bb3cc;
+}
+.cocoa-chip.cold .mug {
+  fill: #9fb3c8;
+}
+.cloud-meter {
+  width: 48px;
+  height: 8px;
+  border-radius: 4px;
+  background: #e2ecf5;
+  overflow: hidden;
+}
+.cloud-meter span {
+  display: block;
+  height: 100%;
+  width: calc(var(--cloud) * 100%);
+  background: #7a8796;
+  transition: width 0.3s linear;
+}
+
+/* Scene and controls */
+.play-area {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-rows: minmax(210px, 1fr) auto;
+  gap: 10px;
+  min-height: 0;
+}
+.board {
+  position: relative;
+  min-height: 210px;
+  border-radius: var(--radius-panel);
+  background: linear-gradient(#9fd0f2, #e8f5ff 70%, #f7fbff);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+.board.big {
+  box-shadow:
+    0 0 0 4px var(--gold),
+    var(--shadow-panel);
+}
+.scene {
+  position: absolute;
+  inset: 0;
+}
+.big-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
+  padding: 6px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  border: 3px solid var(--gold-deep);
+  font-size: clamp(16px, 2.4vw, 22px);
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 #8a5a00;
+}
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: clamp(12px, 2vw, 20px);
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+  container-type: inline-size;
+}
+.question p {
+  margin: 0;
+}
+.turn-name {
+  color: var(--sky-deep);
+  font-weight: 600;
+  font-size: 15px;
+}
+.sum {
+  font-size: clamp(30px, 9cqi, 46px);
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.unknown {
+  display: inline-block;
+  min-width: 1.4ch;
+  padding: 0 8px;
+  border-radius: var(--radius-chip);
+  background: var(--paper);
+  border: 3px dashed #9bb3cc;
+  text-align: center;
+}
+.unknown.solved {
+  border: 3px solid var(--success);
+  background: var(--success-ground);
+}
+.step {
+  font-weight: 600;
+  color: var(--pink-deep);
+}
+.status {
+  min-height: 2.9em;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+}
+.split-zone,
+.answer-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.split-help {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.hop,
+.next {
+  align-self: center;
+  width: min(100%, 320px);
+}
+.hop[disabled] {
+  opacity: 0.55;
+}
+.cherry-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cherry-row app-gondola-cherry {
+  flex: 0 0 120px;
+}
+.cherry-row p {
+  margin: 0;
+  font-weight: 600;
+}
+.taps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 6px;
+}
+.tap-label {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+.tap-button,
+.trick,
+.choice {
+  min-height: 48px;
+  border: 0;
+  border-radius: var(--radius-tile);
+  font: 600 17px var(--font-sans);
+  cursor: pointer;
+}
+.tap-button {
+  padding: 4px 6px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow:
+    inset 0 0 0 2px #b9cde0,
+    0 4px 0 #9bb3cc;
+  line-height: 1.15;
+}
+.tap-button[disabled],
+.trick[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.tricks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trick {
+  flex: 1 1 140px;
+  padding: 6px 12px;
+  color: var(--paper);
+  background: var(--lagoon);
+  box-shadow: 0 4px 0 #17465a;
+}
+.trick.take-ten {
+  background: var(--violet);
+  box-shadow: 0 4px 0 #4b2c78;
+}
+.trick.express {
+  background: var(--pink);
+  box-shadow: 0 4px 0 #7d0e3b;
+}
+.trick.show {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow:
+    inset 0 0 0 2px var(--lagoon),
+    0 4px 0 #9bb3cc;
+}
+.answer-zone app-gondola-cherry.record {
+  align-self: center;
+  max-width: 120px;
+}
+.express-note {
+  align-self: center;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--pink-ground);
+  font-weight: 600;
+}
+.choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.choice {
+  min-height: 64px;
+  background: var(--sky-deep);
+  color: var(--paper);
+  font-size: 30px;
+  box-shadow: 0 5px 0 #16264f;
+}
+.tap-button:focus-visible,
+.trick:focus-visible,
+.choice:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.rule {
+  display: grid;
+  gap: 4px;
+}
+.rule-lead {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Wide screens: the station on the left, the controls in a column beside it. */
+@media (orientation: landscape) and (min-width: 640px) {
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 32px);
+  }
+  .play-area {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
+  }
+  .board {
+    min-height: 0;
+  }
+  .controls {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+/* A phone on its side: everything compact, so the split and the taps stay in view. */
+@media (orientation: landscape) and (max-height: 520px) {
+  :host {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .game {
+    gap: 6px;
+  }
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 12px);
+  }
+  .play-area {
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 1fr);
+    gap: 8px;
+  }
+  .points strong {
+    font-size: 18px;
+  }
+  .points,
+  .golden-chip,
+  .cocoa-chip {
+    padding: 2px 10px;
+  }
+  .cocoa-chip > span:not(.cloud-meter) {
+    display: none;
+  }
+  .controls {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .turn-name,
+  .split-help,
+  .tap-label {
+    display: none;
+  }
+  .question {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 10px;
+  }
+  .sum {
+    font-size: 28px;
+  }
+  .status {
+    min-height: 0;
+    font-size: 15px;
+  }
+  .choice {
+    min-height: 52px;
+  }
+}
+/* Upright phones: a little less chrome so the station keeps its room. */
+@media (orientation: portrait) and (max-width: 520px) {
+  .cocoa-chip > span:not(.cloud-meter) {
+    display: none;
+  }
+  .points span {
+    display: none;
+  }
+  .split-help {
+    display: none;
+  }
+  .status {
+    min-height: 2.6em;
+    font-size: 16px;
+  }
+  .choice {
+    font-size: 26px;
+  }
+}
