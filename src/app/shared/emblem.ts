@@ -89,6 +89,20 @@ import { Component, input } from '@angular/core';
         <path d="M43 11c-2-3-6-2-6 0m14 0c2-3 6-2 6 0" stroke-width="1.5" />
       </svg>
     }
+    @case ('potions') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="25" cy="11" r="4" fill="#c9b2f2" />
+        <circle cx="34" cy="6" r="3" fill="#c9b2f2" />
+        <path d="M24 56h16l3 4H21z" fill="#ff8a3d" />
+        <path d="M9 26h46c1 18-7 28-17 30H26C16 54 8 44 9 26z" fill="#2d2a3e" />
+        <ellipse cx="32" cy="26" rx="25" ry="6" fill="#47435e" />
+        <ellipse cx="32" cy="26" rx="21" ry="4" fill="#9b6ad6" />
+        <circle cx="27" cy="24" r="2" fill="#e8dcff" />
+        <path d="M46 10h6v6c5 2 7 6 7 10a10 10 0 0 1-20 0c0-4 2-8 7-10z" fill="#e8f4ff" />
+        <path d="M39.5 27h19a9.5 9 0 0 1-19 0z" fill="#3fa65a" />
+        <rect x="45" y="6" width="8" height="5" rx="2" fill="#b98a5a" />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />

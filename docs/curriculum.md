@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 89 selectable levels across five games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 96 selectable levels across six games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -24,6 +24,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | Magic walls          | 8 two-brick walls, 5–6 three-row walls, 4 four-row walls         | 8 × 15 s ≈ 2 min … 4 × 60 s ≈ 4 min               |
 | Unicorn Rainbow Race | one heat (six per track)                                         | 60–90 s per heat; two or three heats in a sitting |
 | The Treasure Lock    | 6 chests of 2–6 hops each, the big chest last                    | 6 × 20–30 s ≈ 2–3 min                             |
+| The Potion Cauldron  | 6 potions of 2–4 bottles, the big cauldron last                  | 6 × 20–40 s ≈ 2–4 min                             |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -94,6 +95,16 @@ A cup's keepsake needs three of its tracks finished, so the keepsakes children a
 | Doubling and halving | doubling magic 1 +1 ×2 ×2 → 8 · halving back 40 ÷2 ÷2 → 10 · treasure master on a dial to 100 with thorns +10 ×2 ×2 −1 → 39 · double and halve 40 ×2 +10 ÷2 → 45 |
 
 Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets whose fewest hops fall in the level's `par` range, so a round never asks for more hops than its level allows. The ÷2 spell only works on an even number; on an odd one the button is greyed out with a line saying why, and the solver follows the same rule. Halving levels only pick locks where ÷2 is part of every fewest-hops way.
+
+### The Potion Cauldron: 7 levels (`pages/potions/potion-puzzles.ts`)
+
+| Topic                  | Levels, easiest first                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| Plus and minus         | plus or minus? 9 − 4 → 5 · three bottles 8 + 5 − 3 → 10 · friends of ten 7 + 3 + 20 → 30 |
+| Times potions          | times potions 2 × 5 + 3 → 13 · four bottles 3 × 4 + 2 − 1 → 13                           |
+| Sharing and all spells | sharing potions 12 ÷ 3 + 2 → 6 · potion master with all four spells 8 ÷ 2 × 3 + 1 → 13   |
+
+A potion is built by mixing random bottles with random spells, so it always brews, and the solver in `potion-puzzles.ts` then checks it: the potion never equals one of its bottles, and a level's `needs` spells (− for three bottles, × for the times levels, ÷ for sharing, × or ÷ for the master) must be part of every recipe. The built recipe keeps to table facts (no ×1, nothing past 10 × 10, sharing only within the tables), though a child may brew a potion any way that works. A bottle never goes empty or below zero, never holds more than the level's limit, and only shares evenly; a bottle the chosen spell cannot pour in is greyed out with a line saying why.
 
 ## Adding a level
 

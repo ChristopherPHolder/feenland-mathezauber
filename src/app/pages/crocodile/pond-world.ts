@@ -31,7 +31,7 @@ import {
 } from '../../shared/three/motion';
 import type { Comparison } from './comparison';
 import type { PondFrame } from './pond-frame';
-import { heronLapSeconds, heronLoop } from './heron-flight';
+import { heronLapAngle, heronLoop } from './heron-flight';
 import { Kiki } from './pond-kiki';
 import {
   Butterfly,
@@ -64,6 +64,8 @@ const FRENZY_SPARKS = ['#ffe27a', '#ff9fc0', '#ffb36b'] as const;
 const NO_GLOW = new Color('#000000');
 const STEAL_SECONDS = 1.3;
 const SHOO_SECONDS = 0.8;
+/** The highest the waves reach; ripples float just above them so no wave cuts them in half. */
+const WAVE_TOP = 0.1;
 /** How long Kiki's "no thanks" lasts after a wrong pick. */
 const WRONG_SECONDS = 1.1;
 
@@ -142,8 +144,6 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
   private heronStateAt = 0;
   private heronFrom = new Vector3();
   private heronScale = 1;
-  /** How far round its loop the heron is, in radians. */
-  private heronAngle = 0;
   /** Where the instruction bubble starts, in the host's pixels: the loop stays above it. */
   private floor = 0;
   private carried: Raft | null = null;
@@ -263,6 +263,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       for (const raft of Object.values(this.rafts)) {
         raft.born = fresh ? this.elapsed : -10;
         raft.tiles.visible = raft.pad.visible = true;
+        // The new numbers grow out of their own pad, not from wherever the last ones went
+        // (Kiki's mouth, or off-screen in the heron's beak).
+        raft.tiles.position.copy(raft.home);
       }
       this.tries.take(0);
     }
@@ -816,7 +819,6 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     if (heron.state === 'flying' && (this.heronSnack !== frame.snack || !this.heron.root.visible)) {
       this.heronSnack = frame.snack;
       this.heronProgress = 0;
-      this.heronAngle = 0;
       this.heron.root.position.copy(this.heronPoint(0, 0));
       this.heronFrom.copy(this.heron.root.position);
     }
@@ -871,12 +873,13 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     this.lastHeron.copy(root.position);
     let beat = 0.6;
     if (heron.state === 'flying') {
+      // Follows the page's own clock, not frame steps, which fall behind on a slow device; so
+      // the heron really is over the middle of the pond when it swoops.
       if (!heron.paused)
-        this.heronProgress = Math.min(1, this.heronProgress + (dt * 1000) / heron.duration);
+        this.heronProgress = clamp01(1 - (heron.due - Date.now()) / heron.duration);
       const p = this.heronProgress;
       // Laps the whole pond, in and out of view, on a tighter, quicker loop as time runs out.
-      this.heronAngle += (dt * Math.PI * 2) / heronLapSeconds(p);
-      root.position.copy(this.heronPoint(p, this.heronAngle));
+      root.position.copy(this.heronPoint(p, heronLapAngle(p, heron.duration)));
       root.scale.setScalar(this.heronScale * (1 + p * 0.25));
       // Banks into the turn: the loop always bends to its left.
       root.rotation.z = approach(root.rotation.z, -0.3, 4, dt);
@@ -1063,7 +1066,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       new MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity, depthWrite: false }),
     );
     mesh.rotation.x = -Math.PI / 2;
-    mesh.position.copy(at);
+    mesh.position.copy(at).setY(Math.max(at.y, WAVE_TOP));
     this.addBurst(mesh, new Vector3(), life, size, 'ring');
   }
 

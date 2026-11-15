@@ -1,0 +1,294 @@
+<section
+  class="game"
+  [class.playing]="started() && round().phase !== 'complete'"
+  aria-labelledby="game-title"
+>
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.position }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <div class="intro-art"><app-potion-shelf [frame]="frame()" /></div>
+        <div class="intro-copy">
+          <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
+          <p>{{ t('story') }} {{ t('storyAll') }}</p>
+          <div class="trick-card">
+            <h3>{{ t('trickTitle') }}</h3>
+            <p>{{ t(stage().trick) }}</p>
+            <p class="example">{{ example() }}</p>
+          </div>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+        </div>
+      </div>
+      <fieldset class="pace" aria-describedby="pace-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="pace-help">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id) {
+            <label class="pace-choice" [class.selected]="pace() === option.id">
+              <input
+                type="radio"
+                name="potion-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceUnlimited')
+                  : t('paceSeconds', { n: paceSeconds(option.id) })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+      </fieldset>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<app-icon kind="arrow" />
+        </button>
+      </div>
+    </section>
+  } @else if (round().phase === 'complete') {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <div class="outcome-art"><app-potion-shelf [frame]="frame()" /></div>
+      <div class="outcome-copy">
+        <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (star of starSlots; track star) {
+            <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
+              ><app-icon kind="star"
+            /></span>
+          }
+        </div>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+        <p>{{ t('starsWon', { n: starsWon() }) }}</p>
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        </p>
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('nextLevel') }}<app-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<app-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <div
+        class="cauldrons"
+        role="img"
+        [attr.aria-label]="t('starsHud', { n: starsWon(), total: roundLength * 3 })"
+      >
+        @for (slot of cauldrons; track slot) {
+          <span
+            class="cauldron-slot"
+            [class.done]="slot < round().stars.length"
+            [class.current]="slot === round().index"
+            [class.big]="slot === roundLength - 1"
+          >
+            @if (slot >= round().stars.length) {
+              <svg class="pot-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9h16q1 9-5 11H9Q3 18 4 9z" />
+                <path d="M3 9h18" />
+              </svg>
+            } @else {
+              @for (star of starSlots; track star) {
+                <app-icon kind="star" class="mini-star" [class.won]="star <= round().stars[slot]" />
+              }
+            }
+          </span>
+        }
+      </div>
+      <p class="coins" [class.bump]="round().phase === 'brewed'">
+        <span>{{ t('coins') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (fever()) {
+        <p class="fever-chip">{{ t('fever') }}</p>
+      }
+    </div>
+    @if (timed()) {
+      <section class="hourglass" [attr.aria-label]="t('hourglass')">
+        <span class="hourglass-label">{{ t('hourglass') }}</span>
+        <span
+          class="sand"
+          [class.urgent]="round().sparkle === 'shining' && secondsLeft() <= 5"
+          aria-hidden="true"
+          ><span [style.--sand]="round().sparkle === 'shining' ? sandShare() : 0"></span
+        ></span>
+        <span class="seconds" role="timer" aria-live="off">{{
+          round().sparkle === 'shining' ? t('secondsLeft', { n: secondsLeft() }) : ''
+        }}</span>
+        <button type="button" class="hourglass-off" (click)="selectPace('off')">
+          {{ t('hourglassOff') }}
+        </button>
+      </section>
+    }
+    <div class="play-area">
+      <section
+        class="board"
+        [class.brewed]="round().phase === 'brewed'"
+        [class.big]="big()"
+        [attr.aria-label]="t('boardLabel')"
+      >
+        <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
+          <app-potion-shelf [frame]="frame()" />
+        </app-three-stage>
+        @if (reward(); as reward) {
+          <app-potion-reward
+            [kind]="reward.kind"
+            [stars]="reward.stars"
+            [cheer]="reward.cheer"
+            [coins]="reward.coins"
+            [waitForPour]="scene.ready()"
+          />
+        }
+      </section>
+      <div class="controls">
+        <div class="goal">
+          <p class="potion-name">
+            {{
+              big()
+                ? t('bigPotion')
+                : t('potionCount', { n: round().index + 1, total: roundLength })
+            }}
+          </p>
+          <p class="goal-line">
+            <span class="goal-text">{{ t('goal', { target: potion().target }) }}</span>
+            <span class="target-chip" aria-hidden="true"
+              ><small>{{ t('cauldron') }}</small
+              >{{ potion().target }}</span
+            >
+          </p>
+        </div>
+        <fieldset class="bottles" [attr.aria-busy]="round().phase !== 'ready'">
+          <legend class="sr-only">{{ t('bottlesLabel') }}</legend>
+          @for (bottle of round().bottles; track bottle.id) {
+            <button
+              type="button"
+              class="bottle"
+              [class.picked]="bottle.id === round().picked"
+              [style.--liquid]="color(bottle)"
+              [attr.aria-pressed]="bottle.id === round().picked"
+              [attr.aria-label]="t('bottleLabel', { n: bottle.value })"
+              [disabled]="!!blockedText(bottle)"
+              [title]="blockedText(bottle)"
+              (click)="tapBottle(bottle.id)"
+            >
+              <span class="bottle-neck" aria-hidden="true"></span>
+              <span class="bottle-body" aria-hidden="true">{{ bottle.value }}</span>
+            </button>
+          }
+        </fieldset>
+        <fieldset class="spells" [disabled]="!first() || round().phase !== 'ready'">
+          <legend class="sr-only">{{ t('spellsLabel') }}</legend>
+          @for (op of potion().ops; track op) {
+            <button
+              type="button"
+              class="spell"
+              [attr.data-op]="op"
+              [attr.aria-pressed]="round().op === op"
+              [attr.aria-label]="t(op)"
+              (click)="chooseOp(op)"
+            >
+              {{ sign(op) }}
+            </button>
+          }
+        </fieldset>
+        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+          {{ statusText() }}
+        </p>
+        @if (showHint() && round().phase === 'ready') {
+          <p class="hint">
+            <strong>{{ t('hintLead') }}</strong> {{ t(stage().trick) }}
+          </p>
+        }
+        <div class="recipe">
+          <h2>{{ t('recipe') }}</h2>
+          @if (round().steps.length) {
+            <ol>
+              @for (step of round().steps; track $index) {
+                <li>{{ stepText(step) }}</li>
+              }
+            </ol>
+          } @else {
+            <p>{{ t('noSteps') }}</p>
+          }
+        </div>
+        <div class="potion-actions">
+          @if (round().phase === 'brewed') {
+            <button class="button primary" type="button" (click)="advance()">
+              {{ t('next') }}<app-icon kind="arrow" />
+            </button>
+          } @else {
+            <button
+              class="button secondary undo"
+              type="button"
+              [disabled]="!round().steps.length || round().phase !== 'ready'"
+              (click)="undo()"
+            >
+              {{ t('undo') }}
+            </button>
+            <button
+              class="button secondary restart"
+              type="button"
+              [disabled]="round().steps.length < 2 || round().phase !== 'ready'"
+              (click)="restart()"
+            >
+              {{ t('startAgain') }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>

@@ -8,6 +8,7 @@ import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
 import { Locale } from '../../core/messages';
 import { BUBBLE_PACE_KEY } from './bubble-pace';
+import { COACH_KEY } from './coach-memory';
 import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
 import { evaluate } from './comparison.fixture';
@@ -35,6 +36,8 @@ describe('the hungry crocodile game', () => {
     vi.useFakeTimers();
     localStorage.clear();
     sessionStorage.clear();
+    // Most tests play as a child who has already seen how to feed Kiki.
+    localStorage.setItem(COACH_KEY, '1');
     TestBed.configureTestingModule({
       imports: [CrocodileGame],
       providers: [
@@ -272,6 +275,8 @@ describe('the hungry crocodile game', () => {
     const heron = element.querySelector<HTMLElement>('app-heron.flying')!;
     expect(heron).not.toBeNull();
     expect(heron.style.getPropertyValue('--flight')).toBe('15000ms');
+    // While it races, nothing about the heron points at the right side.
+    expect(heron.matches('.to-left, .to-right, .to-center')).toBe(false);
     vi.advanceTimersByTime(15000);
     fixture.detectChanges();
     expect(element.querySelector('.instruction')!.textContent).toContain('snatched');
@@ -281,6 +286,14 @@ describe('the hungry crocodile game', () => {
     vi.advanceTimersByTime(1400);
     fixture.detectChanges();
     expect(element.querySelector('.snack-count')!.textContent).toContain(`1 of ${SNACKS}`);
+    // The child never tapped that snack, so the coach shows the trick again while the heron waits.
+    expect(element.querySelector('app-crocodile-coach')?.textContent).toContain(
+      'Psst! Here is how to feed Kiki.',
+    );
+    expect(element.querySelector('app-heron')).toBeNull();
+    element.querySelector<HTMLButtonElement>('app-crocodile-coach button')!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('app-crocodile-coach')).toBeNull();
     // Feeding Kiki right away beats the heron: full quick bonus on top of the base points.
     const kind = element.querySelector<HTMLElement>('.board')!.dataset['snackKind'] as SnackKind;
     pick(element, current(element).answer);
@@ -384,6 +397,91 @@ describe('the hungry crocodile game', () => {
       save.mockRestore();
     }
   });
+  it('shows how to feed Kiki before the first round ever, with the heron waiting', () => {
+    localStorage.removeItem(COACH_KEY);
+    localStorage.setItem(BUBBLE_PACE_KEY, 'normal');
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+    fixture.detectChanges();
+    const coach = element.querySelector<HTMLElement>('app-crocodile-coach')!;
+    expect(coach.textContent).toContain('How to feed Kiki');
+    expect(coach.textContent).toContain('Tap the bigger number.');
+    expect(coach.textContent).toContain('Both the same? Tap Kiki in the middle.');
+    expect(coach.querySelector('dialog')!.getAttribute('aria-labelledby')).toBe('coach-title');
+    // The heron waits and the snack cannot be eaten behind the card.
+    vi.advanceTimersByTime(60000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-heron')).toBeNull();
+    pick(element, current(element).answer);
+    fixture.detectChanges();
+    expect(element.querySelector('.slot-sign')).toBeNull();
+    expect(element.querySelector('.snack-count')!.textContent).toContain(`0 of ${SNACKS}`);
+    // "Got it!" lets the round begin, and the coach is remembered.
+    coach.querySelector<HTMLButtonElement>('button')!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('app-crocodile-coach')).toBeNull();
+    expect(element.querySelector('app-heron.flying')).not.toBeNull();
+    expect(element.querySelector('.banner')?.textContent).toContain('heron');
+    expect(localStorage.getItem(COACH_KEY)).toBe('1');
+    const again = TestBed.createComponent(CrocodileGame);
+    again.detectChanges();
+    const next = again.nativeElement as HTMLElement;
+    next.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+    again.detectChanges();
+    expect(next.querySelector('app-crocodile-coach')).toBeNull();
+    expect(next.querySelector('app-heron.flying')).not.toBeNull();
+  });
+  it('brings the coach back in the calm pond after a long untouched snack, but not every time', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro .primary')!.click();
+    fixture.detectChanges();
+    const feed = () => {
+      pick(element, current(element).answer);
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1400);
+      fixture.detectChanges();
+    };
+    // A child who is busy picking never sees it, even after a slow wrong pick.
+    vi.advanceTimersByTime(8000);
+    pick(element, current(element).answer === '<' ? '>' : '<');
+    fixture.detectChanges();
+    vi.advanceTimersByTime(20000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-crocodile-coach')).toBeNull();
+    feed();
+    // An untouched snack brings it back; Escape closes it like "Got it!".
+    vi.advanceTimersByTime(12000);
+    fixture.detectChanges();
+    const coach = element.querySelector('app-crocodile-coach dialog')!;
+    expect(coach.textContent).toContain('Psst!');
+    coach.dispatchEvent(new Event('cancel', { cancelable: true }));
+    fixture.detectChanges();
+    expect(element.querySelector('app-crocodile-coach')).toBeNull();
+    // Not again for the next two snacks.
+    for (let n = 0; n < 2; n++) {
+      feed();
+      vi.advanceTimersByTime(12000);
+      fixture.detectChanges();
+      expect(element.querySelector('app-crocodile-coach')).toBeNull();
+    }
+    // Later it may come back once more, and that is the last time this round.
+    feed();
+    vi.advanceTimersByTime(12000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-crocodile-coach')).not.toBeNull();
+    element.querySelector<HTMLButtonElement>('app-crocodile-coach button')!.click();
+    fixture.detectChanges();
+    for (let n = 0; n < 4; n++) {
+      feed();
+      vi.advanceTimersByTime(12000);
+      fixture.detectChanges();
+      expect(element.querySelector('app-crocodile-coach')).toBeNull();
+    }
+  });
   it('feeds Kiki by tapping a lily pad or Kiki herself in the calm pond', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();
@@ -426,6 +524,8 @@ describe('crocodile navigation', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    // Most tests play as a child who has already seen how to feed Kiki.
+    localStorage.setItem(COACH_KEY, '1');
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
   afterEach(() => TestBed.resetTestingModule());

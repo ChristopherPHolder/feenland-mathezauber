@@ -7,6 +7,7 @@ import { evaluate } from '../crocodile/comparison.fixture';
 import { Hatchery } from './hatchery';
 import { HatcheryStore } from './hatchery-store';
 import { hatcheryTranslations } from './hatchery-messages';
+import { COACH_KEY } from '../crocodile/coach-memory';
 
 describe('the dragon hatchery', () => {
   beforeEach(() => {
@@ -103,6 +104,7 @@ describe('the dragon hatchery', () => {
   });
 
   it('warms the egg with every right answer in a game', () => {
+    localStorage.setItem(COACH_KEY, '1');
     const store = TestBed.inject(HatcheryStore);
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();

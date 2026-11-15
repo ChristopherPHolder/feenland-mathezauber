@@ -19,6 +19,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
   'number-wall': 'numberWallPlay',
   'unicorn-race': 'racePlay',
   'treasure-lock': 'lockPlay',
+  potions: 'potionPlay',
 };
 @Component({
   selector: 'app-welcome',
@@ -110,8 +111,8 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
                 >{{ i.t(game.play) }}<app-icon kind="arrow"
               /></a>
               <a class="levels-link" routerLink="/games" [fragment]="game.chapter.id"
-                >{{ i.t('allLevelsCount', { n: game.levels }) }}<app-icon kind="arrow" /></a
-              >
+                >{{ i.t('allLevelsCount', { n: game.levels }) }}<app-icon kind="arrow"
+              /></a>
             </div>
           </li>
         }

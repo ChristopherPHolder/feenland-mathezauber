@@ -48,6 +48,8 @@ import {
 import { CrocodileScores } from './crocodile-scores';
 import { CrocodileSounds } from './crocodile-sounds';
 import { HatWardrobe } from './hat-wardrobe';
+import { CrocodileCoach } from './crocodile-coach';
+import { hasCoached, markCoached } from './coach-memory';
 import { Heron } from './heron';
 import { PondScene } from './pond-scene';
 import type { PondFrame } from './pond-frame';
@@ -69,6 +71,8 @@ interface Round {
 interface HeronFlight {
   readonly target: 'left' | 'right' | 'center';
   readonly duration: number;
+  /** When the heron swoops, as `Date.now()`; moved on when a hidden page comes back. */
+  readonly due: number;
   readonly state: 'flying' | 'stole' | 'shooed';
   readonly paused: boolean;
 }
@@ -76,6 +80,14 @@ type Banner = 'comboOn' | 'frenzy' | 'goldenSnack' | 'bossSnack' | 'heronComing'
 const CHOMP_DELAY = 1400;
 const BANNER_DELAY = 1800;
 const BOSS_EXTRA = 3000;
+/** In the calm pond, a snack left untouched this long brings the coach back. */
+const IDLE_COACH = 12000;
+/** The coach returns at most this often in one round, and never for two snacks running. */
+const MAX_COACHES = 2;
+interface Coaching {
+  readonly again: boolean;
+  readonly flip: boolean;
+}
 interface SideToken {
   readonly text: string;
   readonly kind: 'operator' | 'word' | 'tile';
@@ -92,6 +104,7 @@ interface SideToken {
     Heron,
     RuleHintCard,
     ThreeStage,
+    CrocodileCoach,
   ],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
@@ -148,6 +161,8 @@ export class CrocodileGame {
   protected readonly floats = signal<readonly { id: number; points: number }[]>([]);
   protected readonly newHat = signal<Hat | null>(null);
   protected readonly newBest = signal(false);
+  /** The "how to feed Kiki" card over the pond; the heron waits while it is open. */
+  protected readonly coach = signal<Coaching | null>(null);
   protected readonly choices: readonly Comparison[] = ['>', '=', '<'];
   protected readonly pose = computed(
     () => this.round().chosen ?? (this.round().phase === 'ready' ? this.peek() : null),
@@ -266,6 +281,11 @@ export class CrocodileGame {
   private bannerTimer?: ReturnType<typeof setTimeout>;
   private heronTimer?: ReturnType<typeof setTimeout>;
   private tick?: ReturnType<typeof setInterval>;
+  private idleTimer?: ReturnType<typeof setTimeout>;
+  private coachings = 0;
+  private repeats = 0;
+  private coachedAt = -10;
+  private silentSteal = false;
   private heronDue = 0;
   private heronRemaining = 0;
   private floatId = 0;
@@ -279,6 +299,7 @@ export class CrocodileGame {
       clearTimeout(this.bannerTimer);
       clearTimeout(this.heronTimer);
       clearInterval(this.tick);
+      clearTimeout(this.idleTimer);
     });
   }
   protected t(key: CrocodileMessageKey, values: Record<string, string | number> = {}) {
@@ -308,8 +329,11 @@ export class CrocodileGame {
     this.pace.set(pace);
     saveBubblePace(pace);
     if (!this.started()) return;
-    if (pace === 'off') this.stopHeron();
-    else if (!this.heron() && this.round().phase === 'ready') this.launchHeron();
+    clearTimeout(this.idleTimer);
+    if (pace === 'off') {
+      this.stopHeron();
+      if (!this.coach()) this.armIdle();
+    } else if (!this.heron() && this.round().phase === 'ready' && !this.coach()) this.launchHeron();
     requestAnimationFrame(() =>
       this.host.nativeElement
         .querySelector<HTMLElement>('.choices')
@@ -327,15 +351,62 @@ export class CrocodileGame {
     this.floats.set([]);
     this.newHat.set(null);
     this.newBest.set(false);
+    this.coach.set(null);
+    this.coachings = 0;
+    this.repeats = 0;
+    this.coachedAt = -10;
+    this.silentSteal = false;
+    clearTimeout(this.idleTimer);
     this.started.set(true);
     this.sounds.play('start');
-    if (this.timed()) this.callout('heronComing');
+    if (!hasCoached()) {
+      this.showCoach(false);
+      return;
+    }
+    this.beginSnack(true);
+  }
+  /** Lets the snack on screen begin: the heron takes off, or the calm pond starts its idle clock. */
+  private beginSnack(first = false) {
+    if (first && this.timed()) this.callout('heronComing');
     this.launchHeron();
+    this.armIdle();
+    this.focusChoices();
+  }
+  private focusChoices() {
     requestAnimationFrame(() =>
       this.host.nativeElement
         .querySelector<HTMLElement>('.choices')
         ?.focus({ preventScroll: true }),
     );
+  }
+  private showCoach(again: boolean) {
+    this.stopHeron();
+    clearTimeout(this.idleTimer);
+    this.peek.set(null);
+    this.coach.set({ again, flip: this.coachings % 2 === 1 });
+    this.coachings++;
+    if (again) this.repeats++;
+    this.coachedAt = this.round().index;
+  }
+  /** After a snack the child never touched, the coach shows the trick again, but not every time. */
+  private coachDue() {
+    return this.repeats < MAX_COACHES && this.round().index - this.coachedAt > 2;
+  }
+  protected closeCoach() {
+    if (!this.coach()) return;
+    const first = !this.coach()!.again;
+    this.coach.set(null);
+    markCoached();
+    if (this.started() && this.round().phase === 'ready') this.beginSnack(first);
+  }
+  private armIdle() {
+    clearTimeout(this.idleTimer);
+    if (this.timed() || this.round().phase !== 'ready') return;
+    this.idleTimer = setTimeout(() => {
+      const round = this.round();
+      if (round.phase === 'ready' && round.attempts === 0 && !this.coach() && this.coachDue())
+        this.showCoach(true);
+    }, IDLE_COACH);
   }
   /** Tapping a lily pad feeds Kiki that side; tapping Kiki herself says both sides are the same. */
   protected tap(where: 'left' | 'right' | 'center') {
@@ -343,7 +414,8 @@ export class CrocodileGame {
   }
   protected choose(choice: Comparison) {
     const round = this.round();
-    if (!this.started() || round.phase !== 'ready') return;
+    if (!this.started() || round.phase !== 'ready' || this.coach()) return;
+    clearTimeout(this.idleTimer);
     if (choice !== this.question().answer) {
       this.round.set({
         ...round,
@@ -401,6 +473,7 @@ export class CrocodileGame {
     this.heron.set({
       target: answer === '>' ? 'left' : answer === '<' ? 'right' : 'center',
       duration,
+      due: Date.now() + duration,
       state: 'flying',
       paused: false,
     });
@@ -409,6 +482,7 @@ export class CrocodileGame {
   }
   private armHeron() {
     this.heronDue = Date.now() + this.heronRemaining;
+    this.heron.update((heron) => heron && { ...heron, due: this.heronDue });
     this.heronTimer = setTimeout(() => this.steal(), this.heronRemaining);
     const countdown = () =>
       this.secondsLeft.set(Math.max(0, Math.ceil((this.heronDue - Date.now()) / 1000)));
@@ -435,6 +509,7 @@ export class CrocodileGame {
     const round = this.round();
     const heron = this.heron();
     if (round.phase !== 'ready' || !heron) return;
+    this.silentSteal = round.attempts === 0;
     this.wrongPick.set(null);
     this.peek.set(null);
     this.stopTick();
@@ -480,7 +555,10 @@ export class CrocodileGame {
       const kind = snackKind(index, round.golden, this.roundLength());
       if (kind === 'boss') this.callout('bossSnack');
       else if (kind === 'golden') this.callout('goldenSnack');
-      this.launchHeron();
+      const silent = round.phase === 'stolen' && this.silentSteal;
+      this.silentSteal = false;
+      if (silent && this.coachDue()) this.showCoach(true);
+      else this.beginSnack();
       return;
     }
     const hatsBefore = this.ownedHats();
@@ -507,7 +585,15 @@ export class CrocodileGame {
     else this.saveFailed.set(true);
   }
   protected onKey(event: KeyboardEvent) {
-    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || !this.started()) return;
+    if (
+      event.repeat ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !this.started() ||
+      this.coach()
+    )
+      return;
     const choice = {
       ArrowLeft: '>',
       ArrowRight: '<',

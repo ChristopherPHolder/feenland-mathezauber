@@ -1,7 +1,14 @@
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs';
-import { NgOptimizedImage } from '@angular/common';
-import { afterRenderEffect, Component, ElementRef, inject, viewChild } from '@angular/core';
+import { DOCUMENT, NgOptimizedImage } from '@angular/common';
+import {
+  afterNextRender,
+  afterRenderEffect,
+  Component,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import {
   Event,
   NavigationCancel,
@@ -19,6 +26,7 @@ import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
 import { MotionPreference } from './core/motion';
 import { Icon } from './shared/icon';
+import { warmThree } from './shared/three/warm-three';
 @Component({
   selector: 'app-root',
   imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, Icon],
@@ -105,6 +113,10 @@ export class App {
       const main = this.main()?.nativeElement;
       if (main) this.splash.dismissWhenPageShows(main);
     });
+    // Whatever page opened first, fetch Three.js while the child looks at it, so a game's 3D
+    // loading scene is ready to show the moment they tap.
+    const document = inject(DOCUMENT);
+    afterNextRender(() => warmThree(document));
   }
   protected focusMain() {
     this.main()?.nativeElement.focus({ preventScroll: true });

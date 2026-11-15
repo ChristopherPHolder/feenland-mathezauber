@@ -90,6 +90,11 @@ const en = {
   tapLeft: 'Feed Kiki the left side: {side}',
   tapRight: 'Feed Kiki the right side: {side}',
   tapEqual: 'Both sides are the same: Kiki is full',
+  coachTitle: 'How to feed Kiki',
+  coachAgain: 'Psst! Here is how to feed Kiki.',
+  coachBigger: 'Tap the bigger number. Kiki gobbles it up!',
+  coachEqual: 'Both the same? Tap Kiki in the middle.',
+  coachGo: 'Got it!',
 } as const;
 export type CrocodileMessageKey = keyof typeof en;
 type Messages = Record<CrocodileMessageKey, string>;
@@ -185,6 +190,11 @@ const de: Messages = {
   tapLeft: 'Füttere Kiki mit der linken Seite: {side}',
   tapRight: 'Füttere Kiki mit der rechten Seite: {side}',
   tapEqual: 'Beide Seiten sind gleich: Kiki ist satt',
+  coachTitle: 'So fütterst du Kiki',
+  coachAgain: 'Psst! So fütterst du Kiki.',
+  coachBigger: 'Tippe auf die größere Zahl. Kiki schnappt sie sich!',
+  coachEqual: 'Beide gleich? Tippe auf Kiki in der Mitte.',
+  coachGo: 'Verstanden!',
 };
 const es: Messages = {
   paceTitle: '¿Qué tan rápido vuela la garza?',
@@ -277,6 +287,11 @@ const es: Messages = {
   tapLeft: 'Dale a Kiki el lado izquierdo: {side}',
   tapRight: 'Dale a Kiki el lado derecho: {side}',
   tapEqual: 'Los dos lados son iguales: Kiki está llena',
+  coachTitle: 'Así alimentas a Kiki',
+  coachAgain: '¡Psst! Así alimentas a Kiki.',
+  coachBigger: 'Toca el número más grande. ¡Kiki se lo zampa!',
+  coachEqual: '¿Los dos iguales? Toca a Kiki en el centro.',
+  coachGo: '¡Entendido!',
 };
 const fr: Messages = {
   paceTitle: 'À quelle vitesse vole le héron ?',
@@ -370,6 +385,11 @@ const fr: Messages = {
   tapLeft: 'Donne à Kiki le côté gauche : {side}',
   tapRight: 'Donne à Kiki le côté droit : {side}',
   tapEqual: 'Les deux côtés sont pareils : Kiki est rassasiée',
+  coachTitle: 'Comment nourrir Kiki',
+  coachAgain: 'Psst ! Voici comment nourrir Kiki.',
+  coachBigger: 'Touche le plus grand nombre. Kiki le croque !',
+  coachEqual: 'Les deux pareils ? Touche Kiki au milieu.',
+  coachGo: 'Compris !',
 };
 export const crocodileTranslations: Record<Locale, Messages> = { en, de, es, fr };
 export function crocodileText(
