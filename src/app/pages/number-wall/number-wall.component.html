@@ -160,32 +160,56 @@
           </div>
         </div>
         <div class="play-area">
-          <app-wall-scene
+          <div
+            #scene
+            class="scene"
             tabindex="-1"
             role="group"
             [attr.aria-label]="
               i.t('wallScene') + ' · ' + t('wallProgress', { n: wallIndex() + 1, total: total() })
             "
-            [wall]="current"
-            [total]="total()"
-            [filled]="filled()"
-            [golden]="golden()"
-            [selected]="selected()"
-            [justFilled]="justFilled()"
-            [entry]="entry()"
-            [wobbling]="wobbling()"
-            [built]="built()"
-            [wallsDone]="wallsDone()"
-            [trollProgress]="trollProgress()"
-            [trollAsleep]="trollAsleep()"
-            [sleepLeft]="sleepLeft()"
-            [trollBump]="trollBump()"
-            [cracks]="maxHearts - hearts()"
-            [crumbled]="crumbled()"
-            [combo]="combo() > 0"
-            [hinting]="hinting()"
-            (select)="select($event)"
-          />
+          >
+            <app-three-stage
+              #stage
+              [world]="loadWorld"
+              [state]="frame()"
+              (wallbricks)="placeBricks($event)"
+            >
+              <app-wall-scene
+                [wall]="current"
+                [total]="total()"
+                [filled]="filled()"
+                [golden]="golden()"
+                [selected]="selected()"
+                [justFilled]="justFilled()"
+                [entry]="entry()"
+                [wobbling]="wobbling()"
+                [built]="built()"
+                [wallsDone]="wallsDone()"
+                [trollProgress]="trollProgress()"
+                [trollAsleep]="trollAsleep()"
+                [sleepLeft]="sleepLeft()"
+                [trollBump]="trollBump()"
+                [cracks]="maxHearts - hearts()"
+                [crumbled]="crumbled()"
+                [combo]="combo() > 0"
+                [hinting]="hinting()"
+                (select)="select($event)"
+              />
+            </app-three-stage>
+            @if (stage.ready()) {
+              <app-wall-pick
+                [wall]="current"
+                [build]="frame().build"
+                [rects]="brickRects()"
+                [filled]="filled()"
+                [selected]="selected()"
+                [entry]="entry()"
+                [trollProgress]="trollProgress()"
+                (select)="select($event)"
+              />
+            }
+          </div>
           <div class="dock">
             <p
               class="status"

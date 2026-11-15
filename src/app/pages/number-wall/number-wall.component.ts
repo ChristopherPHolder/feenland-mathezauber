@@ -47,6 +47,9 @@ import {
   levelPosition,
 } from './number-wall';
 import { NumberWallStore } from './number-wall-store';
+import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
+import { BrickRect, pairFor, WallFrame } from './wall-frame';
+import { WallPick } from './wall-pick';
 import { WallScene } from './wall-scene';
 import { WallTroll } from './wall-troll';
 import { wallText } from './wall-text';
@@ -66,7 +69,7 @@ type Feedback =
 const TICK_MS = 100;
 @Component({
   selector: 'app-number-wall',
-  imports: [RouterLink, Icon, GameHeader, WallScene, WallTroll, NgOptimizedImage],
+  imports: [RouterLink, Icon, GameHeader, WallScene, WallPick, WallTroll, ThreeStage, NgOptimizedImage],
   providers: [GameAudio],
   templateUrl: './number-wall.component.html',
   styleUrls: ['./number-wall.component.css', './number-wall-play.css', './number-wall-summary.css'],
@@ -131,6 +134,16 @@ export class NumberWallComponent {
   protected readonly heartBreak = signal(false);
   protected readonly knockedDown = signal(0);
   protected readonly rating = signal<1 | 2 | 3>(1);
+  /** Event counters for the 3D castle: each goes up once per wall, brick, miss, bonk, dust. */
+  private readonly builds = signal(0);
+  private readonly placedCount = signal(0);
+  private readonly missCount = signal(0);
+  private readonly bonkCount = signal(0);
+  private readonly castCount = signal(0);
+  /** Where the 3D world drew each brick, so real buttons can lie over the open ones. */
+  protected readonly brickRects = signal<readonly BrickRect[]>([]);
+  protected readonly loadWorld: WorldLoader<WallFrame> = () =>
+    import('./wall-world').then((m) => m.WallWorld);
   private wallMisses = 0;
   private brickMissed = false;
   private tick?: ReturnType<typeof setInterval>;
@@ -199,9 +212,38 @@ export class NumberWallComponent {
           .join(' ');
     }
   });
+  /** Plain state for the 3D castle; it draws this and decides nothing. */
+  protected readonly frame = computed<WallFrame>(() => {
+    const wall = this.wall();
+    return {
+      build: this.builds(),
+      rows: wall?.rows ?? [],
+      missing: wall?.missing ?? [],
+      filled: this.filled(),
+      golden: this.golden(),
+      selected: this.selected(),
+      pair: wall && !this.locked() ? pairFor(wall, this.selected()) : undefined,
+      entry: this.entry(),
+      hinting: this.hinting(),
+      combo: this.combo() > 0,
+      built: this.built(),
+      crumbled: this.crumbled(),
+      wallsDone: this.wallsDone(),
+      total: this.total,
+      troll: this.trollProgress(),
+      trollAsleep: this.trollAsleep(),
+      trollBump: this.trollBump(),
+      cracks: this.maxHearts - this.hearts(),
+      justFilled: this.justFilled(),
+      placed: this.placedCount(),
+      misses: this.missCount(),
+      bonks: this.bonkCount(),
+      casts: this.castCount(),
+    };
+  });
   private readonly nextButton = viewChild<ElementRef<HTMLButtonElement>>('nextButton');
   private readonly summaryPanel = viewChild<ElementRef<HTMLElement>>('summary');
-  private readonly scene = viewChild(WallScene, { read: ElementRef<HTMLElement> });
+  private readonly scene = viewChild<ElementRef<HTMLElement>>('scene');
   constructor() {
     // The games hub links straight into a level with `?level=n`; anything else shows the intro.
     const requested = Number(
@@ -251,6 +293,7 @@ export class NumberWallComponent {
   }
   private beginWall() {
     const wall = this.wall();
+    this.builds.update((count) => count + 1);
     this.filled.set([]);
     this.golden.set([]);
     this.selected.set(wall ? fillOrder(wall)[0] : undefined);
@@ -293,6 +336,7 @@ export class NumberWallComponent {
    */
   private trollArrives() {
     this.trollProgress.set(1);
+    this.bonkCount.update((count) => count + 1);
     this.hearts.update((hearts) => Math.max(0, hearts - 1));
     this.streak.set(0);
     this.audio.effect('damage');
@@ -317,6 +361,9 @@ export class NumberWallComponent {
     if (!this.crumbled()) return;
     this.hearts.set(MAX_HEARTS);
     this.beginWall();
+  }
+  protected placeBricks(event: Event) {
+    this.brickRects.set((event as CustomEvent<readonly BrickRect[]>).detail);
   }
   protected visibilityChanged() {
     if (this.document.hidden) this.stopTroll();
@@ -362,6 +409,7 @@ export class NumberWallComponent {
       return;
     }
     this.audio.effect('wrong');
+    this.missCount.update((count) => count + 1);
     this.misses.update((count) => count + 1);
     this.brickMissed = true;
     this.wallMisses++;
@@ -376,6 +424,7 @@ export class NumberWallComponent {
     const brick = this.selected();
     if (!wall || !brick || !this.canDust()) return;
     this.dust.update((count) => count - 1);
+    this.castCount.update((count) => count + 1);
     if (this.timed()) this.frozenMs.set(FREEZE_MS);
     this.feedback.set({
       kind: 'hint',
@@ -388,6 +437,7 @@ export class NumberWallComponent {
     const wall = this.wall()!;
     this.filled.update((filled) => [...filled, brick]);
     this.justFilled.set(brick);
+    this.placedCount.update((count) => count + 1);
     this.hatchery.warm();
     this.entry.set('');
     this.misses.set(0);
