@@ -31,7 +31,7 @@ import {
 } from '../../shared/three/motion';
 import type { Comparison } from './comparison';
 import type { PondFrame } from './pond-frame';
-import { heronLapSeconds, heronLoop } from './heron-flight';
+import { heronLapAngle, heronLoop } from './heron-flight';
 import { Kiki } from './pond-kiki';
 import {
   Butterfly,
@@ -142,8 +142,6 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
   private heronStateAt = 0;
   private heronFrom = new Vector3();
   private heronScale = 1;
-  /** How far round its loop the heron is, in radians. */
-  private heronAngle = 0;
   /** Where the instruction bubble starts, in the host's pixels: the loop stays above it. */
   private floor = 0;
   private carried: Raft | null = null;
@@ -816,7 +814,6 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     if (heron.state === 'flying' && (this.heronSnack !== frame.snack || !this.heron.root.visible)) {
       this.heronSnack = frame.snack;
       this.heronProgress = 0;
-      this.heronAngle = 0;
       this.heron.root.position.copy(this.heronPoint(0, 0));
       this.heronFrom.copy(this.heron.root.position);
     }
@@ -871,12 +868,13 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     this.lastHeron.copy(root.position);
     let beat = 0.6;
     if (heron.state === 'flying') {
+      // Follows the page's own clock, not frame steps, which fall behind on a slow device; so
+      // the heron really is over the middle of the pond when it swoops.
       if (!heron.paused)
-        this.heronProgress = Math.min(1, this.heronProgress + (dt * 1000) / heron.duration);
+        this.heronProgress = clamp01(1 - (heron.due - Date.now()) / heron.duration);
       const p = this.heronProgress;
       // Laps the whole pond, in and out of view, on a tighter, quicker loop as time runs out.
-      this.heronAngle += (dt * Math.PI * 2) / heronLapSeconds(p);
-      root.position.copy(this.heronPoint(p, this.heronAngle));
+      root.position.copy(this.heronPoint(p, heronLapAngle(p, heron.duration)));
       root.scale.setScalar(this.heronScale * (1 + p * 0.25));
       // Banks into the turn: the loop always bends to its left.
       root.rotation.z = approach(root.rotation.z, -0.3, 4, dt);

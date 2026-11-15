@@ -4,7 +4,8 @@
  * It flies a wide loop round the whole pond instead of over Kiki: the left and right ends of
  * the loop lie off the screen, so the heron leaves the view, comes back across the open water
  * above the number pads, leaves again and comes back below them. The loop tightens as time runs
- * out, so early on the heron is mostly away and near the end it is hardly ever gone.
+ * out, so early on the heron is mostly away and near the end it is hardly ever gone; its last
+ * lap brings it over the middle of the top pass (`heronLapAngle`), where it swoops from.
  */
 export interface FlightLayout {
   /** The pond's size in pixels. */
@@ -25,9 +26,18 @@ export interface FlightPoint {
   readonly y: number;
 }
 
-/** Seconds for one lap: a slow patrol at first, a hurried one as the snack is nearly gone. */
-export function heronLapSeconds(progress: number): number {
-  return 8 - clamp01(progress) * 4;
+/**
+ * How far round its loop the heron is, in radians, at `progress` through a flight of
+ * `duration` milliseconds. Its laps get quicker (the last lap takes half as long as the first),
+ * and every flight ends at the middle of the top pass, in view and behind Kiki, so the heron
+ * always swoops from a spot the child can see and that does not point at either side.
+ */
+export function heronLapAngle(progress: number, duration: number): number {
+  const p = clamp01(progress);
+  const laps = Math.max(1, Math.round(duration / 6000));
+  const end = Math.PI * 2 * laps + Math.PI / 2;
+  // Speeds up evenly from 1 to 2: the integral of (1 + p), scaled so that p = 1 lands on `end`.
+  return (end * (p + (p * p) / 2)) / 1.5;
 }
 
 /**
