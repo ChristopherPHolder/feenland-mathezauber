@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../app.routes';
 import { emptyProgress, nextLevel, World, worlds } from './catalog';
 import { ProgressService } from './progress';
 import { CompletionService } from './completion';
 import { applyResult, LevelResult } from './results';
 import { LocaleService } from './locale';
+import { navigate, openRoute } from '../testing/route-harness';
 const wall = 'number-wall';
 const earned: LevelResult = { levelId: wall, completed: true, mastered: true, stars: 2 };
 describe('Explicit learning results', () => {
@@ -52,9 +52,9 @@ describe('Completion flow', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
   it('celebrates a recorded result and recommends the next open adventure', async () => {
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     expect(TestBed.inject(CompletionService).finish(earned)).toBe(true);
-    await h.navigateByUrl('/complete/' + wall);
+    await navigate(h, '/complete/' + wall);
     expect(TestBed.inject(Router).url).toBe('/complete/' + wall);
     const i = TestBed.inject(LocaleService);
     expect(h.routeNativeElement?.textContent).toContain(i.t('wellDone'));
@@ -64,9 +64,7 @@ describe('Completion flow', () => {
     ).toBeTruthy();
     expect(h.routeNativeElement?.querySelector(`a[href="/games#${wall}"]`)).toBeTruthy();
     // The way on names the next level, and the stars are drawn: two of three earned.
-    expect(h.routeNativeElement?.querySelector('.next')?.textContent).toContain(
-      i.t('fairyCastle'),
-    );
+    expect(h.routeNativeElement?.querySelector('.next')?.textContent).toContain(i.t('fairyCastle'));
     expect(h.routeNativeElement?.querySelectorAll('.stars .star.earned').length).toBe(2);
     expect(h.routeNativeElement?.querySelector('.game-name')?.textContent).toContain(
       i.t('numberWalls'),
@@ -75,17 +73,17 @@ describe('Completion flow', () => {
     expect(JSON.parse(localStorage.getItem('feenland.progress')!).mastered).toEqual([wall]);
   });
   it('does not award from completion URLs and restores only a receipt for recorded progress', async () => {
-    const h = await RouterTestingHarness.create('/complete/' + wall);
+    const h = await openRoute('/complete/' + wall);
     expect(TestBed.inject(Router).url).toBe('/games');
     const c = TestBed.inject(CompletionService);
     expect(c.finish(earned)).toBe(true);
-    await h.navigateByUrl('/complete/' + wall);
+    await navigate(h, '/complete/' + wall);
     expect(h.routeNativeElement?.querySelector('.stars')?.getAttribute('aria-label')).toBe(
       TestBed.inject(LocaleService).t('starsOf', { n: 2 }),
     );
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
-    const restored = await RouterTestingHarness.create('/complete/' + wall);
+    const restored = await openRoute('/complete/' + wall);
     expect(restored.routeNativeElement?.querySelector('h1')?.textContent).toBe(
       TestBed.inject(LocaleService).t('wellDone'),
     );
