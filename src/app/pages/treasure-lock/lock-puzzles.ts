@@ -1,7 +1,7 @@
 import type { Level } from '../../core/catalog';
 import type { MessageKey } from '../../core/messages';
 
-/** A hop spell: Lumi jumps along the dial by adding, taking away or doubling. */
+/** A hop spell: Pip jumps along the dial by adding, taking away or doubling. */
 export interface Spell {
   readonly op: '+' | '−' | '×';
   readonly n: number;
@@ -21,7 +21,7 @@ export interface LockStage {
   readonly spells: readonly Spell[];
   /** Fewest and most hops the best way to a lock may take. */
   readonly par: readonly [number, number];
-  /** Thorny numbers on the dial: landing there bounces Lumi back. */
+  /** Thorny numbers on the dial: landing there bounces Pip back. */
   readonly thorns: number;
   /** Targets the trick is about; others are skipped when picking locks. */
   readonly fits?: (target: number) => boolean;
@@ -146,7 +146,7 @@ export function cast(value: number, spell: Spell, max: number): number | null {
   return next < 0 || next > max ? null : next;
 }
 
-/** One lock to open: Lumi starts on `start` and must land exactly on `target`. */
+/** One lock to open: Pip starts on `start` and must land exactly on `target`. */
 export interface LockPuzzle {
   readonly start: number;
   readonly target: number;
@@ -159,7 +159,7 @@ export interface LockPuzzle {
   readonly par: number;
 }
 
-/** Fewest hops from `start` to every number on the dial (-1 where Lumi cannot get to). */
+/** Fewest hops from `start` to every number on the dial (-1 where Pip cannot get to). */
 export function hopDistances(
   start: number,
   max: number,
@@ -186,7 +186,7 @@ const int = (random: Random, min: number, max: number) =>
   min + Math.floor(random() * (max - min + 1));
 const pick = <T>(random: Random, items: readonly T[]): T => items[int(random, 0, items.length - 1)];
 
-/** A random best way from `start` to `target`, as the numbers Lumi lands on (target included). */
+/** A random best way from `start` to `target`, as the numbers Pip lands on (target included). */
 export function bestPath(
   puzzle: Pick<LockPuzzle, 'start' | 'target' | 'max' | 'spells' | 'thorns'>,
   random: Random = Math.random,
