@@ -94,6 +94,7 @@ const BOSS_EXTRA = 3000;
     './crocodile-responsive.css',
     './crocodile-heron.css',
     './crocodile-outcome.css',
+    './crocodile-golden.css',
   ],
   host: {
     '(document:keydown)': 'onKey($event)',
@@ -155,6 +156,11 @@ export class CrocodileGame {
   );
   protected readonly combo = computed(() => comboFor(this.round().streak));
   protected readonly frenzy = computed(() => this.combo() === 3);
+  /** What the golden snack's coin promises: a first try keeps the combo, a mistake drops it. */
+  protected readonly goldenPoints = computed(() => {
+    const round = this.round();
+    return snackPoints('golden', round.attempts === 0 ? round.streak + 1 : 0);
+  });
   /** Kiki wears the newest hat she has earned; the wardrobe shows the whole collection. */
   protected readonly ownedHats = computed(() => earnedHats(this.p.progress()));
   protected readonly hat = computed(() => this.ownedHats().at(-1)?.id ?? 'none');
