@@ -61,6 +61,14 @@
         </div>
       </div>
     }
+    @if (playing() && settingsModel().pace !== 'relaxed') {
+      <app-fuse-timer
+        [seconds]="thinkingTime()"
+        [total]="thinkingTotal()"
+        [label]="t('timerLabel')"
+        [valueText]="t('timeLeft', { n: thinkingTime() })"
+      />
+    }
     @if (battle().phase === 'lost' || battle().phase === 'complete') {
       <div class="outcome-curtain">
         <section
@@ -125,12 +133,6 @@
           {{ i.t('upTo') }}
           {{ config.max }}
         </p>
-      }
-      @if (settingsModel().pace !== 'relaxed') {
-        <p role="timer" class="training-position">{{ thinkingTime() }} s</p>
-        @if (thinkingTime() === 0) {
-          <p role="status">{{ i.t('timeHelp') }}</p>
-        }
       }
       <p class="instruction sr-only" role="status" aria-live="polite" aria-atomic="true">
         {{ message() }}
@@ -259,7 +261,7 @@
           }
         </fieldset>
       </div>
-      <p>{{ i.t('paceHelp') }}</p>
+      <p>{{ t('paceHelp') }}</p>
     </details>
   }
   @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {

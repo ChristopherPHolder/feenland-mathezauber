@@ -1,4 +1,4 @@
-import { advance, Battle, cast, freshBattle, resolveSpell } from './battle';
+import { advance, Battle, cast, freshBattle, resolveSpell, timeOut } from './battle';
 import { applyResult } from '../../core/results';
 import { emptyProgress, worlds } from '../../core/catalog';
 function answer(state: Battle, spell: number) {
@@ -61,6 +61,24 @@ describe('Wave 1 battle rules', () => {
     state = answer(state, 2);
     expect(state.streak).toBe(2);
     expect(state.gems).toBe(4);
+  });
+  it('turns a run-out timer into exactly one monster step, never more', () => {
+    const first = timeOut(freshBattle());
+    expect(first.phase).toBe('wrong');
+    expect(first.mistakes).toBe(1);
+    expect(first.hearts).toBe(3);
+    expect(first.attempts).toBe(1);
+    expect(timeOut(first)).toBe(first);
+    let state = advance(first);
+    state = advance(timeOut(state));
+    const third = timeOut(state);
+    expect(third.damaged).toBe(true);
+    expect(third.hearts).toBe(2);
+    expect(third.mistakes).toBe(0);
+    // A rescue after the ring ran out is no longer a first try.
+    expect(resolveSpell(cast(advance(first), 1)).gems).toBe(1);
+    const casting = cast(freshBattle(), 1);
+    expect(timeOut(casting)).toBe(casting);
   });
   it('locks input through cast, feedback, and transformation', () => {
     const casting = cast(freshBattle(), 1);
