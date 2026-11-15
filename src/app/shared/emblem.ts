@@ -103,6 +103,22 @@ import { Component, input } from '@angular/core';
         <rect x="45" y="6" width="8" height="5" rx="2" fill="#b98a5a" />
       </svg>
     }
+    @case ('star-catcher') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="30" r="26" fill="#22306b" />
+        <circle cx="16" cy="18" r="1.4" fill="#fff4c2" stroke="none" />
+        <circle cx="45" cy="13" r="1.2" fill="#fff4c2" stroke="none" />
+        <circle cx="50" cy="32" r="1.4" fill="#fff4c2" stroke="none" />
+        <path d="M11 13 34 31" stroke="#8ec5ee" stroke-width="4" opacity=".7" />
+        <path d="M14 11 36 28" stroke="#f4a0c0" stroke-width="2" />
+        <path d="m39 23 3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z" class="gold" />
+        <path d="M4 50q28-6 56 0v6q-28-6-56 0z" fill="#b9a3e3" />
+        <path d="M14 48v-6m18 4v-6m18 6v-6" stroke-width="2.5" />
+        <circle cx="14" cy="40" r="2.5" class="gold" />
+        <circle cx="32" cy="38" r="2.5" class="gold" />
+        <circle cx="50" cy="40" r="2.5" class="gold" />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />
