@@ -66,7 +66,7 @@ describe('Number wall game', () => {
         key!.click();
         fixture.detectChanges();
       }
-      if (String(value).length === 1) click('Check');
+      click('Check');
     };
     /** Read the solution from the component's wall so the test never depends on randomness. */
     const answerFor = (button: HTMLButtonElement) => {
@@ -134,6 +134,56 @@ describe('Number wall game', () => {
     click('Build the magic wall');
     expect(element.querySelector('.level-tag')?.textContent).toContain('Level 3');
   });
+
+  it.each(['keypad', 'keyboard'] as const)(
+    'waits for submission so a two-digit answer can be corrected with the %s',
+    (input) => {
+      const { fixture, element, click, key, status } = setup();
+      click('Level 2');
+      fixture.componentInstance['walls'].set([
+        { level: 1, rows: [[7, 8], [15]], missing: [{ row: 1, col: 0 }] },
+      ]);
+      const digit = (value: string) => (input === 'keypad' ? click(value) : key(value));
+      digit('1');
+      digit('6');
+      expect(status()).toBe('Your number: 16');
+      expect(sound.effect).not.toHaveBeenCalledWith('wrong');
+      if (input === 'keypad') element.querySelector<HTMLButtonElement>('.key.erase')!.click();
+      else key('Backspace');
+      digit('5');
+      expect(status()).toBe('Your number: 15');
+      expect(fixture.componentInstance['filled']()).toEqual([]);
+      if (input === 'keypad') click('Check');
+      else key('Enter');
+      expect(status()).toContain('Wall built! +3 gems!');
+      expect(fixture.componentInstance['firstTry']()).toBe(1);
+    },
+  );
+
+  it.each(['keypad', 'keyboard'] as const)(
+    'accepts 100 without checking its prefix with the %s',
+    (input) => {
+      const { fixture, click, key, status } = setup();
+      click('Level 4');
+      fixture.componentInstance['walls'].set([
+        { level: 6, rows: [[40, 60], [100]], missing: [{ row: 1, col: 0 }] },
+      ]);
+      fixture.componentInstance['selected'].set({ row: 1, col: 0 });
+      const digit = (value: string) => (input === 'keypad' ? click(value) : key(value));
+      digit('1');
+      digit('0');
+      expect(status()).toBe('Your number: 10');
+      digit('0');
+      expect(status()).toBe('Your number: 100');
+      digit('0');
+      expect(status()).toBe('Your number: 100');
+      expect(sound.effect).not.toHaveBeenCalledWith('wrong');
+      if (input === 'keypad') click('Check');
+      else key('Enter');
+      expect(status()).toContain('Wall built! +3 gems!');
+      expect(fixture.componentInstance['firstTry']()).toBe(1);
+    },
+  );
 
   it('builds eight fast walls, collects gems, earns three stars and offers the next level', () => {
     const { element, click, status, solveSelected, gems } = setup();
@@ -310,6 +360,7 @@ describe('Number wall game', () => {
     const miss = () => {
       key(String(Math.floor(wrong / 10)));
       key(String(wrong % 10));
+      key('Enter');
     };
     miss();
     expect(status()).toMatch(/^Not quite\. Try again! Trick: \d+ \+ \? = \d+\. Count up from/);
@@ -354,7 +405,7 @@ describe('Number wall game', () => {
     expect(second.getAttribute('aria-pressed')).toBe('true');
     const answer = answerFor(second);
     for (const digit of String(answer)) key(digit);
-    if (String(answer).length === 1) key('Enter');
+    key('Enter');
     expect(status()).toBe(`Ja! ${answer} passt genau.`);
     expect(openBricks()).toHaveLength(1);
     expect(element.querySelector('[aria-label="Zahlenfeld"]')).toBeTruthy();

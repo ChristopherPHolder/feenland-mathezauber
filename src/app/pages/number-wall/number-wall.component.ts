@@ -35,6 +35,7 @@ import {
   Pace,
   paces,
   ratingFor,
+  rulesFor,
   sameBrick,
   STAGGER_MS,
   trollSeconds,
@@ -398,13 +399,14 @@ export class NumberWallComponent {
     return this.filled().some((f) => sameBrick(f, brick));
   }
   protected type(digit: string) {
-    if (this.locked() || !this.selected() || this.entry().length >= 2) return;
+    const maxDigits = String(rulesFor(this.level()).maxTop).length;
+    if (this.locked() || !this.selected() || this.entry().length >= maxDigits) return;
     const entry = (this.entry() + digit).replace(/^0(?=\d)/, '');
     this.entry.set(entry);
     const kind = this.feedback().kind;
     if (kind === 'wrong' || kind === 'correct' || kind === 'troll')
       this.feedback.set({ kind: 'idle' });
-    if (entry.length === 2) this.check();
+    // Check/Enter commits the answer; a digit count cannot tell whether the child is done.
   }
   protected erase() {
     if (this.locked()) return;
