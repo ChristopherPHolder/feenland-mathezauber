@@ -312,6 +312,35 @@ dialog::backdrop {
   }
 }
 
+/* A phone held sideways has under 500px of height: the header shrinks to one slim row,
+   the name on one line, and every nav target keeps its 44px. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .site-header {
+    padding: 6px 24px;
+  }
+  .wordmark {
+    font-size: 18px;
+  }
+  .wordmark img {
+    width: 36px;
+    height: 36px;
+  }
+  .wordmark .brand-name > span {
+    display: inline;
+    font-size: inherit;
+    margin: 0;
+  }
+  nav {
+    padding: 3px;
+  }
+  nav a {
+    min-height: 44px;
+    padding: 6px 14px;
+  }
+  footer {
+    padding: 12px 24px 16px;
+  }
+}
 main.focused-game {
   max-width: none;
   padding: 0;
