@@ -1,6 +1,5 @@
 import {
   BoxGeometry,
-  DoubleSide,
   CircleGeometry,
   Color,
   ConeGeometry,
@@ -11,7 +10,6 @@ import {
   MeshStandardMaterial,
   Object3D,
   OctahedronGeometry,
-  PlaneGeometry,
   PointLight,
   SphereGeometry,
   Sprite,
@@ -22,6 +20,7 @@ import { TextLabel } from '../../shared/three/labels';
 import { easeOut, EventCounter, shake, smooth } from '../../shared/three/motion';
 import { disposeTree, Stage } from '../../shared/three/stage';
 import { StateWorld } from '../../shared/three/three-stage';
+import { buildChest } from './lock-chest';
 import { dialDegrees, dialNumbers, labelStep, LockFrame } from './lock-frame';
 
 const RING = 3.2;
@@ -65,8 +64,8 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
     radius: 0.45,
   });
   private readonly pipTag: Sprite;
-  private readonly chest = new Group();
-  private readonly lid = new Group();
+  private readonly chest: Group;
+  private readonly lid: Group;
   private readonly crystal: Mesh;
   private readonly plateLabel = new TextLabel('0', {
     fill: '#ffd23f',
@@ -75,12 +74,8 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
     height: 128,
     radius: 0.3,
   });
-  private readonly bodyMaterial = new MeshStandardMaterial({ color: '#a8623a', roughness: 0.7 });
-  private readonly lidMaterial = new MeshStandardMaterial({
-    color: '#a8623a',
-    roughness: 0.7,
-    side: DoubleSide,
-  });
+  private readonly bodyMaterial: MeshStandardMaterial;
+  private readonly lidMaterial: MeshStandardMaterial;
   /** The keyhole number floats over the chest, big enough to read from across the table. */
   private readonly signLabel = new TextLabel('0', {
     fill: '#ffd23f',
@@ -164,39 +159,12 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
     this.scene.add(this.pip);
 
     // The chest in the middle: body, a hinged lid with a crystal, and the keyhole plate.
-    const body = new Mesh(new BoxGeometry(1.5, 0.8, 1), this.bodyMaterial);
-    body.position.y = 0.4;
-    body.castShadow = true;
-    const band = new Mesh(
-      new BoxGeometry(1.54, 0.12, 1.04),
-      new MeshStandardMaterial({ color: '#e8b44c', metalness: 0.6, roughness: 0.4 }),
-    );
-    band.position.y = 0.62;
-    const lidMesh = new Mesh(
-      new CylinderGeometry(0.5, 0.5, 1.5, 24, 1, false, 0, Math.PI),
-      this.lidMaterial,
-    );
-    lidMesh.rotation.z = Math.PI / 2;
-    lidMesh.position.z = 0.5;
-    lidMesh.castShadow = true;
-    this.crystal = new Mesh(
-      new OctahedronGeometry(0.18),
-      new MeshStandardMaterial({
-        color: '#ff9ad5',
-        emissive: '#c2187a',
-        emissiveIntensity: 0.8,
-        transparent: true,
-      }),
-    );
-    this.crystal.position.set(0, 0.62, 0.5);
-    this.lid.add(lidMesh, this.crystal);
-    this.lid.position.set(0, 0.8, -0.5);
-    const plate = new Mesh(
-      new PlaneGeometry(0.66, 0.44),
-      new MeshBasicMaterial({ map: this.plateLabel.texture, transparent: true }),
-    );
-    plate.position.set(0, 0.42, 0.51);
-    this.chest.add(body, band, this.lid, plate);
+    const model = buildChest(this.plateLabel.texture);
+    this.chest = model.chest;
+    this.lid = model.lid;
+    this.crystal = model.crystal;
+    this.bodyMaterial = model.bodyMaterial;
+    this.lidMaterial = model.lidMaterial;
     this.chest.position.set(0, 0, 0.35);
     this.sign = new Sprite(new SpriteMaterial({ map: this.signLabel.texture, transparent: true }));
     this.sign.scale.set(1.3, 0.93, 1);
