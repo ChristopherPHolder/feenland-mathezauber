@@ -76,6 +76,36 @@ export function popScale(index: number, t: number): number {
   return 1 - k * k;
 }
 
+/** Half the width the wall needs, plinth and shadow included. */
+const HALF_WIDTH = 3.1;
+/** The wall's lowest and highest points in the frame: its shadow up to the top sparkles. */
+const BOTTOM = -0.3;
+const TOP = 4.3;
+/**
+ * The loader's "Loading…" pill sits just below the middle of the screen, so the wall stands in
+ * the band above it: from a small margin at the top down to this many pixels below the middle.
+ */
+const PILL_CLEARANCE = 56;
+
+/**
+ * How far back the camera stands and where it looks so the wall fills the band above the
+ * loader's pill on a `width` x `height` pixel canvas, at any shape from phone to landscape iPad.
+ */
+export function wallFraming(width: number, height: number): { distance: number; lookY: number } {
+  const tan = Math.tan(((FOV / 2) * Math.PI) / 180);
+  const top = height * 0.08;
+  const bottom = Math.min(height * 0.94, height / 2 + PILL_CLEARANCE);
+  const band = bottom - top;
+  // Pixels per world unit at the wall is height / (2 * distance * tan).
+  const distance = Math.max(
+    ((TOP - BOTTOM) * height) / (2 * tan * band),
+    (2 * HALF_WIDTH * height) / (2 * tan * width * 0.9),
+  );
+  const scale = height / (2 * distance * tan);
+  const centre = (top + bottom) / 2;
+  return { distance, lookY: (TOP + BOTTOM) / 2 - (height / 2 - centre) / scale };
+}
+
 /**
  * The loading scene for the number wall: chunky clay bricks drop one by one and bounce into a
  * 3-2-1 wall on its stone plinth, the golden top brick shines and sparkles, then the bricks pop
@@ -86,7 +116,6 @@ export class WallLoaderWorld extends Stage implements StateWorld<null> {
   private readonly bricks: { root: Group; block: Group; rest: number }[] = [];
   private readonly topMaterial: MeshLambertMaterial;
   private readonly sparks: Mesh<OctahedronGeometry, MeshBasicMaterial>[] = [];
-  private readonly lookY: number;
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { fov: FOV });
@@ -150,24 +179,15 @@ export class WallLoaderWorld extends Stage implements StateWorld<null> {
       this.wall.add(spark);
     }
 
-    this.lookY = (BRICK.base + 3 * BRICK.rise) / 2 + 0.25;
     this.scene.add(this.wall);
   }
 
   setState(_: null) {}
 
   protected override layout(aspect: number) {
-    // Fit the plinth and the wall with a little room above for the falling bricks.
-    const halfWidth = 3.1;
-    const halfHeight = 2.6;
-    const tan = Math.tan(((FOV / 2) * Math.PI) / 180);
-    const distance = Math.max(halfHeight / tan, halfWidth / (tan * aspect));
-    this.camera.position.set(
-      0,
-      this.lookY + Math.sin(PITCH) * distance,
-      Math.cos(PITCH) * distance,
-    );
-    this.camera.lookAt(0, this.lookY, 0);
+    const { distance, lookY } = wallFraming(this.width, this.height);
+    this.camera.position.set(0, lookY + Math.sin(PITCH) * distance, Math.cos(PITCH) * distance);
+    this.camera.lookAt(0, lookY, 0);
     super.layout(aspect);
   }
 
