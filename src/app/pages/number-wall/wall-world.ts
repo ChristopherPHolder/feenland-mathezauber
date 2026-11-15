@@ -328,7 +328,8 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
     const contentTop = towerTop + 1.9;
     const fullHeight = (contentTop + 0.4) / 2 / tanV;
     const fullWidth = (towerX + 1) / tanH;
-    const wallHeight = (wallTop + 1.1) / 2 / tanV;
+    // Headroom above the top brick: the camera looks down on the wall, so its top face needs room.
+    const wallHeight = (wallTop + 1.8) / 2 / tanV;
     // Leaves room beside the wall for the troll when he bonks it.
     const wallWidth = (half + 0.9) / tanH;
     const full = Math.max(fullHeight, fullWidth);
@@ -396,7 +397,8 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
       const { block } = brick;
       // Pop in row by row when a wall goes up.
       const rise = clamp01((t - this.buildAt - brick.row * 0.12 - brick.col * 0.04) / 0.45);
-      block.scale.setScalar(calm ? smooth(rise) : easeOutBack(rise));
+      // Calm motion skips the pop: the wall is simply there.
+      block.scale.setScalar(calm ? 1 : easeOutBack(rise));
       block.position.set(0, 0, 0);
       block.rotation.set(0, 0, 0);
 
@@ -404,6 +406,8 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
       if (dropped !== undefined) {
         const k = (t - dropped) / 0.75;
         block.position.y = (1 - bounce(k)) * 3.4;
+        // Swing in from the front, so a brick under others never falls through the wall.
+        block.position.z = (1 - smooth(clamp01(k * 1.5))) * 2.4;
         const landing = dropped + 0.27;
         if (t >= landing && !brick.block.userData['puffed']) {
           brick.block.userData['puffed'] = true;

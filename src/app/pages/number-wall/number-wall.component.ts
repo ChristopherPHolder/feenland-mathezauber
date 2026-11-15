@@ -229,7 +229,7 @@ export class NumberWallComponent {
       built: this.built(),
       crumbled: this.crumbled(),
       wallsDone: this.wallsDone(),
-      total: this.total,
+      total: this.total(),
       troll: this.trollProgress(),
       trollAsleep: this.trollAsleep(),
       trollBump: this.trollBump(),
