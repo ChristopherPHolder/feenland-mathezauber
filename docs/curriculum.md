@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 96 selectable levels across six games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 108 selectable levels across seven games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -25,6 +25,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | Unicorn Rainbow Race | one heat (six per track)                                         | 60–90 s per heat; two or three heats in a sitting |
 | The Treasure Lock    | 6 chests of 2–6 hops each, the big chest last                    | 6 × 20–30 s ≈ 2–3 min                             |
 | The Potion Cauldron  | 6 potions of 2–4 bottles, the big cauldron last                  | 6 × 20–40 s ≈ 2–4 min                             |
+| The Firework Show    | 12 fireworks and the grand finale, then the show                 | 12 × 8–12 s + finale and show ≈ 2–3 min           |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -105,6 +106,20 @@ Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets wh
 | Sharing and all spells | sharing potions 12 ÷ 3 + 2 → 6 · potion master with all four spells 8 ÷ 2 × 3 + 1 → 13   |
 
 A potion is built by mixing random bottles with random spells, so it always brews, and the solver in `potion-puzzles.ts` then checks it: the potion never equals one of its bottles, and a level's `needs` spells (− for three bottles, × for the times levels, ÷ for sharing, × or ÷ for the master) must be part of every recipe. The built recipe keeps to table facts (no ×1, nothing past 10 × 10, sharing only within the tables), though a child may brew a potion any way that works. A bottle never goes empty or below zero, never holds more than the level's limit, and only shares evenly; a bottle the chosen spell cannot pour in is greyed out with a line saying why.
+
+### The Firework Show: 12 levels (`pages/fireworks/firework-levels.ts`)
+
+| Topic          | Levels, easiest first                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| First sparks   | dice sparks 1–6 · little groups 1–5 (lines, triangles, squares, small clusters)                         |
+| Fives and tens | five and more 5 + 3 = 8 · ten-frames 1–10 · make ten (count the empty spaces, 0–9)                      |
+| Two bursts     | two dice 4 + 3 = 7 · ten and more 10 + 4 = 14                                                           |
+| Doubles        | mirror doubles to 10 + 10 · double and one more 6 + 7 · doubles both ways (one more, one less, doubles) |
+| Grand show     | twenty-frames and rows of five, 11–20, with a shorter look · the grand show, every pattern mixed to 20  |
+
+The game trains conceptual subitizing: seeing a number as groups instead of counting by ones. Patterns follow the arrangement order from Clements (1999): dice faces, then five- and ten-frames, two groups side by side, doubles as mirror images, near doubles and twenty-frames. Every pattern is rotated, mirrored and recoloured (and jittered a little from level 3), so no picture becomes memorised, and the same picture, answer or colour never comes twice in a row. Two-burst fireworks differ by place and spark shape (round and star), never by colour alone; a near double "one less" shows the missing spark as a hollow ring.
+
+Only the look is timed, never the answer. Three remembered paces set how long a burst glows (Gentle glow 3 s with free peeks, Glow 2 s, Pop 1.5 s); within a round the look gets 0.2 s shorter after three first looks in a row and 0.3 s longer after a miss or a peek, kept inside the pace's range (2.5–4 s, 1.5–2.5 s, 1–2 s). Two-burst fireworks glow 0.4 s longer. Level 11 starts a little shorter and level 12 at the pace's shortest look, and level 12 needs three stars to master.
 
 ## Adding a level
 
