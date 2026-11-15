@@ -4,6 +4,7 @@ import { comparisonLevels } from '../pages/crocodile/comparison';
 import { raceLevelEntries } from '../pages/unicorn-race/race-questions';
 import { lockLevels } from '../pages/treasure-lock/lock-puzzles';
 import { potionLevels } from '../pages/potions/potion-puzzles';
+import { bakeryLevels } from '../pages/bakery/bakery-levels';
 import { drumLevels } from '../pages/drums/drum-patterns';
 import { starLevels } from '../pages/star-catcher/star-levels';
 import { fireworkCatalogLevels } from '../pages/fireworks/firework-levels';
@@ -131,6 +132,13 @@ export const worlds: readonly World[] = [
         description: 'potionChapterHelp',
         emblem: '🧪',
         levels: potionLevels,
+      },
+      {
+        id: 'bakery',
+        title: 'bakeryChapter',
+        description: 'bakeryChapterHelp',
+        emblem: '🍪',
+        levels: bakeryLevels,
       },
       {
         id: 'star-catcher',

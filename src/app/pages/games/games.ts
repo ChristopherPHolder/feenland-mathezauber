@@ -26,6 +26,8 @@ import { lockStage } from '../treasure-lock/lock-puzzles';
 import { LockScores } from '../treasure-lock/lock-scores';
 import { localOps, potionStage } from '../potions/potion-puzzles';
 import { PotionScores } from '../potions/potion-scores';
+import { bakeryStage } from '../bakery/bakery-levels';
+import { BakeryScores } from '../bakery/bakery-scores';
 import { drumStage } from '../drums/drum-patterns';
 import { DrumScores } from '../drums/drum-scores';
 import { starStage } from '../star-catcher/star-levels';
@@ -97,6 +99,7 @@ export class Games {
   protected readonly scores = inject(CrocodileScores);
   private readonly lockScores = inject(LockScores);
   private readonly potionScores = inject(PotionScores);
+  private readonly bakeryScores = inject(BakeryScores);
   private readonly drumScores = inject(DrumScores);
   private readonly starScores = inject(StarScores);
   private readonly fireworkScores = inject(FireworkScores);
@@ -251,6 +254,7 @@ export class Games {
         this.scores.best()[level.id] ??
         this.lockScores.best()[level.id] ??
         this.potionScores.best()[level.id] ??
+        this.bakeryScores.best()[level.id] ??
         this.drumScores.best()[level.id] ??
         this.starScores.best()[level.id] ??
         this.fireworkScores.best()[level.id] ??
@@ -292,6 +296,8 @@ export class Games {
     if (crocodile) return localSide(crocodile, this.i.t('crocHalfOf'), divide);
     const potion = potionStage(level.id)?.example;
     if (potion) return localOps(potion, divide);
+    const bakery = bakeryStage(level.id)?.example;
+    if (bakery) return bakery;
     const drums = drumStage(level.id)?.example;
     if (drums) return drums;
     const star = starStage(level.id)?.example;

@@ -478,6 +478,11 @@ main.focused-game {
   --loader-star: var(--violet);
   --loader-dot: var(--success);
 }
+.is-route-tone[data-tone='bakery'] {
+  --loader-ground: linear-gradient(#fde9d2, #fff4e4 45%, #f6e7d6);
+  --loader-star: var(--pink);
+  --loader-dot: var(--bronze);
+}
 .is-route-tone[data-tone='drums'] {
   --loader-ground: radial-gradient(circle at 50% 35%, #3a2f7a, #17123a 75%);
   --loader-orb: #2c2560;
