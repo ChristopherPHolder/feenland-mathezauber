@@ -1,8 +1,20 @@
 import { toSignal } from '@angular/core/rxjs-interop';
-import { filter, map } from 'rxjs';
+import { filter, map, take } from 'rxjs';
 import { NgOptimizedImage } from '@angular/common';
-import { Component, ElementRef, inject, viewChild } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { afterRenderEffect, Component, ElementRef, inject, viewChild } from '@angular/core';
+import {
+  Event,
+  NavigationCancel,
+  NavigationCancellationCode,
+  NavigationEnd,
+  NavigationError,
+  NavigationSkipped,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
+import { BootSplash } from './core/boot-splash';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
 import { MotionPreference } from './core/motion';
@@ -10,7 +22,8 @@ import { Icon } from './shared/icon';
 @Component({
   selector: 'app-root',
   imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, Icon],
-  template: `@if (!focusedGame()) {
+  template: `@if (started()) {
+    @if (!focusedGame()) {
       <header class="site-header">
         <a class="wordmark" routerLink="/">
           <img ngSrc="/logo.svg" width="48" height="48" alt="" priority />
@@ -48,7 +61,8 @@ import { Icon } from './shared/icon';
       <footer>
         Feenland Mathezauber<span>{{ i.t('subtitle') }}</span>
       </footer>
-    }`,
+    }
+  }`,
 })
 export class App {
   protected readonly i = inject(LocaleService);
@@ -56,6 +70,20 @@ export class App {
   private readonly router = inject(Router);
   /** Created at start so a saved calm-motion choice applies before any game draws. */
   private readonly motion = inject(MotionPreference);
+  private readonly splash = inject(BootSplash);
+  /**
+   * The shell waits behind the index.html splash for the first navigation, so a game never
+   * flashes the header before it takes the whole screen. The splash itself stays up until the
+   * page has loaded inside its route shell (core/boot-splash).
+   */
+  protected readonly started = toSignal(
+    this.router.events.pipe(
+      filter(settles),
+      take(1),
+      map(() => true),
+    ),
+    { initialValue: false },
+  );
   /** Game routes declare `focusedGame` so the shell steps aside and the game fills the screen. */
   protected readonly focusedGame = toSignal(
     this.router.events.pipe(
@@ -72,7 +100,25 @@ export class App {
     return this.router.url.startsWith('/settings') ? '/' : this.router.url;
   }
   private readonly main = viewChild<ElementRef<HTMLElement>>('main');
+  constructor() {
+    afterRenderEffect(() => {
+      const main = this.main()?.nativeElement;
+      if (main) this.splash.dismissWhenPageShows(main);
+    });
+  }
   protected focusMain() {
     this.main()?.nativeElement.focus({ preventScroll: true });
   }
+}
+
+/** A navigation is over: it showed a page, failed, changed nothing, or was stopped for good. */
+function settles(event: Event) {
+  return (
+    event instanceof NavigationEnd ||
+    event instanceof NavigationError ||
+    event instanceof NavigationSkipped ||
+    (event instanceof NavigationCancel &&
+      event.code !== NavigationCancellationCode.Redirect &&
+      event.code !== NavigationCancellationCode.SupersededByNewNavigation)
+  );
 }

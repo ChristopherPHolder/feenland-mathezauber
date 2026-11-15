@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
 import { App } from './app';
 import { routes } from './app.routes';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
 import { WORLD_CATALOG, worlds } from './core/catalog';
 import { translations, Locale } from './core/messages';
+import { navigate, openRoute } from './testing/route-harness';
 describe('Feenland navigation', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -20,8 +20,42 @@ describe('Feenland navigation', () => {
     expect(current.map((link: HTMLAnchorElement) => link.getAttribute('href'))).toEqual(['/games']);
     expect(current[0].classList).toContain('active');
   });
+  it('keeps the loading splash up until the first page itself is showing', async () => {
+    const splash = document.createElement('div');
+    splash.id = 'boot-splash';
+    document.body.append(splash);
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('header, main, footer')).toBeNull();
+    await TestBed.inject(Router).navigateByUrl('/games');
+    await fixture.whenStable();
+    for (const part of ['header', 'main', 'footer']) {
+      expect(fixture.nativeElement.querySelector(part)).toBeTruthy();
+    }
+    const page = () =>
+      fixture.nativeElement.querySelector('main a[href="/adventure/defend-fairy-castle"]');
+    if (!page()) expect(document.getElementById('boot-splash')).toBe(splash);
+    await vi.waitFor(async () => {
+      await fixture.whenStable();
+      expect(page()).toBeTruthy();
+    });
+    expect(document.getElementById('boot-splash')).toBeNull();
+  });
+  it('opens a game straight from the splash, with no header or footer flashing first', async () => {
+    const fixture = TestBed.createComponent(App);
+    const seen: boolean[] = [];
+    const observer = new MutationObserver(() =>
+      seen.push(!!fixture.nativeElement.querySelector('header, footer')),
+    );
+    observer.observe(fixture.nativeElement, { childList: true, subtree: true });
+    await TestBed.inject(Router).navigateByUrl('/adventure/crocodile-1');
+    await fixture.whenStable();
+    observer.disconnect();
+    expect(fixture.nativeElement.querySelector('main.focused-game')).toBeTruthy();
+    expect(seen).not.toContain(true);
+  });
   it('starts with real zero counts and recommends the first open game', async () => {
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     expect(h.routeNativeElement?.textContent).toContain('Feenland');
     expect([...h.routeNativeElement!.querySelectorAll('dd')].map((e) => e.textContent)).toEqual([
       '0',
@@ -34,7 +68,7 @@ describe('Feenland navigation', () => {
     expect(TestBed.inject(ProgressService).progress().mastered).toEqual([]);
   });
   it('switches all locales immediately and persists preference without changing progress', async () => {
-    const h = await RouterTestingHarness.create('/settings');
+    const h = await openRoute('/settings');
     const i = TestBed.inject(LocaleService);
     const p = TestBed.inject(ProgressService);
     p.explore('tens');
@@ -67,7 +101,7 @@ describe('Feenland navigation', () => {
         explored: ['tens'],
       }),
     );
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     expect(h.routeNativeElement?.textContent).toContain(TestBed.inject(LocaleService).t('caught'));
     expect([...h.routeNativeElement!.querySelectorAll('dd')].map((e) => e.textContent)).toEqual([
       String(mastered.length),
@@ -77,14 +111,14 @@ describe('Feenland navigation', () => {
   });
   it('loads saved locale and redirects removed game URLs home', async () => {
     localStorage.setItem('feenland.locale', 'fr');
-    const h = await RouterTestingHarness.create('/games/number-bridge');
+    const h = await openRoute('/games/number-bridge');
     expect(h.routeNativeElement?.textContent).toContain(translations.fr.welcome);
-    await h.navigateByUrl('/adventure/missing-number-add-to-30');
+    await navigate(h, '/adventure/missing-number-add-to-30');
     expect(h.routeNativeElement?.textContent).toContain(translations.fr.welcome);
   });
   it('keeps navigation usable with corrupt progress', async () => {
     localStorage.setItem('feenland.progress', 'broken');
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     expect(h.routeNativeElement?.querySelector('h1')).toBeTruthy();
   });
   it('derives the Home recommendation label from the configured world', async () => {
@@ -93,7 +127,7 @@ describe('Feenland navigation', () => {
         { ...worlds.find((world) => world.id === 'numbers')!, id: 'new-world', title: 'tens' },
       ],
     });
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     expect(h.routeNativeElement?.querySelector('.adventure-actions small')?.textContent).toBe(
       TestBed.inject(LocaleService).t('tens'),
     );

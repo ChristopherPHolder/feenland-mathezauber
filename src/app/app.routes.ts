@@ -1,25 +1,33 @@
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { CompletionService } from './core/completion';
+import { CompletionRoute } from './pages/completion/completion-route';
+import { CrocodileRoute } from './pages/crocodile/crocodile-route';
+import { CastleRoute, PracticeCastleRoute } from './pages/fairy-defense/castle-route';
+import { GamesRoute } from './pages/games/games-route';
+import { HatcheryRoute } from './pages/hatchery/hatchery-route';
+import { WallRoute } from './pages/number-wall/wall-route';
+import { SettingsRoute } from './pages/settings/settings-route';
+import { LockRoute } from './pages/treasure-lock/lock-route';
+import { RaceRoute } from './pages/unicorn-race/race-route';
+import { WelcomeRoute } from './pages/welcome/welcome-route';
 /**
  * Every game and every level is reachable directly: nothing here checks progress.
  * The only guard protects the completion receipt from being faked through a URL.
+ *
+ * Each route is a tiny shell, bundled up front, so a tap commits the navigation at once and
+ * shows a loader in the game's colours; the page itself still downloads lazily, inside the
+ * shell's `@defer` block.
  */
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    loadComponent: () => import('./pages/welcome/welcome').then((m) => m.Welcome),
+    component: WelcomeRoute,
   },
-  { path: 'games', loadComponent: () => import('./pages/games/games').then((m) => m.Games) },
-  {
-    path: 'hatchery',
-    loadComponent: () => import('./pages/hatchery/hatchery').then((m) => m.Hatchery),
-  },
-  {
-    path: 'settings',
-    loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
-  },
+  { path: 'games', component: GamesRoute },
+  { path: 'hatchery', component: HatcheryRoute },
+  { path: 'settings', component: SettingsRoute },
   // Older bookmarks of the world map, a world or a chapter land on that game in the hub.
   { path: 'worlds', pathMatch: 'full', redirectTo: 'games' },
   {
@@ -36,8 +44,7 @@ export const routes: Routes = [
   {
     path: 'adventure/defend-fairy-castle',
     data: { focusedGame: true },
-    loadComponent: () =>
-      import('./pages/fairy-defense/fairy-defense.component').then((m) => m.FairyDefenseComponent),
+    component: CastleRoute,
   },
   {
     matcher: (segments) =>
@@ -47,8 +54,7 @@ export const routes: Routes = [
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
-    loadComponent: () =>
-      import('./pages/fairy-defense/practice-defense').then((m) => m.PracticeDefense),
+    component: PracticeCastleRoute,
   },
   {
     matcher: (segments) =>
@@ -58,7 +64,7 @@ export const routes: Routes = [
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
-    loadComponent: () => import('./pages/crocodile/crocodile-game').then((m) => m.CrocodileGame),
+    component: CrocodileRoute,
   },
   {
     matcher: (segments) =>
@@ -68,7 +74,7 @@ export const routes: Routes = [
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
-    loadComponent: () => import('./pages/unicorn-race/unicorn-race').then((m) => m.UnicornRace),
+    component: RaceRoute,
   },
   {
     matcher: (segments) =>
@@ -78,7 +84,7 @@ export const routes: Routes = [
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
-    loadComponent: () => import('./pages/treasure-lock/treasure-lock').then((m) => m.TreasureLock),
+    component: LockRoute,
   },
   {
     matcher: (segments) =>
@@ -93,8 +99,7 @@ export const routes: Routes = [
   {
     path: 'adventure/number-wall',
     data: { focusedGame: true },
-    loadComponent: () =>
-      import('./pages/number-wall/number-wall.component').then((m) => m.NumberWallComponent),
+    component: WallRoute,
   },
   {
     path: 'complete/:id',
@@ -106,7 +111,7 @@ export const routes: Routes = [
           : inject(Router).createUrlTree(['/games']);
       },
     ],
-    loadComponent: () => import('./pages/completion/completion').then((m) => m.Completion),
+    component: CompletionRoute,
   },
   { path: '**', redirectTo: '' },
 ];

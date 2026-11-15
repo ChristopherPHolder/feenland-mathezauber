@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
 import { App } from '../../app';
 import { routes } from '../../app.routes';
+import { navigate, openRoute } from '../../testing/route-harness';
 describe('Settings return navigation', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -22,11 +22,11 @@ describe('Settings return navigation', () => {
   });
   it('preserves the originating games-hub level anchor', async () => {
     const target = '/games#crocodile-2';
-    const h = await RouterTestingHarness.create('/settings?returnTo=' + encodeURIComponent(target));
+    const h = await openRoute('/settings?returnTo=' + encodeURIComponent(target));
     expect(h.routeNativeElement?.querySelector('.back-link')?.getAttribute('href')).toBe(target);
   });
   it('uses Home for direct visits and external or recursive return targets', async () => {
-    const h = await RouterTestingHarness.create('/settings');
+    const h = await openRoute('/settings');
     for (const target of [
       '',
       '//example.com',
@@ -36,7 +36,7 @@ describe('Settings return navigation', () => {
       '/set%74ings',
       '/%zz',
     ]) {
-      await h.navigateByUrl('/settings?returnTo=' + encodeURIComponent(target));
+      await navigate(h, '/settings?returnTo=' + encodeURIComponent(target));
       expect(h.routeNativeElement?.querySelector('.back-link')?.getAttribute('href')).toBe('/');
     }
   });
@@ -53,7 +53,7 @@ describe('Settings switches', () => {
       .find((row) => row.textContent?.includes(label))!
       .querySelector('input')!;
   it('turns music and sound effects off for every game', async () => {
-    const h = await RouterTestingHarness.create('/settings');
+    const h = await openRoute('/settings');
     const page = h.routeNativeElement!;
     expect(switchFor(page, 'Music').checked).toBe(true);
     switchFor(page, 'Music').click();
@@ -67,7 +67,7 @@ describe('Settings switches', () => {
     expect(switchFor(page, 'Music').checked).toBe(false);
   });
   it('remembers calm motion and marks the whole page with it', async () => {
-    const h = await RouterTestingHarness.create('/settings');
+    const h = await openRoute('/settings');
     const page = h.routeNativeElement!;
     expect(switchFor(page, 'Calm motion').getAttribute('role')).toBe('switch');
     switchFor(page, 'Calm motion').click();
