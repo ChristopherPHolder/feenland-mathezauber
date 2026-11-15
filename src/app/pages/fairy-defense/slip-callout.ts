@@ -1,10 +1,10 @@
 import { Component, input } from '@angular/core';
 
-export type SlipKind = 'wrong' | 'time' | 'heart';
+export type SlipKind = 'wrong' | 'time' | 'heart' | 'cheer' | 'shield';
 
 /**
- * A big speech bubble over the battlefield after a slip: a wrong spell, the ring running out or
- * a lost heart. It says what happened, never the answer. Screen readers already hear the full
+ * A big speech bubble over the battlefield after a spell: a cheer for a right one, or what went
+ * wrong after a slip (a wrong spell, the ring running out, a lost heart), never the answer. Screen readers already hear the full
  * message from the live region, so the bubble itself is hidden from them.
  */
 @Component({
@@ -14,6 +14,7 @@ export type SlipKind = 'wrong' | 'time' | 'heart';
     'aria-hidden': 'true',
     '[class.is-heart]': "kind() === 'heart'",
     '[class.is-time]': "kind() === 'time'",
+    '[class.is-cheer]': "kind() === 'cheer' || kind() === 'shield'",
   },
   styles: `
     :host {
@@ -42,6 +43,12 @@ export type SlipKind = 'wrong' | 'time' | 'heart';
     :host(.is-time) .bubble {
       background: #8a4300;
     }
+    :host(.is-cheer) .bubble {
+      background: #146b4a;
+      animation-name: slip-pop, cheer-bounce;
+      animation-duration: 380ms, 600ms;
+      animation-delay: 0s, 380ms;
+    }
     :host(.is-heart) .bubble {
       background: #a3122f;
       animation-name: slip-pop, slip-shake;
@@ -52,6 +59,11 @@ export type SlipKind = 'wrong' | 'time' | 'heart';
       from {
         transform: scale(0.4) translateY(30%);
         opacity: 0;
+      }
+    }
+    @keyframes cheer-bounce {
+      40% {
+        transform: translateY(-10px) scale(1.06);
       }
     }
     @keyframes slip-shake {

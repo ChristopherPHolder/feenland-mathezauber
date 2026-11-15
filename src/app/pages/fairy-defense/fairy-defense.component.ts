@@ -97,7 +97,15 @@ export class FairyDefenseComponent {
     this.settingsModel().pace === 'quick' ? 20 : 45,
   );
   protected readonly thinkingTime = signal(45);
-  /** The bubble over the battlefield after a slip; the id restarts its pop for a new slip. */
+  /** What each bubble says; a right spell rotates through a few cheers so they stay fresh. */
+  protected readonly calloutText: Record<SlipKind, readonly GameMessageKey[]> = {
+    wrong: ['slipWrong'],
+    time: ['slipTime'],
+    heart: ['slipHeart'],
+    cheer: ['cheerFriend', 'cheerSparkle', 'cheerBrilliant'],
+    shield: ['cheerShield'],
+  };
+  /** The bubble over the battlefield after a spell; the id restarts its pop for a new one. */
   protected readonly slip = signal<{ kind: SlipKind; id: number } | null>(null);
   private slipTimer?: ReturnType<typeof setTimeout>;
   /** The last slip was the ring running out, not a wrong spell. */
@@ -331,7 +339,13 @@ export class FairyDefenseComponent {
           : 'wrong',
     );
     this.audio.speak(this.message());
-    if (resolved.phase !== 'transforming' && resolved.phase !== 'lost')
+    if (resolved.phase === 'transforming')
+      this.showSlip(
+        resolved.wave.boss && resolved.encounter < resolved.wave.encounters.length - 1
+          ? 'shield'
+          : 'cheer',
+      );
+    else if (resolved.phase !== 'lost')
       this.showSlip(resolved.damaged ? 'heart' : this.timedOut() ? 'time' : 'wrong');
     if (resolved.phase === 'lost') {
       this.focusOutcome();

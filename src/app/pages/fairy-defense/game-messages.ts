@@ -87,6 +87,10 @@ const en = {
   slipWrong: 'Fizzle! Try another spell.',
   slipTime: 'Time’s up! One step closer.',
   slipHeart: 'Ouch! The castle lost a heart.',
+  cheerFriend: 'Yes! A new friend!',
+  cheerSparkle: 'Sparkly magic!',
+  cheerBrilliant: 'Brilliant spell!',
+  cheerShield: 'Shield broken!',
   paceHelp:
     'With Steady or Quick, a glowing ring burns down. When it runs out, the monster takes one step closer. Relaxed has no timer, and pause stops the ring.',
 };
@@ -181,6 +185,10 @@ export const gameMessages: Record<Locale, GameMessages> = {
     slipWrong: 'Puff! Versuch einen anderen Zauber.',
     slipTime: 'Zeit um! Ein Schritt näher.',
     slipHeart: 'Autsch! Die Burg verliert ein Herz.',
+    cheerFriend: 'Ja! Ein neuer Freund!',
+    cheerSparkle: 'Funkelnde Magie!',
+    cheerBrilliant: 'Super Zauber!',
+    cheerShield: 'Schild zerbrochen!',
     paceHelp:
       'Bei Ruhig oder Schnell brennt ein leuchtender Ring herunter. Ist er leer, kommt das Monster einen Schritt näher. Entspannt hat keine Uhr, und Pause hält den Ring an.',
   },
@@ -272,6 +280,10 @@ export const gameMessages: Record<Locale, GameMessages> = {
     slipWrong: '¡Puf! Prueba otro hechizo.',
     slipTime: '¡Se acabó el tiempo! Un paso más cerca.',
     slipHeart: '¡Ay! El castillo perdió un corazón.',
+    cheerFriend: '¡Sí! ¡Un nuevo amigo!',
+    cheerSparkle: '¡Magia brillante!',
+    cheerBrilliant: '¡Hechizo genial!',
+    cheerShield: '¡Escudo roto!',
     paceHelp:
       'Con Normal o Rápido, un anillo brillante se va consumiendo. Cuando se acaba, el monstruo da un paso más. Tranquilo no tiene reloj, y la pausa detiene el anillo.',
   },
@@ -363,6 +375,10 @@ export const gameMessages: Record<Locale, GameMessages> = {
     slipWrong: 'Pschitt ! Essaie un autre sort.',
     slipTime: 'Temps écoulé ! Un pas de plus.',
     slipHeart: 'Aïe ! Le château perd un cœur.',
+    cheerFriend: 'Oui ! Un nouvel ami !',
+    cheerSparkle: 'Magie scintillante !',
+    cheerBrilliant: 'Super sort !',
+    cheerShield: 'Bouclier brisé !',
     paceHelp:
       'En mode Normal ou Rapide, un anneau lumineux se consume. Quand il est vide, le monstre fait un pas de plus. Détendu n’a pas de minuteur, et la pause arrête l’anneau.',
   },
