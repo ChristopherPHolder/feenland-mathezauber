@@ -8,6 +8,8 @@ export interface PondHeron {
   readonly state: 'flying' | 'stole' | 'shooed';
   /** Milliseconds from arriving to snatching the snack. */
   readonly duration: number;
+  /** When it snatches the snack, as `Date.now()`: the heron's place on its loop follows it. */
+  readonly due: number;
   readonly paused: boolean;
 }
 

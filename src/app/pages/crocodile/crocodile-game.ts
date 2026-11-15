@@ -71,6 +71,8 @@ interface Round {
 interface HeronFlight {
   readonly target: 'left' | 'right' | 'center';
   readonly duration: number;
+  /** When the heron swoops, as `Date.now()`; moved on when a hidden page comes back. */
+  readonly due: number;
   readonly state: 'flying' | 'stole' | 'shooed';
   readonly paused: boolean;
 }
@@ -471,6 +473,7 @@ export class CrocodileGame {
     this.heron.set({
       target: answer === '>' ? 'left' : answer === '<' ? 'right' : 'center',
       duration,
+      due: Date.now() + duration,
       state: 'flying',
       paused: false,
     });
@@ -479,6 +482,7 @@ export class CrocodileGame {
   }
   private armHeron() {
     this.heronDue = Date.now() + this.heronRemaining;
+    this.heron.update((heron) => heron && { ...heron, due: this.heronDue });
     this.heronTimer = setTimeout(() => this.steal(), this.heronRemaining);
     const countdown = () =>
       this.secondsLeft.set(Math.max(0, Math.ceil((this.heronDue - Date.now()) / 1000)));

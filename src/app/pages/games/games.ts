@@ -1,4 +1,4 @@
-import { DOCUMENT, NgOptimizedImage, ViewportScroller } from '@angular/common';
+import { NgOptimizedImage, ViewportScroller } from '@angular/common';
 import {
   afterNextRender,
   Component,
@@ -17,7 +17,6 @@ import { localQuestion } from '../../core/practice';
 import { Emblem } from '../../shared/emblem';
 import { Icon } from '../../shared/icon';
 import { StarRating } from '../../shared/star-rating';
-import { supportsWebGL } from '../../shared/three/three-stage';
 import { CampaignStore } from '../fairy-defense/campaign';
 import { TOTAL_WAVES } from '../fairy-defense/waves';
 import { comparisonStage, localSide } from '../crocodile/comparison';
@@ -25,6 +24,8 @@ import { raceStage, raceSumText } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
 import { lockStage } from '../treasure-lock/lock-puzzles';
 import { LockScores } from '../treasure-lock/lock-scores';
+import { localOps, potionStage } from '../potions/potion-puzzles';
+import { PotionScores } from '../potions/potion-scores';
 import {
   levelPosition,
   levels as wallLevels,
@@ -87,6 +88,7 @@ export class Games {
   protected readonly campaign = inject(CampaignStore);
   protected readonly scores = inject(CrocodileScores);
   private readonly lockScores = inject(LockScores);
+  private readonly potionScores = inject(PotionScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
   protected readonly nextId = computed(() => this.p.next()?.id);
@@ -124,13 +126,11 @@ export class Games {
       (host.querySelector<HTMLElement>('.game-jump')?.offsetHeight ?? 0) + 12,
     ]);
     destroyRef.onDestroy(() => scroller.setOffset([0, 0]));
-    const document = inject(DOCUMENT);
     afterNextRender(() => {
       // The hub can finish loading after the router tried its anchor jump; if the page is still
       // at the top, jump now. A restored scroll position (going back) is left alone.
       const fragment = route.snapshot.fragment;
       if (fragment && scroller.getScrollPosition()[1] === 0) scroller.scrollToAnchor(fragment);
-      warmThree(document);
     });
     afterNextRender(() => {
       if (typeof IntersectionObserver === 'undefined') return;
@@ -235,7 +235,11 @@ export class Games {
       help: level.description,
       ...(level.practice ? { upTo: level.practice.max } : {}),
       stars: levelStars(level, progress),
-      best: this.scores.best()[level.id] ?? this.lockScores.best()[level.id] ?? 0,
+      best:
+        this.scores.best()[level.id] ??
+        this.lockScores.best()[level.id] ??
+        this.potionScores.best()[level.id] ??
+        0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
       recommended: level.id === this.nextId(),
       hero: level.format === 'fairy-defense',
@@ -270,6 +274,8 @@ export class Games {
     if (race) return raceSumText(race, (n) => this.i.t('raceHalfOf', { n }), divide);
     const crocodile = comparisonStage(level.id)?.example;
     if (crocodile) return localSide(crocodile, this.i.t('crocHalfOf'), divide);
+    const potion = potionStage(level.id)?.example;
+    if (potion) return localOps(potion, divide);
     return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {
@@ -278,18 +284,4 @@ export class Games {
   private wallHelp(level: WallLevel): MessageKey {
     return `wallLevel${level}Help` as MessageKey;
   }
-}
-
-/**
- * Downloads Three.js while the child looks at the hub, so a game's loading scene and world start
- * sooner after the tap. Skipped where WebGL is missing, as no 3D would draw there anyway.
- */
-function warmThree(document: Document) {
-  const view = document.defaultView;
-  if (!view || !supportsWebGL(document)) return;
-  // Stage pulls in exactly the parts of Three.js the worlds share; a bare `import('three')`
-  // would keep the whole library in that chunk.
-  const warm = () => void import('../../shared/three/stage').catch(() => undefined);
-  if (typeof view.requestIdleCallback === 'function') view.requestIdleCallback(warm);
-  else view.setTimeout(warm, 1500);
 }
