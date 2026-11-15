@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 132 selectable levels across nine games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 144 selectable levels across ten games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -28,6 +28,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Firework Show    | 12 fireworks and the grand finale, then the show                 | 12 × 8–12 s + finale and show ≈ 2–3 min               |
 | The Star Catcher     | 10 stars (8 on sum levels) and a 3-star finale                   | 13 × 6–10 s ≈ 1.5–2.5 min; 11 × 15–20 s ≈ 2.5–3.5 min |
 | The Mushroom Drums   | 3 verses of 7–10 drums plus a 4-drum solo, about 34 answers      | 34 × 2.5–3.5 s + demos and titles ≈ 2.5–3.5 min       |
+| The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -108,6 +109,19 @@ Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets wh
 | Sharing and all spells | sharing potions 12 ÷ 3 + 2 → 6 · potion master with all four spells 8 ÷ 2 × 3 + 1 → 13   |
 
 A potion is built by mixing random bottles with random spells, so it always brews, and the solver in `potion-puzzles.ts` then checks it: the potion never equals one of its bottles, and a level's `needs` spells (− for three bottles, × for the times levels, ÷ for sharing, × or ÷ for the master) must be part of every recipe. The built recipe keeps to table facts (no ×1, nothing past 10 × 10, sharing only within the tables), though a child may brew a potion any way that works. A bottle never goes empty or below zero, never holds more than the level's limit, and only shares evenly; a bottle the chosen spell cannot pour in is greyed out with a line saying why.
+
+### The Fairy Bakery: 12 levels (`pages/bakery/bakery-levels.ts`)
+
+| Topic             | Levels, easiest first                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| Friendly trays    | read the tray (×2, ×5, ×10, 2–5 rows, no cut) · turn it round 5 × 7 = 7 × 5                   |
+| One more row      | ×3 = ×2 + a row 3 × 6 = 2 × 6 + 6 · ×6 = ×5 + a row 6 × 7 = 5 × 7 + 7                         |
+| Doubling          | ×4 = double ×2 · ×8 = double ×4 (up to three cuts) · ×6 = double ×3                           |
+| One row less      | ×9 = ×10 − a row 9 × 6 = 10 × 6 − 6, with one ×4 = ×5 − a row order                           |
+| Big trays         | ×7 = ×5 + ×2 · your choice (×3, ×4, ×6–×9 up to 60)                                           |
+| Baker’s challenge | area model, all facts to 100 · master baker (missed facts first, then the hardest; needs ★★★) |
+
+The bakery is the "derive" step between the friendly facts and recall: the child cuts a tray along a gap into trays they know, names each piece from four choices, then types the total. Any cut along a gap is right; the level's trick only decides which gap glows and which cut earns the clever-trick bonus. Trays fade from cookies (1–6) to cookies with labelled sides and 5 × 5 blocks (7–10) to a bare area model (11–12, with a "Show the cookies" switch). From level 9 a baked tray can be cut another way for a bonus. A fact the child slipped on comes back two orders later in the same round and early in the next round of any bakery level whose range includes it (`BakeryScores.missed`). Help never shows a product: it names the rows' pattern, restates the child's own piece values, and then shows a recipe card with other numbers.
 
 ### The Firework Show: 12 levels (`pages/fireworks/firework-levels.ts`)
 
