@@ -140,7 +140,9 @@
   </app-battle-scene>
   @if (started() && battle().phase !== 'lost' && battle().phase !== 'complete') {
     <div class="learning-dock">
-      @if (training(); as config) {
+      @if (ruleHintText(); as rule) {
+        <p class="rule-hint">{{ rule }}</p>
+      } @else if (training(); as config) {
         <!-- The stage number is in the HUD chip; here only the kind of magic, on one line. -->
         <p class="training-position">{{ i.t(config.title ?? config.skill) }}</p>
       }

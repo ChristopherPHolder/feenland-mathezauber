@@ -534,6 +534,17 @@
     font-size: 20px;
   }
 }
+.rule-hint {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 6px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #fff1c2;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+}
 .training-position {
   margin: 0;
   overflow: hidden;

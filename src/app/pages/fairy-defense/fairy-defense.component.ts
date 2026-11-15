@@ -39,6 +39,7 @@ import { advance, Battle, cast, freshBattle, resolveSpell, revealHint, timeOut }
 import { FuseTimer } from './fuse-timer';
 import { SlipCallout, SlipKind } from './slip-callout';
 import { LostProgress } from './lost-progress';
+import { ruleHint } from './rule-hint';
 import { GameAudio } from './game-audio';
 import { gameText, GameMessageKey } from './game-messages';
 import { AudioSettings, PlaytestStore } from './playtest-store';
@@ -172,6 +173,15 @@ export class FairyDefenseComponent {
   private remaining = 0;
   private pending?: () => void;
   private returnFocus?: HTMLElement;
+  /** After a slip on a missing-number question: how to work it out, never the number itself. */
+  protected readonly ruleHintText = computed(() => {
+    const state = this.battle();
+    const question = this.encounter()?.question;
+    if (!question || state.phase === 'transforming' || !(state.mistakes > 0 || state.damaged))
+      return null;
+    const hint = ruleHint(question.text);
+    return hint ? this.t(hint.key, hint.values) : null;
+  });
   protected readonly message = computed(() => {
     const state = this.battle();
     if (this.timedOut() && (state.phase === 'wrong' || state.phase === 'ready'))
@@ -180,7 +190,7 @@ export class FairyDefenseComponent {
       return (
         this.equation() +
         (state.phase === 'wrong'
-          ? '. ' + this.i.t('tryAgain')
+          ? '. ' + this.i.t('tryAgain') + (this.ruleHintText() ? ' ' + this.ruleHintText() : '')
           : state.phase === 'transforming'
             ? '. ' + this.i.t('correctAnswer')
             : '')
