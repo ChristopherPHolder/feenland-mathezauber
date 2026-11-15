@@ -242,18 +242,21 @@
       [class.frenzy]="frenzy()"
       [class.race]="timed()"
       [class.stolen]="round().phase === 'stolen'"
+      [class.in-3d]="pond.ready()"
       [attr.data-snack-kind]="kind()"
       [attr.aria-label]="t('pondTitle')"
     >
-      <app-pond-scene [boss]="kind() === 'boss'" [frenzy]="frenzy()" />
-      @if (heron(); as flight) {
-        <app-heron
-          [state]="flight.state"
-          [target]="flight.target"
-          [paused]="flight.paused"
-          [duration]="flight.duration"
-        />
-      }
+      <app-three-stage #pond class="pond-stage" [world]="loadPond" [state]="pondFrame()">
+        <app-pond-scene [boss]="kind() === 'boss'" [frenzy]="frenzy()" />
+        @if (heron(); as flight) {
+          <app-heron
+            [state]="flight.state"
+            [target]="flight.target"
+            [paused]="flight.paused"
+            [duration]="flight.duration"
+          />
+        }
+      </app-three-stage>
       @if (banner(); as callout) {
         <p
           class="banner"
