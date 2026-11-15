@@ -286,7 +286,7 @@ describe('the hungry crocodile game', () => {
     expect(element.querySelector('.points-float')?.textContent).toBe(
       `+${snackPoints(kind, 1) + 20}`,
     );
-    expect(element.querySelector('.instruction')!.textContent).toContain('Shoo, heron!');
+    expect(element.querySelector('.instruction')!.textContent).toMatch(/points! Shoo, heron!/);
     expect(element.querySelector('app-heron.shooed')).not.toBeNull();
     vi.advanceTimersByTime(1400);
     fixture.detectChanges();
