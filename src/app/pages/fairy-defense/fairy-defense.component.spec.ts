@@ -185,6 +185,13 @@ describe('Wave 1 playable integration', () => {
     expect(progress?.textContent?.trim()).toBe('You made a new butterfly friend!');
     expect(progress?.querySelectorAll('img')).toHaveLength(1);
   });
+  it('shows the stakes on the intro card: three hearts and the next wave', () => {
+    const { element } = setup();
+    const stakes = element.querySelector('.start-curtain .stakes');
+    expect(stakes?.querySelectorAll('svg')).toHaveLength(3);
+    expect(stakes?.textContent).toContain('3 hearts remaining out of three');
+    expect(stakes?.textContent).toContain('Wave 1 of 20');
+  });
   it('shows no ring at the relaxed pace, however long the child thinks', () => {
     const { fixture, element, click } = setup();
     click('Play');

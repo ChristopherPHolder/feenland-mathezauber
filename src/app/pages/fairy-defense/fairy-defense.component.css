@@ -46,8 +46,31 @@
   margin: 12px 0;
 }
 .story-panel .rule-copy {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--moss-ink);
+}
+.stakes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.story-panel .stake {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #152f4a;
+  color: #fffaf0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.stake svg {
+  width: 22px;
+  height: 22px;
+  fill: #ff5c7a;
 }
 .story-panel .intro-example {
   font-size: clamp(28px, 4vw, 40px);
@@ -91,6 +114,12 @@
 }
 /* A phone on its side: the card keeps the reward and the buttons, and drops the small print. */
 @media (max-height: 500px) {
+  .start-curtain .rule-copy {
+    display: none;
+  }
+  .stakes {
+    margin: 6px 0;
+  }
   .outcome-curtain {
     align-items: flex-start;
     padding-top: 12px;
@@ -267,7 +296,7 @@
     font-size: 15px;
   }
   .story-panel .rule-copy {
-    font-size: 12px;
+    font-size: 15px;
   }
   .start-curtain,
   .outcome-curtain {

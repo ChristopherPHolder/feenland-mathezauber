@@ -39,6 +39,20 @@
       <div class="start-curtain">
         <div class="story-panel">
           <h2>{{ training() ? i.t(training()!.title ?? training()!.skill) : t('intro') }}</h2>
+          <!-- What is at stake before the first tap: three hearts, and which wave is next. -->
+          <p class="stakes">
+            <span class="stake">
+              @for (heart of [1, 2, 3]; track heart) {
+                <svg viewBox="0 0 32 30" aria-hidden="true">
+                  <path d="M16 27S2 19 2 10a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 9-14 17-14 17Z" />
+                </svg>
+              }
+              <span class="sr-only">{{ t('health', { n: 3 }) }}</span>
+            </span>
+            @if (!training()) {
+              <span class="stake">{{ t('wave', { n: campaign.nextWave() }) }}</span>
+            }
+          </p>
           @if (!training() && mathRange() === '10') {
             <p>{{ t('briefing') }}</p>
           }
