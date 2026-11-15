@@ -4,6 +4,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  Object3D,
   RingGeometry,
   SphereGeometry,
 } from 'three';
@@ -58,8 +59,9 @@ export function sinceSnap(phase: number): number {
 export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
   private readonly kiki = new Kiki();
   private readonly ripples: Mesh<RingGeometry, MeshBasicMaterial>[] = [];
-  private readonly drops: Mesh<SphereGeometry, MeshBasicMaterial>[] = [];
+  private readonly drops: Mesh[] = [];
   private readonly pads: Group[] = [];
+  private readonly dropMaterial = new MeshBasicMaterial({ color: '#ffffff', transparent: true });
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { fov: 36 });
@@ -92,8 +94,13 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
     shade.scale.set(0.62, 0.95, 1);
     pond.add(bank, water, shade);
 
+    // Two pads of each tone share one set of materials.
+    const padTones = [makeLilyPad('#4ca25f'), makeLilyPad('#5fb86c')];
+    const used = new Set<Group>();
     for (const [x, z, size, turn, tone] of PADS) {
-      const pad = makeLilyPad(tone ? '#5fb86c' : '#4ca25f');
+      const source = padTones[tone]!;
+      const pad = used.has(source) ? source.clone() : source;
+      used.add(source);
       pad.position.set(x, PAD_Y, z);
       pad.scale.setScalar(size);
       pad.rotation.y = turn;
@@ -121,10 +128,7 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
     }
     const drop = new SphereGeometry(1, 8, 6);
     for (let i = 0; i < DROPS; i++) {
-      const mesh = new Mesh(
-        drop,
-        new MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.9 }),
-      );
+      const mesh = new Mesh(drop, this.dropMaterial);
       mesh.visible = false;
       this.drops.push(mesh);
       pond.add(mesh);
@@ -133,6 +137,7 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
     // Facing the camera, turned a little so her long snout shows when she opens wide.
     this.kiki.body.rotation.y = 0.55;
     this.kiki.root.scale.setScalar(1.55);
+    lighten(this.kiki.root);
     pond.add(this.kiki.root);
     this.scene.add(pond);
   }
@@ -192,6 +197,7 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
     }
     // A few drops fly up from the snap and fall back.
     const flight = since / 0.55;
+    this.dropMaterial.opacity = 0.9 * Math.max(0, 1 - flight);
     for (const [index, drop] of this.drops.entries()) {
       drop.visible = flight < 1;
       if (!drop.visible) continue;
@@ -203,7 +209,6 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
         SNOUT_Z + Math.cos(angle) * reach,
       );
       drop.scale.setScalar(0.065 * (1 - flight * 0.5));
-      drop.material.opacity = 0.9 * (1 - flight);
     }
     // The pads rock gently as the ripples pass under them.
     for (const [index, pad] of this.pads.entries()) {
@@ -221,3 +226,21 @@ const PADS: readonly [number, number, number, number, number][] = [
   [0.2, -1.75, 0.3, 4.1, 1],
   [-0.65, 1.65, 0.3, 5.2, 0],
 ];
+
+/**
+ * Swaps Kiki's smooth spheres for lighter ones. The loader only shows her for a moment, so she
+ * can draw with about half the triangles and still look round.
+ */
+function lighten(root: Object3D) {
+  const light = new SphereGeometry(1, 14, 10);
+  const heavy = new Set<SphereGeometry>();
+  root.traverse((object) => {
+    if (!(object instanceof Mesh)) return;
+    const geometry = object.geometry;
+    if (geometry instanceof SphereGeometry && geometry.parameters.widthSegments > 14) {
+      heavy.add(geometry);
+      object.geometry = light;
+    }
+  });
+  for (const geometry of heavy) geometry.dispose();
+}
