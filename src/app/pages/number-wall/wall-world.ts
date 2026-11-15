@@ -50,6 +50,11 @@ const PITCH = 0.24;
 /** Seconds from the start of a bonk to the club hitting the wall. */
 const IMPACT = 0.42;
 const SWOOP = 2.6;
+/** Seconds a wrong answer plays for: the brick bounces out, flashes red and thuds back. */
+const MISS = 0.85;
+/** When the bounced-out brick lands back in its gap. */
+const MISS_THUD = 0.42;
+const MISS_RED = new Color('#ff1f1f');
 const PINK_GLOW = new Color('#ff3d8b');
 const PAIR_GLOW = new Color('#ffbf1f');
 const GOLD_GLOW = new Color('#ffcf3a');
@@ -97,6 +102,7 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
   private buildAt = -10;
   private readonly dropAt = new Map<string, number>();
   private missAt = -10;
+  private missPuffed = true;
   private bonkAt = -10;
   private castAt = -10;
   private builtAt = -10;
@@ -222,7 +228,10 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
         this.trip = { start: t, to, cast: false };
       }
     }
-    if (this.misses.take(frame.misses)) this.missAt = t;
+    if (this.misses.take(frame.misses)) {
+      this.missAt = t;
+      this.missPuffed = false;
+    }
     if (this.bonks.take(frame.bonks)) this.bonkAt = t;
     if (this.casts.take(frame.casts)) {
       this.castAt = t;
@@ -495,7 +504,21 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
       }
 
       const isSelected = !!frame.selected && sameBrick(frame.selected, brick);
-      if (isSelected) block.rotation.z = shake(t, this.missAt, 0.55, 0.14);
+      const miss = t - this.missAt;
+      const missing = isSelected && miss >= 0 && miss < MISS;
+      if (missing && !calm) {
+        // A wrong answer: the brick won't fit. It pops out toward us, tips, then thuds back
+        // into its gap and wobbles, so the mistake reads at a glance without any words.
+        const out = Math.sin(Math.PI * clamp01(miss / MISS_THUD));
+        block.position.z += out * 0.95;
+        block.position.y += out * 0.3;
+        block.rotation.x = -out * 0.3;
+        block.rotation.z = shake(t, this.missAt + MISS_THUD, MISS - MISS_THUD, 0.2);
+      }
+      if (isSelected && miss >= MISS_THUD && !this.missPuffed) {
+        this.missPuffed = true;
+        this.sparks.dust(brick.root.position.clone().add(new Vector3(0, -0.4, 0.5)), 9, '#d9c9a8');
+      }
       const inPair =
         !!pair && pair.row === brick.row && (pair.col === brick.col || pair.col + 1 === brick.col);
 
@@ -510,6 +533,14 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
         brick.glowTo(PAIR_GLOW, strength);
         if (frame.hinting && !calm) block.scale.multiplyScalar(1 + 0.05 * pulse);
       } else brick.glowTo(PAIR_GLOW, 0);
+      if (missing && !frame.built) {
+        // Red, blinking twice (a steady fade in calm motion), then back to its pink glow.
+        const fade = 1 - miss / MISS;
+        const blink = calm ? 1 : 0.65 + 0.35 * Math.cos(miss * 15);
+        brick.glowTo(MISS_RED, Math.min(1, fade * 1.4) * blink);
+      }
+      // Every brick, so one that loses the selection mid-flash still goes back to its colour.
+      brick.tint(MISS_RED, missing && !frame.built ? Math.min(0.8, (1 - miss / MISS) * 1.3) : 0);
 
       if (frame.crumbled && t > this.crumbleAt) {
         const index = order.indexOf(brick);
@@ -610,6 +641,23 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
       troll.root.rotation.y = -Math.PI / 2 + 0.2;
     }
     troll.daze(t, (frame.trollBump && bonk > IMPACT) || (goingBack && !frame.crumbled));
+
+    // A wrong answer: the troll turns to us and hops with his club up, cheering the slip.
+    const miss = t - this.missAt;
+    if (
+      miss >= 0 &&
+      miss < MISS + 0.15 &&
+      !frame.trollAsleep &&
+      !(bonk >= 0 && bonk < 0.9) &&
+      !frame.crumbled
+    ) {
+      const k = miss / (MISS + 0.15);
+      const lift = smooth(clamp01(k * 5)) * smooth(clamp01((1 - k) * 4));
+      troll.root.rotation.y += (-0.4 - troll.root.rotation.y) * lift;
+      troll.clubArm.rotation.x = -0.4 - 2.2 * lift + (calm ? 0 : Math.sin(miss * 16) * 0.25 * lift);
+      if (!calm)
+        troll.body.position.y = Math.abs(Math.sin((miss / MISS) * Math.PI * 2)) * 0.35 * lift;
+    }
 
     if (frame.crumbled && t > this.crumbleAt) {
       // Victory: he turns to us and hops with his club up.

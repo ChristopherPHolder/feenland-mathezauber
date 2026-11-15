@@ -117,6 +117,11 @@ export class Brick {
     } else this.label?.update(text);
   }
 
+  /** Its resting colour blended toward `color` by `amount` (0..1): 0 restores it. */
+  tint(color: Color, amount: number) {
+    this.material.color.set(LOOKS[this.look].color).lerp(color, amount);
+  }
+
   /** Its resting glow blended toward `color` by `amount` (0..1). */
   glowTo(color: Color, amount: number) {
     this.material.emissive.set(LOOKS[this.look].emissive).lerp(color, amount);
