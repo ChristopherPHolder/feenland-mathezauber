@@ -86,6 +86,40 @@ describe('Wave 1 playable integration', () => {
       '3 of 3 stars',
     );
   });
+  it('burns the ring down, steps the monster closer when it runs out and refills it', () => {
+    localStorage.setItem(
+      'feenland.practice-options',
+      JSON.stringify({ difficulty: 'medium', pace: 'quick' }),
+    );
+    const { fixture, element, click } = setup();
+    click('Play');
+    const ring = () => element.querySelector('app-fuse-timer progress');
+    expect(ring()?.getAttribute('aria-valuetext')).toBe('20 seconds left');
+    vi.advanceTimersByTime(5000);
+    fixture.detectChanges();
+    expect(ring()?.getAttribute('aria-valuetext')).toBe('15 seconds left');
+    click('Pause');
+    vi.advanceTimersByTime(60000);
+    fixture.detectChanges();
+    expect(ring()?.getAttribute('aria-valuetext')).toBe('15 seconds left');
+    click('Keep playing');
+    vi.advanceTimersByTime(15000);
+    fixture.detectChanges();
+    expect(element.querySelectorAll('.steps .passed').length).toBe(1);
+    expect(element.querySelector('.instruction')?.textContent).toContain('Time is up');
+    vi.advanceTimersByTime(1500);
+    fixture.detectChanges();
+    expect(ring()?.getAttribute('aria-valuetext')).toBe('20 seconds left');
+    expect(element.querySelector('.hearts')?.getAttribute('aria-label')).toContain('3');
+  });
+  it('shows no ring at the relaxed pace, however long the child thinks', () => {
+    const { fixture, element, click } = setup();
+    click('Play');
+    vi.advanceTimersByTime(120000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-fuse-timer')).toBeNull();
+    expect(element.querySelectorAll('.steps .passed').length).toBe(0);
+  });
   it('pauses a pending cast and resumes its remaining transition only once', () => {
     const { fixture, element, click } = setup();
     click('Play');
