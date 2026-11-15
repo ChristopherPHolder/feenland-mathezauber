@@ -139,6 +139,17 @@ describe('Wave 1 playable integration', () => {
     click('Cast spell 1');
     expect(bubble()).toBeUndefined();
   });
+  it('cheers a right spell with a bubble over the battlefield', () => {
+    const { fixture, element, click } = setup();
+    click('Play');
+    click('Cast spell 1');
+    vi.advanceTimersByTime(600);
+    fixture.detectChanges();
+    expect(element.querySelector('app-slip-callout')?.classList).toContain('is-cheer');
+    expect(element.querySelector('app-slip-callout')?.textContent?.trim()).toMatch(
+      /^(Yes! A new friend!|Sparkly magic!|Brilliant spell!)$/,
+    );
+  });
   it('shows no ring at the relaxed pace, however long the child thinks', () => {
     const { fixture, element, click } = setup();
     click('Play');
