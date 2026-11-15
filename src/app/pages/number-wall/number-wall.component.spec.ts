@@ -104,6 +104,19 @@ describe('Number wall game', () => {
     expect(JSON.parse(localStorage.getItem('feenland.number-wall.v1')!).pace).toBe('relaxed');
   });
 
+  it('leaves Enter to a focused link or button outside the wall, so All games still opens', () => {
+    const { element, click, status } = setup();
+    click('Build the magic wall');
+    const pad = [...element.querySelectorAll<HTMLButtonElement>('.pad .key')];
+    pad.find((key) => key.textContent?.trim() === '1')!.click();
+    const before = status();
+    const back = element.querySelector<HTMLAnchorElement>('a.games-link')!;
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    back.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(false);
+    expect(status()).toBe(before);
+  });
+
   it('starts the first level without a star from the big button', () => {
     localStorage.setItem(
       'feenland.number-wall.v1',
