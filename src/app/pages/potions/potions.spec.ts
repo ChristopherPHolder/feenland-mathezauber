@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { ProgressService } from '../../core/progress';
 import { HatcheryStore } from '../hatchery/hatchery-store';
 import { potionTranslations } from './potion-messages';
-import { PotionOp, PotionPuzzle, solve } from './potion-puzzles';
+import { PotionOp, PotionPuzzle, potionStages, solve } from './potion-puzzles';
 import { PotionScores } from './potion-scores';
 import { Potions } from './potions';
 
@@ -119,32 +119,35 @@ describe('the potion cauldron', () => {
     vi.useRealTimers();
   });
 
-  it('teaches the trick, brews six potions and records three stars', () => {
-    const fixture = setup('potion-4');
-    expect(element(fixture).textContent).toContain(en.times);
-    expect(element(fixture).textContent).toContain('Level 4 of 7');
-    expect(element(fixture).querySelectorAll('.level-pill').length).toBe(7);
-    const warm = vi.spyOn(TestBed.inject(HatcheryStore), 'warm');
-    start(fixture);
-    expect(TestBed.inject(ProgressService).progress().explored).toContain('tens');
-    expect(
-      [...element(fixture).querySelectorAll('.spell')].map((b) => b.textContent!.trim()),
-    ).toEqual(['+', '−', '×']);
-    for (let potion = 0; potion < 6; potion++) {
-      brew(fixture);
-      expect(status(fixture)).toContain(en.brewedPerfect);
-      expect(status(fixture)).toContain(en.moon);
-      element(fixture).querySelector<HTMLButtonElement>('.potion-actions .primary')!.click();
-      fixture.detectChanges();
-    }
-    expect(element(fixture).querySelector('.outcome h2')!.textContent).toContain(en.perfectRound);
-    expect(element(fixture).textContent).toContain('18 potion stars');
-    expect(warm).toHaveBeenCalledTimes(6);
-    const progress = TestBed.inject(ProgressService).progress();
-    expect(progress.stars?.['potion-4']).toBe(3);
-    expect(progress.mastered).toContain('potion-4');
-    expect(TestBed.inject(PotionScores).best()['potion-4']).toBeGreaterThan(0);
-  });
+  it.each(potionStages)(
+    'brews six solvable potions and records three stars in level $stage',
+    (stage) => {
+      const fixture = setup(`potion-${stage.stage}`);
+      expect(element(fixture).textContent).toContain(en[stage.trick]);
+      expect(element(fixture).textContent).toContain(`Level ${stage.stage} of 7`);
+      expect(element(fixture).querySelectorAll('.level-pill').length).toBe(7);
+      const warm = vi.spyOn(TestBed.inject(HatcheryStore), 'warm');
+      start(fixture);
+      expect(TestBed.inject(ProgressService).progress().explored).toContain('tens');
+      expect(
+        [...element(fixture).querySelectorAll('.spell')].map((b) => b.textContent!.trim()),
+      ).toEqual(stage.ops);
+      for (let potion = 0; potion < 6; potion++) {
+        brew(fixture);
+        expect(status(fixture)).toContain(en.brewedPerfect);
+        expect(status(fixture)).toContain(en.moon);
+        element(fixture).querySelector<HTMLButtonElement>('.potion-actions .primary')!.click();
+        fixture.detectChanges();
+      }
+      expect(element(fixture).querySelector('.outcome h2')!.textContent).toContain(en.perfectRound);
+      expect(element(fixture).textContent).toContain('18 potion stars');
+      expect(warm).toHaveBeenCalledTimes(6);
+      const progress = TestBed.inject(ProgressService).progress();
+      expect(progress.stars?.[`potion-${stage.stage}`]).toBe(3);
+      expect(progress.mastered).toContain(`potion-${stage.stage}`);
+      expect(TestBed.inject(PotionScores).best()[`potion-${stage.stage}`]).toBeGreaterThan(0);
+    },
+  );
 
   it('walks the child through a mix on the mix line', () => {
     const fixture = setup('potion-2');
@@ -239,7 +242,7 @@ describe('the potion cauldron', () => {
     const fixture = setup('potion-2');
     start(fixture);
     usePotion(fixture, [8, 5, 3], 10);
-    pour(fixture, 8, '−', 5);
+    pour(fixture, 8, '+', 5);
     element(fixture).querySelector<HTMLButtonElement>('.undo')!.click();
     fixture.detectChanges();
     expect(bottles(fixture).map((b) => b.textContent!.trim())).toEqual(['8', '5', '3']);
@@ -249,6 +252,60 @@ describe('the potion cauldron', () => {
     expect(status(fixture)).toContain(en.brewedPerfect);
     expect(status(fixture)).not.toContain(en.moon);
     expect(element(fixture).querySelector('.coins strong')!.textContent).toBe('30');
+  });
+
+  it.each([
+    { level: 2, values: [1, 6, 2], target: 7, a: 1, op: '+' as const, b: 6 },
+    { level: 3, values: [7, 3, 20], target: 30, a: 20, op: '−' as const, b: 3 },
+    { level: 4, values: [2, 5, 3], target: 13, a: 2, op: '+' as const, b: 5 },
+    { level: 6, values: [12, 3, 2], target: 6, a: 12, op: '+' as const, b: 3 },
+  ])('pours back a dead-end mix in level $level so the potion stays solvable', (example) => {
+    const fixture = setup(`potion-${example.level}`);
+    start(fixture);
+    usePotion(fixture, example.values, example.target);
+    pour(fixture, example.a, example.op, example.b);
+    expect(element(fixture).querySelector('.mix-line')!.getAttribute('data-outcome')).toBe(
+      'fizzle',
+    );
+    expect(status(fixture)).toContain(`can’t make ${example.target}`);
+    vi.advanceTimersByTime(2000);
+    fixture.detectChanges();
+    expect(bottles(fixture).map((button) => Number(button.textContent!.trim()))).toEqual(
+      example.values,
+    );
+    brew(fixture);
+    expect(status(fixture)).toContain(en.brewed);
+  });
+
+  it('restores the last solvable shelf after a later dead end, preserving undo and restart', () => {
+    const fixture = setup('potion-2');
+    start(fixture);
+    usePotion(fixture, [1, 2, 3, 4], 8);
+    pour(fixture, 2, '+', 3);
+    pour(fixture, 5, '+', 1);
+    vi.advanceTimersByTime(2000);
+    fixture.detectChanges();
+    expect(bottles(fixture).map((button) => button.textContent!.trim())).toEqual(['1', '5', '4']);
+    element(fixture).querySelector<HTMLButtonElement>('.undo')!.click();
+    fixture.detectChanges();
+    expect(bottles(fixture).map((button) => button.textContent!.trim())).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+    ]);
+    pour(fixture, 2, '+', 3);
+    pour(fixture, 5, '+', 4);
+    element(fixture).querySelector<HTMLButtonElement>('.restart')!.click();
+    fixture.detectChanges();
+    expect(bottles(fixture).map((button) => button.textContent!.trim())).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+    ]);
+    brew(fixture);
+    expect(status(fixture)).toContain(en.brewed);
   });
 
   it('lets the sparkle fade when the hourglass runs out, without blocking the potion', () => {

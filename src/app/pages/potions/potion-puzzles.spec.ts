@@ -65,7 +65,22 @@ describe('potion puzzles', () => {
           expect(potion.target).toBeGreaterThanOrEqual(low);
           expect(potion.target).toBeLessThanOrEqual(high);
           expect(potion.values).not.toContain(potion.target);
-          expect(solve(potion.values, potion.target, potion.ops, potion.max)).not.toBeNull();
+          const recipe = solve(potion.values, potion.target, potion.ops, potion.max);
+          expect(recipe).not.toBeNull();
+          // Replay with individual bottles, including duplicates, just as the controls do.
+          const bottles = [...potion.values];
+          for (const step of recipe!) {
+            for (const value of [step.a, step.b]) {
+              const index = bottles.indexOf(value);
+              expect(index).toBeGreaterThanOrEqual(0);
+              bottles.splice(index, 1);
+            }
+            expect(potion.ops).toContain(step.op);
+            expect(mix(step.a, step.op, step.b, potion.max)).toBe(step.result);
+            bottles.push(step.result);
+            expect(solve(bottles, potion.target, potion.ops, potion.max)).not.toBeNull();
+          }
+          expect(bottles).toEqual([potion.target]);
           if (stage.needs) {
             const without = stage.ops.filter((op) => !stage.needs!.includes(op));
             expect(solve(potion.values, potion.target, without, potion.max)).toBeNull();
