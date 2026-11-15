@@ -131,7 +131,9 @@ describe('the hungry crocodile game', () => {
         pick(element, wrong[0]);
         fixture.detectChanges();
         const instruction = () => element.querySelector('.instruction')!.textContent!;
-        expect(instruction()).toContain('Try again');
+        // A real space after "Try again!", so the inline phone-landscape card and screen readers
+        // never run it into the rule.
+        expect(instruction()).toMatch(/Try again! \S/);
         // Level 1 starts with Kiki's rule, whatever the right answer is.
         expect(instruction()).toContain(crocodileTranslations.en.ruleBigger);
         expect(element.querySelector('app-rule-hint .picture')).not.toBeNull();
