@@ -3,10 +3,6 @@ import { Locale } from '../../core/messages';
 const en = {
   title: 'The Firework Show',
   level: 'Level {n} of {total}',
-  story:
-    'At the lakeside festival, Flick the fox lights the fireworks. Each one bursts into a pattern of sparks that glows for a moment, then fades.',
-  storyHow:
-    'Say how many sparks you saw, without counting them one by one: see the groups! You can take as long as you like to answer.',
   trickTitle: 'Today’s trick',
   trick1: 'Dice pictures: you know them without counting. Look at the whole picture.',
   trick2: 'Up to four you see at once. Five? See a little group and some more.',
@@ -27,7 +23,6 @@ const en = {
   pacePop: 'Pop',
   paceSeconds: 'About {n} s',
   paceFree: 'Peeks are free',
-  paceRule: 'The glow gets a little shorter when you spot well, and longer when you need it.',
   bookTitle: 'Your firework book',
   bookFound: '{n} of {total} shapes found',
   bookLocked: 'Finish this level to add its shape',
@@ -113,6 +108,17 @@ const en = {
   again: 'Play again',
   save: 'Your stars could not be saved on this device.',
   allLevels: 'All levels',
+  demoTitle: 'How to play',
+  demoWatch: 'Watch the sparks!',
+  demoFade: 'They fade away…',
+  demoTap: 'Tap how many you saw.',
+  demoGroups: 'See the groups: 5 and 2 make 7!',
+  demoReplay: 'Play the film again',
+  demoPause: 'Pause the film',
+  demoSummary:
+    'How to play: a rocket bursts into sparks, a row of five and two more. They fade, and you tap 7 on the spark pad. Answering is never timed.',
+  coachGo: 'Got it!',
+  help: 'How to play',
 };
 
 export type FireworkMessageKey = keyof typeof en;
@@ -121,10 +127,6 @@ type Messages = Record<FireworkMessageKey, string>;
 const de: Messages = {
   title: 'Das Feuerwerk',
   level: 'Level {n} von {total}',
-  story:
-    'Beim Fest am See zündet Flick, der Fuchs, das Feuerwerk. Jede Rakete zerplatzt zu einem Funkenmuster, das kurz leuchtet und dann verblasst.',
-  storyHow:
-    'Sag, wie viele Funken du gesehen hast, ohne sie einzeln zu zählen: Sieh die Gruppen! Für die Antwort hast du so viel Zeit, wie du willst.',
   trickTitle: 'Der Trick von heute',
   trick1: 'Würfelbilder kennst du ohne Zählen. Schau auf das ganze Bild.',
   trick2: 'Bis vier siehst du sofort. Fünf? Sieh eine kleine Gruppe und noch ein paar.',
@@ -145,7 +147,6 @@ const de: Messages = {
   pacePop: 'Blitz',
   paceSeconds: 'Etwa {n} s',
   paceFree: 'Nochmal-Schauen ist gratis',
-  paceRule: 'Das Leuchten wird etwas kürzer, wenn du gut siehst, und länger, wenn du es brauchst.',
   bookTitle: 'Dein Feuerwerksbuch',
   bookFound: '{n} von {total} Formen gefunden',
   bookLocked: 'Schaff dieses Level, dann kommt seine Form dazu',
@@ -231,15 +232,22 @@ const de: Messages = {
   again: 'Nochmal spielen',
   save: 'Deine Sterne konnten auf diesem Gerät nicht gespeichert werden.',
   allLevels: 'Alle Level',
+  demoTitle: 'So geht’s',
+  demoWatch: 'Schau auf die Funken!',
+  demoFade: 'Sie verblassen …',
+  demoTap: 'Tippe, wie viele du gesehen hast.',
+  demoGroups: 'Sieh die Gruppen: 5 und 2 sind 7!',
+  demoReplay: 'Film nochmal abspielen',
+  demoPause: 'Film anhalten',
+  demoSummary:
+    'So geht’s: Eine Rakete zerplatzt zu Funken, eine Fünferreihe und zwei mehr. Sie verblassen, und du tippst 7 auf dem Funkenfeld. Für die Antwort gibt es keine Zeitgrenze.',
+  coachGo: 'Alles klar!',
+  help: 'So geht’s',
 };
 
 const es: Messages = {
   title: 'El espectáculo de fuegos',
   level: 'Nivel {n} de {total}',
-  story:
-    'En la fiesta del lago, el zorro Flick enciende los fuegos artificiales. Cada cohete estalla en un dibujo de chispas que brilla un momento y luego se apaga.',
-  storyHow:
-    'Di cuántas chispas viste sin contarlas una a una: ¡mira los grupos! Para responder tienes todo el tiempo que quieras.',
   trickTitle: 'El truco de hoy',
   trick1: 'Los dibujos de dado los conoces sin contar. Mira el dibujo entero.',
   trick2: 'Hasta cuatro lo ves de golpe. ¿Cinco? Mira un grupito y unas pocas más.',
@@ -260,7 +268,6 @@ const es: Messages = {
   pacePop: 'Destello',
   paceSeconds: 'Unos {n} s',
   paceFree: 'Volver a mirar es gratis',
-  paceRule: 'El brillo se acorta un poco cuando ves bien y se alarga cuando lo necesitas.',
   bookTitle: 'Tu libro de fuegos',
   bookFound: '{n} de {total} formas encontradas',
   bookLocked: 'Termina este nivel para añadir su forma',
@@ -346,15 +353,22 @@ const es: Messages = {
   again: 'Jugar otra vez',
   save: 'No se pudieron guardar tus estrellas en este dispositivo.',
   allLevels: 'Todos los niveles',
+  demoTitle: 'Cómo se juega',
+  demoWatch: '¡Mira las chispas!',
+  demoFade: 'Se apagan…',
+  demoTap: 'Toca cuántas viste.',
+  demoGroups: 'Mira los grupos: ¡5 y 2 son 7!',
+  demoReplay: 'Ver la película otra vez',
+  demoPause: 'Pausar la película',
+  demoSummary:
+    'Cómo se juega: un cohete estalla en chispas, una fila de cinco y dos más. Se apagan y tocas 7 en el panel de chispas. Responder nunca tiene tiempo límite.',
+  coachGo: '¡Entendido!',
+  help: 'Cómo se juega',
 };
 
 const fr: Messages = {
   title: 'Le grand feu d’artifice',
   level: 'Niveau {n} sur {total}',
-  story:
-    'À la fête du lac, Flick le renard allume le feu d’artifice. Chaque fusée éclate en un motif d’étincelles qui brille un instant, puis s’efface.',
-  storyHow:
-    'Dis combien d’étincelles tu as vues sans les compter une par une : vois les groupes ! Pour répondre, tu as tout le temps qu’il te faut.',
   trickTitle: 'L’astuce du jour',
   trick1: 'Les faces de dé, tu les connais sans compter. Regarde toute l’image.',
   trick2:
@@ -376,7 +390,6 @@ const fr: Messages = {
   pacePop: 'Éclair',
   paceSeconds: 'Environ {n} s',
   paceFree: 'Regarder encore est gratuit',
-  paceRule: 'La lueur raccourcit un peu quand tu vois bien, et s’allonge quand tu en as besoin.',
   bookTitle: 'Ton livre de feux d’artifice',
   bookFound: '{n} formes trouvées sur {total}',
   bookLocked: 'Termine ce niveau pour ajouter sa forme',
@@ -463,6 +476,17 @@ const fr: Messages = {
   again: 'Rejouer',
   save: 'Tes étoiles n’ont pas pu être enregistrées sur cet appareil.',
   allLevels: 'Tous les niveaux',
+  demoTitle: 'Comment jouer',
+  demoWatch: 'Regarde les étincelles !',
+  demoFade: 'Elles s’effacent…',
+  demoTap: 'Touche combien tu en as vu.',
+  demoGroups: 'Vois les groupes : 5 et 2 font 7 !',
+  demoReplay: 'Revoir le film',
+  demoPause: 'Mettre le film en pause',
+  demoSummary:
+    'Comment jouer : une fusée éclate en étincelles, une rangée de cinq et deux de plus. Elles s’effacent, et tu touches 7 sur le pavé d’étincelles. Répondre n’est jamais chronométré.',
+  coachGo: 'Compris !',
+  help: 'Comment jouer',
 };
 
 export const fireworkTranslations: Record<Locale, Messages> = { en, de, es, fr };

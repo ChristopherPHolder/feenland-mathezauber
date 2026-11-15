@@ -1,0 +1,298 @@
+/* The page, the HUD and how the board and controls share the screen at every size. Sizes come
+   from the viewport and the play area's own width, never from a fixed device. */
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  --night: #17123a;
+  --pad-top: clamp(10px, 2vw, 16px);
+  --pad-bottom: clamp(12px, 2vw, 24px);
+  display: block;
+  min-height: calc(100dvh - var(--safe-y));
+  background: linear-gradient(#e9e2ff, #f4effc 45%, #e4f3ea);
+  padding: var(--pad-top) max(clamp(10px, 2vw, 16px), env(safe-area-inset-right)) var(--pad-bottom)
+    max(clamp(10px, 2vw, 16px), env(safe-area-inset-left));
+  color: var(--ink);
+}
+.game {
+  max-width: 1240px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.4vw, 14px);
+}
+.pause-button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 46px;
+  min-height: 46px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: #ffffffd9;
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+}
+.help-button span {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+}
+.pause-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* HUD: verses, the drum count, points and the band's instruments, in one row where it fits. */
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px clamp(8px, 1.6vw, 16px);
+}
+.verses {
+  display: flex;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.verse-pill {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #c9bdf0;
+  background: #ffffffb3;
+  font-weight: 600;
+  color: var(--muted);
+}
+.verse-pill svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.verse-pill.done {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+  color: var(--success-strong);
+}
+.verse-pill.current {
+  border-color: var(--violet);
+  background: var(--paper);
+  color: var(--violet);
+  box-shadow: 0 0 0 3px #7950b033;
+}
+.verse-pill.solo.current {
+  border-color: var(--gold-deep);
+  background: var(--gold);
+  color: var(--ink);
+}
+.drum-count {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.points {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 0 auto;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+}
+.points span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.points strong {
+  min-width: 3ch;
+  font-size: 22px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.band {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--night);
+}
+.band-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3a3275;
+}
+.band-dot.on[data-layer='drums'] {
+  background: #ff7ab8;
+}
+.band-dot.on[data-layer='bass'] {
+  background: #ffc24d;
+}
+.band-dot.on[data-layer='flute'] {
+  background: #4fd6c4;
+}
+.band-dot.on[data-layer='bells'] {
+  background: #a98bff;
+}
+.band-dot.on[data-layer='choir'] {
+  background: #7fd36b;
+}
+
+/* While a round is on, the game fills the screen: the controls take what they need and the
+   board grows into the rest, so the answers stay above the fold on any phone or tablet. */
+.game.playing {
+  min-height: calc(100dvh - var(--safe-y) - var(--pad-top) - var(--pad-bottom));
+}
+.play-area {
+  container: play / inline-size;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(190px, 1fr) auto;
+  gap: clamp(8px, 1.4vw, 14px);
+  min-height: 0;
+}
+.play-area .board {
+  min-height: 190px;
+}
+.play-area .chart-side {
+  display: none;
+}
+
+/* A tablet held upright: the chart stands beside the answers instead of over the forest. */
+@container play (min-width: 600px) {
+  .play-area .controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 0.5fr);
+    grid-template-areas:
+      'prompt chart'
+      'answers chart'
+      'status chart'
+      'help chart'
+      'keys chart';
+    grid-template-rows: auto auto auto auto 1fr;
+    align-content: start;
+    column-gap: clamp(12px, 2vw, 20px);
+  }
+  .play-area .prompt {
+    grid-area: prompt;
+  }
+  .play-area .answers {
+    grid-area: answers;
+  }
+  .play-area .status {
+    grid-area: status;
+  }
+  .play-area .help {
+    grid-area: help;
+  }
+  .play-area .keys-help {
+    grid-area: keys;
+  }
+  .play-area .chart-side {
+    display: grid;
+    grid-area: chart;
+    align-self: start;
+  }
+  .play-area .chart-inset {
+    display: none;
+  }
+}
+
+/* Sideways: the board fills the height on the left, the controls take the right. */
+@media (orientation: landscape) {
+  .play-area {
+    grid-template-columns: minmax(0, 1.55fr) minmax(min(36%, 280px), 1fr);
+    grid-template-rows: minmax(220px, 1fr);
+  }
+  .play-area .controls {
+    display: flex;
+    align-self: start;
+  }
+  .play-area .chart-side {
+    display: none;
+  }
+  .play-area .chart-inset {
+    display: grid;
+  }
+}
+/* Tall enough sideways (tablets, laptops): the chart moves under the answers. */
+@media (orientation: landscape) and (min-height: 640px) {
+  .play-area .chart-side {
+    display: grid;
+    align-self: stretch;
+    width: min(100%, 34dvh, 340px);
+  }
+  .play-area .chart-inset {
+    display: none;
+  }
+}
+/* A sideways phone: no room for extras next to the board. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .keys-help,
+  .drum-count {
+    display: none;
+  }
+}
+.drum-count .short {
+  display: none;
+}
+/* A narrow phone keeps the HUD on one row. */
+@media (max-width: 480px) {
+  /* The pause dialog holds the film too, so one button is enough and the title keeps its room. */
+  .help-button {
+    display: none;
+  }
+  .drum-count .short {
+    display: inline;
+  }
+  .hud {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .drum-count .long,
+  .points span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@media (max-width: 420px) {
+  .verse-pill {
+    width: 30px;
+    height: 30px;
+  }
+  .points {
+    padding: 4px 10px;
+  }
+  .band-dot {
+    width: 11px;
+    height: 11px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .points.bump strong {
+    animation: bump 0.5s ease-out;
+  }
+}
+@keyframes bump {
+  40% {
+    transform: scale(1.3);
+  }
+}
+:host-context(.calm-motion) .points.bump strong {
+  animation: none;
+}

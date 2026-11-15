@@ -4,6 +4,7 @@ import { comparisonLevels } from '../pages/crocodile/comparison';
 import { raceLevelEntries } from '../pages/unicorn-race/race-questions';
 import { lockLevels } from '../pages/treasure-lock/lock-puzzles';
 import { potionLevels } from '../pages/potions/potion-puzzles';
+import { drumLevels } from '../pages/drums/drum-patterns';
 import { starLevels } from '../pages/star-catcher/star-levels';
 import { fireworkCatalogLevels } from '../pages/fireworks/firework-levels';
 import { MessageKey } from './messages';
@@ -69,6 +70,13 @@ export const worlds: readonly World[] = [
         description: 'crocodileChapterHelp',
         emblem: '🐊',
         levels: comparisonLevels,
+      },
+      {
+        id: 'mushroom-drums',
+        title: 'drumsChapter',
+        description: 'drumsChapterHelp',
+        emblem: '🥁',
+        levels: drumLevels,
       },
       {
         id: 'fireworks',
