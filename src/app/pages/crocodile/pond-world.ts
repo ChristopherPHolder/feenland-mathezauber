@@ -31,6 +31,7 @@ import {
 } from '../../shared/three/motion';
 import type { Comparison } from './comparison';
 import type { PondFrame } from './pond-frame';
+import { heronLapSeconds, heronLoop } from './heron-flight';
 import { Kiki } from './pond-kiki';
 import {
   Butterfly,
@@ -141,9 +142,10 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
   private heronStateAt = 0;
   private heronFrom = new Vector3();
   private heronScale = 1;
-  private heronStart = new Vector3();
-  private orbitCenter = new Vector3();
-  private orbitRadius = 2;
+  /** How far round its loop the heron is, in radians. */
+  private heronAngle = 0;
+  /** Where the instruction bubble starts, in the host's pixels: the loop stays above it. */
+  private floor = 0;
   private carried: Raft | null = null;
   private readonly lastHeron = new Vector3();
 
@@ -314,6 +316,8 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     const board = this.host.parentElement;
     if (!board) return;
     const base = this.host.getBoundingClientRect();
+    const instruction = board.querySelector<HTMLElement>('.instruction');
+    this.floor = instruction ? instruction.getBoundingClientRect().top - base.top : this.height;
     const read = (side: string): Anchor | null => {
       const element = board.querySelector<HTMLElement>(`[data-side="${side}"]`);
       if (!element) return null;
@@ -378,10 +382,6 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     const unit = this.perPixel(this.viewCenter) * Math.min(this.width, this.height * 1.4);
     this.placeDecor(unit);
 
-    const heronHeight = 2.6;
-    this.heronStart = this.ground(this.width * 1.25, -this.height * 0.2, heronHeight + 1.2);
-    this.orbitCenter = this.ground(this.width / 2, this.height * 0.4, heronHeight);
-    this.orbitRadius = Math.min(this.viewWidth * 0.18, unit * 0.22);
     this.heronScale = unit * 0.11;
     this.heron.root.scale.setScalar(this.heronScale);
   }
@@ -816,8 +816,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     if (heron.state === 'flying' && (this.heronSnack !== frame.snack || !this.heron.root.visible)) {
       this.heronSnack = frame.snack;
       this.heronProgress = 0;
-      this.heron.root.position.copy(this.heronStart);
-      this.heronFrom.copy(this.heronStart);
+      this.heronAngle = 0;
+      this.heron.root.position.copy(this.heronPoint(0, 0));
+      this.heronFrom.copy(this.heron.root.position);
     }
     if (heron.state === 'stole') {
       this.carried =
@@ -827,6 +828,26 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
             ? this.rafts.right
             : null;
     }
+  }
+
+  /**
+   * The heron's place on its loop round the pond (see `heronLoop`). It skims low over the water,
+   * so where it crosses behind Kiki she hides it, and it sinks lower as time runs out.
+   */
+  private heronPoint(progress: number, angle: number): Vector3 {
+    const anchors = this.anchors;
+    const altitude = this.kikiScale * (1.1 - progress * 0.45);
+    if (!anchors) return this.ground(this.width * 1.4, this.height * 0.3, altitude);
+    const boxes = [anchors.left, anchors.center, anchors.right];
+    const point = heronLoop(progress, angle, {
+      width: this.width,
+      height: this.height,
+      padsTop: Math.min(...boxes.map((box) => box.y)),
+      padsBottom: Math.max(...boxes.map((box) => box.y + box.h)),
+      floor: this.floor || this.height,
+      reach: (this.heronScale * 1.3) / this.perPixel(this.viewCenter),
+    });
+    return this.ground(point.x, point.y, altitude);
   }
 
   private heronBeak(): Vector3 {
@@ -853,15 +874,12 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       if (!heron.paused)
         this.heronProgress = Math.min(1, this.heronProgress + (dt * 1000) / heron.duration);
       const p = this.heronProgress;
-      // Flies in, then circles over the middle of the pond, lower and tighter as time runs out.
-      const arrive = smooth(p / 0.12);
-      const angle = t * (0.9 + p * 1.2);
-      const radius = this.orbitRadius * (1 - p * 0.45);
-      const orbit = this.orbitCenter
-        .clone()
-        .add(new Vector3(Math.cos(angle) * radius, -p * 1.1, Math.sin(angle) * radius * 0.6));
-      root.position.lerpVectors(this.heronStart, orbit, arrive);
+      // Laps the whole pond, in and out of view, on a tighter, quicker loop as time runs out.
+      this.heronAngle += (dt * Math.PI * 2) / heronLapSeconds(p);
+      root.position.copy(this.heronPoint(p, this.heronAngle));
       root.scale.setScalar(this.heronScale * (1 + p * 0.25));
+      // Banks into the turn: the loop always bends to its left.
+      root.rotation.z = approach(root.rotation.z, -0.3, 4, dt);
       beat = 0.35 + p * 0.5;
     } else if (heron.state === 'stole') {
       // Dives on the snack, then flaps away with it.
@@ -870,6 +888,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
         ? raft.home.clone().setY(raft.home.y + 0.1)
         : this.kikiHome.clone().setY(this.kikiScale * 0.6);
       const dive = smooth(age / 0.4);
+      root.rotation.z = approach(root.rotation.z, 0, 6, dt);
       const away = smooth((age - 0.4) / (STEAL_SECONDS - 0.4));
       const offBeak = this.heron.beak.clone().multiplyScalar(root.scale.x);
       const low = prey.clone().sub(offBeak.setY(offBeak.y * 0.6));
@@ -891,8 +910,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     root.updateMatrixWorld();
     const height = Math.max(0.3, root.position.y);
     this.heronShadow.position.set(root.position.x, 0.03, root.position.z);
-    this.heronShadow.scale.setScalar(root.scale.x * (1.4 - Math.min(1, height / 5) * 0.6));
-    this.heronShadow.material.opacity = 0.32 - Math.min(0.2, height * 0.04);
+    // A soft spot under the wings' own shadow: small, since the heron skims low.
+    this.heronShadow.scale.setScalar(root.scale.x * (0.7 - Math.min(1, height / 5) * 0.3));
+    this.heronShadow.material.opacity = 0.2 - Math.min(0.12, height * 0.03);
   }
 
   // ---------------------------------------------------------------- water and pond life
