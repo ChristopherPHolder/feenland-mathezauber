@@ -295,6 +295,13 @@
             }
           </span>
           <span class="splash" aria-hidden="true"></span>
+          @if (kind() === 'golden') {
+            <span
+              class="coin"
+              aria-hidden="true"
+              [attr.data-points]="'+' + i.format(goldenPoints())"
+            ></span>
+          }
         </button>
         <div class="slot">
           <button
@@ -358,6 +365,13 @@
             }
           </span>
           <span class="splash" aria-hidden="true"></span>
+          @if (kind() === 'golden') {
+            <span
+              class="coin"
+              aria-hidden="true"
+              [attr.data-points]="'+' + i.format(goldenPoints())"
+            ></span>
+          }
         </button>
       </div>
       @for (float of floats(); track float.id) {
