@@ -344,6 +344,37 @@ dialog::backdrop {
   }
 }
 
+/* A narrow phone cannot fit four pills and two labels beside the logo, so the page pans
+   sideways. Only the page you are on keeps its word; the others keep their names for screen
+   readers and stay 44px wide. */
+@media (max-width: 420px) {
+  .site-header {
+    padding-inline: 16px;
+  }
+  nav a {
+    min-width: 44px;
+    padding-inline: 10px;
+    justify-content: center;
+  }
+  nav > a span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+/* Below 350px even one word does not fit; the pink pill alone marks the page. */
+@media (min-width: 351px) and (max-width: 420px) {
+  nav > a.active span {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+}
+
 /* A phone held sideways has under 500px of height: the header shrinks to one slim row,
    the name on one line, and every nav target keeps its 44px. */
 @media (orientation: landscape) and (max-height: 500px) {
