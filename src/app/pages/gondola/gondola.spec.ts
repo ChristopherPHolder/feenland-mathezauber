@@ -305,6 +305,51 @@ describe('the mountain gondola', () => {
     expect(points(fixture)).toBe('40');
   });
 
+  it('shows how to ride with a film instead of paragraphs', () => {
+    const fixture = setup('gondola-1');
+    const film = element(fixture).querySelector('app-gondola-demo')!;
+    expect(film).not.toBeNull();
+    expect(film.textContent).toContain(en.demoLook);
+    expect(film.querySelector('.sentence')!.textContent).toContain('9 + 4 → 10 + 3');
+    vi.advanceTimersByTime(10_000);
+    fixture.detectChanges();
+    expect(film.textContent).toContain(en.demoRest);
+    expect(film.querySelector('.replay')!.getAttribute('aria-label')).toBe(en.demoReplay);
+    expect(element(fixture).textContent).not.toContain(en.story);
+  });
+
+  it('guides the first cabins, opens the film from ?, and lets the cloud wait meanwhile', () => {
+    localStorage.setItem('feenland.gondola-pace.v1', 'fast');
+    const fixture = setup('gondola-1');
+    start(fixture);
+    useItem(fixture, { kind: 'add', a: 9, b: 4 });
+    expect(element(fixture).querySelector('.split-zone.is-guided')).not.toBeNull();
+    element(fixture).querySelector<HTMLButtonElement>('.help')!.click();
+    fixture.detectChanges();
+    const coach = element(fixture).querySelector('app-gondola-coach')!;
+    // On a 9 + 4 turn the film uses other numbers, so it never shows this answer.
+    expect(coach.querySelector('.sentence')!.textContent).toContain('8 + 5 → 10 + 3');
+    vi.advanceTimersByTime(20_000);
+    fixture.detectChanges();
+    expect(status(fixture)).not.toBe(en.cold);
+    coach.querySelector<HTMLButtonElement>('.button.primary')!.click();
+    fixture.detectChanges();
+    expect(element(fixture).querySelector('app-gondola-coach')).toBeNull();
+    vi.advanceTimersByTime(11_000);
+    fixture.detectChanges();
+    expect(status(fixture)).toBe(en.cold);
+  });
+
+  it('stops guiding after three cabins, until the child waits', () => {
+    localStorage.setItem('feenland.gondola-guided.v1', '3');
+    const fixture = setup('gondola-1');
+    start(fixture);
+    expect(element(fixture).querySelector('.split-zone.is-guided')).toBeNull();
+    vi.advanceTimersByTime(6500);
+    fixture.detectChanges();
+    expect(element(fixture).querySelector('.split-zone.is-guided')).not.toBeNull();
+  });
+
   it('speaks German', () => {
     localStorage.setItem('feenland.locale', 'de');
     const fixture = setup('gondola-5');

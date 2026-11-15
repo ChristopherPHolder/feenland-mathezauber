@@ -21,6 +21,9 @@ import { Icon } from '../../shared/icon';
 import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 import { HatcheryStore } from '../hatchery/hatchery-store';
 import { GondolaCard } from './gondola-card';
+import { GondolaCoach } from './gondola-coach';
+import { GondolaDemo } from './gondola-demo';
+import { countGuidedCabin, GUIDED_CABINS, guidedCabins } from './gondola-guide';
 import { GondolaFrame, GondolaPhase } from './gondola-frame';
 import {
   answerChoices,
@@ -123,6 +126,8 @@ const MOVE_DELAY_FLAT = 900;
 /** The bunnies show for a moment before the snow tarp comes down. */
 const TARP_DELAY = 1400;
 const SOLVE_DELAY = 2800;
+/** How long a child may wait before the next thing to tap hops again. */
+const IDLE_MS = 6000;
 
 @Component({
   selector: 'app-gondola',
@@ -137,6 +142,8 @@ const SOLVE_DELAY = 2800;
     GondolaKeypad,
     GondolaReward,
     GondolaCard,
+    GondolaDemo,
+    GondolaCoach,
   ],
   providers: [GondolaSounds],
   templateUrl: './gondola.html',
@@ -189,10 +196,27 @@ export class Gondola {
   protected readonly saveFailed = signal(false);
   protected readonly newBest = signal(false);
   protected readonly newBuilding = signal<number | null>(null);
+  /** The "how to ride" film is open over the game; the cloud waits. */
+  protected readonly coaching = signal(false);
+  /** The first cabins on a device show what to tap next. */
+  protected readonly guided = signal(guidedCabins() < GUIDED_CABINS);
+  /** The child has waited a while: show what to tap next again. */
+  protected readonly idle = signal(false);
+  protected readonly guideSplit = computed(
+    () => this.splitting() && !this.coaching() && (this.guided() || this.idle()),
+  );
+  protected readonly guideAnswer = computed(
+    () => this.answering() && !this.coaching() && (this.guided() || this.idle()),
+  );
 
   protected readonly turns = computed(() => this.stage().turns);
   protected readonly item = computed(() => this.round().item);
   protected readonly shape = computed(() => shapeOf(this.item()));
+  /** The film's usual sum is 9 + 4; on that very turn it shows 8 + 5 instead. */
+  protected readonly demoClash = computed(() => {
+    const item = this.item();
+    return item.kind === 'add' && item.a + item.b === 13 && (item.a === 9 || item.b === 9);
+  });
   protected readonly big = computed(() => this.round().index === this.turns() - 1);
   protected readonly sum = computed(() => sumText(this.item()));
   protected readonly splitting = computed(
@@ -218,7 +242,8 @@ export class Gondola {
     Array.from({ length: this.shape().group }, (_, index) => index + 1),
   );
   protected readonly vipIndex = computed(() =>
-    this.round().vipTurn === this.round().index ? 0 : -1,
+    // The 3D queue crowns its last bunny; the row matches it.
+    this.round().vipTurn === this.round().index ? this.shape().group - 1 : -1,
   );
   protected readonly cabinSlots = computed(() =>
     Array.from({ length: this.turns() }, (_, index) => index),
@@ -311,6 +336,7 @@ export class Gondola {
   private timer?: ReturnType<typeof setTimeout>;
   private tarpTimer?: ReturnType<typeof setTimeout>;
   private tick?: ReturnType<typeof setInterval>;
+  private idleTimer?: ReturnType<typeof setTimeout>;
   private cloudDue = 0;
   private cloudTotal = 0;
   private cloudLeft = 0;
@@ -415,6 +441,7 @@ export class Gondola {
       );
     }
     if (round.golden && round.index > 0) this.sounds.play('whistle');
+    this.armIdle();
     this.focusSplit();
   }
 
@@ -455,6 +482,7 @@ export class Gondola {
   }
   protected countGesture() {
     if (!this.splitting()) return;
+    this.armIdle();
     this.round.update((round) => ({ ...round, moves: round.moves + 1 }));
   }
 
@@ -576,6 +604,7 @@ export class Gondola {
           : r,
       );
       this.status.set({ key: this.item().kind === 'add' ? 'askAdd' : 'askSub' });
+      this.armIdle();
       this.focusAnswer();
     }, this.sceneStage()?.ready() ? MOVE_DELAY_3D : MOVE_DELAY_FLAT);
   }
@@ -638,6 +667,8 @@ export class Gondola {
 
   private solve(round: Round) {
     this.stopCloud();
+    this.stopIdle();
+    this.guided.set(countGuidedCabin() < GUIDED_CABINS);
     clearTimeout(this.tarpTimer);
     const firstTry = round.splitSlips === 0;
     const oneMove = firstTry && round.moves <= 1 && !round.showBunnies;
@@ -779,6 +810,7 @@ export class Gondola {
   }
 
   private stopTimers() {
+    this.stopIdle();
     clearTimeout(this.timer);
     clearTimeout(this.tarpTimer);
     this.stopCloud();
@@ -790,14 +822,22 @@ export class Gondola {
     if (this.document.hidden && this.tick) {
       this.cloudLeft = Math.max(0, this.cloudDue - Date.now());
       this.stopCloud();
-    } else if (!this.document.hidden && !this.tick && this.started()) {
+    } else if (!this.document.hidden && !this.tick && this.started() && !this.coaching()) {
       this.armCloud();
     }
   }
 
   /** Digits pick how many hop in (step 1) or type the answer (step 2). */
   protected onKey(event: KeyboardEvent) {
-    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || !this.started()) return;
+    if (
+      event.repeat ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !this.started() ||
+      this.coaching()
+    )
+      return;
     const target = event.target instanceof Element ? event.target : null;
     if (target?.closest('textarea, select, input:not([type="range"])')) return;
     const digit = /^\d$/.test(event.key) ? Number(event.key) : null;
@@ -818,6 +858,38 @@ export class Gondola {
       event.preventDefault();
       this.submitTyped();
     }
+  }
+
+  /** Opens the "how to ride" film; the snow cloud waits until it closes. */
+  protected openHelp() {
+    if (this.coaching()) return;
+    this.stopIdle();
+    if (this.tick) {
+      this.cloudLeft = Math.max(0, this.cloudDue - Date.now());
+      this.stopCloud();
+    }
+    this.coaching.set(true);
+  }
+
+  protected closeHelp() {
+    this.coaching.set(false);
+    const round = this.round();
+    if (round.cocoa === 'warm' && round.phase !== 'solved' && round.phase !== 'complete')
+      this.armCloud();
+    if (round.phase === 'split' || round.phase === 'answer') this.armIdle();
+    if (round.phase === 'split') this.focusSplit();
+    else if (round.phase === 'answer') this.focusAnswer();
+  }
+
+  /** After six quiet seconds the next thing to tap hops again. */
+  private armIdle() {
+    this.stopIdle();
+    this.idleTimer = setTimeout(() => this.idle.set(true), IDLE_MS);
+  }
+
+  private stopIdle() {
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
   }
 
   protected statusText() {

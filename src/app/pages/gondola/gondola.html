@@ -13,6 +13,7 @@
 
   @if (!started()) {
     <section class="panel intro" aria-labelledby="intro-title">
+      <h2 id="intro-title" class="sr-only">{{ i.t(levelKey(stage().stage)) }}</h2>
       <nav class="level-strip" [attr.aria-label]="t('allLevels')">
         @for (link of levelLinks; track link.stage) {
           <a
@@ -27,82 +28,77 @@
         }
       </nav>
       <div class="intro-grid">
-        <app-three-stage class="intro-art" [world]="loadWorld" [state]="introFrame()">
-            <app-gondola-platform [frame]="introFrame()" />
-          </app-three-stage>
-        <div class="intro-copy">
-          <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
-          <p>{{ t('story') }} {{ t('storyAll') }}</p>
+        <app-gondola-demo class="demo" />
+        <div class="intro-side">
           <div class="trick-card">
-            <h3>{{ t('trickTitle') }}</h3>
+            <h3>{{ t('trickTitle') }} <span class="example">{{ stage().example }}</span></h3>
             <p>{{ t(stage().trick) }}</p>
-            <p class="example">{{ stage().example }}</p>
           </div>
-          <div class="village">
-            <h3>{{ t('villageTitle') }}</h3>
-            <ol class="village-row" [attr.aria-label]="t('villageCount', { n: scores.village(), total: total })">
-              @for (slot of villageSlots; track slot) {
-                <li class="house-slot" [class.built]="slot < scores.village()" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10H3z" /></svg>
-                </li>
+          <fieldset class="pace" aria-describedby="pace-help">
+            <legend>{{ t('paceTitle') }}</legend>
+            <p id="pace-help" class="pace-help">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+            <div class="pace-options">
+              @for (option of paces; track option.id; let index = $index) {
+                <label class="pace-choice" [class.selected]="pace() === option.id">
+                  <input
+                    type="radio"
+                    name="gondola-pace"
+                    [value]="option.id"
+                    [checked]="pace() === option.id"
+                    (change)="selectPace(option.id)"
+                  />
+                  <svg class="pace-art" viewBox="0 0 64 36" aria-hidden="true">
+                    @if (option.id === 'off') {
+                      <circle class="sun" cx="32" cy="18" r="11" />
+                    } @else {
+                      <path
+                        class="cloud-icon"
+                        [style.--dark]="index / 3"
+                        d="M14 30q-10-1-8-10 2-7 10-6 3-9 13-8 9 1 11 9 10-2 12 7 1 8-8 8z"
+                      />
+                      @for (line of [1, 2, 3].slice(0, index); track line) {
+                        <path
+                          class="speed"
+                          [attr.d]="'M58 ' + (8 + line * 6) + 'h-' + (4 + line * 2)"
+                        />
+                      }
+                    }
+                  </svg>
+                  <strong>{{ t(option.label) }}</strong>
+                  <span class="pace-time">{{
+                    option.id === 'off' ? t('paceUnlimited') : t('paceSeconds', { n: paceSeconds(option.id) })
+                  }}</span>
+                </label>
               }
-            </ol>
-            <p class="village-line">
-              {{
-                scores.village()
-                  ? t('villageCount', { n: scores.village(), total: total })
-                  : t('villageEmpty')
-              }}
-            </p>
-          </div>
+            </div>
+          </fieldset>
           @if (best() > 0) {
             <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
           }
         </div>
       </div>
-      <fieldset class="pace" aria-describedby="pace-help">
-        <legend>{{ t('paceTitle') }}</legend>
-        <p id="pace-help">{{ t('paceHelp') }}</p>
-        <div class="pace-options">
-          @for (option of paces; track option.id; let index = $index) {
-            <label class="pace-choice" [class.selected]="pace() === option.id">
-              <input
-                type="radio"
-                name="gondola-pace"
-                [value]="option.id"
-                [checked]="pace() === option.id"
-                (change)="selectPace(option.id)"
-              />
-              <svg class="pace-art" viewBox="0 0 64 36" aria-hidden="true">
-                @if (option.id === 'off') {
-                  <circle class="sun" cx="32" cy="18" r="11" />
-                } @else {
-                  <path
-                    class="cloud-icon"
-                    [style.--dark]="index / 3"
-                    d="M14 30q-10-1-8-10 2-7 10-6 3-9 13-8 9 1 11 9 10-2 12 7 1 8-8 8z"
-                  />
-                  @for (line of [1, 2, 3].slice(0, index); track line) {
-                    <path class="speed" [attr.d]="'M58 ' + (8 + line * 6) + 'h-' + (4 + line * 2)" />
-                  }
-                }
-              </svg>
-              <strong>{{ t(option.label) }}</strong>
-              <span>{{
-                option.id === 'off'
-                  ? t('paceUnlimited')
-                  : t('paceSeconds', { n: paceSeconds(option.id) })
-              }}</span>
-            </label>
-          }
-        </div>
-        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
-      </fieldset>
       <div class="start-dock">
         <button class="button primary" type="button" (click)="play()">
           {{ t('start') }}<app-icon kind="arrow" />
         </button>
       </div>
+      <section class="village" aria-labelledby="village-title">
+        <h3 id="village-title">
+          {{ t('villageTitle') }}
+          <span>{{
+            scores.village()
+              ? t('villageCount', { n: scores.village(), total: total })
+              : t('villageEmpty')
+          }}</span>
+        </h3>
+        <ol class="village-row" aria-hidden="true">
+          @for (slot of villageSlots; track slot) {
+            <li class="house-slot" [class.built]="slot < scores.village()">
+              <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10H3z" /></svg>
+            </li>
+          }
+        </ol>
+      </section>
     </section>
   } @else if (round().phase === 'complete') {
     <section
@@ -200,6 +196,15 @@
           </li>
         }
       </ol>
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openHelp()"
+      >
+        ?
+      </button>
       <p class="points" [class.bump]="round().phase === 'solved'">
         <span>{{ t('points') }}</span>
         <strong>{{ i.format(round().score) }}</strong>
@@ -273,7 +278,7 @@
         </p>
 
         @if (round().phase === 'split' || round().phase === 'moving') {
-          <div class="split-zone">
+          <div class="split-zone" [class.is-guided]="guideSplit()">
             @if (numbersOnly()) {
               <div class="cherry-row">
                 <app-gondola-cherry [whole]="shape().group" />
@@ -366,7 +371,7 @@
             }
             @if (round().phase === 'answer') {
               @if (stage().choices) {
-                <div class="choices" role="group" [attr.aria-label]="t('choicesLabel')">
+                <div class="choices" [class.is-guided]="guideAnswer()" role="group" [attr.aria-label]="t('choicesLabel')">
                   @for (choice of round().choices; track choice) {
                     <button type="button" class="choice" (click)="answer(choice)">
                       {{ choice }}
@@ -375,6 +380,7 @@
                 </div>
               } @else {
                 <app-gondola-keypad
+                  [class.is-guided]="guideAnswer()"
                   [value]="round().typed"
                   [answerLabel]="t('answerLabel')"
                   [padLabel]="t('keypadLabel')"
@@ -401,5 +407,8 @@
         }
       </div>
     </div>
+      @if (coaching()) {
+      <app-gondola-coach [alternate]="demoClash()" (done)="closeHelp()" />
+    }
   }
 </section>

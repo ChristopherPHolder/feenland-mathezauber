@@ -24,6 +24,22 @@
   .unknown.solved {
     animation: bump 0.5s ease-out;
   }
+  .split-zone.is-guided .taps,
+  .split-zone.is-guided app-gondola-split,
+  .choices.is-guided,
+  app-gondola-keypad.is-guided {
+    animation: hop 1.2s ease-in-out infinite;
+  }
+}
+@keyframes hop {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(-5px);
+  }
 }
 @keyframes star-pop {
   from {
@@ -64,7 +80,11 @@
 :host-context(.calm-motion) .big-banner,
 :host-context(.calm-motion) .golden-chip,
 :host-context(.calm-motion) .cocoa-chip .steam,
-:host-context(.calm-motion) .unknown.solved {
+:host-context(.calm-motion) .unknown.solved,
+:host-context(.calm-motion) .split-zone.is-guided .taps,
+:host-context(.calm-motion) .split-zone.is-guided app-gondola-split,
+:host-context(.calm-motion) .choices.is-guided,
+:host-context(.calm-motion) app-gondola-keypad.is-guided {
   animation: none;
 }
 :host-context(.calm-motion) .cloud-meter span {
