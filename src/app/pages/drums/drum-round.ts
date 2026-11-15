@@ -253,7 +253,8 @@ export function answer(play: DrumPlay, value: number, now: number): Step {
       events.push({ kind: 'layer', layers, up: false });
     }
   }
-  const streak = firstTry ? stats.streak + 1 : 0;
+  // The streak, like the stars, counts the verses; the solo neither adds to it nor breaks it.
+  const streak = solo ? stats.streak : firstTry ? stats.streak + 1 : 0;
   // On the beat, Pom lands on the landing beat; otherwise he jumps straight away.
   const jump = jumpSeconds(play);
   const end = onBeat && now < play.landing ? play.landing : now + jump;
