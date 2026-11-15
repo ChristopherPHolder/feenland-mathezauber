@@ -3,11 +3,13 @@
 :host {
   --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
   --night: #17123a;
+  --pad-top: clamp(10px, 2vw, 16px);
+  --pad-bottom: clamp(12px, 2vw, 24px);
   display: block;
   min-height: calc(100dvh - var(--safe-y));
   background: linear-gradient(#e9e2ff, #f4effc 45%, #e4f3ea);
-  padding: clamp(10px, 2vw, 16px) max(clamp(10px, 2vw, 16px), env(safe-area-inset-right))
-    clamp(16px, 3vw, 32px) max(clamp(10px, 2vw, 16px), env(safe-area-inset-left));
+  padding: var(--pad-top) max(clamp(10px, 2vw, 16px), env(safe-area-inset-right))
+    var(--pad-bottom) max(clamp(10px, 2vw, 16px), env(safe-area-inset-left));
   color: var(--ink);
 }
 .game {
@@ -141,54 +143,63 @@
   background: #7fd36b;
 }
 
-/* Portrait: the board on top, the prompt and answers under it, the chart as an inset. */
+/* While a round is on, the game fills the screen: the controls take what they need and the
+   board grows into the rest, so the answers stay above the fold on any phone or tablet. */
+.game.playing {
+  min-height: calc(100dvh - var(--safe-y) - var(--pad-top) - var(--pad-bottom));
+}
 .play-area {
   container: play / inline-size;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(190px, 1fr) auto;
   gap: clamp(8px, 1.4vw, 14px);
+  min-height: 0;
 }
-.board {
-  height: clamp(200px, calc(100dvh - 440px - var(--safe-y)), 58dvh);
+.play-area .board {
+  min-height: 190px;
 }
-.chart-side {
+.play-area .chart-side {
   display: none;
 }
 
 /* A tablet held upright: the chart stands beside the answers instead of over the forest. */
 @container play (min-width: 600px) {
-  .controls {
+  .play-area .controls {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.55fr);
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 0.5fr);
     grid-template-areas:
       'prompt chart'
       'answers chart'
       'status chart'
       'help chart'
       'keys chart';
+    grid-template-rows: auto auto auto auto 1fr;
     align-content: start;
+    column-gap: clamp(12px, 2vw, 20px);
   }
-  .prompt {
+  .play-area .prompt {
     grid-area: prompt;
   }
-  .answers {
+  .play-area .answers {
     grid-area: answers;
   }
-  .status {
+  .play-area .status {
     grid-area: status;
   }
-  .help {
+  .play-area .help {
     grid-area: help;
   }
-  .keys-help {
+  .play-area .keys-help {
     grid-area: keys;
   }
-  .chart-side {
+  .play-area .chart-side {
     display: grid;
     grid-area: chart;
     align-self: start;
   }
-  .chart-inset {
+  .play-area .chart-inset {
     display: none;
   }
 }
@@ -197,38 +208,57 @@
 @media (orientation: landscape) {
   .play-area {
     grid-template-columns: minmax(0, 1.55fr) minmax(min(36%, 280px), 1fr);
-    align-items: start;
+    grid-template-rows: minmax(220px, 1fr);
   }
-  .board {
-    height: clamp(220px, calc(100dvh - 150px - var(--safe-y)), 720px);
-  }
-  .controls {
+  .play-area .controls {
     display: flex;
+    align-self: start;
   }
-  .chart-side {
+  .play-area .chart-side {
     display: none;
   }
-  .chart-inset {
+  .play-area .chart-inset {
     display: grid;
   }
 }
 /* Tall enough sideways (tablets, laptops): the chart moves under the answers. */
 @media (orientation: landscape) and (min-height: 640px) {
-  .chart-side {
+  .play-area .chart-side {
     display: grid;
+    align-self: stretch;
+    width: min(100%, 360px);
   }
-  .chart-inset {
+  .play-area .chart-inset {
     display: none;
   }
 }
-/* A sideways phone: tighter header room so the board and answers stay above the fold. */
+/* A sideways phone: no room for extras next to the board. */
 @media (orientation: landscape) and (max-height: 500px) {
-  .board {
-    height: calc(100dvh - 118px - var(--safe-y));
-  }
   .keys-help,
   .drum-count {
     display: none;
+  }
+}
+.drum-count .short {
+  display: none;
+}
+/* A narrow phone keeps the HUD on one row. */
+@media (max-width: 480px) {
+  .drum-count .short {
+    display: inline;
+  }
+  .hud {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .drum-count .long,
+  .points span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 @media (max-width: 420px) {

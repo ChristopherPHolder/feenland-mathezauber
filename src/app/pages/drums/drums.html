@@ -53,7 +53,10 @@
         }
       </ol>
       @if (drumCount(); as count) {
-        <p class="drum-count">{{ t('drumCount', { n: count.n, total: count.total }) }}</p>
+        <p class="drum-count">
+          <span class="long">{{ t('drumCount', { n: count.n, total: count.total }) }}</span
+          ><span class="short" aria-hidden="true">{{ count.n }}/{{ count.total }}</span>
+        </p>
       }
       <p class="points" [class.bump]="tapped()?.right">
         <span>{{ t('points') }}</span>

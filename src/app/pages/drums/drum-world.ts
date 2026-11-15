@@ -92,13 +92,13 @@ export function skinTop(index: number, target = new Vector3()) {
 }
 
 /**
- * Where Pom stands on mushroom `index`: on the far side of the drum skin, so the number he is
- * standing on stays readable in front of him.
+ * Where Pom stands on mushroom `index`: on the far left of the drum skin, so the number he is
+ * standing on stays readable in front of him and the "?" ahead stays clear of his spines.
  */
 export function standSpot(index: number, target = new Vector3()) {
   return skinTop(index, target).add(STAND_OFFSET);
 }
-const STAND_OFFSET = new Vector3(0, 0.13, -0.62);
+const STAND_OFFSET = new Vector3(-0.32, 0.13, -0.5);
 
 /** How far into the current beat we are, 0 on the beat, as a sharp hit that dies away. */
 export function beatPulse(now: number, origin: number, period: number) {
@@ -208,7 +208,7 @@ export class DrumWorld extends Stage implements StateWorld<DrumFrame> {
     this.scene.add(this.ground, this.moon);
 
     this.pom = buildPom();
-    this.pom.group.scale.setScalar(1.15);
+    this.pom.group.scale.setScalar(0.95);
     this.pom.group.add(this.pomLight);
     this.pomLight.position.set(0, 2.2, 1.2);
     const starMaterial = new MeshBasicMaterial({ color: '#ffe066' });
@@ -488,8 +488,8 @@ export class DrumWorld extends Stage implements StateWorld<DrumFrame> {
     );
     this.camera.position.set(
       this.focus.x * 0.7,
-      this.focus.y + this.distance * 0.6,
-      this.focus.z + this.distance * 0.82,
+      this.focus.y + this.distance * 0.86,
+      this.focus.z + this.distance * 0.6,
     );
     this.camera.lookAt(this.focus.x, this.focus.y - 0.3, this.focus.z - 1.3);
     this.ground.position.set(this.focus.x, 0, this.focus.z);
