@@ -39,6 +39,11 @@ const GLINT_SWEEP = 0.9;
 const STEP = (Math.PI * 2) / TILES;
 /** Share of the screen (in normalised units) the scene's outline may reach to. */
 const FILL = 0.9;
+/**
+ * The loader's "Loading…" pill sits about this many pixels below the middle of the canvas, so
+ * the dial is framed to end there and the pill only covers the base's front edge.
+ */
+const PILL_DROP = 86;
 
 /** Points on the scene's outline: the rim of the base, the chest's lid and Pip. */
 const OUTLINE: readonly Vector3[] = [
@@ -50,22 +55,19 @@ const OUTLINE: readonly Vector3[] = [
       new Vector3(radius * Math.sin(angle), 0.05, radius * Math.cos(angle)),
     ];
   }).flat(),
-  ...[-1, 1].flatMap((x) => [new Vector3(x * 1, 2, -0.75), new Vector3(x * 1, 2, 0.6)]),
+  ...[-1, 1].flatMap((x) => [new Vector3(x * 1, 2.1, -0.75), new Vector3(x * 1, 2.1, 0.6)]),
   new Vector3(0.8, 1.3, RING),
 ];
 
-/** How far the outline reaches from the screen's middle (1 is the edge), and its own middle. */
-function extent(camera: PerspectiveCamera) {
+/** Where the outline lands on screen, in normalised device units (-1 to 1 each way). */
+function extent(camera: PerspectiveCamera): Box2 {
   const box = new Box2();
   const point = new Vector3();
   for (const corner of OUTLINE) {
     point.copy(corner).project(camera);
     box.expandByPoint(new Vector2(point.x, point.y));
   }
-  return {
-    size: Math.max(-box.min.x, box.max.x, -box.min.y, box.max.y),
-    centre: box.getCenter(new Vector2()),
-  };
+  return box;
 }
 
 /**
@@ -218,22 +220,27 @@ export class LockLoaderWorld extends Stage implements StateWorld<null> {
       this.camera.lookAt(target);
       this.camera.updateMatrixWorld();
     };
-    // Find the closest camera that keeps every outline point on screen, then centre them.
-    for (let pass = 0; pass < 2; pass++) {
+    // The scene fits between the top of the screen and the loader's pill.
+    const floor = Math.max(-FILL, -PILL_DROP / (this.height / 2));
+    // Find the closest camera whose outline fits that box, then rest the dial on the pill.
+    for (let pass = 0; pass < 4; pass++) {
       let near = 3;
       let far = 80;
       for (let step = 0; step < 24; step++) {
-        const middle = (near + far) / 2;
-        place(middle);
-        if (extent(this.camera).size > FILL) near = middle;
-        else far = middle;
+        const distance = (near + far) / 2;
+        place(distance);
+        const box = extent(this.camera);
+        const fits = box.max.x - box.min.x <= 2 * FILL && box.max.y - box.min.y <= FILL - floor;
+        if (fits) far = distance;
+        else near = distance;
       }
       place(far);
-      const { centre } = extent(this.camera);
+      const box = extent(this.camera);
+      const centre = box.getCenter(new Vector2());
       const halfHeight = far * Math.tan((this.camera.fov * Math.PI) / 360);
       target.addScaledVector(
         new Vector3().setFromMatrixColumn(this.camera.matrixWorld, 1),
-        centre.y * halfHeight,
+        (box.min.y - floor) * halfHeight,
       );
       target.addScaledVector(
         new Vector3().setFromMatrixColumn(this.camera.matrixWorld, 0),
