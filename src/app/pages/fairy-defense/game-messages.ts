@@ -81,6 +81,11 @@ const en = {
   restored: 'The castle’s three hearts are restored!',
   gems: '{n} gems in the pouch',
   streak: '{n} first tries in a row!',
+  timerLabel: 'Thinking time',
+  timeLeft: '{n} seconds left',
+  timeUp: 'Time is up! The monster took one step closer. Pick a spell.',
+  paceHelp:
+    'With Steady or Quick, a glowing ring burns down. When it runs out, the monster takes one step closer. Relaxed has no timer, and pause stops the ring.',
 };
 type GameMessages = { readonly [K in keyof typeof en]: string };
 export const gameMessages: Record<Locale, GameMessages> = {
@@ -167,6 +172,11 @@ export const gameMessages: Record<Locale, GameMessages> = {
     restored: 'Das Schloss hat wieder drei Herzen!',
     gems: '{n} Edelsteine im Beutel',
     streak: '{n}-mal hintereinander beim ersten Versuch!',
+    timerLabel: 'Denkzeit',
+    timeLeft: 'Noch {n} Sekunden',
+    timeUp: 'Die Zeit ist um! Das Monster ist einen Schritt näher gekommen. Wähle einen Zauber.',
+    paceHelp:
+      'Bei Ruhig oder Schnell brennt ein leuchtender Ring herunter. Ist er leer, kommt das Monster einen Schritt näher. Entspannt hat keine Uhr, und Pause hält den Ring an.',
   },
   es: {
     continueWave: 'Continuar · Oleada {n}',
@@ -250,6 +260,11 @@ export const gameMessages: Record<Locale, GameMessages> = {
     restored: '¡El castillo recupera sus tres corazones!',
     gems: '{n} gemas en la bolsa',
     streak: '¡{n} aciertos seguidos al primer intento!',
+    timerLabel: 'Tiempo para pensar',
+    timeLeft: 'Quedan {n} segundos',
+    timeUp: '¡Se acabó el tiempo! El monstruo dio un paso más. Elige un hechizo.',
+    paceHelp:
+      'Con Normal o Rápido, un anillo brillante se va consumiendo. Cuando se acaba, el monstruo da un paso más. Tranquilo no tiene reloj, y la pausa detiene el anillo.',
   },
   fr: {
     continueWave: 'Continuer · Vague {n}',
@@ -333,6 +348,11 @@ export const gameMessages: Record<Locale, GameMessages> = {
     restored: 'Le château retrouve ses trois cœurs !',
     gems: '{n} gemmes dans la bourse',
     streak: '{n} réussites d’affilée du premier coup !',
+    timerLabel: 'Temps de réflexion',
+    timeLeft: 'Encore {n} secondes',
+    timeUp: 'Le temps est écoulé ! Le monstre a fait un pas de plus. Choisis un sort.',
+    paceHelp:
+      'En mode Normal ou Rapide, un anneau lumineux se consume. Quand il est vide, le monstre fait un pas de plus. Détendu n’a pas de minuteur, et la pause arrête l’anneau.',
   },
 };
 export type GameMessageKey = keyof GameMessages;
