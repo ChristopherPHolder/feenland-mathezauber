@@ -159,39 +159,6 @@
   background: var(--cream);
   box-shadow: var(--shadow-panel);
 }
-.goal p {
-  margin: 0;
-}
-.potion-name {
-  color: var(--violet);
-  font-weight: 600;
-}
-.goal-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 12px;
-}
-.goal-text {
-  font-size: 22px;
-  font-weight: 600;
-}
-.target-chip {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 2.4ch;
-  padding: 2px 12px 4px;
-  border-radius: var(--radius-chip);
-  background: var(--gold);
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 1.1;
-}
-.target-chip small {
-  font-size: 12px;
-}
 
 /* Bottles: tap one, pick a spell, tap the one to pour in */
 .bottles,
@@ -308,38 +275,6 @@
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
-.status {
-  min-height: 2.9em;
-  margin: 0;
-  font-size: 17px;
-  line-height: 1.45;
-}
-.hint {
-  margin: 0;
-  padding: 10px 14px;
-  border-radius: var(--radius-chip);
-  background: var(--warm-ground);
-  line-height: 1.45;
-}
-.recipe {
-  padding: 8px 12px;
-  border-radius: var(--radius-chip);
-  background: var(--ground);
-}
-.recipe h2 {
-  margin: 0;
-  font-size: 14px;
-  color: var(--muted);
-}
-.recipe ol,
-.recipe p {
-  margin: 2px 0 0;
-  font-size: 18px;
-}
-.recipe ol {
-  padding-left: 1.4em;
-  font-variant-numeric: tabular-nums;
-}
 .potion-actions {
   display: flex;
   gap: 10px;
@@ -376,9 +311,6 @@
   }
   .hourglass-off {
     grid-column: 1 / -1;
-  }
-  .goal-text {
-    font-size: 19px;
   }
   .bottles {
     gap: 8px;

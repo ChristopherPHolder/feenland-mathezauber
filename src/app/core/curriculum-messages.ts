@@ -139,6 +139,43 @@ export const curriculumEn = {
   race22: 'Treasure hall',
   race22Help: 'Share up to 100 by 3 to 9, like 42 ÷ 6.',
   raceHalfOf: 'half of {n}',
+
+  // Star catcher
+  starCatcherChapter: 'The Star Catcher',
+  starCatcherChapterHelp:
+    'Slide Nova along a glowing number-line bridge and catch each falling star where its number belongs.',
+  starCatcherPlay: 'Catch stars',
+  starSmall: 'Small bridges',
+  starHundred: 'Bridges to 100',
+  starSums: 'Sums in the sky',
+  starBig: 'Big bridges',
+  starCatcher1: 'Numbers to 10',
+  starCatcher1Help: 'Every post has its number: catch the star there, like 7 on a bridge to 10.',
+  starCatcher2: 'Find the middle',
+  starCatcher2Help:
+    'Only 0, 5 and 10 are written: start from the middle, like 4 on a bridge to 10.',
+  starCatcher3: 'Bridge to 20',
+  starCatcher3Help: 'Teen numbers live past the middle, like 14 on a bridge to 20.',
+  starCatcher4: 'Tens to 100',
+  starCatcher4Help: 'Place the tens with 50 as the middle, like 70 on a bridge to 100.',
+  starCatcher5: 'Small numbers to 100',
+  starCatcher5Help:
+    'Every ten is written, and small numbers are not squashed, like 23 on a bridge to 100.',
+  starCatcher6: 'Neighbours of a ten',
+  starCatcher6Help: 'Numbers just either side of a ten sit close together, like 59 and 61.',
+  starCatcher7: 'Landmarks in your head',
+  starCatcher7Help:
+    'Only the ends are written: picture the middle and the tens, like 63 on a bridge to 100.',
+  starCatcher8: 'Sums to 20',
+  starCatcher8Help: 'Work out the sum, then place the answer, like 8 + 5 on a bridge to 20.',
+  starCatcher9: 'Tens sums',
+  starCatcher9Help: 'Add tens or a single digit, then place it, like 30 + 40 or 47 + 5.',
+  starCatcher10: 'About how much?',
+  starCatcher10Help: 'Estimate two-digit sums to catch them, like 38 + 25 is about 60.',
+  starCatcher11: 'Bridge to 1000',
+  starCatcher11Help: '500 is the middle of the big bridge, like 230 on a bridge to 1000.',
+  starCatcher12: 'Mystery bridge',
+  starCatcher12Help: 'The far end is hidden: count steps from 0, like 40 when one step is 10.',
 };
 export type CurriculumKey = keyof typeof curriculumEn;
 type CurriculumMessages = { readonly [K in CurriculumKey]: string };
@@ -273,6 +310,46 @@ export const curriculumDe: CurriculumMessages = {
   race22: 'Schatzsaal',
   race22Help: 'Teilen bis 100 durch 3 bis 9, wie 42 : 6.',
   raceHalfOf: 'die Hälfte von {n}',
+
+  // Sternenfänger
+  starCatcherChapter: 'Der Sternenfänger',
+  starCatcherChapterHelp:
+    'Schieb Nova über eine leuchtende Zahlenstrahl-Brücke und fang jeden fallenden Stern dort, wo seine Zahl hingehört.',
+  starCatcherPlay: 'Sterne fangen',
+  starSmall: 'Kleine Brücken',
+  starHundred: 'Brücken bis 100',
+  starSums: 'Rechnen am Himmel',
+  starBig: 'Große Brücken',
+  starCatcher1: 'Zahlen bis 10',
+  starCatcher1Help:
+    'Jeder Pfosten hat seine Zahl: Fang den Stern dort, wie 7 auf einer Brücke bis 10.',
+  starCatcher2: 'Die Mitte finden',
+  starCatcher2Help:
+    'Nur 0, 5 und 10 stehen da: Fang in der Mitte an, wie 4 auf einer Brücke bis 10.',
+  starCatcher3: 'Brücke bis 20',
+  starCatcher3Help:
+    'Die Zahlen von 11 bis 19 wohnen hinter der Mitte, wie 14 auf einer Brücke bis 20.',
+  starCatcher4: 'Zehner bis 100',
+  starCatcher4Help: 'Setz die Zehner mit 50 als Mitte, wie 70 auf einer Brücke bis 100.',
+  starCatcher5: 'Kleine Zahlen bis 100',
+  starCatcher5Help:
+    'Jeder Zehner steht da, und kleine Zahlen sind nicht gequetscht, wie 23 auf einer Brücke bis 100.',
+  starCatcher6: 'Nachbarn eines Zehners',
+  starCatcher6Help: 'Zahlen links und rechts von einem Zehner sitzen ganz nah, wie 59 und 61.',
+  starCatcher7: 'Marken im Kopf',
+  starCatcher7Help:
+    'Nur die Enden stehen da: Stell dir die Mitte und die Zehner vor, wie 63 auf einer Brücke bis 100.',
+  starCatcher8: 'Rechnen bis 20',
+  starCatcher8Help: 'Rechne aus und setz das Ergebnis, wie 8 + 5 auf einer Brücke bis 20.',
+  starCatcher9: 'Zehner rechnen',
+  starCatcher9Help:
+    'Rechne mit Zehnern oder einer Ziffer und setz das Ergebnis, wie 30 + 40 oder 47 + 5.',
+  starCatcher10: 'Ungefähr wie viel?',
+  starCatcher10Help: 'Schätz zweistellige Aufgaben, um sie zu fangen, wie 38 + 25 ist etwa 60.',
+  starCatcher11: 'Brücke bis 1000',
+  starCatcher11Help: '500 ist die Mitte der großen Brücke, wie 230 auf einer Brücke bis 1000.',
+  starCatcher12: 'Geheimnisbrücke',
+  starCatcher12Help: 'Das Ende ist versteckt: Zähl Schritte ab 0, wie 40, wenn ein Schritt 10 ist.',
 };
 
 export const curriculumEs: CurriculumMessages = {
@@ -405,6 +482,47 @@ export const curriculumEs: CurriculumMessages = {
   race22: 'Sala del tesoro',
   race22Help: 'Repartir hasta 100 entre números del 3 al 9, como 42 ÷ 6.',
   raceHalfOf: 'la mitad de {n}',
+
+  // Cazadora de estrellas
+  starCatcherChapter: 'La cazadora de estrellas',
+  starCatcherChapterHelp:
+    'Desliza a Nova por un puente brillante que es una recta numérica y atrapa cada estrella donde va su número.',
+  starCatcherPlay: 'Atrapar estrellas',
+  starSmall: 'Puentes pequeños',
+  starHundred: 'Puentes hasta 100',
+  starSums: 'Cuentas en el cielo',
+  starBig: 'Puentes grandes',
+  starCatcher1: 'Números hasta 10',
+  starCatcher1Help:
+    'Cada poste tiene su número: atrapa la estrella ahí, como el 7 en un puente hasta 10.',
+  starCatcher2: 'Busca el medio',
+  starCatcher2Help:
+    'Solo están el 0, el 5 y el 10: empieza desde el medio, como el 4 en un puente hasta 10.',
+  starCatcher3: 'Puente hasta 20',
+  starCatcher3Help:
+    'Los números del 11 al 19 viven después del medio, como el 14 en un puente hasta 20.',
+  starCatcher4: 'Decenas hasta 100',
+  starCatcher4Help: 'Coloca las decenas con el 50 en el medio, como el 70 en un puente hasta 100.',
+  starCatcher5: 'Números pequeños hasta 100',
+  starCatcher5Help:
+    'Todas las decenas están escritas y los números pequeños no se aprietan, como el 23 en un puente hasta 100.',
+  starCatcher6: 'Vecinos de una decena',
+  starCatcher6Help:
+    'Los números justo a cada lado de una decena están muy juntos, como el 59 y el 61.',
+  starCatcher7: 'Marcas en tu cabeza',
+  starCatcher7Help:
+    'Solo están los extremos: imagina el medio y las decenas, como el 63 en un puente hasta 100.',
+  starCatcher8: 'Cuentas hasta 20',
+  starCatcher8Help: 'Resuelve la cuenta y coloca el resultado, como 8 + 5 en un puente hasta 20.',
+  starCatcher9: 'Cuentas con decenas',
+  starCatcher9Help: 'Suma decenas o una cifra y colócalo, como 30 + 40 o 47 + 5.',
+  starCatcher10: '¿Más o menos cuánto?',
+  starCatcher10Help: 'Estima sumas de dos cifras para atraparlas, como 38 + 25 es unos 60.',
+  starCatcher11: 'Puente hasta 1000',
+  starCatcher11Help: 'El 500 es el medio del puente grande, como el 230 en un puente hasta 1000.',
+  starCatcher12: 'Puente misterioso',
+  starCatcher12Help:
+    'El final está escondido: cuenta pasos desde el 0, como el 40 cuando un paso es 10.',
 };
 
 export const curriculumFr: CurriculumMessages = {
@@ -537,4 +655,45 @@ export const curriculumFr: CurriculumMessages = {
   race22: 'Salle du trésor',
   race22Help: 'Partager jusqu’à 100 par un nombre de 3 à 9, comme 42 : 6.',
   raceHalfOf: 'la moitié de {n}',
+
+  // Attrapeuse d’étoiles
+  starCatcherChapter: 'L’attrapeuse d’étoiles',
+  starCatcherChapterHelp:
+    'Fais glisser Nova sur un pont lumineux qui est une droite numérique et attrape chaque étoile là où va son nombre.',
+  starCatcherPlay: 'Attraper des étoiles',
+  starSmall: 'Petits ponts',
+  starHundred: 'Ponts jusqu’à 100',
+  starSums: 'Calculs dans le ciel',
+  starBig: 'Grands ponts',
+  starCatcher1: 'Nombres jusqu’à 10',
+  starCatcher1Help:
+    'Chaque poteau a son nombre : attrape l’étoile là, comme 7 sur un pont jusqu’à 10.',
+  starCatcher2: 'Trouver le milieu',
+  starCatcher2Help:
+    'Seuls 0, 5 et 10 sont écrits : pars du milieu, comme 4 sur un pont jusqu’à 10.',
+  starCatcher3: 'Pont jusqu’à 20',
+  starCatcher3Help:
+    'Les nombres de 11 à 19 habitent après le milieu, comme 14 sur un pont jusqu’à 20.',
+  starCatcher4: 'Dizaines jusqu’à 100',
+  starCatcher4Help: 'Place les dizaines avec 50 au milieu, comme 70 sur un pont jusqu’à 100.',
+  starCatcher5: 'Petits nombres jusqu’à 100',
+  starCatcher5Help:
+    'Chaque dizaine est écrite et les petits nombres ne sont pas tassés, comme 23 sur un pont jusqu’à 100.',
+  starCatcher6: 'Voisins d’une dizaine',
+  starCatcher6Help:
+    'Les nombres juste de chaque côté d’une dizaine sont tout proches, comme 59 et 61.',
+  starCatcher7: 'Repères dans la tête',
+  starCatcher7Help:
+    'Seuls les bouts sont écrits : imagine le milieu et les dizaines, comme 63 sur un pont jusqu’à 100.',
+  starCatcher8: 'Calculs jusqu’à 20',
+  starCatcher8Help: 'Calcule, puis place le résultat, comme 8 + 5 sur un pont jusqu’à 20.',
+  starCatcher9: 'Calculs avec des dizaines',
+  starCatcher9Help: 'Ajoute des dizaines ou un chiffre, puis place-le, comme 30 + 40 ou 47 + 5.',
+  starCatcher10: 'Environ combien ?',
+  starCatcher10Help:
+    'Estime des sommes à deux chiffres pour les attraper, comme 38 + 25, c’est environ 60.',
+  starCatcher11: 'Pont jusqu’à 1000',
+  starCatcher11Help: '500 est le milieu du grand pont, comme 230 sur un pont jusqu’à 1000.',
+  starCatcher12: 'Pont mystère',
+  starCatcher12Help: 'Le bout est caché : compte les pas depuis 0, comme 40 quand un pas vaut 10.',
 };

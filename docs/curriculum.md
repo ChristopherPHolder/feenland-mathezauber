@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 108 selectable levels across seven games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 144 selectable levels across ten games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -17,14 +17,17 @@ The research on session length for young children is thin. This is what it suppo
 
 These estimates assume a seven-year-old answering steadily, animations included.
 
-| Game                 | One level is                                                     | Estimate                                          |
-| -------------------- | ---------------------------------------------------------------- | ------------------------------------------------- |
-| Defend the Castle    | a battle of 10 questions (`STAGE_QUESTIONS`)                     | 10 × (8–15 s + spell) ≈ 2–3 min                   |
-| The Hungry Crocodile | 15 snacks (plain numbers), 12 (one sum), 10 (two sums or tables) | 15 × 6 s ≈ 1.5–2.5 min; 10 × 15 s ≈ 2.5–3.5 min   |
-| Magic walls          | 8 two-brick walls, 5–6 three-row walls, 4 four-row walls         | 8 × 15 s ≈ 2 min … 4 × 60 s ≈ 4 min               |
-| Unicorn Rainbow Race | one heat (six per track)                                         | 60–90 s per heat; two or three heats in a sitting |
-| The Treasure Lock    | 6 chests of 2–6 hops each, the big chest last                    | 6 × 20–30 s ≈ 2–3 min                             |
-| The Potion Cauldron  | 6 potions of 2–4 bottles, the big cauldron last                  | 6 × 20–40 s ≈ 2–4 min                             |
+| Game                 | One level is                                                     | Estimate                                              |
+| -------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| Defend the Castle    | a battle of 10 questions (`STAGE_QUESTIONS`)                     | 10 × (8–15 s + spell) ≈ 2–3 min                       |
+| The Hungry Crocodile | 15 snacks (plain numbers), 12 (one sum), 10 (two sums or tables) | 15 × 6 s ≈ 1.5–2.5 min; 10 × 15 s ≈ 2.5–3.5 min       |
+| Magic walls          | 8 two-brick walls, 5–6 three-row walls, 4 four-row walls         | 8 × 15 s ≈ 2 min … 4 × 60 s ≈ 4 min                   |
+| Unicorn Rainbow Race | one heat (six per track)                                         | 60–90 s per heat; two or three heats in a sitting     |
+| The Treasure Lock    | 6 chests of 2–6 hops each, the big chest last                    | 6 × 20–30 s ≈ 2–3 min                                 |
+| The Potion Cauldron  | 6 potions of 2–4 bottles, the big cauldron last                  | 6 × 20–40 s ≈ 2–4 min                                 |
+| The Firework Show    | 12 fireworks and the grand finale, then the show                 | 12 × 8–12 s + finale and show ≈ 2–3 min               |
+| The Star Catcher     | 10 stars (8 on sum levels) and a 3-star finale                   | 13 × 6–10 s ≈ 1.5–2.5 min; 11 × 15–20 s ≈ 2.5–3.5 min |
+| The Mushroom Drums   | 3 verses of 7–10 drums plus a 4-drum solo, about 34 answers      | 34 × 2.5–3.5 s + demos and titles ≈ 2.5–3.5 min       |
 | The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min       |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
@@ -107,6 +110,30 @@ Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets wh
 
 A potion is built by mixing random bottles with random spells, so it always brews, and the solver in `potion-puzzles.ts` then checks it: the potion never equals one of its bottles, and a level's `needs` spells (− for three bottles, × for the times levels, ÷ for sharing, × or ÷ for the master) must be part of every recipe. The built recipe keeps to table facts (no ×1, nothing past 10 × 10, sharing only within the tables), though a child may brew a potion any way that works. A bottle never goes empty or below zero, never holds more than the level's limit, and only shares evenly; a bottle the chosen spell cannot pour in is greyed out with a line saying why.
 
+### The Firework Show: 12 levels (`pages/fireworks/firework-levels.ts`)
+
+| Topic          | Levels, easiest first                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| First sparks   | dice sparks 1–6 · little groups 1–5 (lines, triangles, squares, small clusters)                         |
+| Fives and tens | five and more 5 + 3 = 8 · ten-frames 1–10 · make ten (count the empty spaces, 0–9)                      |
+| Two bursts     | two dice 4 + 3 = 7 · ten and more 10 + 4 = 14                                                           |
+| Doubles        | mirror doubles to 10 + 10 · double and one more 6 + 7 · doubles both ways (one more, one less, doubles) |
+| Grand show     | twenty-frames and rows of five, 11–20, with a shorter look · the grand show, every pattern mixed to 20  |
+
+The game trains conceptual subitizing: seeing a number as groups instead of counting by ones. Patterns follow the arrangement order from Clements (1999): dice faces, then five- and ten-frames, two groups side by side, doubles as mirror images, near doubles and twenty-frames. Every pattern is rotated, mirrored and recoloured (and jittered a little from level 3), so no picture becomes memorised, and the same picture, answer or colour never comes twice in a row. Two-burst fireworks differ by place and spark shape (round and star), never by colour alone; a near double "one less" shows the missing spark as a hollow ring.
+
+Only the look is timed, never the answer. Three remembered paces set how long a burst glows (Gentle glow 3 s with free peeks, Glow 2 s, Pop 1.5 s); within a round the look gets 0.2 s shorter after three first looks in a row and 0.3 s longer after a miss or a peek, kept inside the pace's range (2.5–4 s, 1.5–2.5 s, 1–2 s). Two-burst fireworks glow 0.4 s longer. Level 11 starts a little shorter and level 12 at the pace's shortest look, and level 12 needs three stars to master.
+
+### The Star Catcher: 12 levels (`pages/star-catcher/star-levels.ts`)
+
+| Topic           | Levels, easiest first                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Small bridges   | numbers to 10, every post numbered · find the middle (only 0, 5, 10 written) · bridge to 20, teens past the middle       |
+| Bridges to 100  | tens with 50 as the middle · small numbers with every ten written · neighbours of a ten (59, 61) · only the ends written |
+| Sums in the sky | sums and differences within 20 (8 + 5) · tens sums and 47 + 5 · estimate two-digit sums (38 + 25 is about 60)            |
+| Big bridges     | bridge to 1000 with 500 as the middle · mystery bridge, the far end hidden, count steps of 10 or 100                     |
+
+The generator spreads a round's numbers across the bridge, one from each equal slice, because feedback works by adding local reference points. Levels 5 and 11 put at least 30% of their stars in the squash zone (11–30 and 100–250), where children squeeze big numbers toward 0, and level 11 starts with three hundreds. Level 6 adds two pairs either side of a ten (59 then 61) against left-digit bias. No number repeats within a round until a small pool (1–9, the nine tens) runs out, and then never twice in a row. Stars avoid the last 3% at either end except on levels 1–2. Sum levels make sure every result stays on the bridge. The catch and golden windows are shares of the bridge (±10%/±3% on the small bridges down to ±7%/±2%), and from the third miss on a star the catch window widens by half its size each time, up to a quarter of the bridge each way, so a child is never stuck; the star is still only caught where its number belongs. From level 5 on, about one star in five is another item type: where did it land (pick the number of an unlabelled star), which is further (two numbers either side of a landmark), and on levels 6–7 a middle star.
 ### The Mountain Gondola: 12 levels (`pages/gondola/gondola-levels.ts`)
 
 | Topic             | Levels, easiest first                                                                                             |
@@ -125,3 +152,17 @@ Every cabin holds ten, in two rows of five. Every item crosses a ten (the genera
 3. Size its round so it lasts about two to four minutes, using the table above.
 4. Add its title and help in all four languages in `core/curriculum-messages.ts`.
 5. If the game's route matches ids with a pattern (`app.routes.ts`), widen the pattern.
+
+### The Mushroom Drums: 12 levels (`pages/drums/drum-patterns.ts`)
+
+| Topic             | Levels, easiest first                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| Big steps         | tens 0, 10, 20 · fives 0, 5, 10 · twos 0, 2, 4                                             |
+| Off the tens      | tens from any number 3, 13, 23 · odd twos 25, 27, 29, 31 · fives off the tens 3, 8, 13, 18 |
+| Backwards         | tens back 97, 87, 77 · twos and fives back 40, 38, 36 · back over the tens 52, 51, 50, 49  |
+| Times-table steps | threes 0, 3, 6, 9 · fours 0, 4, 8, 12                                                      |
+| Drum master       | every step both ways past 100, 87, 97, 107 (needs three stars for mastery)                 |
+
+A round has three verses and a drum solo. Verse 1 counts from an easy start and verse 2 from an awkward start or the other way; both open with Pom hopping two steps by himself so the child sees the pattern. Verse 3 is call and response: eight fresh starts, the band plays two numbers and the child plays the third, and every fourth call asks for the number before. A path stops early rather than leave the level's range (0 to 100 in tens has room for eight answers after the demo), so verses hold 7–10 questions. The four solo drums pay double and do not count for stars; three stars need 32 of 36 first tries (as a share of the verse questions), two need 24.
+
+The answer buttons are the answer plus the mistakes children really make, most telling first: in German the digits swap (27 and 72, because "siebenundzwanzig" says the ones first); in French 71–79 and 91–99 drop to the ten before (77 becomes 67, "soixante-dix-sept"); at a ten crossing the old ten repeats (28 → 20, 31 → 39); then the next number instead of the next step, a ten skipped or repeated, and the wrong direction. After a first miss Pom names the step ("+10 each jump"), after a second a rule card shows the rule with other numbers (never a run holding the answer), and from the third miss one more wrong button greys out each time, always leaving two.

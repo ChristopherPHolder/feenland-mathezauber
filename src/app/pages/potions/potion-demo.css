@@ -1,0 +1,308 @@
+/* The demo uses the game's own bottles, spells and mix line, drawn small. Fixed rows let the
+   finger find each piece: bottles 0–78px, spells 86–130px, mix line 138–182px. */
+:host {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+.film {
+  position: relative;
+  display: grid;
+  grid-template-rows: 78px 44px 44px;
+  gap: 8px;
+  width: min(100%, 290px);
+}
+.bottles {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-items: center;
+  align-items: end;
+}
+.bottle {
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 62px;
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
+}
+.first {
+  grid-column: 1;
+}
+.second,
+.made {
+  grid-column: 2;
+}
+.neck {
+  width: 16px;
+  height: 10px;
+  border: 3px solid #b9a9e0;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  background: #f4f0ff;
+}
+.body {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 56px;
+  border: 3px solid #b9a9e0;
+  border-radius: 40% 40% 18px 18px;
+  background: linear-gradient(#f8f6ff 38%, var(--liquid) 38%);
+  font-size: 24px;
+  font-weight: 600;
+  text-shadow:
+    0 0 4px var(--paper),
+    0 0 8px var(--paper);
+}
+.spells {
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  gap: 8px;
+}
+.spell {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-chip);
+  background: #d6d1e4;
+  color: #4c4766;
+  font-size: 24px;
+  font-weight: 600;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+.mix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.slot {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 40px;
+  padding: 0 4px;
+  border: 2px dashed #b9a9e0;
+  border-radius: 10px;
+  color: transparent;
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.slot.op {
+  min-width: 32px;
+  border-radius: 50%;
+}
+.equals,
+.slot.r {
+  opacity: 0;
+}
+.equals {
+  font-size: 22px;
+  font-weight: 600;
+}
+.cauldron {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  padding: 2px 10px 2px 6px;
+  border-radius: var(--radius-chip);
+  background: var(--gold);
+  font-size: 24px;
+  font-weight: 600;
+  transition: box-shadow 0.3s;
+}
+.cauldron svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--ink);
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.finger {
+  position: absolute;
+  top: 136px;
+  left: 92%;
+  width: 34px;
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 3px 3px #17255540);
+  opacity: 0;
+  transform: translate(-49%, 0);
+  transition:
+    top 0.6s ease-in-out,
+    left 0.6s ease-in-out,
+    opacity 0.3s;
+  pointer-events: none;
+}
+
+/* 1: tap the first bottle */
+[data-step='1'] .finger,
+[data-step='3'] .finger {
+  top: 64px;
+  left: 25%;
+  opacity: 1;
+}
+[data-step='3'] .finger {
+  left: 75%;
+}
+[data-step='2'] .finger {
+  top: 112px;
+  left: calc(50% / var(--n));
+  opacity: 1;
+}
+:is([data-step='1'], [data-step='2'], [data-step='3']) .first {
+  transform: translateY(-6px);
+}
+:is([data-step='1'], [data-step='2'], [data-step='3']) .first .body,
+[data-step='3'] .second .body {
+  border-color: var(--gold-deep);
+  box-shadow: 0 0 0 4px var(--gold);
+}
+/* 2: the + spell lights up and stays pressed */
+:is([data-step='2'], [data-step='3'], [data-step='4'], [data-step='5']) .spell {
+  background: var(--violet);
+  color: var(--paper);
+}
+:is([data-step='2'], [data-step='3'], [data-step='4'], [data-step='5']) .spell[data-op='−'] {
+  background: var(--lagoon);
+}
+:is([data-step='2'], [data-step='3'], [data-step='4'], [data-step='5']) .spell[data-op='×'] {
+  background: var(--pink);
+}
+:is([data-step='2'], [data-step='3'], [data-step='4'], [data-step='5']) .spell[data-op='÷'] {
+  background: var(--success-strong);
+}
+:is([data-step='2'], [data-step='3']) .spell[data-op='+'] {
+  transform: translateY(3px);
+  box-shadow: inset 0 0 0 4px var(--gold);
+}
+/* The mix line fills as the finger taps */
+:is([data-step='1'], [data-step='2'], [data-step='3'], [data-step='4'], [data-step='5']) .slot.a,
+:is([data-step='2'], [data-step='3'], [data-step='4'], [data-step='5']) .slot.op,
+:is([data-step='3'], [data-step='4'], [data-step='5']) .slot.b {
+  border-style: solid;
+  border-color: var(--violet);
+  background: var(--paper);
+  color: var(--ink);
+}
+:is([data-step='4'], [data-step='5']) :is(.equals, .slot.r) {
+  opacity: 1;
+}
+:is([data-step='4'], [data-step='5']) .slot.r {
+  border-style: solid;
+  border-color: var(--success-strong);
+  background: var(--success-ground);
+  color: var(--ink);
+}
+/* 4: the two bottles mix into one */
+.made {
+  opacity: 0;
+  transform: scale(0.4);
+}
+:is([data-step='4'], [data-step='5']) .first {
+  opacity: 0;
+  transform: translateX(120%) scale(0.5);
+}
+:is([data-step='4'], [data-step='5']) .second {
+  opacity: 0;
+}
+:is([data-step='4'], [data-step='5']) .made {
+  opacity: 1;
+  transform: none;
+}
+/* 5: 7 is the cauldron's number: the potion is ready */
+[data-step='5'] .made {
+  transform: translateY(-4px);
+}
+[data-step='5'] .made .body,
+[data-step='5'] .cauldron {
+  box-shadow:
+    0 0 0 4px var(--paper),
+    0 0 0 7px var(--success-strong);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.steps {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #b9a9e0;
+  background: var(--paper);
+  font-size: 15px;
+  font-weight: 600;
+}
+.steps li.on {
+  border-color: var(--violet);
+  background: var(--violet);
+  color: var(--paper);
+}
+.steps li.done {
+  border-color: var(--success-strong);
+  background: var(--success-ground);
+}
+.caption {
+  min-height: 1.3em;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+.replay {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+.replay svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.replay:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

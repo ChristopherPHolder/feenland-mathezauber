@@ -1,0 +1,287 @@
+/* The flat firework show. The scene scales with its box: the burst takes the upper two thirds,
+   the shore, the crowd and Flick the bottom. Nothing flashes: bursts fade in and out. */
+:host {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(#141238 0%, #2b2161 38%, #5b3a7d 62%, #c9727a 74%, #f2a86b 78%);
+  container-type: size;
+}
+.sky {
+  position: absolute;
+  inset: 0 0 22%;
+}
+.moon {
+  position: absolute;
+  top: 8%;
+  right: 9%;
+  width: max(14px, 4cqmin);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: inset -0.5em -0.3em 0 0 #fff3c4;
+  font-size: max(14px, 4cqmin);
+  opacity: 0.85;
+}
+.town {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 11%;
+  fill: #1d1838;
+}
+.windows rect {
+  fill: #ffd98a;
+}
+.lanterns {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 11%;
+  width: 100%;
+  height: 6%;
+}
+.string {
+  fill: none;
+  stroke: #0d0b22;
+  stroke-width: 1;
+}
+.lake {
+  position: absolute;
+  inset: 78% 0 0;
+  background: linear-gradient(#2a2763, #121033);
+}
+.reflection {
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  top: 0;
+  height: 70%;
+  background: radial-gradient(ellipse at 50% 0, var(--hue), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+:host([data-phase='look']) .reflection,
+:host([data-phase='bloom']) .reflection {
+  opacity: 0.35;
+}
+
+/* The burst */
+.burst-area {
+  position: absolute;
+  inset: 4% 4% 32%;
+}
+.burst {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+:host([data-phase='look']) .burst,
+:host([data-phase='bloom']) .burst {
+  opacity: 1;
+}
+@starting-style {
+  :host([data-phase='look']) .burst {
+    opacity: 0;
+  }
+}
+:host([data-phase='fade']) .burst {
+  opacity: 0;
+  transition: opacity 0.7s ease-in-out;
+}
+:host([data-phase='fizzle']) .burst {
+  opacity: 0.35;
+  transition: opacity 1.2s ease-out;
+}
+.spark {
+  fill: var(--hue);
+  filter: drop-shadow(0 0 0.12px #fff) drop-shadow(0 0 0.25px var(--hue));
+}
+.round {
+  stroke: #fffbe8;
+  stroke-width: 0.06;
+}
+.star {
+  stroke: #fffbe8;
+  stroke-width: 0.04;
+}
+.frame {
+  fill: #ffffff0d;
+  stroke: #ffffff73;
+  stroke-width: 0.06;
+}
+.empty {
+  fill: none;
+  stroke: var(--hue);
+  stroke-width: 0.07;
+  opacity: 0.65;
+}
+.group {
+  fill: none;
+  stroke: #fff6c8;
+  stroke-width: 0.1;
+  stroke-dasharray: 0.3 0.18;
+}
+:host([data-phase='fizzle']) .spark {
+  fill: #b7a98a;
+}
+:host(.is-finale) .burst {
+  filter: drop-shadow(0 0 4px #ffe9a8);
+}
+
+/* The rocket rising from the jetty to the burst */
+.rocket {
+  position: absolute;
+  left: 18%;
+  bottom: -40%;
+  width: 6px;
+  height: 18px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: linear-gradient(#fff6c8, var(--hue));
+  box-shadow: 0 10px 14px 2px #ffd45c80;
+}
+
+/* The show: every firework of the round at once, and the level's shape in the middle */
+.show-burst {
+  position: absolute;
+  width: min(22cqmin, 140px);
+  aspect-ratio: 1;
+  margin: calc(min(22cqmin, 140px) / -2) 0 0 calc(min(22cqmin, 140px) / -2);
+  overflow: visible;
+  fill: var(--color);
+}
+.show-shape {
+  position: absolute;
+  inset: 8% 25%;
+  width: 50%;
+  height: 84%;
+  overflow: visible;
+}
+.show-shape path {
+  fill: none;
+  stroke: #ffe27a;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 0.5 4;
+  filter: drop-shadow(0 0 3px #ffd45c);
+}
+
+/* The near shore: the crowd and Flick on the jetty */
+.crowd {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 16%;
+  fill: #0b0a1d;
+}
+.jetty {
+  position: absolute;
+  left: 4%;
+  bottom: 2%;
+  width: clamp(64px, 24cqmin, 150px);
+  aspect-ratio: 1;
+}
+.planks {
+  position: absolute;
+  left: -10%;
+  right: -30%;
+  bottom: 6%;
+  height: 10%;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #6b4a2e 0 10px, #5a3d25 10px 12px);
+}
+.flick {
+  position: absolute;
+  inset: 0 0 12%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rocket {
+    animation: rise 0.9s cubic-bezier(0.3, 0.7, 0.5, 1) both;
+  }
+  :host([data-phase='fade']) .burst {
+    transform: translateY(3%);
+    transition:
+      opacity 0.7s ease-in-out,
+      transform 0.7s ease-in;
+  }
+  :host([data-phase='bloom']) .burst {
+    transform: scale(1.08);
+    transition:
+      opacity 0.3s,
+      transform 0.5s cubic-bezier(0.3, 1.5, 0.5, 1);
+  }
+  :host([data-phase='fizzle']) .burst {
+    transform: translateY(12%);
+    transition:
+      opacity 1.2s ease-out,
+      transform 1.4s ease-in;
+  }
+  .group {
+    animation: outline-in 0.4s ease-out both;
+    animation-delay: calc(var(--i) * 0.3s);
+  }
+  .show-burst {
+    animation: show-pop 1.6s ease-out both;
+    animation-delay: var(--delay);
+  }
+  .show-shape {
+    animation: shape-in 1.2s ease-out 0.8s both;
+  }
+}
+@keyframes rise {
+  from {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate(32cqw, -70cqh);
+    opacity: 0.2;
+  }
+}
+@keyframes outline-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes show-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+}
+@keyframes shape-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+:host-context(.calm-motion) .rocket,
+:host-context(.calm-motion) .group,
+:host-context(.calm-motion) .show-burst,
+:host-context(.calm-motion) .show-shape {
+  animation: none;
+}
+:host-context(.calm-motion) .burst {
+  transform: none !important;
+}

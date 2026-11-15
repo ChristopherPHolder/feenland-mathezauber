@@ -1,0 +1,350 @@
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  display: block;
+  min-height: calc(100dvh - var(--safe-y));
+  background: linear-gradient(#e9e2ff, #f6efff 45%, #fff0e2);
+  padding: 12px max(12px, env(safe-area-inset-right)) 16px max(12px, env(safe-area-inset-left));
+  color: var(--ink);
+}
+.game {
+  max-width: 1280px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow-panel);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+
+/* Intro: the film shows how to play, so there is nothing to read past before Start. */
+.intro {
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  container: intro / inline-size;
+}
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 auto 12px;
+  padding: 0;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--violet);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--warm-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+.intro-grid {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+.intro-side {
+  display: grid;
+  gap: 12px;
+}
+.trick-card {
+  padding: 10px 14px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-card h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.trick-card p {
+  margin: 2px 0 0;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+/* The look pace: three picture tiles in a row */
+.pace {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.pace legend {
+  padding: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.pace-help {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.pace-choice {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice:hover {
+  background: var(--ground);
+}
+.pace-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.pace-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--success-strong);
+}
+.pace-glow {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #fff6c8 0 12%, #ffd45c 22%, #ffd45c55 46%, transparent 70%), #1d1640;
+}
+.pace-choice[data-pace='glow'] .pace-glow {
+  background:
+    radial-gradient(circle, #fff 0 10%, #7cc8ff 20%, #7cc8ff40 40%, transparent 62%), #1d1640;
+}
+.pace-choice[data-pace='pop'] .pace-glow {
+  background: radial-gradient(circle, #fff 0 8%, #ff9ccf 16%, transparent 40%), #1d1640;
+}
+.pace-choice strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+.pace-time {
+  font-size: 14px;
+}
+.pace-free {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--success-strong);
+  font-weight: 600;
+}
+
+/* The firework book: one strip of small shapes, under Start: it shows, it asks nothing */
+.book {
+  margin-top: 8px;
+}
+.book h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+.book h3 span {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.book ul {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.book li {
+  aspect-ratio: 1;
+  max-width: 52px;
+  border-radius: 8px;
+  background: #241d4f;
+  border: 2px solid #3c3274;
+}
+.book li.found {
+  background: radial-gradient(circle, #4a3a8f, #241d4f 75%);
+  border-color: var(--gold-deep);
+}
+.book li.current:not(.found) {
+  border: 2px dashed var(--gold);
+}
+.book svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.book path {
+  fill: none;
+  stroke: #ffe27a;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.book li.current:not(.found) path {
+  stroke: #8f84b8;
+  stroke-dasharray: 2 10;
+}
+.book text {
+  fill: #8f84b8;
+  font: 600 50px var(--font-sans);
+  text-anchor: middle;
+}
+.start-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 4px;
+  padding: 12px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 18px);
+}
+.start-dock .button {
+  margin: 0 auto;
+  max-width: 360px;
+}
+/* Phones and short screens: everything to decide fits above Start. */
+@media (max-width: 480px), (max-height: 520px) {
+  .panel.intro {
+    padding: 12px;
+  }
+  .level-strip {
+    gap: 4px 6px;
+    margin-bottom: 8px;
+  }
+  .level-pill {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
+  .trick-card h3 {
+    display: inline;
+    margin-right: 6px;
+  }
+  .trick-card p {
+    display: inline;
+    font-size: 16px;
+  }
+  .pace-help {
+    display: none;
+  }
+  .pace-glow {
+    width: 30px;
+    height: 30px;
+  }
+  .start-dock {
+    padding-top: 8px;
+  }
+}
+@container intro (inline-size > 640px) {
+  .intro-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Outcome */
+.outcome {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+}
+.outcome:focus {
+  outline: none;
+}
+.outcome h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.score-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 6px 0 0;
+  font-size: 24px;
+}
+.new-best {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 600;
+}
+.outcome-help {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.save-note {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: #fff2d2;
+}
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

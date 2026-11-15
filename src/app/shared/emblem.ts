@@ -89,6 +89,31 @@ import { Component, input } from '@angular/core';
         <path d="M43 11c-2-3-6-2-6 0m14 0c2-3 6-2 6 0" stroke-width="1.5" />
       </svg>
     }
+    @case ('fireworks') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="2" y="2" width="60" height="60" rx="14" fill="#2b2161" />
+        <path d="M2 48h60v0a14 14 0 0 1-14 14H16A14 14 0 0 1 2 48z" fill="#3b4aa0" />
+        <path d="M12 50h10m8 0h6m8 0h10" stroke="#ffd45c" stroke-width="1.5" opacity=".7" />
+        <path d="M14 48q4-12 16-24" stroke="#ffd45c" stroke-width="2" stroke-dasharray="2 3" />
+        <g fill="#ffd45c">
+          <circle cx="24" cy="18" r="3" />
+          <circle cx="32" cy="18" r="3" />
+          <circle cx="40" cy="18" r="3" />
+          <circle cx="24" cy="26" r="3" />
+          <circle cx="32" cy="26" r="3" />
+        </g>
+        <g fill="#ff9ccf">
+          <circle cx="48" cy="26" r="2.6" />
+          <circle cx="40" cy="26" r="2.6" />
+        </g>
+        <path
+          d="M32 6v4M32 34v-3M14 22h4M50 22h4M19 9l3 3M45 9l-3 3"
+          stroke="#fff4c2"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    }
     @case ('potions') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <circle cx="25" cy="11" r="4" fill="#c9b2f2" />
@@ -101,6 +126,44 @@ import { Component, input } from '@angular/core';
         <path d="M46 10h6v6c5 2 7 6 7 10a10 10 0 0 1-20 0c0-4 2-8 7-10z" fill="#e8f4ff" />
         <path d="M39.5 27h19a9.5 9 0 0 1-19 0z" fill="#3fa65a" />
         <rect x="45" y="6" width="8" height="5" rx="2" fill="#b98a5a" />
+      </svg>
+    }
+    @case ('mushroom-drums') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M27 38h10l3 18H24z" fill="#f4ead6" />
+        <path d="M6 36c0-14 12-24 26-24s26 10 26 24z" fill="#e8669a" />
+        <ellipse cx="32" cy="36" rx="26" ry="5" fill="#b84a78" />
+        <ellipse
+          cx="32"
+          cy="24"
+          rx="15"
+          ry="5"
+          fill="#fff8e8"
+          stroke="#8a5a2b"
+          stroke-width="2.5"
+        />
+        <circle cx="16" cy="28" r="2.5" fill="#fff4e0" />
+        <circle cx="47" cy="29" r="2" fill="#fff4e0" />
+        <path d="M44 4 36 20M52 8 40 21" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round" />
+        <circle cx="44" cy="4" r="3" class="gold" />
+        <circle cx="52" cy="8" r="3" class="gold" />
+        <path d="M6 56h52" />
+      </svg>
+    }
+    @case ('star-catcher') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="30" r="26" fill="#22306b" />
+        <circle cx="16" cy="18" r="1.4" fill="#fff4c2" stroke="none" />
+        <circle cx="45" cy="13" r="1.2" fill="#fff4c2" stroke="none" />
+        <circle cx="50" cy="32" r="1.4" fill="#fff4c2" stroke="none" />
+        <path d="M11 13 34 31" stroke="#8ec5ee" stroke-width="4" opacity=".7" />
+        <path d="M14 11 36 28" stroke="#f4a0c0" stroke-width="2" />
+        <path d="m39 23 3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z" class="gold" />
+        <path d="M4 50q28-6 56 0v6q-28-6-56 0z" fill="#b9a3e3" />
+        <path d="M14 48v-6m18 4v-6m18 6v-6" stroke-width="2.5" />
+        <circle cx="14" cy="40" r="2.5" class="gold" />
+        <circle cx="32" cy="38" r="2.5" class="gold" />
+        <circle cx="50" cy="40" r="2.5" class="gold" />
       </svg>
     }
     @case ('gondola') {

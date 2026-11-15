@@ -26,6 +26,12 @@ import { lockStage } from '../treasure-lock/lock-puzzles';
 import { LockScores } from '../treasure-lock/lock-scores';
 import { localOps, potionStage } from '../potions/potion-puzzles';
 import { PotionScores } from '../potions/potion-scores';
+import { drumStage } from '../drums/drum-patterns';
+import { DrumScores } from '../drums/drum-scores';
+import { starStage } from '../star-catcher/star-levels';
+import { StarScores } from '../star-catcher/star-scores';
+import { fireworkLevel } from '../fireworks/firework-levels';
+import { FireworkScores } from '../fireworks/firework-scores';
 import { gondolaStage } from '../gondola/gondola-levels';
 import { GondolaScores } from '../gondola/gondola-scores';
 import {
@@ -91,6 +97,9 @@ export class Games {
   protected readonly scores = inject(CrocodileScores);
   private readonly lockScores = inject(LockScores);
   private readonly potionScores = inject(PotionScores);
+  private readonly drumScores = inject(DrumScores);
+  private readonly starScores = inject(StarScores);
+  private readonly fireworkScores = inject(FireworkScores);
   private readonly gondolaScores = inject(GondolaScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
@@ -242,6 +251,9 @@ export class Games {
         this.scores.best()[level.id] ??
         this.lockScores.best()[level.id] ??
         this.potionScores.best()[level.id] ??
+        this.drumScores.best()[level.id] ??
+        this.starScores.best()[level.id] ??
+        this.fireworkScores.best()[level.id] ??
         this.gondolaScores.best()[level.id] ??
         0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
@@ -280,6 +292,12 @@ export class Games {
     if (crocodile) return localSide(crocodile, this.i.t('crocHalfOf'), divide);
     const potion = potionStage(level.id)?.example;
     if (potion) return localOps(potion, divide);
+    const drums = drumStage(level.id)?.example;
+    if (drums) return drums;
+    const star = starStage(level.id)?.example;
+    if (star) return star;
+    const firework = fireworkLevel(level.id)?.example;
+    if (firework) return firework;
     const gondola = gondolaStage(level.id)?.example;
     if (gondola) return gondola;
     return lockStage(level.id)?.example ?? '';

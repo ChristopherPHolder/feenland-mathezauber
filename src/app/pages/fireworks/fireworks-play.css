@@ -1,0 +1,525 @@
+/* While a show is on, the sky gets every pixel the controls leave free: on an upright screen the
+   sky sits above the spark pad, on a sideways one beside it. Nothing is sized to one device. */
+.game.playing {
+  min-height: calc(100dvh - var(--safe-y) - 28px);
+}
+
+/* HUD: thirteen rockets, the points and the Big-show chip, always in one row */
+.hud {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+}
+.rockets {
+  display: flex;
+  align-items: center;
+  gap: clamp(3px, 0.8vw, 8px);
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rocket-slot {
+  flex: 1 1 0;
+  min-width: 8px;
+  max-width: 26px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ffffffb3;
+  border: 2px solid #c9bdf0;
+}
+.rocket-slot.is-finale {
+  max-width: 34px;
+  border-color: var(--gold-deep);
+  clip-path: polygon(
+    50% 0,
+    63% 35%,
+    100% 38%,
+    72% 61%,
+    81% 100%,
+    50% 79%,
+    19% 100%,
+    28% 61%,
+    0 38%,
+    37% 35%
+  );
+  border-radius: 0;
+  background: #ffe9a8;
+}
+.rocket-slot.current {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px #7950b055;
+}
+.rocket-slot.done {
+  background: var(--hue);
+  border-color: #3b2f7d;
+}
+.rocket-slot.first {
+  box-shadow:
+    0 0 0 2px var(--paper),
+    0 0 0 4px var(--gold-deep);
+}
+.help {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--violet);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--violet);
+  font: 600 22px var(--font-sans);
+  cursor: pointer;
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+/* What to tap next: the whole pad (never one key) or Next rocket gets a gold halo. */
+.pad.is-guided,
+.next.is-guided {
+  border-radius: var(--radius-tile);
+  box-shadow: 0 0 0 4px var(--gold);
+}
+.points {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: none;
+  margin: 0;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+  white-space: nowrap;
+}
+.points span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.points strong {
+  min-width: 3ch;
+  font-size: 22px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.big-show-chip {
+  flex: none;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, #8a5a00, #b4006b);
+  color: var(--paper);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* The sky above (or beside) the controls */
+.play-area {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-rows: minmax(min(46dvh, 220px), 1fr) auto;
+  gap: 10px;
+  min-height: 0;
+}
+.board {
+  position: relative;
+  min-height: 0;
+  border-radius: var(--radius-panel);
+  background: #141238;
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  isolation: isolate;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+}
+.firework-name {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: #0d0b22b3;
+  color: var(--paper);
+  font-size: 15px;
+  font-weight: 600;
+}
+.banner {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  z-index: 3;
+  margin: 0;
+  max-width: 90%;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, #8a5a00, #b4006b);
+  color: var(--paper);
+  font-size: clamp(20px, 4.5vmin, 32px);
+  font-weight: 600;
+  text-align: center;
+  translate: -50% 0;
+  box-shadow: 0 8px 24px #0008;
+}
+.banner.is-finale {
+  background: linear-gradient(90deg, #3b2f7d, #1f6fb0);
+  border: 3px solid var(--gold);
+}
+.sentence {
+  position: absolute;
+  left: 50%;
+  bottom: 28%;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  padding: 6px 18px;
+  border-radius: var(--radius-pill);
+  background: #fffdf5f2;
+  color: var(--ink);
+  font-size: clamp(24px, 5.5vmin, 40px);
+  font-weight: 600;
+  white-space: nowrap;
+  translate: -50% 0;
+  box-shadow: 0 6px 18px #0006;
+  font-variant-numeric: tabular-nums;
+}
+.gain {
+  color: var(--amber-ink);
+  font-size: 0.7em;
+}
+
+/* Controls: Flick's line, the Peek, then the spark pad or "how did you see it?" */
+.controls {
+  container: controls / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+}
+.talk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.status {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.9em;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.45;
+}
+.peek {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 52px;
+  padding: 8px 16px 12px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--violet);
+  color: var(--paper);
+  font: 600 18px var(--font-sans);
+  box-shadow: 0 4px 0 #4b2c78;
+  cursor: pointer;
+  overflow: hidden;
+}
+.peek[disabled] {
+  background: #d6d1e4;
+  color: #4c4766;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.peek.is-used[disabled] {
+  background: #e7e3f1;
+}
+.scope {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+/* The fuse: a thin glowing line that burns down while the sparks glow. */
+.fuse {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ffd45c, #ff9ccf);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.fuse.is-burning {
+  transform: scaleX(1);
+}
+
+/* The pad and "how did you see it?" share one cell: the taller one sets the size. */
+.deck {
+  display: grid;
+  flex: 1 1 auto;
+}
+.deck > * {
+  grid-area: 1 / 1;
+}
+.pad.is-covered {
+  visibility: hidden;
+}
+.ways {
+  align-self: start;
+}
+.pad,
+.ways {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.pad {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+@container controls (inline-size > 640px) {
+  .pad.is-wide {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+.key {
+  min-height: max(48px, min(7.5dvh, 72px));
+  border: 0;
+  border-radius: var(--radius-tile);
+  background: #ffe9a8;
+  color: var(--ink);
+  font: 600 clamp(22px, 4.2dvh, 32px) var(--font-sans);
+  box-shadow: 0 4px 0 #c9a24a;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
+}
+.key[data-tone='1'] {
+  background: #e3d6ff;
+  box-shadow: 0 4px 0 #9c86d6;
+}
+.key[data-tone='2'] {
+  background: #c9f0d8;
+  box-shadow: 0 4px 0 #6bb98a;
+}
+.key[data-tone='3'] {
+  background: #cfeaff;
+  box-shadow: 0 4px 0 #6fa8d6;
+}
+.key:active,
+.key.typed {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #0003;
+}
+.pad[disabled] .key {
+  cursor: default;
+  opacity: 0.6;
+}
+.keys-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+@media (pointer: coarse) {
+  .keys-help {
+    display: none;
+  }
+}
+.ways legend {
+  padding: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.ways-help {
+  margin: 2px 0 8px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.way-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.way {
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-tile);
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 18px var(--font-sans);
+  cursor: pointer;
+}
+.way:hover {
+  background: var(--ground);
+}
+.way[data-kind='counted'] {
+  border-style: dashed;
+}
+.next {
+  margin-top: 10px;
+  width: 100%;
+}
+.key:focus-visible,
+.peek:focus-visible,
+.way:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Sideways screens: the sky on the left, the controls beside it. */
+@media (min-aspect-ratio: 5 / 4) and (min-width: 600px) {
+  .play-area {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.35fr) minmax(min(42vw, 300px), 1fr);
+  }
+  .controls {
+    overflow-y: auto;
+  }
+  /* The pad grows into the height beside the sky, up to big comfortable keys. */
+  .pad {
+    grid-auto-rows: minmax(0, 1fr);
+    max-block-size: min(100%, 520px);
+  }
+  .key {
+    min-height: max(44px, min(9dvh, 96px));
+  }
+}
+/* Short sideways phones: tighter chrome so the pad stays above the fold. */
+@media (max-height: 520px) {
+  :host {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .game {
+    gap: 6px;
+  }
+  .game.playing {
+    min-height: calc(100dvh - var(--safe-y) - 12px);
+  }
+  .controls {
+    gap: 6px;
+    padding: 8px;
+  }
+  .status {
+    min-height: 0;
+    font-size: 15px;
+  }
+  .peek {
+    min-height: 44px;
+    padding: 6px 12px 10px;
+    font-size: 16px;
+  }
+  .key {
+    min-height: 44px;
+    font-size: 22px;
+  }
+  .firework-name {
+    font-size: 13px;
+  }
+  .ways-help {
+    display: none;
+  }
+  .way {
+    min-height: 44px;
+  }
+  .next {
+    margin-top: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rocket-slot.current {
+    animation: twinkle 1.6s ease-in-out infinite alternate;
+  }
+  .banner {
+    animation: banner-in 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+  .sentence {
+    animation: sentence-in 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) 0.25s both;
+  }
+  .gain {
+    animation: gain-up 0.8s ease-out 0.5s both;
+  }
+}
+/* The fuse burns down in every motion setting: it is the look time, not decoration. */
+.fuse.is-burning {
+  animation: burn var(--look) linear forwards;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pad.is-guided,
+  .next.is-guided {
+    animation: hop 1.2s ease-in-out infinite;
+  }
+}
+@keyframes hop {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}
+:host-context(.calm-motion) .pad.is-guided,
+:host-context(.calm-motion) .next.is-guided {
+  animation: none;
+}
+@keyframes burn {
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes twinkle {
+  to {
+    box-shadow: 0 0 0 5px #7950b022;
+  }
+}
+@keyframes banner-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes sentence-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.8);
+  }
+}
+@keyframes gain-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+:host-context(.calm-motion) .rocket-slot.current,
+:host-context(.calm-motion) .banner,
+:host-context(.calm-motion) .sentence,
+:host-context(.calm-motion) .gain {
+  animation: none;
+}
+:host-context(.calm-motion) .key {
+  transition: none;
+}

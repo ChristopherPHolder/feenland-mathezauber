@@ -1,0 +1,63 @@
+<div class="picture">
+  <app-drum-chart
+    [rows]="rows()"
+    [lit]="result().picture.cells"
+    [label]="t('tilePattern') + ': ' + pattern()"
+  />
+  <p class="picture-name">{{ pattern() }}</p>
+</div>
+<div class="copy">
+  <h2>{{ t(result().stars === 3 ? 'perfect' : 'done') }}</h2>
+  <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: result().stars })">
+    @for (star of slots; track star) {
+      <span class="star" [class.earned]="star <= result().stars" [style.--i]="star"
+        ><app-icon kind="star"
+      /></span>
+    }
+  </div>
+  <p class="score-line">
+    <strong>{{ t('score', { n: i.format(result().points) }) }}</strong>
+    @if (result().newBest) {
+      <span class="new-best">{{ t('newBest') }}</span>
+    } @else {
+      <span class="best-line">{{ t('bestScore', { n: i.format(result().best) }) }}</span>
+    }
+  </p>
+  <ul class="tiles">
+    <li>
+      <span>{{ t('tileFirst') }}</span
+      ><strong>{{ i.format(result().firstTry) }} / {{ i.format(result().questions) }}</strong>
+    </li>
+    <li>
+      <span>{{ t('tileStreak') }}</span
+      ><strong>{{ i.format(result().bestStreak) }}</strong>
+    </li>
+    @if (result().timed) {
+      <li>
+        <span>{{ t('tileBeat') }}</span
+        ><strong>{{ i.format(result().onBeat) }}</strong>
+      </li>
+    }
+  </ul>
+  <p class="help">
+    {{ t(result().stars === 3 ? 'threeStars' : result().stars === 2 ? 'twoStars' : 'oneStar') }}
+  </p>
+  @if (result().saveFailed) {
+    <p class="save-note" role="alert">{{ t('save') }}</p>
+  }
+  <div class="actions">
+    @if (next(); as next) {
+      <a class="button primary" [routerLink]="next"
+        >{{ t('nextLevel') }}<app-icon kind="arrow"
+      /></a>
+      <button class="button secondary" type="button" (click)="celebrate.emit()">
+        {{ t('celebrate') }}
+      </button>
+    } @else {
+      <button class="button primary" type="button" (click)="celebrate.emit()">
+        {{ t('celebrate') }}<app-icon kind="arrow" />
+      </button>
+    }
+    <button class="button secondary" type="button" (click)="again.emit()">{{ t('again') }}</button>
+  </div>
+</div>

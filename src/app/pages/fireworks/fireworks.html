@@ -1,0 +1,303 @@
+<section class="game" [class.playing]="started() && !round().done" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(level().level))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <h2 id="intro-title" class="sr-only">{{ i.t(levelKey(level().level)) }}</h2>
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.level) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.level === level().level ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.level))
+            "
+            >{{ link.position }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <app-firework-demo class="demo" />
+        <div class="intro-side">
+          <div class="trick-card">
+            <h3>{{ t('trickTitle') }}</h3>
+            <p>{{ t(trickKey(level().level)) }}</p>
+          </div>
+          <fieldset class="pace" aria-describedby="pace-help">
+            <legend>{{ t('paceTitle') }}</legend>
+            <p id="pace-help" class="pace-help">{{ t('paceHelp') }}</p>
+            <div class="pace-options">
+              @for (option of paces; track option.id) {
+                <label
+                  class="pace-choice"
+                  [class.selected]="pace() === option.id"
+                  [attr.data-pace]="option.id"
+                >
+                  <input
+                    type="radio"
+                    name="firework-pace"
+                    [value]="option.id"
+                    [checked]="pace() === option.id"
+                    (change)="selectPace(option.id)"
+                  />
+                  <span class="pace-glow" aria-hidden="true"></span>
+                  <strong>{{ t(option.label) }}</strong>
+                  <span class="pace-time">{{
+                    t('paceSeconds', { n: paceSeconds(option.id) })
+                  }}</span>
+                  @if (option.freePeek) {
+                    <span class="pace-free">{{ t('paceFree') }}</span>
+                  }
+                </label>
+              }
+            </div>
+          </fieldset>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+        </div>
+      </div>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<app-icon kind="arrow" />
+        </button>
+      </div>
+      <section class="book" aria-labelledby="book-title">
+        <h3 id="book-title">
+          {{ t('bookTitle') }}
+          <span>{{ t('bookFound', { n: scores.book().length, total: bookShapes.length }) }}</span>
+        </h3>
+        <ul>
+          @for (shape of bookShapes; track shape) {
+            <li
+              [class.found]="found(shape)"
+              [class.current]="shape === level().shape"
+              [attr.aria-label]="
+                found(shape)
+                  ? t(shape)
+                  : shape === level().shape
+                    ? t('bookThis') + ': ' + t('bookLocked')
+                    : '?'
+              "
+            >
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                @if (found(shape) || shape === level().shape) {
+                  <path [attr.d]="shapePathOf(shape)" />
+                } @else {
+                  <text x="50" y="66">?</text>
+                }
+              </svg>
+            </li>
+          }
+        </ul>
+      </section>
+    </section>
+  } @else if (round().done) {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <div class="outcome-copy">
+        <h2>{{ t(stars() === 3 ? 'perfect' : 'done') }}</h2>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+      </div>
+      <app-firework-reward
+        [stars]="stars()"
+        [launched]="round().launched.length"
+        [firstLooks]="round().firstLooks"
+        [regular]="roundLength"
+        [bestStreak]="round().bestStreak"
+        [shape]="level().shape"
+        [newShape]="newShape()"
+      />
+      <p class="outcome-help">
+        {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+      </p>
+      @if (saveFailed()) {
+        <p class="save-note" role="alert">{{ t('save') }}</p>
+      }
+      <div class="outcome-actions">
+        @if (nextLink(); as next) {
+          <a class="button primary" [routerLink]="next"
+            >{{ t('nextLevel') }}<app-icon kind="arrow"
+          /></a>
+          <button class="button secondary" type="button" (click)="celebrate()">
+            {{ t('celebrate') }}
+          </button>
+        } @else {
+          <button class="button primary" type="button" (click)="celebrate()">
+            {{ t('celebrate') }}<app-icon kind="arrow" />
+          </button>
+        }
+        <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <ol
+        class="rockets"
+        [attr.aria-label]="t('hudLabel', { n: round().index + 1, total: roundLength + 1 })"
+      >
+        @for (slot of slots; track slot) {
+          <li
+            class="rocket-slot"
+            [class.done]="slot < round().results.length"
+            [class.current]="slot === round().index"
+            [class.is-finale]="slot === roundLength"
+            [class.first]="round().results[slot]"
+            [style.--hue]="slot < round().launched.length ? hue(round().launched[slot]) : null"
+            aria-hidden="true"
+          ></li>
+        }
+      </ol>
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openHelp()"
+      >
+        ?
+      </button>
+      <p class="points">
+        <span>{{ t('points') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (bigShow()) {
+        <p class="big-show-chip">{{ t('bigShow') }}</p>
+      }
+    </div>
+    <div class="play-area">
+      <section
+        class="board"
+        [class.is-bloom]="phase() === 'bloom'"
+        [class.is-big-show]="bigShow()"
+        [attr.aria-label]="t('boardLabel')"
+      >
+        <app-three-stage class="scene" [world]="loadWorld" [state]="frame()">
+          <app-firework-sky [frame]="frame()" />
+        </app-three-stage>
+        @if (banner(); as kind) {
+          <p class="banner" [class.is-finale]="kind === 'finale'" aria-hidden="true">
+            {{ t(kind === 'finale' ? 'finaleBanner' : 'bigShowBanner') }}
+          </p>
+        }
+        @if (phase() === 'bloom') {
+          <p class="sentence" aria-hidden="true">
+            <span>{{ sentence() }}</span>
+            <strong class="gain">+{{ i.format(round().gain) }}</strong>
+          </p>
+        }
+        <p class="firework-name" aria-hidden="true">
+          {{
+            finale()
+              ? t('finale')
+              : t('fireworkCount', { n: round().index + 1, total: roundLength })
+          }}
+        </p>
+      </section>
+      <section class="controls" [attr.aria-label]="t(makeTen() ? 'padLabelEmpty' : 'padLabel')">
+        <div class="talk">
+          <p class="status" role="status" aria-live="polite" aria-atomic="true">
+            @if (round().hint && phase() !== 'bloom') {
+              <strong>{{ t('hintLead') }}</strong>
+            }
+            {{ statusText() }}
+          </p>
+          @if (!round().ways) {
+            <button
+              type="button"
+              class="peek"
+              [class.is-used]="round().peeked"
+              [disabled]="!canPeek()"
+              [attr.aria-label]="t('peekLabel')"
+              (click)="peek()"
+            >
+              @for (burst of [round().bursts]; track burst) {
+                <span
+                  class="fuse"
+                  [class.is-burning]="phase() === 'look'"
+                  [style.--look]="round().lookNow + 's'"
+                  aria-hidden="true"
+                ></span>
+              }
+              <svg class="scope" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 15l12-7 2 4-12 7z" />
+                <path d="M15 8l4-2 2 4-4 2" />
+                <path d="M9 18l-2 4m4-5 2 5" />
+              </svg>
+              <span>{{ round().peeked ? t('peekUsed') : t('peek') }}</span>
+            </button>
+          }
+        </div>
+        <!-- The pad stays in place under "how did you see it?", so the sky never changes size. -->
+        <div class="deck">
+          <fieldset
+            class="pad"
+            [class.is-wide]="wide()"
+            [class.is-guided]="guidePad()"
+            [class.is-covered]="!!round().ways"
+            [attr.inert]="round().ways ? '' : null"
+            [disabled]="!answerable()"
+          >
+            <legend class="sr-only">{{ t(makeTen() ? 'padLabelEmpty' : 'padLabel') }}</legend>
+            @for (n of pad(); track n) {
+              <button
+                type="button"
+                class="key"
+                [class.typed]="typed() === '' + n"
+                [attr.data-tone]="tone(n)"
+                (click)="answer(n)"
+              >
+                {{ i.format(n) }}
+              </button>
+            }
+          </fieldset>
+          @if (round().ways; as ways) {
+            <fieldset class="ways">
+              <legend>{{ t('howTitle') }}</legend>
+              <p class="ways-help">{{ t('howHelp', { n: spotterBonus }) }}</p>
+              <div class="way-list">
+                @for (way of ways; track $index) {
+                  <button type="button" class="way" [attr.data-kind]="way.kind" (click)="see(way)">
+                    {{ wayText(way) }}
+                  </button>
+                }
+              </div>
+              <button
+                class="button primary next"
+                [class.is-guided]="guideNext()"
+                type="button"
+                (click)="see(null)"
+              >
+                {{ round().index + 1 === roundLength ? t('toFinale') : t('next')
+                }}<app-icon kind="arrow" />
+              </button>
+            </fieldset>
+          }
+        </div>
+        <p class="keys-help">{{ t('keysHelp') }}</p>
+      </section>
+    </div>
+    @if (coaching()) {
+      <app-firework-coach (done)="closeHelp()" />
+    }
+  }
+</section>
