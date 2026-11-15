@@ -284,10 +284,16 @@
             aria-hidden="true"
           >
             @for (token of tokens(question().left); track $index) {
-              @if (token === '+' || token === '−') {
-                <span class="operator" [class.minus]="token === '−'">{{ token }}</span>
-              } @else {
-                <span class="tile">{{ token }}</span>
+              @switch (token.kind) {
+                @case ('operator') {
+                  <span class="operator" [class.minus]="token.text === '−'">{{ token.text }}</span>
+                }
+                @case ('word') {
+                  <span class="word">{{ token.text }}</span>
+                }
+                @default {
+                  <span class="tile">{{ token.text }}</span>
+                }
               }
             }
           </span>
@@ -347,10 +353,16 @@
             aria-hidden="true"
           >
             @for (token of tokens(question().right); track $index) {
-              @if (token === '+' || token === '−') {
-                <span class="operator" [class.minus]="token === '−'">{{ token }}</span>
-              } @else {
-                <span class="tile">{{ token }}</span>
+              @switch (token.kind) {
+                @case ('operator') {
+                  <span class="operator" [class.minus]="token.text === '−'">{{ token.text }}</span>
+                }
+                @case ('word') {
+                  <span class="word">{{ token.text }}</span>
+                }
+                @default {
+                  <span class="tile">{{ token.text }}</span>
+                }
               }
             }
           </span>

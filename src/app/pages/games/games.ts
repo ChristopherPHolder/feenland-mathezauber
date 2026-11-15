@@ -18,7 +18,7 @@ import { Icon } from '../../shared/icon';
 import { StarRating } from '../../shared/star-rating';
 import { CampaignStore } from '../fairy-defense/campaign';
 import { TOTAL_WAVES } from '../fairy-defense/waves';
-import { comparisonStage } from '../crocodile/comparison';
+import { comparisonStage, localSide } from '../crocodile/comparison';
 import { raceStage } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
 import { lockStage } from '../treasure-lock/lock-puzzles';
@@ -252,9 +252,10 @@ export class Games {
   }
   /** The worked example a level shows on its card, when the game defines one. */
   private example(level: Level) {
+    const crocodile = comparisonStage(level.id)?.example;
     return (
       level.practice?.example ??
-      comparisonStage(level.id)?.example ??
+      (crocodile && localSide(crocodile, this.i.t('crocHalfOf'))) ??
       raceStage(level.id)?.example ??
       lockStage(level.id)?.example ??
       ''
