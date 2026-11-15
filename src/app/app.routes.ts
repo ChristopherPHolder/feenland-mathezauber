@@ -10,6 +10,7 @@ import { WallRoute } from './pages/number-wall/wall-route';
 import { SettingsRoute } from './pages/settings/settings-route';
 import { LockRoute } from './pages/treasure-lock/lock-route';
 import { PotionRoute } from './pages/potions/potion-route';
+import { BakeryRoute } from './pages/bakery/bakery-route';
 import { RaceRoute } from './pages/unicorn-race/race-route';
 import { WelcomeRoute } from './pages/welcome/welcome-route';
 /**
@@ -96,6 +97,16 @@ export const routes: Routes = [
         : null,
     data: { focusedGame: true },
     component: PotionRoute,
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^bakery-([1-9]|1[0-2])$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    component: BakeryRoute,
   },
   {
     path: 'adventure/number-wall',

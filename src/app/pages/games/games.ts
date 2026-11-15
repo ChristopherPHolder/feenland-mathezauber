@@ -26,6 +26,8 @@ import { lockStage } from '../treasure-lock/lock-puzzles';
 import { LockScores } from '../treasure-lock/lock-scores';
 import { localOps, potionStage } from '../potions/potion-puzzles';
 import { PotionScores } from '../potions/potion-scores';
+import { bakeryStage } from '../bakery/bakery-levels';
+import { BakeryScores } from '../bakery/bakery-scores';
 import {
   levelPosition,
   levels as wallLevels,
@@ -89,6 +91,7 @@ export class Games {
   protected readonly scores = inject(CrocodileScores);
   private readonly lockScores = inject(LockScores);
   private readonly potionScores = inject(PotionScores);
+  private readonly bakeryScores = inject(BakeryScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
   protected readonly nextId = computed(() => this.p.next()?.id);
@@ -239,6 +242,7 @@ export class Games {
         this.scores.best()[level.id] ??
         this.lockScores.best()[level.id] ??
         this.potionScores.best()[level.id] ??
+        this.bakeryScores.best()[level.id] ??
         0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
       recommended: level.id === this.nextId(),
@@ -276,6 +280,8 @@ export class Games {
     if (crocodile) return localSide(crocodile, this.i.t('crocHalfOf'), divide);
     const potion = potionStage(level.id)?.example;
     if (potion) return localOps(potion, divide);
+    const bakery = bakeryStage(level.id)?.example;
+    if (bakery) return bakery;
     return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {

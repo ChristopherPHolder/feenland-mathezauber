@@ -1,0 +1,187 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.wall {
+  fill: #fbe7cf;
+}
+.board-frame {
+  fill: #3e2b22;
+  stroke: #a0703f;
+  stroke-width: 3;
+}
+.square {
+  fill: #5b4436;
+}
+.square.filled {
+  fill: #e9b56a;
+}
+.oven rect:first-child {
+  fill: #b5523b;
+  stroke: #7a3424;
+  stroke-width: 3;
+}
+.oven-window {
+  fill: #ffcf6b;
+  stroke: #3a2318;
+  stroke-width: 3;
+}
+.oven.golden .oven-window {
+  fill: #ffe14d;
+  filter: drop-shadow(0 0 6px var(--gold));
+}
+.timer-track {
+  fill: none;
+  stroke: #ffffff66;
+  stroke-width: 3;
+}
+.timer-fill {
+  fill: none;
+  stroke: #ff8a1f;
+  stroke-width: 3;
+  transform: rotate(-90deg);
+  transform-origin: 160px 16px;
+}
+.shop-window {
+  fill: #cfe8f5;
+  stroke: #a0703f;
+  stroke-width: 4;
+}
+.treat {
+  fill: #f28cb1;
+  stroke: #b3456f;
+  stroke-width: 2;
+}
+.bear-ear,
+.bear-head,
+.bear-body {
+  fill: #a8703f;
+}
+.snout {
+  fill: #e7c9a0;
+}
+.nose,
+.eye {
+  fill: #2b1a10;
+}
+.apron {
+  fill: var(--cream);
+}
+.hat {
+  fill: var(--cream);
+  stroke: #e4d8c4;
+  stroke-width: 2;
+}
+.guest-ear,
+.guest-head {
+  fill: #e5793b;
+}
+.customer[data-kind='rabbit'] .guest-ear {
+  transform: scale(0.7, 1.8);
+  transform-origin: 0 -20px;
+}
+.customer[data-kind='rabbit'] .guest-ear,
+.customer[data-kind='rabbit'] .guest-head {
+  fill: #e8e1db;
+}
+.customer[data-kind='hedgehog'] .guest-ear,
+.customer[data-kind='hedgehog'] .guest-head {
+  fill: #8a6a4f;
+}
+.customer[data-kind='squirrel'] .guest-ear,
+.customer[data-kind='squirrel'] .guest-head {
+  fill: #c0622d;
+}
+.customer[data-kind='dragon'] .guest-ear,
+.customer[data-kind='dragon'] .guest-head {
+  fill: #7ddf9b;
+}
+.dough {
+  fill: #9a6a3f;
+  stroke: #6e4526;
+  stroke-width: 0.08;
+}
+.dough.active {
+  stroke: var(--gold);
+  stroke-width: 0.18;
+}
+.dough.named {
+  fill: #b07a45;
+}
+.sugar {
+  stroke: var(--cream);
+  stroke-width: 0.09;
+  stroke-dasharray: 0.12 0.18;
+  stroke-linecap: round;
+}
+.cookie circle:first-child {
+  stroke: #8c5a2b;
+  stroke-width: 0.05;
+}
+.chip {
+  fill: #5a3418;
+}
+.cookie.ghost circle {
+  fill: #ffffff55;
+  stroke: var(--cream);
+  stroke-dasharray: 0.12 0.1;
+}
+.grid {
+  stroke: #ffffff40;
+  stroke-width: 0.04;
+}
+.guide {
+  stroke: #ffe14d;
+  stroke-width: 0.16;
+  stroke-dasharray: 0.3 0.2;
+  stroke-linecap: round;
+}
+.blade {
+  stroke: #e9eef5;
+  stroke-width: 0.14;
+  stroke-linecap: round;
+}
+.handle {
+  fill: #c0804a;
+  stroke: #6e4526;
+  stroke-width: 0.08;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cookie.pulse {
+    animation: pulse 0.5s ease-in-out both;
+    animation-delay: var(--delay);
+  }
+  .dough.twin.named {
+    animation: twin 0.6s ease-in-out 2;
+  }
+  .guide {
+    animation: glow 1.2s ease-in-out infinite alternate;
+  }
+}
+@keyframes pulse {
+  50% {
+    transform: scale(1.35);
+  }
+}
+@keyframes twin {
+  50% {
+    fill: #ffe14d;
+  }
+}
+@keyframes glow {
+  to {
+    stroke-opacity: 0.45;
+  }
+}
+:host-context(.calm-motion) .cookie.pulse,
+:host-context(.calm-motion) .dough.twin.named,
+:host-context(.calm-motion) .guide {
+  animation: none;
+}

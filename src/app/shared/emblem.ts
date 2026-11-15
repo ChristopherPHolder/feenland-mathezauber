@@ -103,6 +103,31 @@ import { Component, input } from '@angular/core';
         <rect x="45" y="6" width="8" height="5" rx="2" fill="#b98a5a" />
       </svg>
     }
+    @case ('bakery') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="6" y="20" width="52" height="38" rx="7" fill="#9aa1ad" />
+        <rect x="10" y="24" width="44" height="30" rx="4" fill="#f3e6c8" />
+        <circle cx="20" cy="32" r="6" fill="#e3a95c" />
+        <circle cx="32" cy="32" r="6" fill="#e3a95c" />
+        <circle cx="44" cy="32" r="6" fill="#e3a95c" />
+        <circle cx="20" cy="46" r="6" fill="#e3a95c" />
+        <circle cx="32" cy="46" r="6" fill="#e3a95c" />
+        <circle cx="44" cy="46" r="6" fill="#e3a95c" />
+        <path d="M8 39.5h48" stroke="#c98a45" stroke-width="2" stroke-dasharray="3 3" />
+        <circle cx="18" cy="31" r="1.4" fill="#5a3418" />
+        <circle cx="34" cy="30" r="1.4" fill="#5a3418" />
+        <circle cx="43" cy="34" r="1.4" fill="#5a3418" />
+        <circle cx="21" cy="47" r="1.4" fill="#5a3418" />
+        <circle cx="31" cy="45" r="1.4" fill="#5a3418" />
+        <circle cx="45" cy="47" r="1.4" fill="#5a3418" />
+        <path
+          d="M22 18h20v-4c5-1 6-8 0-9-2-5-8-5-10-1-2-4-8-4-10 1-6 1-5 8 0 9z"
+          fill="#fffaf0"
+          stroke="#d9cbb3"
+          stroke-width="1.5"
+        />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />
