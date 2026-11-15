@@ -32,6 +32,7 @@
     [paused]="paused()"
     [started]="started()"
     [fit]="playing()"
+    [pressure]="pressure()"
     (pauseRequested)="openPause()"
   >
     @if (!started()) {

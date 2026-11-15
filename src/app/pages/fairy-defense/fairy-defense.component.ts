@@ -79,6 +79,12 @@ export class FairyDefenseComponent {
   protected readonly thinkingTime = signal(45);
   /** The last slip was the ring running out, not a wrong spell. */
   private readonly timedOut = signal(false);
+  /** How close the thinking timer is to running out, for the scene: 0 without a timer. */
+  protected readonly pressure = computed(() => {
+    const pace = this.settingsModel().pace;
+    if (pace === 'relaxed') return 0;
+    return 1 - this.thinkingTime() / this.thinkingTotal();
+  });
   protected readonly spells = computed(() => {
     const question = this.encounter()?.question;
     return question ? practiceSpells(question.answer) : this.battle().wave.spells;

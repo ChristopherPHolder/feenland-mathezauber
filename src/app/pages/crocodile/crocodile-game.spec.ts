@@ -167,6 +167,18 @@ describe('the hungry crocodile game', () => {
     expect(progress.mastered).not.toContain('crocodile-1');
     expect(progress.stars?.['crocodile-1']).toBe(1);
   });
+  it('keeps the 2D pond inside the 3D stage wherever WebGL is missing', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    fixture.detectChanges();
+    const pond = element.querySelector('.board.pond')!;
+    expect(pond.classList).not.toContain('in-3d');
+    expect(pond.querySelector('app-three-stage canvas')?.getAttribute('aria-hidden')).toBe('true');
+    expect(pond.querySelector('app-three-stage app-pond-scene')).not.toBeNull();
+    expect(pond.querySelectorAll('button[data-side]').length).toBe(3);
+  });
   it('starts neutral, previews each direction and returns to neutral after a snack', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();
