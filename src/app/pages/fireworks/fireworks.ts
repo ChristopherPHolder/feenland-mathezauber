@@ -32,7 +32,6 @@ import {
 import {
   adaptLook,
   BIG_SHOW,
-  createPattern,
   createRound,
   FINALE,
   FireworkLevel,
@@ -53,7 +52,6 @@ import {
   Pattern,
   ROUND_LENGTH,
   roundStars,
-  seeded,
   SPOTTER_BONUS,
   startLook,
   TOTAL_LEVELS,
@@ -66,6 +64,9 @@ import { FireworkScores } from './firework-scores';
 import { BOOK_SHAPES, BookShape, shapePath } from './firework-shapes';
 import { FireworkSky } from './firework-sky';
 import { FireworkSounds } from './firework-sounds';
+import { FireworkCoach } from './firework-coach';
+import { FireworkDemo } from './firework-demo';
+import { countGuidedFirework, GUIDED_FIREWORKS, guidedFireworks } from './firework-guide';
 
 interface Round {
   readonly patterns: readonly Pattern[];
@@ -110,10 +111,21 @@ const ANSWERABLE: readonly FireworkPhase[] = ['look', 'fade', 'gone'];
 const BANNER_MS = 1800;
 /** How long a typed first digit waits for a second one on a 1–20 pad. */
 const TYPE_WAIT = 900;
+/** How long a child may wait before the next tap is shown again. */
+const IDLE_MS = 6000;
 
 @Component({
   selector: 'app-fireworks',
-  imports: [RouterLink, Icon, GameHeader, ThreeStage, FireworkSky, FireworkReward],
+  imports: [
+    RouterLink,
+    Icon,
+    GameHeader,
+    ThreeStage,
+    FireworkSky,
+    FireworkReward,
+    FireworkDemo,
+    FireworkCoach,
+  ],
   providers: [FireworkSounds],
   templateUrl: './fireworks.html',
   styleUrls: ['./fireworks.css', './fireworks-play.css'],
@@ -164,6 +176,18 @@ export class Fireworks {
   protected readonly saveFailed = signal(false);
   protected readonly newBest = signal(false);
   protected readonly newShape = signal(false);
+  /** The "how to play" film is open over the game. */
+  protected readonly coaching = signal(false);
+  /** The first fireworks on a device show what to tap next. */
+  protected readonly guided = signal(guidedFireworks() < GUIDED_FIREWORKS);
+  /** The child has waited a while: show what to tap next again. */
+  protected readonly idle = signal(false);
+  protected readonly guidePad = computed(
+    () => this.phase() === 'gone' && !this.round().ways && (this.guided() || this.idle()),
+  );
+  protected readonly guideNext = computed(
+    () => this.phase() === 'bloom' && !!this.round().ways && (this.guided() || this.idle()),
+  );
   /** Digits typed on the keyboard, waiting for a second one. */
   protected readonly typed = signal('');
 
@@ -186,22 +210,6 @@ export class Fireworks {
   protected readonly makeTen = computed(() => this.level().kinds.includes('makeTen'));
   protected readonly slots = Array.from({ length: ROUND_LENGTH + 1 }, (_, index) => index);
   protected readonly sentence = computed(() => this.sentenceOf(this.pattern()));
-  /** A picture of the level for the intro: one of its fireworks, glowing with its groups. */
-  protected readonly preview = computed<FireworkFrame>(() => {
-    const level = this.level();
-    const pattern = createPattern(
-      level.kinds[0],
-      { jitter: level.jitter },
-      seeded(level.level * 7),
-    );
-    return this.frameFor(pattern, {
-      phase: 'look',
-      outlines: false,
-      look: 3,
-      firework: 0,
-      launched: [],
-    });
-  });
   protected readonly frame = computed<FireworkFrame>(() => {
     const round = this.round();
     return {
@@ -230,6 +238,7 @@ export class Fireworks {
   private timer?: ReturnType<typeof setTimeout>;
   private bannerTimer?: ReturnType<typeof setTimeout>;
   private typeTimer?: ReturnType<typeof setTimeout>;
+  private idleTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
     effect(() => {
@@ -316,6 +325,7 @@ export class Fireworks {
     this.round.update((r) => ({ ...r, phase: 'fade' }));
     this.later(() => {
       this.round.update((r) => ({ ...r, phase: 'gone' }));
+      this.armIdle();
       if (!this.round().hint) this.status.set({ key: this.makeTen() ? 'askEmpty' : 'ask' });
     }, FADE_OUT * 1000);
   }
@@ -331,6 +341,7 @@ export class Fireworks {
 
   private right() {
     this.stopTimers();
+    this.guided.set(countGuidedFirework() < GUIDED_FIREWORKS);
     const round = this.round();
     const finale = this.finale();
     const firstLook = round.misses === 0 && (!round.peeked || this.freePeek());
@@ -368,7 +379,10 @@ export class Fireworks {
     }
     this.status.set({ key: 'right', values: { sentence: this.sentence() }, extras });
     if (finale) this.later(() => this.show(), BLOOM * 1000);
-    else this.focusWays();
+    else {
+      this.focusWays();
+      this.armIdle();
+    }
   }
 
   /** A gentle fizzle, Flick's help, and the same pattern bursts again. */
@@ -479,7 +493,15 @@ export class Fireworks {
 
   /** Number keys answer (two digits on a 1–20 pad) and P peeks. */
   protected onKey(event: KeyboardEvent) {
-    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || !this.started()) return;
+    if (
+      event.repeat ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !this.started() ||
+      this.coaching()
+    )
+      return;
     const target = event.target;
     if (target instanceof Element && target.closest('input, textarea, select')) return;
     if (event.key === 'p' || event.key === 'P') {
@@ -575,12 +597,41 @@ export class Fireworks {
     this.bannerTimer = setTimeout(() => this.banner.set(null), BANNER_MS);
   }
 
+  /** Opens the "how to play" film; the show waits until it closes. */
+  protected openHelp() {
+    if (this.coaching()) return;
+    this.stopTimers();
+    this.banner.set(null);
+    this.coaching.set(true);
+  }
+
+  /** Picks the show up again; a burst that was glowing glows again, for free. */
+  protected closeHelp() {
+    this.coaching.set(false);
+    const phase = this.phase();
+    if (phase === 'launch' || phase === 'look' || phase === 'fade' || phase === 'fizzle')
+      this.glow();
+    else if (phase === 'bloom' && this.finale()) this.later(() => this.show(), BLOOM * 1000);
+    else if (phase === 'show') this.later(() => this.finish(), 1000);
+    else if (phase === 'idle' && !this.round().done) this.launch();
+    else if (phase === 'gone' || phase === 'bloom') this.armIdle();
+  }
+
+  /** After six quiet seconds the next thing to tap hops again. */
+  private armIdle() {
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
+    this.idleTimer = setTimeout(() => this.idle.set(true), IDLE_MS);
+  }
+
   private later(run: () => void, ms: number) {
     clearTimeout(this.timer);
     this.timer = setTimeout(run, ms);
   }
 
   private stopTimers() {
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
     clearTimeout(this.timer);
     clearTimeout(this.typeTimer);
     clearTimeout(this.bannerTimer);
