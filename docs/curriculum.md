@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 96 selectable levels across six games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 108 selectable levels across seven games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -25,6 +25,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | Unicorn Rainbow Race | one heat (six per track)                                         | 60–90 s per heat; two or three heats in a sitting |
 | The Treasure Lock    | 6 chests of 2–6 hops each, the big chest last                    | 6 × 20–30 s ≈ 2–3 min                             |
 | The Potion Cauldron  | 6 potions of 2–4 bottles, the big cauldron last                  | 6 × 20–40 s ≈ 2–4 min                             |
+| The Mushroom Drums   | 3 verses of 7–10 drums plus a 4-drum solo, about 34 answers      | 34 × 2.5–3.5 s + demos and titles ≈ 2.5–3.5 min   |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -113,3 +114,17 @@ A potion is built by mixing random bottles with random spells, so it always brew
 3. Size its round so it lasts about two to four minutes, using the table above.
 4. Add its title and help in all four languages in `core/curriculum-messages.ts`.
 5. If the game's route matches ids with a pattern (`app.routes.ts`), widen the pattern.
+
+### The Mushroom Drums: 12 levels (`pages/drums/drum-patterns.ts`)
+
+| Topic             | Levels, easiest first                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| Big steps         | tens 0, 10, 20 · fives 0, 5, 10 · twos 0, 2, 4                                             |
+| Off the tens      | tens from any number 3, 13, 23 · odd twos 25, 27, 29, 31 · fives off the tens 3, 8, 13, 18 |
+| Backwards         | tens back 97, 87, 77 · twos and fives back 40, 38, 36 · back over the tens 52, 51, 50, 49  |
+| Times-table steps | threes 0, 3, 6, 9 · fours 0, 4, 8, 12                                                      |
+| Drum master       | every step both ways past 100, 87, 97, 107 (needs three stars for mastery)                 |
+
+A round has three verses and a drum solo. Verse 1 counts from an easy start and verse 2 from an awkward start or the other way; both open with Pom hopping two steps by himself so the child sees the pattern. Verse 3 is call and response: eight fresh starts, the band plays two numbers and the child plays the third, and every fourth call asks for the number before. A path stops early rather than leave the level's range (0 to 100 in tens has room for eight answers after the demo), so verses hold 7–10 questions. The four solo drums pay double and do not count for stars; three stars need 32 of 36 first tries (as a share of the verse questions), two need 24.
+
+The answer buttons are the answer plus the mistakes children really make, most telling first: in German the digits swap (27 and 72, because "siebenundzwanzig" says the ones first); in French 71–79 and 91–99 drop to the ten before (77 becomes 67, "soixante-dix-sept"); at a ten crossing the old ten repeats (28 → 20, 31 → 39); then the next number instead of the next step, a ten skipped or repeated, and the wrong direction. After a first miss Pom names the step ("+10 each jump"), after a second a rule card shows the rule with other numbers (never a run holding the answer), and from the third miss one more wrong button greys out each time, always leaving two.

@@ -83,6 +83,7 @@ describe('the mushroom drums', () => {
     const fixture = setup('drums-4');
     expect(element(fixture).textContent).toContain('Level 4 of 12');
     expect(element(fixture).querySelectorAll('.level-pill').length).toBe(12);
+    expect(element(fixture).querySelector('app-drum-demo')!.textContent).toContain('How to play');
     const free = element(fixture).querySelector<HTMLInputElement>('input[value="free"]')!;
     expect(free.checked).toBe(true);
     const warm = vi.spyOn(TestBed.inject(HatcheryStore), 'warm');
@@ -129,6 +130,8 @@ describe('the mushroom drums', () => {
     expect(sequence).toEqual(['0', '10', '20', '?']);
     expect(element(fixture).querySelector('.step-name')!.textContent).toContain(en.on10);
     expect(status(fixture)).toContain('20. What comes next?');
+    // A newcomer's buttons hop together, so no single one is pointed at.
+    expect(element(fixture).querySelector('.answers.is-guide')).not.toBeNull();
     const index = buttons(fixture).findIndex((b) => b.textContent!.includes('30'));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: String(index + 1) }));
     fixture.detectChanges();

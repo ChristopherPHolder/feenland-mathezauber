@@ -44,6 +44,7 @@ Switching levels never requires leaving the game:
 - **The Unicorn Rainbow Race** has five race routes (`/adventure/unicorn-race-1` … `-5`); its intro lists all five as cards with the current one marked `aria-current="page"`, and the finish offers the next race directly.
 - **The Treasure Lock** has nine level routes (`/adventure/treasure-lock-1` … `-9`); its intro has a level strip 1–9, numbered by position (level 8, halving back, shows as 7), with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Potion Cauldron** has seven level routes (`/adventure/potion-1` … `-7`); its intro has a level strip 1–7 with the current level marked `aria-current="page"`, and the finish offers the next level.
+- **The Mushroom Drums** has twelve level routes (`/adventure/drums-1` … `-12`); its intro has a level strip 1–12 in two rows of six with the current level marked `aria-current="page"`, the pause dialog can go back to the intro, and the finish offers the next level.
 - **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the thirty practice stages, grouped under a heading per topic. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
 - Finishing a round offers Next level, Play again and All games.
 

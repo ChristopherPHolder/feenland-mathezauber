@@ -18,6 +18,7 @@
 .level-pill {
   display: grid;
   place-items: center;
+  min-width: 0;
   width: 46px;
   height: 46px;
   border-radius: 50%;
@@ -42,14 +43,18 @@
   align-items: center;
   gap: clamp(14px, 3vw, 24px);
 }
-.intro-art {
-  aspect-ratio: 500 / 280;
-  border-radius: var(--radius-surface);
-  overflow: hidden;
+.intro-demo {
   width: 100%;
   max-width: 340px;
   margin: auto;
-  background: #17123a;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 h2 {
   font-size: clamp(24px, 3vw, 32px);
@@ -66,12 +71,21 @@ h2 {
   background: var(--warm-ground);
   border: 2px solid var(--sun);
 }
-.trick-card h3 {
+.trick-card p {
   margin: 0;
-  font-size: 15px;
+}
+.trick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+}
+.trick-head span {
+  font-size: 14px;
   color: var(--amber-ink);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  font-weight: 600;
 }
 .trick-card .example {
   font-size: clamp(20px, 2.6vw, 26px);
@@ -96,16 +110,16 @@ h2 {
 }
 .tempo-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
 }
 .tempo-choice {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 12px 8px;
+  gap: 2px;
+  padding: 8px 4px;
   border: 2px solid var(--lagoon);
   border-radius: var(--radius-surface);
   background: var(--paper);
@@ -125,15 +139,15 @@ h2 {
 }
 .tempo-choice input {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 6px;
+  right: 6px;
   margin: 0;
   width: 18px;
   height: 18px;
   accent-color: var(--success-strong);
 }
 .tempo-choice strong {
-  font-size: 18px;
+  font-size: clamp(14px, 3.6vw, 17px);
 }
 .tempo-choice span {
   font-size: 14px;
@@ -142,12 +156,12 @@ h2 {
 /* A little row of beat dots: none glow in free play, more glow the quicker the tempo. */
 .beat-art {
   display: flex;
-  gap: 6px;
-  padding: 6px 0 2px;
+  gap: 4px;
+  padding: 6px 18px 2px 0;
 }
 .beat-art .dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #d8d0f2;
 }
@@ -202,6 +216,26 @@ h2 {
 @media (max-width: 700px) {
   .intro-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  /* The level's name is already in the header on a phone. */
+  h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .trick-card {
+    margin: 0;
+    padding: 8px 14px;
+  }
+  .tempo {
+    margin-top: 10px;
+  }
+  .tempo legend {
+    font-size: 17px;
   }
   .level-pill {
     width: 44px;

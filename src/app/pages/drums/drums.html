@@ -7,6 +7,14 @@
     (soundToggle)="toggleSound()"
   >
     @if (started() && !result()) {
+      <button
+        class="pause-button help-button"
+        type="button"
+        [attr.aria-label]="t('howTo')"
+        (click)="pause()"
+      >
+        <span aria-hidden="true">?</span>
+      </button>
       <button class="pause-button" type="button" [attr.aria-label]="t('pause')" (click)="pause()">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
       </button>
@@ -16,7 +24,6 @@
   @if (!started()) {
     <app-drum-intro
       [stage]="stage()"
-      [preview]="frame()"
       [tempo]="tempo()"
       (tempoChange)="selectTempo($event)"
       (start)="begin()"
@@ -133,7 +140,12 @@
             ><span></span><span></span><span></span><span></span
           ></span>
         </div>
-        <div class="answers" role="group" [attr.aria-label]="t('answersLabel')">
+        <div
+          class="answers"
+          [class.is-guide]="guide()"
+          role="group"
+          [attr.aria-label]="t('answersLabel')"
+        >
           @for (choice of choices(); track choice) {
             <button
               type="button"
@@ -181,6 +193,10 @@
     >
       <h2 id="drum-pause-title">{{ t('paused') }}</h2>
       <p>{{ t('pausedHelp') }}</p>
+      @if (paused()) {
+        <h3 class="how-to">{{ t('howTo') }}</h3>
+        <app-drum-demo [stage]="stage()" />
+      }
       <button class="button primary" type="button" autofocus (click)="resume()">
         {{ t('resume') }}<app-icon kind="play" />
       </button>

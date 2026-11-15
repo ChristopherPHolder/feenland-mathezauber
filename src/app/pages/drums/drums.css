@@ -8,8 +8,8 @@
   display: block;
   min-height: calc(100dvh - var(--safe-y));
   background: linear-gradient(#e9e2ff, #f4effc 45%, #e4f3ea);
-  padding: var(--pad-top) max(clamp(10px, 2vw, 16px), env(safe-area-inset-right))
-    var(--pad-bottom) max(clamp(10px, 2vw, 16px), env(safe-area-inset-left));
+  padding: var(--pad-top) max(clamp(10px, 2vw, 16px), env(safe-area-inset-right)) var(--pad-bottom)
+    max(clamp(10px, 2vw, 16px), env(safe-area-inset-left));
   color: var(--ink);
 }
 .game {
@@ -29,6 +29,11 @@
   background: #ffffffd9;
   color: var(--ink);
   box-shadow: var(--shadow-rest);
+}
+.help-button span {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
 }
 .pause-button svg {
   width: 22px;
@@ -226,7 +231,7 @@
   .play-area .chart-side {
     display: grid;
     align-self: stretch;
-    width: min(100%, 360px);
+    width: min(100%, 34dvh, 340px);
   }
   .play-area .chart-inset {
     display: none;

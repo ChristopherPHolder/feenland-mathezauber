@@ -5,9 +5,8 @@ import { MessageKey } from '../../core/messages';
 import { Icon } from '../../shared/icon';
 import { DrumCalibration } from './drum-calibration';
 import { DrumChart } from './drum-chart';
-import { DrumFrame } from './drum-frame';
 import { drumText, DrumMessageKey } from './drum-messages';
-import { DrumPath } from './drum-path';
+import { DrumDemo } from './drum-demo';
 import { barSeconds, DRUM_TEMPOS, DrumStage, drumStages, DrumTempo } from './drum-patterns';
 import { DrumScores, PatternPicture } from './drum-scores';
 
@@ -39,13 +38,12 @@ export function patternName(
  */
 @Component({
   selector: 'app-drum-intro',
-  imports: [RouterLink, Icon, DrumPath, DrumChart, DrumCalibration],
+  imports: [RouterLink, Icon, DrumDemo, DrumChart, DrumCalibration],
   templateUrl: './drum-intro.html',
   styleUrl: './drum-intro.css',
 })
 export class DrumIntro {
   readonly stage = input.required<DrumStage>();
-  readonly preview = input.required<DrumFrame>();
   readonly tempo = model.required<DrumTempo>();
   readonly start = output();
   protected readonly i = inject(LocaleService);

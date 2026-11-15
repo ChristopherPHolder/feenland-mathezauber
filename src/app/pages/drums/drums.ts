@@ -23,6 +23,8 @@ import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 import { HatcheryStore } from '../hatchery/hatchery-store';
 import { CALIBRATION_KEY } from './drum-calibration';
 import { DrumChart } from './drum-chart';
+import { DrumDemo } from './drum-demo';
+import { countGuidedAnswer, GUIDE_IDLE_MS, GUIDED_ANSWERS, guidedAnswers } from './drum-guide';
 import { BAND, DrumFrame, FrameMushroom, MAX_LAYERS, stepLabel } from './drum-frame';
 import { DrumIntro } from './drum-intro';
 import { drumText, DrumMessageKey } from './drum-messages';
@@ -31,7 +33,6 @@ import { DrumPath } from './drum-path';
 import {
   beatSeconds,
   buildRound,
-  buildVerse,
   choicesFor,
   drumStage,
   drumStages,
@@ -41,11 +42,9 @@ import {
   GRACE_SECONDS,
   greyedOut,
   isMastered,
-  Mushroom,
   parseDrumTempo,
   ruleFor,
   ruleRun,
-  seeded,
   TOTAL_STAGES,
   VERSES,
   verseQuestions,
@@ -85,7 +84,7 @@ interface Answered {
 
 @Component({
   selector: 'app-drums',
-  imports: [Icon, GameHeader, ThreeStage, DrumPath, DrumChart, DrumIntro, DrumOutcome],
+  imports: [Icon, GameHeader, ThreeStage, DrumPath, DrumChart, DrumIntro, DrumOutcome, DrumDemo],
   providers: [DrumSounds],
   templateUrl: './drums.html',
   styleUrls: ['./drums.css', './drums-play.css'],
@@ -132,6 +131,8 @@ export class Drums {
   protected readonly answered = signal<readonly Answered[]>([]);
   /** The button tapped last on this question, and whether it was right. */
   protected readonly tapped = signal<{ index: number; value: number; right: boolean } | null>(null);
+  /** The answer buttons hop to show where to tap: the first few drums, and after a wait. */
+  protected readonly guide = signal(false);
   /** Wrong buttons tapped on this question: they grey out. */
   protected readonly wrongs = signal<readonly number[]>([]);
   /** The beat grid the song is on; pauses shift it. */
@@ -288,7 +289,7 @@ export class Drums {
   protected readonly frame = computed<DrumFrame>(() => {
     const play = this.play();
     const mushrooms = this.framed();
-    if (!play) return this.previewFrame();
+    if (!play) return this.idleFrame();
     const ask = this.ask();
     const paused = this.paused();
     const index = ask ?? play.at;
@@ -325,6 +326,7 @@ export class Drums {
   private ticker?: ReturnType<typeof setInterval>;
   private finaleTimer?: ReturnType<typeof setTimeout>;
   private frameHandle = 0;
+  private guideTimer?: ReturnType<typeof setTimeout>;
   private pausedAt = 0;
 
   constructor() {
@@ -435,6 +437,7 @@ export class Drums {
           const mushroom = play.mushrooms[event.index];
           const previous = this.i.format(play.mushrooms[event.index - 1].value);
           this.wrongs.set([]);
+          this.armGuide();
           this.status.set(
             mushroom.before ? this.t('askBefore', { n: previous }) : this.t('ask', { n: previous }),
           );
@@ -449,6 +452,9 @@ export class Drums {
             { index: event.index, firstTry: event.firstTry },
           ]);
           this.hatchery.warm();
+          clearTimeout(this.guideTimer);
+          this.guide.set(false);
+          if (guidedAnswers() < GUIDED_ANSWERS) countGuidedAnswer();
           this.sounds.roll(false);
           this.sounds.hold(false);
           this.status.set(
@@ -671,7 +677,22 @@ export class Drums {
     this.frameHandle = requestAnimationFrame(step);
   }
 
+  /** The buttons hop at once for a newcomer, otherwise once the question has waited a while. */
+  private armGuide() {
+    clearTimeout(this.guideTimer);
+    if (guidedAnswers() < GUIDED_ANSWERS) {
+      this.guide.set(true);
+      return;
+    }
+    this.guide.set(false);
+    this.guideTimer = setTimeout(() => {
+      if (this.ask() !== null && !this.paused()) this.guide.set(true);
+    }, GUIDE_IDLE_MS);
+  }
+
   private stop() {
+    clearTimeout(this.guideTimer);
+    this.guide.set(false);
     clearInterval(this.ticker);
     clearTimeout(this.finaleTimer);
     cancelAnimationFrame(this.frameHandle);
@@ -722,22 +743,14 @@ export class Drums {
     }
   }
 
-  /** A still picture of the level for the intro: Pom two hops in, facing his first "?". */
-  private previewFrame(): DrumFrame {
-    const stage = this.stage();
-    const sample = buildVerse(stage, 0, seeded(stage.stage)).slice(0, 6);
+  /** Nothing to draw yet: the round has not started. */
+  private idleFrame(): DrumFrame {
     return {
       round: 0,
-      mushrooms: sample.map((m: Mushroom) => ({
-        value: m.value,
-        given: m.given,
-        fresh: m.fresh,
-        step: m.step,
-        solo: false,
-      })),
-      at: 2,
+      mushrooms: [],
+      at: 0,
       hop: null,
-      ask: 3,
+      ask: null,
       ring: null,
       beat: null,
       now: this.sounds.now,

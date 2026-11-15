@@ -13,47 +13,46 @@
     }
   </nav>
   <div class="intro-grid">
-    <div class="intro-art"><app-drum-path [frame]="preview()" /></div>
+    <div class="intro-demo"><app-drum-demo [stage]="stage()" /></div>
     <div class="intro-copy">
       <h2 id="drum-intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
-      <p>{{ t('story') }} {{ t('storyTap') }}</p>
       <div class="trick-card">
-        <h3>{{ t('trickTitle') }}</h3>
-        <p>{{ i.t($any(levelKey(stage().stage) + 'Help')) }}</p>
-        <p class="example">{{ stage().example }}</p>
+        <p class="trick-head">
+          <span>{{ t('trickTitle') }}</span> <strong class="example">{{ stage().example }}</strong>
+        </p>
+        <p class="trick">{{ i.t($any(levelKey(stage().stage) + 'Help')) }}</p>
       </div>
       @if (best() > 0) {
         <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
       }
+      <fieldset class="tempo" aria-describedby="drum-tempo-help">
+        <legend>{{ t('tempoTitle') }}</legend>
+        <p id="drum-tempo-help" class="sr-only">{{ t('tempoHelp') }} {{ t('tempoAccess') }}</p>
+        <div class="tempo-options">
+          @for (option of tempos; track option.id) {
+            <label class="tempo-choice" [class.selected]="tempo() === option.id">
+              <input
+                type="radio"
+                name="drum-tempo"
+                [value]="option.id"
+                [checked]="tempo() === option.id"
+                (change)="tempo.set(option.id)"
+              />
+              <span class="beat-art" [attr.data-tempo]="option.id" aria-hidden="true">
+                @for (dot of [0, 1, 2, 3]; track dot) {
+                  <span class="dot"></span>
+                }
+              </span>
+              <strong>{{ tempoLabel(option.id) }}</strong>
+              @if (option.id !== 'free') {
+                <span>{{ t('tempoShort', { n: seconds(option.id) }) }}</span>
+              }
+            </label>
+          }
+        </div>
+      </fieldset>
     </div>
   </div>
-  <fieldset class="tempo" aria-describedby="drum-tempo-help drum-tempo-access">
-    <legend>{{ t('tempoTitle') }}</legend>
-    <p id="drum-tempo-help">{{ t('tempoHelp') }}</p>
-    <div class="tempo-options">
-      @for (option of tempos; track option.id) {
-        <label class="tempo-choice" [class.selected]="tempo() === option.id">
-          <input
-            type="radio"
-            name="drum-tempo"
-            [value]="option.id"
-            [checked]="tempo() === option.id"
-            (change)="tempo.set(option.id)"
-          />
-          <span class="beat-art" [attr.data-tempo]="option.id" aria-hidden="true">
-            @for (dot of [0, 1, 2, 3]; track dot) {
-              <span class="dot"></span>
-            }
-          </span>
-          <strong>{{ tempoLabel(option.id) }}</strong>
-          <span>{{
-            option.id === 'free' ? t('tempoFreeHelp') : t('tempoSeconds', { n: seconds(option.id) })
-          }}</span>
-        </label>
-      }
-    </div>
-    <p id="drum-tempo-access" class="tempo-note">{{ t('tempoAccess') }}</p>
-  </fieldset>
   @if (tempo() !== 'free') {
     <app-drum-calibration />
   }

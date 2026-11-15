@@ -312,6 +312,10 @@
 .pause-dialog::backdrop {
   background: var(--scrim);
 }
+.pause-dialog .how-to {
+  margin: 12px 0 6px;
+  font-size: 17px;
+}
 .pause-dialog h2 {
   margin: 0 0 4px;
 }
@@ -320,12 +324,39 @@
   margin-top: 10px;
 }
 
+/* Where to tap: every answer still open hops in turn with a gold halo, never just the right one. */
+.answers.is-guide .answer:not(.out) {
+  outline: 4px solid var(--gold);
+  outline-offset: 3px;
+}
 @media (prefers-reduced-motion: no-preference) {
+  .answers.is-guide .answer:not(.out) {
+    animation: guide-hop 1.6s ease-in-out infinite;
+  }
+  .answers.is-guide .answer:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .answers.is-guide .answer:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  .answers.is-guide .answer:nth-child(4) {
+    animation-delay: 0.6s;
+  }
   .gain-pop {
     animation: gain-pop 0.9s ease-out both;
   }
   .banner {
     animation: banner-in 0.35s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+}
+@keyframes guide-hop {
+  0%,
+  40%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: 0 -8px;
   }
 }
 @keyframes gain-pop {
@@ -348,6 +379,7 @@
     scale: 0.6;
   }
 }
+:host-context(.calm-motion) .answers.is-guide .answer,
 :host-context(.calm-motion) .gain-pop,
 :host-context(.calm-motion) .banner {
   animation: none;

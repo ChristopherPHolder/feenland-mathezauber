@@ -120,6 +120,16 @@ const en = {
   gallery: 'Pattern gallery',
   galleryHelp: 'Every step makes its own shape on the hundred chart.',
   keysHelp: 'Keys 1 to 4 answer. Space pauses.',
+  demoHop: 'Pom hops in steps.',
+  demoAsk: 'Which number comes next?',
+  demoTap: 'Tap it!',
+  demoLand: 'Boom! Pom lands and the band plays.',
+  demoPause: 'Pause the film',
+  demoReplay: 'Play the film again',
+  demoSummary:
+    'How to play: Pom hops along the mushrooms counting in steps. When a mushroom shows a question mark, tap the number that comes next.',
+  howTo: 'How to play',
+  tempoShort: '≈ {n} s',
 };
 
 export type DrumMessageKey = keyof typeof en;
@@ -246,6 +256,16 @@ const de: Messages = {
   gallery: 'Mustergalerie',
   galleryHelp: 'Jeder Schritt macht seine eigene Form auf der Hundertertafel.',
   keysHelp: 'Tasten 1 bis 4 antworten. Leertaste macht Pause.',
+  demoHop: 'Pom hüpft in Schritten.',
+  demoAsk: 'Welche Zahl kommt als Nächstes?',
+  demoTap: 'Tipp sie an!',
+  demoLand: 'Bumm! Pom landet und die Band spielt.',
+  demoPause: 'Film anhalten',
+  demoReplay: 'Film nochmal abspielen',
+  demoSummary:
+    'So geht es: Pom hüpft über die Pilze und zählt in Schritten. Zeigt ein Pilz ein Fragezeichen, tippst du die Zahl, die als Nächstes kommt.',
+  howTo: 'So geht es',
+  tempoShort: '≈ {n} s',
 };
 
 const es: Messages = {
@@ -369,6 +389,16 @@ const es: Messages = {
   gallery: 'Galería de series',
   galleryHelp: 'Cada salto forma su propia figura en la tabla del cien.',
   keysHelp: 'Las teclas 1 a 4 responden. Espacio pone pausa.',
+  demoHop: 'Pom salta a saltos iguales.',
+  demoAsk: '¿Qué número viene después?',
+  demoTap: '¡Tócalo!',
+  demoLand: '¡Bum! Pom aterriza y la banda toca.',
+  demoPause: 'Pausar la película',
+  demoReplay: 'Ver la película otra vez',
+  demoSummary:
+    'Cómo se juega: Pom salta por las setas contando a saltos. Cuando una seta muestra un signo de interrogación, toca el número que viene después.',
+  howTo: 'Cómo se juega',
+  tempoShort: '≈ {n} s',
 };
 
 const fr: Messages = {
@@ -494,6 +524,16 @@ const fr: Messages = {
   gallery: 'Galerie des suites',
   galleryHelp: 'Chaque bond dessine sa propre forme sur le tableau.',
   keysHelp: 'Les touches 1 à 4 répondent. Espace met en pause.',
+  demoHop: 'Pom saute par bonds.',
+  demoAsk: 'Quel nombre vient ensuite ?',
+  demoTap: 'Touche-le !',
+  demoLand: 'Boum ! Pom atterrit et l’orchestre joue.',
+  demoPause: 'Mettre le film en pause',
+  demoReplay: 'Revoir le film',
+  demoSummary:
+    'Comment jouer : Pom saute sur les champignons en comptant par bonds. Quand un champignon montre un point d’interrogation, touche le nombre qui vient ensuite.',
+  howTo: 'Comment jouer',
+  tempoShort: '≈ {n} s',
 };
 
 export const drumTranslations: Record<Locale, Messages> = { en, de, es, fr };

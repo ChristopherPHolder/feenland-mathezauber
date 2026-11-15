@@ -62,7 +62,7 @@ interface Slot {
             />
           }
         }
-        <text class="number" y="-24">{{ slot.text }}</text>
+        <text class="number" y="-9">{{ slot.text }}</text>
       </g>
     }
     <g
@@ -112,14 +112,15 @@ interface Slot {
       stroke: #8a5a2b;
       stroke-width: 3;
     }
+    /* The number sits on the cap's face, below Pom's feet, with a pale halo on every cap colour. */
     .number {
-      font: 600 22px var(--font-sans);
+      font: 600 24px var(--font-sans);
       fill: #1d1844;
+      stroke: #fff8e8;
+      stroke-width: 5px;
+      paint-order: stroke;
       text-anchor: middle;
       dominant-baseline: middle;
-    }
-    .ask .number {
-      fill: #7a2bd6;
     }
     .ring {
       fill: none;
@@ -251,7 +252,7 @@ export class DrumPath {
     const target = frame.hop ? frame.hop.to : frame.at;
     const slot = target - frame.at + BEHIND;
     const edge = frame.waiting ? 20 : 0;
-    const transform = `translate(${SLOT_X(slot) - 8 + edge}px, ${SLOT_Y(slot) - 30}px)`;
+    const transform = `translate(${SLOT_X(slot) - 12 + edge}px, ${SLOT_Y(slot) - 33}px)`;
     if (!frame.hop) return { transform, duration: 0, delay: 0 };
     const start = Math.max(now, frame.hop.start);
     return {
@@ -261,16 +262,17 @@ export class DrumPath {
     };
   });
 
-  /** The step arc: after a miss towards the "?", otherwise over Pom's last jump. */
+  /** The step arc: after a miss towards the "?", during a jump over it, else over the last jump. */
   protected readonly arc = computed(() => {
     const frame = this.frame();
-    const from = BEHIND;
+    const slot = (index: number) => index - frame.at + BEHIND;
     if (frame.stepHint && frame.ask !== null) {
-      return this.arcBetween(from, from + 1, frame.stepHint, true);
+      return this.arcBetween(slot(frame.ask - 1), slot(frame.ask), frame.stepHint, true);
     }
-    const mushroom = frame.mushrooms[frame.at];
-    if (!mushroom || mushroom.fresh || frame.at === 0) return null;
-    return this.arcBetween(from - 1, from, stepLabel(mushroom.step), false);
+    const to = frame.hop ? frame.hop.to : frame.at;
+    const mushroom = frame.mushrooms[to];
+    if (!mushroom || mushroom.fresh || to === 0) return null;
+    return this.arcBetween(slot(to - 1), slot(to), stepLabel(mushroom.step), false);
   });
 
   private arcBetween(a: number, b: number, label: string, hint: boolean) {
