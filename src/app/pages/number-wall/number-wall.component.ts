@@ -531,6 +531,13 @@ export class NumberWallComponent {
       this.erase();
       event.preventDefault();
     } else if (event.key === 'Enter') {
+      // A focused link or button outside the wall and its keypad (All games, sound, magic dust)
+      // keeps its own Enter, so the way back to the games still works from the keyboard.
+      if (
+        target instanceof Element &&
+        target.closest('a[href], summary, button:not(.brick, .spot, .key, .next)')
+      )
+        return;
       if (this.built()) this.next();
       else if (this.crumbled()) this.rebuild();
       else if (this.entry()) this.check();

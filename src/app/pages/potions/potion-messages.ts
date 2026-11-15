@@ -3,10 +3,6 @@ import { Locale } from '../../core/messages';
 const en = {
   title: 'The Potion Cauldron',
   level: 'Level {n} of {total}',
-  story:
-    'Olli the owl brews magic potions. Each bottle holds a number. Pour two bottles together with a spell, and they make a new bottle.',
-  storyAll:
-    'Mix every bottle into one. If it is exactly the number on the cauldron, the potion is ready!',
   trickTitle: 'Today’s trick',
   addTake:
     'Is the potion bigger than both bottles? Add them. Is it smaller? Take the small bottle away from the big one.',
@@ -29,14 +25,11 @@ const en = {
   paceFast: 'Fast',
   paceUnlimited: 'All the time you need',
   paceSeconds: 'About {n} s per potion',
-  paceCalm: 'Brew at your own pace. No sand, no rush.',
-  paceTimed: 'Quick potions keep their sparkle: 15 extra coins each.',
   bestScore: 'Best: {n} coins',
   boardLabel: 'Olli’s cauldron',
   potionCount: 'Potion {n} of {total}',
   bigPotion: 'The big cauldron!',
   goal: 'Brew a {target} potion',
-  cauldron: 'Cauldron',
   bottlesLeft: 'Bottles',
   bottlesLabel: 'Magic bottles',
   bottleLabel: 'Bottle {n}',
@@ -61,8 +54,6 @@ const en = {
   sandOut: 'The sand ran out and the sparkle faded. Keep mixing: the potion still brews!',
   undo: 'Undo',
   startAgain: 'Start again',
-  recipe: 'Your recipe',
-  noSteps: 'Nothing mixed yet.',
   coins: 'Coins',
   starsHud: '{n} of {total} potion stars',
   hourglass: 'Hourglass',
@@ -88,6 +79,19 @@ const en = {
   rewardFever: 'Rainbow fever!',
   rewardBig: 'The big potion is ready!',
   rewardCoins: '+{n} coins',
+  goalShort: 'Mix all the bottles into the cauldron’s number!',
+  demoTitle: 'How to brew',
+  demoBottle: 'Tap a bottle',
+  demoSpell: 'Tap a spell',
+  demoSecond: 'Tap one more bottle',
+  demoMix: 'They mix into one bottle!',
+  demoReady: 'Same as the cauldron? Potion ready!',
+  demoSummary:
+    'How to brew: tap a bottle, tap a spell, then tap one more bottle. They mix into one new bottle. When the last bottle matches the cauldron’s number, the potion is ready.',
+  demoReplay: 'Show me',
+  demoPause: 'Pause',
+  coachGo: 'Got it!',
+  help: 'How to brew',
 };
 
 export type PotionMessageKey = keyof typeof en;
@@ -96,9 +100,6 @@ type Messages = Record<PotionMessageKey, string>;
 const de: Messages = {
   title: 'Der Zauberkessel',
   level: 'Level {n} von {total}',
-  story:
-    'Eule Olli braut Zaubertränke. Auf jeder Flasche steht eine Zahl. Gieß zwei Flaschen mit einem Zauber zusammen, dann entsteht eine neue Flasche.',
-  storyAll: 'Misch alle Flaschen zu einer. Ist es genau die Zahl am Kessel, ist der Trank fertig!',
   trickTitle: 'Der Trick von heute',
   addTake:
     'Ist der Trank größer als beide Flaschen? Rechne plus. Ist er kleiner? Nimm die kleine Flasche von der großen weg.',
@@ -122,14 +123,11 @@ const de: Messages = {
   paceFast: 'Schnell',
   paceUnlimited: 'So viel Zeit, wie du brauchst',
   paceSeconds: 'Etwa {n} s pro Trank',
-  paceCalm: 'Brau in deinem Tempo. Kein Sand, keine Eile.',
-  paceTimed: 'Schnelle Tränke behalten ihr Funkeln: je 15 Münzen extra.',
   bestScore: 'Rekord: {n} Münzen',
   boardLabel: 'Ollis Kessel',
   potionCount: 'Trank {n} von {total}',
   bigPotion: 'Der große Kessel!',
   goal: 'Brau einen {target}er-Trank',
-  cauldron: 'Kessel',
   bottlesLeft: 'Flaschen',
   bottlesLabel: 'Zauberflaschen',
   bottleLabel: 'Flasche {n}',
@@ -154,8 +152,6 @@ const de: Messages = {
   sandOut: 'Der Sand ist durch, das Funkeln ist weg. Misch weiter: Der Trank gelingt trotzdem!',
   undo: 'Rückgängig',
   startAgain: 'Von vorn',
-  recipe: 'Dein Rezept',
-  noSteps: 'Noch nichts gemischt.',
   coins: 'Münzen',
   starsHud: '{n} von {total} Trank-Sternen',
   hourglass: 'Sanduhr',
@@ -181,15 +177,24 @@ const de: Messages = {
   rewardFever: 'Regenbogenfieber!',
   rewardBig: 'Der große Trank ist fertig!',
   rewardCoins: '+{n} Münzen',
+  goalShort: 'Misch alle Flaschen zur Zahl am Kessel!',
+  demoTitle: 'So braust du',
+  demoBottle: 'Tippe auf eine Flasche',
+  demoSpell: 'Tippe auf einen Zauber',
+  demoSecond: 'Tippe auf noch eine Flasche',
+  demoMix: 'Sie mischen sich zu einer Flasche!',
+  demoReady: 'Gleich wie am Kessel? Der Trank ist fertig!',
+  demoSummary:
+    'So braust du: Tippe auf eine Flasche, dann auf einen Zauber, dann auf noch eine Flasche. Sie mischen sich zu einer neuen Flasche. Passt die letzte Flasche zur Zahl am Kessel, ist der Trank fertig.',
+  demoReplay: 'Zeig es mir',
+  demoPause: 'Pause',
+  coachGo: 'Verstanden!',
+  help: 'So braust du',
 };
 
 const es: Messages = {
   title: 'El caldero mágico',
   level: 'Nivel {n} de {total}',
-  story:
-    'La lechuza Olli prepara pociones mágicas. Cada botella tiene un número. Vierte dos botellas juntas con un hechizo y se convierten en una botella nueva.',
-  storyAll:
-    'Mezcla todas las botellas en una. Si es justo el número del caldero, ¡la poción está lista!',
   trickTitle: 'El truco de hoy',
   addTake:
     '¿La poción es más grande que las dos botellas? Súmalas. ¿Es más pequeña? Quita la botella pequeña de la grande.',
@@ -213,14 +218,11 @@ const es: Messages = {
   paceFast: 'Rápido',
   paceUnlimited: 'Todo el tiempo que necesites',
   paceSeconds: 'Unos {n} s por poción',
-  paceCalm: 'Prepara a tu ritmo. Sin arena, sin prisa.',
-  paceTimed: 'Las pociones rápidas conservan su brillo: 15 monedas más cada una.',
   bestScore: 'Récord: {n} monedas',
   boardLabel: 'El caldero de Olli',
   potionCount: 'Poción {n} de {total}',
   bigPotion: '¡El gran caldero!',
   goal: 'Prepara una poción de {target}',
-  cauldron: 'Caldero',
   bottlesLeft: 'Botellas',
   bottlesLabel: 'Botellas mágicas',
   bottleLabel: 'Botella {n}',
@@ -245,8 +247,6 @@ const es: Messages = {
   sandOut: 'Se acabó la arena y el brillo se apagó. Sigue mezclando: ¡la poción sale igual!',
   undo: 'Deshacer',
   startAgain: 'Empezar de nuevo',
-  recipe: 'Tu receta',
-  noSteps: 'Aún no has mezclado nada.',
   coins: 'Monedas',
   starsHud: '{n} de {total} estrellas de poción',
   hourglass: 'Reloj de arena',
@@ -272,15 +272,24 @@ const es: Messages = {
   rewardFever: '¡Fiebre arcoíris!',
   rewardBig: '¡La gran poción está lista!',
   rewardCoins: '+{n} monedas',
+  goalShort: '¡Mezcla todas las botellas hasta el número del caldero!',
+  demoTitle: 'Cómo preparar una poción',
+  demoBottle: 'Toca una botella',
+  demoSpell: 'Toca un hechizo',
+  demoSecond: 'Toca otra botella',
+  demoMix: '¡Se mezclan en una botella!',
+  demoReady: '¿Igual que el caldero? ¡Poción lista!',
+  demoSummary:
+    'Cómo preparar una poción: toca una botella, luego un hechizo y luego otra botella. Se mezclan en una botella nueva. Cuando la última botella tiene el número del caldero, la poción está lista.',
+  demoReplay: 'Enséñamelo',
+  demoPause: 'Pausa',
+  coachGo: '¡Entendido!',
+  help: 'Cómo preparar una poción',
 };
 
 const fr: Messages = {
   title: 'Le chaudron magique',
   level: 'Niveau {n} sur {total}',
-  story:
-    'Olli la chouette prépare des potions magiques. Chaque fiole porte un nombre. Verse deux fioles ensemble avec un sort, et elles deviennent une nouvelle fiole.',
-  storyAll:
-    'Mélange toutes les fioles en une seule. Si c’est exactement le nombre du chaudron, la potion est prête !',
   trickTitle: 'L’astuce du jour',
   addTake:
     'La potion est plus grande que les deux fioles ? Additionne-les. Plus petite ? Enlève la petite fiole de la grande.',
@@ -304,14 +313,11 @@ const fr: Messages = {
   paceFast: 'Rapide',
   paceUnlimited: 'Tout le temps qu’il te faut',
   paceSeconds: 'Environ {n} s par potion',
-  paceCalm: 'Prépare à ton rythme. Pas de sable, pas de hâte.',
-  paceTimed: 'Les potions rapides gardent leur étincelle : 15 pièces de plus chacune.',
   bestScore: 'Record : {n} pièces',
   boardLabel: 'Le chaudron d’Olli',
   potionCount: 'Potion {n} sur {total}',
   bigPotion: 'Le grand chaudron !',
   goal: 'Prépare une potion de {target}',
-  cauldron: 'Chaudron',
   bottlesLeft: 'Fioles',
   bottlesLabel: 'Fioles magiques',
   bottleLabel: 'Fiole {n}',
@@ -337,8 +343,6 @@ const fr: Messages = {
     'Le sable est fini et l’étincelle s’est éteinte. Continue : la potion marche quand même !',
   undo: 'Annuler',
   startAgain: 'Recommencer',
-  recipe: 'Ta recette',
-  noSteps: 'Rien de mélangé pour l’instant.',
   coins: 'Pièces',
   starsHud: '{n} étoiles de potion sur {total}',
   hourglass: 'Sablier',
@@ -365,6 +369,19 @@ const fr: Messages = {
   rewardFever: 'Fièvre arc-en-ciel !',
   rewardBig: 'La grande potion est prête !',
   rewardCoins: '+{n} pièces',
+  goalShort: 'Mélange toutes les fioles pour faire le nombre du chaudron !',
+  demoTitle: 'Comment préparer une potion',
+  demoBottle: 'Touche une fiole',
+  demoSpell: 'Touche un sort',
+  demoSecond: 'Touche une autre fiole',
+  demoMix: 'Elles se mélangent en une seule fiole !',
+  demoReady: 'Comme le chaudron ? La potion est prête !',
+  demoSummary:
+    'Comment préparer une potion : touche une fiole, puis un sort, puis une autre fiole. Elles se mélangent en une nouvelle fiole. Quand la dernière fiole a le nombre du chaudron, la potion est prête.',
+  demoReplay: 'Montre-moi',
+  demoPause: 'Pause',
+  coachGo: 'J’ai compris !',
+  help: 'Comment préparer une potion',
 };
 
 export const potionTranslations: Record<Locale, Messages> = { en, de, es, fr };
