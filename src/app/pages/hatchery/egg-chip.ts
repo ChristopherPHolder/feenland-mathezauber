@@ -1,4 +1,5 @@
 import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
 import { EggIcon } from './egg-icon';
 import { HatcheryStore } from './hatchery-store';
@@ -6,17 +7,17 @@ import { hatcheryText } from './hatchery-messages';
 
 /**
  * The dragon egg in every game's header: it fills up and glows with each right answer, and
- * shines once it is ready to hatch. It only shows progress, so a tap never leaves the game.
+ * shines once it is ready to hatch. A tap opens the hatchery at any warmth level.
  */
 @Component({
   selector: 'app-egg-chip',
-  imports: [EggIcon],
-  template: `<span class="chip" role="img" [attr.aria-label]="label()">
+  imports: [EggIcon, RouterLink],
+  template: `<a class="chip" routerLink="/hatchery" [attr.aria-label]="label()">
       <app-egg-icon [dragon]="store.egg()" [warmth]="warmth()" />
       @if (warming()) {
         <span class="plus" aria-hidden="true">+1</span>
       }
-    </span>
+    </a>
     <span class="sr-only" aria-live="polite">{{ announcement() }}</span>`,
   styles: `
     :host {
@@ -33,6 +34,7 @@ import { hatcheryText } from './hatchery-messages';
       background: #ffffffd9;
       box-shadow: var(--shadow-rest);
       font-size: 17px;
+      text-decoration: none;
     }
     :host(.is-warming) .chip {
       animation: warm-pop 0.6s ease-out;
@@ -110,14 +112,15 @@ export class EggChip {
   protected readonly store = inject(HatcheryStore);
   private readonly i = inject(LocaleService);
   protected readonly warmth = computed(() => this.store.hatchery().warmth / this.store.needed());
-  protected readonly label = computed(() =>
-    this.store.ready()
+  protected readonly label = computed(() => {
+    const progress = this.store.ready()
       ? hatcheryText(this.i.locale(), 'eggChipReady')
       : hatcheryText(this.i.locale(), 'eggChip', {
           n: this.store.hatchery().warmth,
           total: this.store.needed(),
-        }),
-  );
+        });
+    return `${hatcheryText(this.i.locale(), 'title')}. ${progress}`;
+  });
   protected readonly warming = signal(false);
   protected readonly announcement = signal('');
   private timer?: ReturnType<typeof setTimeout>;

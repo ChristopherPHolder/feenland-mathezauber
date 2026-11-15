@@ -111,9 +111,9 @@ describe('the dragon hatchery', () => {
     const element = fixture.nativeElement as HTMLElement;
     element.querySelector<HTMLButtonElement>('.intro button')!.click();
     fixture.detectChanges();
-    expect(element.querySelector('app-egg-chip [role="img"]')!.getAttribute('aria-label')).toBe(
-      'Dragon egg: 0 of 20 warm',
-    );
+    expect(
+      element.querySelector('app-egg-chip a[href="/hatchery"]')!.getAttribute('aria-label'),
+    ).toBe('Dragon Hatchery. Dragon egg: 0 of 20 warm');
     const [left, right] = [...element.querySelectorAll('.side-text')].map((side) =>
       evaluate({ text: side.textContent!.trim(), value: 0 }),
     );
@@ -126,9 +126,9 @@ describe('the dragon hatchery', () => {
     element.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!.click();
     fixture.detectChanges();
     expect(store.hatchery().warmth).toBe(1);
-    expect(element.querySelector('app-egg-chip [role="img"]')!.getAttribute('aria-label')).toBe(
-      'Dragon egg: 1 of 20 warm',
-    );
+    expect(
+      element.querySelector('app-egg-chip a[href="/hatchery"]')!.getAttribute('aria-label'),
+    ).toBe('Dragon Hatchery. Dragon egg: 1 of 20 warm');
     expect(element.querySelector('app-egg-chip')!.classList).toContain('is-warming');
   });
 
