@@ -7,7 +7,6 @@ import {
   DoubleSide,
   Group,
   IcosahedronGeometry,
-  MathUtils,
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
@@ -18,6 +17,7 @@ import {
   Sprite,
   SpriteMaterial,
   SRGBColorSpace,
+  Vector3,
 } from 'three';
 import { Stage } from '../../shared/three/stage';
 import type { StateWorld } from '../../shared/three/three-stage';
@@ -28,8 +28,25 @@ const GATE_SCALE = 0.78;
 const ISLAND_RADIUS = 2.5;
 /** Seconds of trail drawn before the first frame, so the scene opens mid-flight. */
 const WARM_UP = 1.2;
-/** The world's extent the camera must always show: half-width, bottom and top. */
-const FRAME = { half: 2.85, bottom: -1.5, top: 3.75 };
+/**
+ * What every screen shape must show: the fairy at the far ends, top and front of her lap, the
+ * flags, and the island's front rim. The clouds may be cropped.
+ */
+const KEY_POINTS = [
+  new Vector3(-3, 2.4, 0),
+  new Vector3(3, 2.4, 0),
+  new Vector3(0, 3.2, 2.05),
+  new Vector3(0, 3.2, -2.05),
+  new Vector3(-2.5, -0.32, 0),
+  new Vector3(2.5, -0.32, 0),
+  new Vector3(0, -0.32, ISLAND_RADIUS),
+];
+/**
+ * The screen band the key points fit in, in pixels: clear of the top and sides, and ending just
+ * above the loader's "Loading…" pill, a little below the middle of the screen.
+ */
+const BAND = { top: 20, side: 14, belowMiddle: 56 };
+const AIM_Y = 1.4;
 const PITCH = 0.24;
 /** Where the fairy rests on a calm screen: front right, clear of the gate. */
 const CALM_PHASE = 0.18;
@@ -99,6 +116,7 @@ export class CastleLoaderWorld extends Stage implements StateWorld<null> {
   private readonly clouds: Group[] = [];
   private readonly trail: Sparks;
   private readonly colour = new Color();
+  private readonly scratch = new Vector3();
   /** The world's own clock: it stands still while calm. */
   private clock = 0;
   private emitted = 0;
@@ -134,19 +152,60 @@ export class CastleLoaderWorld extends Stage implements StateWorld<null> {
     this.pose(this.clock, calm ? this.elapsed : 0);
   }
 
+  /**
+   * Fits the castle, the fairy's whole lap and the island's grass into the band above the
+   * loader's "Loading…" pill, which sits just below the middle of the screen. The island's
+   * earthy underside hangs down behind the pill.
+   */
   protected override layout(aspect: number) {
-    const camera = this.camera;
+    const { camera, width, height } = this;
     camera.aspect = aspect;
-    const tan = Math.tan(MathUtils.degToRad(camera.fov / 2));
-    const height = FRAME.top - FRAME.bottom;
-    // Far enough that both the width and the height fit, with a little air around them.
-    const fitHeight = (height * 0.56) / tan;
-    const fitWidth = (FRAME.half * 1.12) / (tan * aspect);
-    const distance = Math.max(fitHeight, fitWidth);
-    const middle = (FRAME.top + FRAME.bottom) / 2;
-    camera.position.set(0, middle + Math.sin(PITCH) * distance, Math.cos(PITCH) * distance);
-    camera.lookAt(0, middle, 0);
+    camera.clearViewOffset();
+    const top = BAND.top;
+    const bottom = height / 2 + BAND.belowMiddle;
+    const roomWidth = 2 - (4 * BAND.side) / width;
+    const roomHeight = (2 * (bottom - top)) / height;
+    // The closest camera that still fits every key point.
+    let near = 3;
+    let far = 80;
+    for (let step = 0; step < 24; step++) {
+      const distance = (near + far) / 2;
+      this.place(distance);
+      const box = this.screenBox();
+      if (box.right - box.left <= roomWidth && box.top - box.bottom <= roomHeight) far = distance;
+      else near = distance;
+    }
+    this.place(far);
+    // Slide the picture so the points' box is centred across and its foot rests on the band's
+    // bottom: on a narrow screen the island still sits just above the pill.
+    const box = this.screenBox();
+    const x = ((box.left + box.right) / 2 + 1) * (width / 2) - width / 2;
+    const y = (1 - box.bottom) * (height / 2) - bottom;
+    camera.setViewOffset(width, height, x, y, width, height);
+  }
+
+  private place(distance: number) {
+    const camera = this.camera;
+    camera.position.set(0, AIM_Y + Math.sin(PITCH) * distance, Math.cos(PITCH) * distance);
+    camera.lookAt(0, AIM_Y, 0);
     camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+  }
+
+  /** The key points' bounds on screen, in normalised device units. */
+  private screenBox() {
+    let left = Infinity;
+    let right = -Infinity;
+    let bottom = Infinity;
+    let top = -Infinity;
+    for (const point of KEY_POINTS) {
+      const p = this.scratch.copy(point).project(this.camera);
+      left = Math.min(left, p.x);
+      right = Math.max(right, p.x);
+      bottom = Math.min(bottom, p.y);
+      top = Math.max(top, p.y);
+    }
+    return { left, right, bottom, top };
   }
 
   /** Moves the fairy along her lap and sprinkles the trail behind her. */

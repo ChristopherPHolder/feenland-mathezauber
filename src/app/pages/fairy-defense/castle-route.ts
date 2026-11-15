@@ -5,8 +5,9 @@ import { routeShellStyles } from '../../shared/loading/route-shell';
 import { WorldLoader } from '../../shared/three/three-stage';
 import { FairyDefenseComponent } from './fairy-defense.component';
 import { PracticeDefense } from './practice-defense';
-/** The fairy castle's small loading scene; `undefined` keeps the CSS loader. */
-const loaderScene: WorldLoader<null> | undefined = undefined;
+/** The fairy castle's small loading scene: a fairy circling the gate. */
+const loaderScene: WorldLoader<null> | undefined = () =>
+  import('./castle-loader-world').then((m) => m.CastleLoaderWorld);
 
 /**
  * Defend the fairy castle.
