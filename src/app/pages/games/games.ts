@@ -24,6 +24,8 @@ import { raceStage, raceSumText } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
 import { lockStage } from '../treasure-lock/lock-puzzles';
 import { LockScores } from '../treasure-lock/lock-scores';
+import { localOps, potionStage } from '../potions/potion-puzzles';
+import { PotionScores } from '../potions/potion-scores';
 import {
   levelPosition,
   levels as wallLevels,
@@ -86,6 +88,7 @@ export class Games {
   protected readonly campaign = inject(CampaignStore);
   protected readonly scores = inject(CrocodileScores);
   private readonly lockScores = inject(LockScores);
+  private readonly potionScores = inject(PotionScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
   protected readonly nextId = computed(() => this.p.next()?.id);
@@ -232,7 +235,11 @@ export class Games {
       help: level.description,
       ...(level.practice ? { upTo: level.practice.max } : {}),
       stars: levelStars(level, progress),
-      best: this.scores.best()[level.id] ?? this.lockScores.best()[level.id] ?? 0,
+      best:
+        this.scores.best()[level.id] ??
+        this.lockScores.best()[level.id] ??
+        this.potionScores.best()[level.id] ??
+        0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
       recommended: level.id === this.nextId(),
       hero: level.format === 'fairy-defense',
@@ -267,6 +274,8 @@ export class Games {
     if (race) return raceSumText(race, (n) => this.i.t('raceHalfOf', { n }), divide);
     const crocodile = comparisonStage(level.id)?.example;
     if (crocodile) return localSide(crocodile, this.i.t('crocHalfOf'), divide);
+    const potion = potionStage(level.id)?.example;
+    if (potion) return localOps(potion, divide);
     return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {

@@ -1,0 +1,141 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+text {
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.glow {
+  fill: #8a6fe026;
+}
+.perch {
+  stroke: #8b5a2b;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.owl-body,
+.owl-ear {
+  fill: #a7774d;
+}
+.owl-eye {
+  fill: #fff8e6;
+}
+.owl-pupil {
+  fill: #2a1d12;
+}
+.owl-beak {
+  fill: var(--sun);
+}
+.owl-belly {
+  fill: none;
+  stroke: #e9d3b0;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.fire {
+  fill: #ff8a3d;
+}
+.pot {
+  fill: #2d2a3e;
+}
+.rim {
+  fill: #47435e;
+}
+.brew {
+  fill: #9b6ad6;
+  transition: fill 0.4s;
+}
+.brewed .brew {
+  fill: var(--gold);
+}
+.fizzing .brew {
+  fill: #9a98a8;
+}
+.brew.fever {
+  fill: var(--confetti-pink);
+}
+.bubble {
+  fill: #c9b2f2;
+}
+.brewed .bubble {
+  fill: #fff4b8;
+}
+.sign rect {
+  fill: var(--gold);
+  stroke: #8a5a00;
+  stroke-width: 3;
+}
+.sign text {
+  fill: var(--ink);
+  font-size: 30px;
+}
+.sparkle {
+  fill: #fff4b8;
+}
+.shelf {
+  stroke: #8b5a2b;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+.glass {
+  fill: #e8f4ff66;
+  stroke: #ffffffcc;
+  stroke-width: 2.5;
+}
+.cork {
+  fill: #b98a5a;
+}
+.tag {
+  fill: var(--paper);
+  stroke: #d8cbe9;
+  stroke-width: 2;
+}
+.bottle text {
+  fill: var(--ink);
+  font-size: 18px;
+}
+.bottle.picked .glass {
+  stroke: var(--gold);
+  stroke-width: 4;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bubble {
+    animation: rise 2.4s ease-in infinite;
+  }
+  .bubble:nth-of-type(2) {
+    animation-delay: 0.8s;
+  }
+  .bubble:nth-of-type(3) {
+    animation-delay: 1.6s;
+  }
+  .fizzing .pot {
+    animation: wobble 0.4s ease-in-out 2;
+  }
+}
+@keyframes rise {
+  to {
+    transform: translateY(-26px);
+    opacity: 0;
+  }
+}
+@keyframes wobble {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+:host-context(.calm-motion) .bubble,
+:host-context(.calm-motion) .fizzing .pot {
+  animation: none;
+}
