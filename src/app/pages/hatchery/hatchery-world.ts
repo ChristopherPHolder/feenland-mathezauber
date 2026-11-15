@@ -7,7 +7,6 @@ import {
   DirectionalLight,
   Group,
   HemisphereLight,
-  LatheGeometry,
   Material,
   Mesh,
   MeshBasicMaterial,
@@ -18,15 +17,13 @@ import {
   PointLight,
   Scene,
   SphereGeometry,
-  SRGBColorSpace,
-  TorusGeometry,
-  Vector2,
   Vector3,
   WebGLRenderer,
 } from 'three';
 import { Stage } from '../../shared/three/stage';
 import type { StateWorld } from '../../shared/three/three-stage';
 import { DragonModel, RAINBOW } from './dragon-model';
+import { buildNest, EGG_HEIGHT, EggModel, SPLIT } from './egg-model';
 import type { Dragon } from './dragons';
 
 /** What the page asks the nest to show; the page owns the hatchery, this only draws it. */
@@ -44,161 +41,6 @@ export interface NestFrame {
   readonly dragon: Dragon | null;
   /** Counts hatches this visit; a new one plays the hatching instead of just showing the dragon. */
   readonly hatches: number;
-}
-
-const EGG_HEIGHT = 1.15;
-const EGG_WIDTH = 0.44;
-const SPLIT = 0.56;
-
-/** The widest point sits below the middle, so the egg is round at the bottom and taller on top. */
-const WIDEST = 0.42;
-function eggRadius(s: number): number {
-  const d = s < WIDEST ? (WIDEST - s) / WIDEST : (s - WIDEST) / (1 - WIDEST);
-  return EGG_WIDTH * Math.sqrt(Math.max(0, 1 - d * d));
-}
-
-function eggProfile(from: number, to: number): Vector2[] {
-  const points: Vector2[] = [];
-  for (let i = 0; i <= 24; i++) {
-    const s = from + ((to - from) * i) / 24;
-    points.push(new Vector2(Math.max(0.0001, eggRadius(s)), s * EGG_HEIGHT));
-  }
-  return points;
-}
-
-/** Paints the shell: soft spots, and zigzag cracks along the split once it is tapped. */
-function paintShell(
-  texture: CanvasTexture,
-  egg: Dragon,
-  cracks: number,
-  half: 'top' | 'bottom',
-): void {
-  const canvas = texture.image as HTMLCanvasElement;
-  const context = canvas.getContext('2d');
-  if (!context) return;
-  const { width, height } = canvas;
-  context.fillStyle = egg.shell;
-  context.fillRect(0, 0, width, height);
-  // Spots seeded from the dragon id, so an egg always looks the same.
-  let seed = [...egg.id].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const random = () => ((seed = (seed * 16807) % 2147483647) % 1000) / 1000;
-  context.fillStyle = egg.spots;
-  for (let i = 0; i < 26; i++) {
-    const x = random() * width;
-    const y = random() * height;
-    const r = 6 + random() * 16;
-    context.globalAlpha = 0.55 + random() * 0.35;
-    if (egg.starlight) {
-      drawStar(context, x, y, r * 0.8);
-    } else {
-      context.beginPath();
-      context.ellipse(x, y, r, r * 0.8, random() * 3, 0, Math.PI * 2);
-      context.fill();
-    }
-  }
-  if (egg.element === 'rainbow') {
-    RAINBOW.forEach((color, index) => {
-      context.fillStyle = color;
-      context.globalAlpha = 0.5;
-      context.fillRect(0, height * 0.42 + index * 9, width, 7);
-    });
-  }
-  context.globalAlpha = 1;
-  if (cracks > 0) {
-    context.strokeStyle = '#4a3a2a';
-    context.lineWidth = 7;
-    context.lineJoin = 'round';
-    // The crack runs round the egg at the split, with branches that grow on each tap.
-    // Lathe texture rows run bottom to top and canvases top to bottom: the split is the
-    // canvas top on the lower half and the canvas bottom on the upper half.
-    const edge = half === 'bottom' ? 4 : height - 4;
-    const inward = half === 'bottom' ? 1 : -1;
-    const reach = Math.min(1, cracks / 3);
-    context.beginPath();
-    for (let x = 0; x <= width * reach; x += width / 24) {
-      const y = edge + inward * ((x / (width / 24)) % 2 ? 26 : 4);
-      if (x) context.lineTo(x, y);
-      else context.moveTo(x, y);
-    }
-    context.stroke();
-    for (let i = 0; i < cracks * 3; i++) {
-      const x = ((i * 0.37) % 1) * width * reach;
-      context.beginPath();
-      context.moveTo(x, edge);
-      context.lineTo(x + 14, edge + inward * (40 + (i % 3) * 22));
-      context.stroke();
-    }
-  }
-  texture.needsUpdate = true;
-}
-
-function drawStar(context: CanvasRenderingContext2D, x: number, y: number, r: number) {
-  context.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const radius = i % 2 ? r * 0.45 : r;
-    const angle = (i / 10) * Math.PI * 2 - Math.PI / 2;
-    context.lineTo(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius);
-  }
-  context.closePath();
-  context.fill();
-}
-
-function shellTexture(): CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 256;
-  const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
-  return texture;
-}
-
-/** An egg in two halves, so the top can pop off when it hatches. */
-class EggModel {
-  readonly root = new Group();
-  readonly top = new Group();
-  readonly bottom = new Group();
-  private readonly topTexture = shellTexture();
-  private readonly bottomTexture = shellTexture();
-  readonly shellMaterial: MeshStandardMaterial[];
-  constructor(readonly dragon: Dragon) {
-    const top = new MeshStandardMaterial({ map: this.topTexture, roughness: 0.45 });
-    const bottom = new MeshStandardMaterial({ map: this.bottomTexture, roughness: 0.45 });
-    this.shellMaterial = [top, bottom];
-    const lower = new Mesh(new LatheGeometry(eggProfile(0, SPLIT), 48), bottom);
-    const upper = new Mesh(new LatheGeometry(eggProfile(SPLIT, 1), 48), top);
-    for (const mesh of [lower, upper]) {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    }
-    // Pivot the top on the split so it can tip off like a lid.
-    const splitY = SPLIT * EGG_HEIGHT;
-    upper.position.y = -splitY;
-    this.top.position.y = splitY;
-    this.top.add(upper);
-    this.bottom.add(lower);
-    // Jagged teeth on the broken rim, only shown once the egg has opened.
-    const rim = eggRadius(SPLIT);
-    const teeth = new Group();
-    teeth.name = 'teeth';
-    teeth.visible = false;
-    for (let i = 0; i < 12; i++) {
-      const angle = (i / 12) * Math.PI * 2;
-      const tooth = new Mesh(new ConeGeometry(0.06, 0.12, 4), bottom);
-      tooth.position.set(Math.cos(angle) * rim * 0.96, splitY + 0.05, Math.sin(angle) * rim * 0.96);
-      teeth.add(tooth);
-    }
-    this.bottom.add(teeth);
-    this.root.add(this.bottom, this.top);
-    this.setCracks(0);
-  }
-  setCracks(cracks: number) {
-    paintShell(this.topTexture, this.dragon, cracks, 'top');
-    paintShell(this.bottomTexture, this.dragon, cracks, 'bottom');
-  }
-  open() {
-    const teeth = this.bottom.getObjectByName('teeth');
-    if (teeth) teeth.visible = true;
-  }
 }
 
 interface Spark {
@@ -246,7 +88,7 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
     this.scene.add(rim);
 
     this.scene.add(this.buildMeadow());
-    this.scene.add(this.buildNest());
+    this.scene.add(buildNest());
     this.ember = new Mesh(
       new CircleGeometry(0.42, 32),
       new MeshBasicMaterial({ color: '#ffb35c', transparent: true, opacity: 0 }),
@@ -391,34 +233,6 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
       meadow.add(mesh);
     }
     return meadow;
-  }
-
-  private buildNest(): Group {
-    const nest = new Group();
-    const straw = ['#c99a5b', '#b5844a', '#dcb377'].map(
-      (color) => new MeshStandardMaterial({ color, roughness: 1 }),
-    );
-    const bowl = new Mesh(new TorusGeometry(0.5, 0.17, 14, 40), straw[0]);
-    bowl.rotation.x = -Math.PI / 2;
-    bowl.position.y = 0.12;
-    bowl.scale.z = 0.8;
-    bowl.castShadow = bowl.receiveShadow = true;
-    nest.add(bowl);
-    const floor = new Mesh(new CircleGeometry(0.52, 32), straw[1]);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = 0.05;
-    floor.receiveShadow = true;
-    nest.add(floor);
-    // Twigs sticking out of the rim.
-    for (let i = 0; i < 26; i++) {
-      const angle = (i / 26) * Math.PI * 2;
-      const twig = new Mesh(new CylinderGeometry(0.014, 0.014, 0.42, 5), straw[i % 3]);
-      twig.position.set(Math.cos(angle) * 0.52, 0.16 + (i % 2) * 0.05, Math.sin(angle) * 0.52);
-      twig.rotation.set(Math.PI / 2 + (i % 3) * 0.15, 0, angle + 0.6);
-      twig.castShadow = true;
-      nest.add(twig);
-    }
-    return nest;
   }
 
   private burst(at: Vector3, count: number, colors: readonly string[], speed: number) {
