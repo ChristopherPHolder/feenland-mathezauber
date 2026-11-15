@@ -1,0 +1,225 @@
+/* The "how to ride" film. Each step is a state of `data-step`; transitions carry the motion, so
+   under calm motion it becomes a still slideshow that still teaches the same five pictures. */
+:host {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+.film {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-surface);
+}
+.sky {
+  fill: #cfe8fb;
+}
+.hill {
+  fill: #f7fbff;
+}
+.cable {
+  stroke: #4a4f5c;
+  stroke-width: 2.5;
+  fill: none;
+}
+.deck {
+  fill: #c89a64;
+}
+.hanger {
+  stroke: #4a4f5c;
+  stroke-width: 3;
+}
+.body {
+  fill: var(--pink);
+  stroke: #7d0e3b;
+  stroke-width: 2;
+}
+.next-cabin .body {
+  fill: var(--sky-deep);
+  stroke: var(--ink);
+}
+.glass {
+  fill: #eef7ff;
+}
+.seat {
+  fill: #ffd9e6;
+  stroke: #c98aa0;
+  stroke-width: 1.4;
+}
+.seat.is-second {
+  fill: #d6ecff;
+  stroke: #7fa6c9;
+}
+.seat.is-empty {
+  fill: #fff3b0;
+  stroke: var(--gold-deep);
+  stroke-width: 2.2;
+}
+.head path,
+.head circle,
+.ear,
+.fur {
+  fill: #fffaf3;
+  stroke: #8d7a6a;
+  stroke-width: 1.2;
+}
+.scarf {
+  fill: var(--pink);
+}
+.bunny.is-first .scarf {
+  fill: var(--gold-deep);
+}
+.tag rect {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.tag text,
+.sentence text {
+  font: 600 17px var(--font-sans);
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.sentence rect {
+  fill: var(--gold);
+  stroke: var(--gold-deep);
+  stroke-width: 2;
+}
+.handle rect {
+  fill: var(--pink);
+}
+.handle circle {
+  fill: var(--paper);
+  stroke: var(--pink);
+  stroke-width: 4;
+}
+.finger {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+
+/* Hidden until their step. */
+.tag,
+.sentence,
+.next-cabin,
+.finger,
+.head.is-fresh {
+  opacity: 0;
+}
+.film:is([data-step='3'], [data-step='4']) .tag,
+.film[data-step='4'] .sentence,
+.film[data-step='4'] .next-cabin,
+.film:is([data-step='1'], [data-step='2']) .finger,
+.film:is([data-step='2'], [data-step='3'], [data-step='4']) .head.is-fresh {
+  opacity: 1;
+}
+/* Step 1: the handle (and the finger on it) slides past the bunnies that fill the cabin. */
+.film:not([data-step='0']) .handle,
+.film:not([data-step='0']) .finger {
+  translate: var(--slide) 0;
+}
+/* Step 2: they hop into the empty seats together, and the seats are theirs. */
+.film:not(:is([data-step='0'], [data-step='1'])) .bunny.is-first {
+  translate: var(--dx) var(--dy);
+  opacity: 0;
+}
+/* Step 3: the full cabin rides up the cable as a "10". */
+.film:is([data-step='3'], [data-step='4']) .ten-cabin {
+  translate: 170px -62px;
+  scale: 0.5;
+}
+.ten-cabin {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+/* Step 4: the next cabin comes in and the rest get on. */
+.next-cabin {
+  translate: -150px 30px;
+}
+.film[data-step='4'] .next-cabin {
+  translate: 0 0;
+}
+.film[data-step='4'] .bunny:not(.is-first),
+.film[data-step='4'] .handle {
+  opacity: 0;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.caption {
+  flex: 1;
+  margin: 0;
+  min-height: 2.6em;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.replay {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sky-deep);
+  color: var(--paper);
+  cursor: pointer;
+}
+.replay svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.replay:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .handle,
+  .finger {
+    transition: translate 0.9s ease-in-out, opacity 0.3s;
+  }
+  .bunny {
+    transition:
+      translate 0.55s cubic-bezier(0.4, -0.3, 0.6, 1.3),
+      opacity 0.2s 0.45s;
+  }
+  .head.is-fresh {
+    transition: opacity 0.2s 0.45s;
+  }
+  .ten-cabin {
+    transition:
+      translate 1.2s ease-in-out,
+      scale 1.2s ease-in-out;
+  }
+  .next-cabin {
+    transition:
+      translate 0.9s ease-out,
+      opacity 0.3s;
+  }
+  .tag,
+  .sentence {
+    transition: opacity 0.4s;
+  }
+}
+:host-context(.calm-motion) .film * {
+  transition: none !important;
+}

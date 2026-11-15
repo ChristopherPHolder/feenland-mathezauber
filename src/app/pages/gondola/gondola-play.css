@@ -64,6 +64,29 @@
 .cabin-slot .slot-star {
   fill: var(--star-earned-big);
 }
+.help {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--sky-deep);
+  font: 600 22px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+  cursor: pointer;
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+/* The first cabins (and after six quiet seconds): what to tap next wears a gold halo. */
+.split-zone.is-guided,
+.choices.is-guided,
+app-gondola-keypad.is-guided {
+  border-radius: var(--radius-tile);
+  box-shadow: 0 0 0 4px var(--gold);
+}
 .points,
 .golden-chip,
 .cocoa-chip {

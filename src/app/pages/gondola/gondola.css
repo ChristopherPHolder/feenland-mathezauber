@@ -64,14 +64,30 @@
     max-width: none;
   }
 }
-.intro-grid,
 .outcome {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) minmax(0, 1.1fr);
   align-items: center;
   gap: clamp(16px, 3vw, 28px);
 }
-.intro-art,
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(12px, 3vw, 28px);
+}
+.intro-side {
+  display: grid;
+  gap: 12px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .outcome-art {
   aspect-ratio: 8 / 5;
   width: 100%;
@@ -79,17 +95,8 @@
   overflow: hidden;
   background: linear-gradient(#9fd0f2, #e8f5ff);
 }
-.intro h2 {
-  font-size: clamp(24px, 3vw, 32px);
-  margin: 0 0 8px;
-}
-.intro p {
-  margin: 8px 0;
-  line-height: 1.5;
-}
 .trick-card {
-  margin: 14px 0 6px;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-radius: var(--radius-surface);
   background: var(--warm-ground);
   border: 2px solid var(--sun);
@@ -105,13 +112,27 @@
 .village h3 {
   color: var(--sky-deep);
 }
+.trick-card p {
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
 .trick-card .example {
-  font-size: 22px;
-  font-weight: 600;
+  margin-left: 8px;
+  font-size: 20px;
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--sky-deep);
 }
 .village {
-  margin-top: 12px;
+  margin-top: 4px;
+}
+.village h3 span {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
 }
 .village-row {
   display: flex;
@@ -138,11 +159,8 @@
   stroke: var(--amber-ink);
   stroke-dasharray: none;
 }
-.village-line {
-  color: var(--muted);
-}
 .pace {
-  margin: 18px 0 0;
+  margin: 0;
   padding: 0;
   border: 0;
 }
@@ -161,8 +179,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 12px 8px;
+  gap: 2px;
+  padding: 8px 4px;
   border: 2px solid var(--lagoon);
   border-radius: var(--radius-surface);
   background: var(--paper);
@@ -190,8 +208,8 @@
   accent-color: var(--success-strong);
 }
 .pace-art {
-  width: 64px;
-  height: 36px;
+  width: 56px;
+  height: 32px;
 }
 .pace-art .sun {
   fill: var(--sun);
@@ -207,22 +225,19 @@
   stroke-linecap: round;
 }
 .pace-choice strong {
-  font-size: 18px;
+  font-size: 16px;
 }
-.pace-choice span {
-  font-size: 14px;
+.pace-time {
+  font-size: 13px;
+  line-height: 1.3;
+}
+.pace-help {
+  margin: 2px 0 8px;
+  color: var(--muted);
   line-height: 1.4;
 }
-.pace-rule {
-  color: var(--muted);
-}
 .start-dock {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  margin-top: 8px;
-  padding: 16px 0 calc(8px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(#fffdf500, var(--cream) 24px);
+  margin-top: 12px;
 }
 .start-dock .button {
   margin: 0 auto;
@@ -319,12 +334,99 @@
   .outcome {
     grid-template-columns: 1fr;
   }
-  .intro-art,
   .outcome-art {
     max-width: 420px;
     margin: auto;
   }
+  .demo {
+    max-width: 440px;
+    width: 100%;
+    margin: auto;
+  }
+}
+/* Phones: the whole card fits one screen, so nothing needs reading past the fold. */
+@media (max-width: 520px) {
+  .panel.intro {
+    padding: 12px;
+  }
+  .level-strip {
+    gap: 6px;
+    max-width: calc(6 * 36px + 5 * 6px);
+    margin-bottom: 10px;
+  }
+  .level-pill {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    font-size: 16px;
+  }
+  .trick-card p,
+  .pace-help,
+  .pace-time {
+    display: none;
+  }
+  .trick-card {
+    padding: 8px 12px;
+  }
+  .pace legend {
+    font-size: 17px;
+  }
   .pace-options {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .pace-choice input {
+    top: 4px;
+    right: 4px;
+    width: 14px;
+    height: 14px;
+  }
+  .pace-choice strong {
+    font-size: 14px;
+  }
+  .intro-side {
+    gap: 8px;
+  }
+  .start-dock {
+    margin-top: 10px;
+  }
+}
+/* A phone on its side: film and choices side by side, Start always in reach. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .panel.intro {
+    padding: 10px 14px;
+  }
+  .level-strip {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .level-pill {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    font-size: 15px;
+  }
+  .intro-grid {
+    grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
+  }
+  .trick-card p,
+  .pace-help,
+  .pace-time {
+    display: none;
+  }
+  .trick-card {
+    padding: 6px 12px;
+  }
+  .pace legend {
+    font-size: 16px;
+  }
+  .start-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 6px;
+    padding: 8px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(#fffdf500, var(--cream) 16px);
   }
 }
