@@ -1,12 +1,5 @@
 import { HatcheryStore } from '../hatchery/hatchery-store';
-import { form, FormField } from '@angular/forms/signals';
-import {
-  Difficulty,
-  localQuestion,
-  Pace,
-  PracticeConfig,
-  practiceLevels,
-} from '../../core/practice';
+import { localQuestion, PracticeConfig, practiceLevels } from '../../core/practice';
 import type { Level } from '../../core/catalog';
 import type { MessageKey } from '../../core/messages';
 import { practiceBattle, practiceSpells, withCampaignMath } from './practice-battle';
@@ -36,6 +29,7 @@ import { LocaleService } from '../../core/locale';
 import { GameHeader } from '../../shared/game-header';
 import { Icon } from '../../shared/icon';
 import { advance, Battle, cast, freshBattle, resolveSpell, revealHint, timeOut } from './battle';
+import { CastleOptions, CastleSettings } from './castle-settings';
 import { FuseTimer } from './fuse-timer';
 import { SlipCallout, SlipKind } from './slip-callout';
 import { LostProgress } from './lost-progress';
@@ -46,7 +40,7 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
 @Component({
   selector: 'app-fairy-defense',
   imports: [
-    FormField,
+    CastleSettings,
     BattleScene,
     SpellBar,
     GamePause,
@@ -88,13 +82,10 @@ export class FairyDefenseComponent {
       this.practiceConfig() ??
       practiceLevels.find((level) => level.id === this.chosenStage())?.practice,
   );
-  protected readonly settingsModel = signal<{ difficulty: Difficulty; pace: Pace }>({
+  protected readonly settingsModel = signal<CastleOptions>({
     difficulty: 'medium',
     pace: 'relaxed',
   });
-  protected readonly settings = form(this.settingsModel);
-  protected readonly difficulties = ['easy', 'medium', 'hard'] as const;
-  protected readonly paces = ['relaxed', 'steady', 'quick'] as const;
   /** Seconds a monster waits for a spell at this pace. */
   protected readonly thinkingTotal = computed(() =>
     this.settingsModel().pace === 'quick' ? 20 : 45,

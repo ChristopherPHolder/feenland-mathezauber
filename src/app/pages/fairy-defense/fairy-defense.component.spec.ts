@@ -185,6 +185,13 @@ describe('Wave 1 playable integration', () => {
     expect(progress?.textContent?.trim()).toBe('You made a new butterfly friend!');
     expect(progress?.querySelectorAll('img')).toHaveLength(1);
   });
+  it('shows the stakes on the intro card: three hearts and the next wave', () => {
+    const { element } = setup();
+    const stakes = element.querySelector('.start-curtain .stakes');
+    expect(stakes?.querySelectorAll('svg')).toHaveLength(3);
+    expect(stakes?.textContent).toContain('3 hearts remaining out of three');
+    expect(stakes?.textContent).toContain('Wave 1 of 20');
+  });
   it('shows no ring at the relaxed pace, however long the child thinks', () => {
     const { fixture, element, click } = setup();
     click('Play');
@@ -318,7 +325,7 @@ describe('Wave 1 playable integration', () => {
     click('Choose a wave');
     fixture.detectChanges();
     expect(element.querySelector('.level-card.selected')?.textContent).toContain('4 + □ = 9');
-    expect(element.querySelector('#campaign-math')).toBeNull();
+    expect(element.querySelector('[data-range]')).toBeNull();
     element.querySelectorAll<HTMLInputElement>('.level-card input')[0].click();
     fixture.detectChanges();
     expect(element.textContent).toContain('Wave 1 of 20');
@@ -327,6 +334,33 @@ describe('Wave 1 playable integration', () => {
     click('Choose a wave');
     fixture.detectChanges();
     expect(element.querySelectorAll('.wave-path button')).toHaveLength(20);
+  });
+  it('picks numbers, difficulty and monster speed with picture cards and remembers them', () => {
+    const { fixture, element } = setup();
+    const pressed = (kind: string) =>
+      element.querySelector(`[data-${kind}][aria-pressed="true"]`)?.getAttribute(`data-${kind}`);
+    expect(element.querySelector('app-castle-settings h2')?.textContent).toBe('Game settings');
+    expect([pressed('range'), pressed('difficulty'), pressed('pace')]).toEqual([
+      '10',
+      'medium',
+      'relaxed',
+    ]);
+    expect(element.querySelector('#castle-pace-help')?.textContent).toContain('No timer');
+    for (const [kind, value] of [
+      ['range', '100'],
+      ['difficulty', 'easy'],
+      ['pace', 'quick'],
+    ]) {
+      element.querySelector<HTMLButtonElement>(`[data-${kind}="${value}"]`)!.click();
+      fixture.detectChanges();
+      expect(pressed(kind)).toBe(value);
+    }
+    expect(element.querySelector('#castle-pace-help')?.textContent).toContain('glowing ring');
+    expect(localStorage.getItem('feenland.campaign-math')).toBe('100');
+    expect(JSON.parse(localStorage.getItem('feenland.practice-options')!)).toEqual({
+      difficulty: 'easy',
+      pace: 'quick',
+    });
   });
   it('has a complete translated game vocabulary', () => {
     for (const locale of Object.keys(gameMessages) as Locale[]) {

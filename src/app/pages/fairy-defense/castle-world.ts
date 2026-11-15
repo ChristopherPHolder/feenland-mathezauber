@@ -114,6 +114,8 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
   private distance = 12;
   private yaw = 0;
   private pitch = 0.2;
+  /** Upright screens draw the monster's badge bigger, since the whole scene is drawn smaller. */
+  private badgeSize = 1;
   private readonly backdrop: Mesh<PlaneGeometry, MeshBasicMaterial>;
   private readonly gate: Group;
   private readonly fairy = new Billboard('fairy', FAIRY_HEIGHT);
@@ -142,7 +144,8 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     left: heartTexture('left'),
     right: heartTexture('right'),
   };
-  private readonly markers: { top: Mesh<IcosahedronGeometry, MeshBasicMaterial>; light: Sprite }[] = [];
+  private readonly markers: { top: Mesh<IcosahedronGeometry, MeshBasicMaterial>; light: Sprite }[] =
+    [];
   private readonly rings: Mesh[] = [];
   private readonly ripple: Mesh<TorusGeometry, MeshBasicMaterial>;
   private readonly sparks: Sparks;
@@ -589,6 +592,10 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     const wide = smooth((aspect - 0.9) / 1.3);
     this.yaw = MathUtils.lerp(YAW.upright, YAW.wide, wide);
     this.pitch = MathUtils.lerp(PITCH.upright, PITCH.wide, wide);
+    this.badgeSize = MathUtils.lerp(1.5, 1, wide);
+    // On an upright screen the width decides the size and leaves spare height. The characters
+    // sit low in it, so the spare room is painted sky above them, not empty grass in front.
+    const lift = 0.35 * (1 - wide);
     const points = this.keyPoints();
     // The room left between the HUD and the edges, in normalised device units.
     const roomWidth = 2 - (4 * MARGIN.side) / this.width;
@@ -614,12 +621,13 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       this.distance = far;
       this.place(far, 0);
       const box = this.screenBox(points);
+      const low = Math.min(lift, Math.max(0, (roomHeight - box.height) / 2));
       const halfHeight = far * Math.tan(MathUtils.degToRad(camera.fov / 2));
       right.setFromMatrixColumn(camera.matrixWorld, 0);
       up.setFromMatrixColumn(camera.matrixWorld, 1);
       this.target
         .addScaledVector(right, box.x * halfHeight * aspect)
-        .addScaledVector(up, (box.y - middleY) * halfHeight);
+        .addScaledVector(up, (box.y - middleY + low) * halfHeight);
     }
     this.place(this.distance, 0);
     this.layoutBackdrop();
@@ -635,11 +643,14 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       fairy.clone().add(new Vector3(-0.9, FAIRY_HEIGHT * 0.95, 0)),
       fairy.clone().add(new Vector3(-0.9, -FAIRY_LIFT, 0)),
       monster.clone().add(new Vector3(0.85, 0, 0)),
-      monster.clone().add(new Vector3(0.85, height + 0.55, 0)),
-      monster.clone().add(new Vector3(-0.85, height + 0.55, 0)),
+      monster.clone().add(new Vector3(0.85, height + 0.3 + 0.25 * this.badgeSize, 0)),
+      monster.clone().add(new Vector3(-0.85, height + 0.3 + 0.25 * this.badgeSize, 0)),
       // Wide screens show the whole gate; upright ones may crop its far tower.
       ...(this.camera.aspect > 1.4
-        ? [gate.clone().add(new Vector3(-1.3, 0, 0)), gate.clone().add(new Vector3(-1.3, GATE_TOP, 0))]
+        ? [
+            gate.clone().add(new Vector3(-1.3, 0, 0)),
+            gate.clone().add(new Vector3(-1.3, GATE_TOP, 0)),
+          ]
         : [gate.clone().add(new Vector3(0, GATE_TOP * 0.8, 0))]),
     ];
   }
@@ -657,7 +668,12 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       bottom = Math.min(bottom, p.y);
       top = Math.max(top, p.y);
     }
-    return { x: (left + right) / 2, y: (top + bottom) / 2, width: right - left, height: top - bottom };
+    return {
+      x: (left + right) / 2,
+      y: (top + bottom) / 2,
+      width: right - left,
+      height: top - bottom,
+    };
   }
 
   /** Puts the camera `distance` from the target along the framing angles, plus a drift. */
@@ -712,8 +728,7 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     // Camera: a slow drift for parallax, and a shake when something hits.
     const drift = calm || frame.paused ? 0 : Math.sin(t * 0.21) * 1.0 + Math.sin(t * 0.13) * 0.5;
     this.place(this.distance, drift);
-    const hit =
-      shake(now, this.crackAt, 0.55, 0.16) + shake(now, this.stepAt + 0.42, 0.3, 0.05);
+    const hit = shake(now, this.crackAt, 0.55, 0.16) + shake(now, this.stepAt + 0.42, 0.3, 0.05);
     if (hit) {
       this.camera.position.x += hit;
       this.camera.position.y += hit * 0.5;
@@ -758,12 +773,26 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     // Three first-try answers in a row: a golden glow gathers round her.
     const glowing = frame.streak >= 3 && frame.started;
     const halo = this.halo.material;
-    halo.opacity = MathUtils.lerp(halo.opacity, glowing ? 0.55 + (calm ? 0 : Math.sin(t * 3) * 0.12) : 0, 0.08);
+    halo.opacity = MathUtils.lerp(
+      halo.opacity,
+      glowing ? 0.55 + (calm ? 0 : Math.sin(t * 3) * 0.12) : 0,
+      0.08,
+    );
     this.halo.position.copy(mesh.position).add(new Vector3(0.1, FAIRY_HEIGHT * 0.5, -0.05));
     if (glowing && !calm && Math.random() < 0.25) {
       const tip = this.wandTip();
       this.colour.set('#fff3a0');
-      this.sparks.emit(tip.x, tip.y, tip.z, (Math.random() - 0.5) * 0.4, 0.4, 0, this.colour, 0.8, -0.2);
+      this.sparks.emit(
+        tip.x,
+        tip.y,
+        tip.z,
+        (Math.random() - 0.5) * 0.4,
+        0.4,
+        0,
+        this.colour,
+        0.8,
+        -0.2,
+      );
     }
   }
 
@@ -812,7 +841,10 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     const position = along(s, across);
     // Idle: a soft bounce, faster and twitchier as the timer runs down.
     const urgency = frame.pressure;
-    const idle = calm || !frame.started ? 0 : Math.abs(Math.sin(t * (2.2 + urgency * 4))) * (0.06 + urgency * 0.06);
+    const idle =
+      calm || !frame.started
+        ? 0
+        : Math.abs(Math.sin(t * (2.2 + urgency * 4))) * (0.06 + urgency * 0.06);
     const wrongAge = now - this.wrongAt;
     if (wrongAge >= 0 && wrongAge < 0.5) tilt += Math.sin((wrongAge / 0.5) * Math.PI * 3) * 0.16;
     // The burst: a quick swell, then gone in a flash.
@@ -820,7 +852,10 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     const shieldOnly = this.shieldAt === this.rightAt && this.rightAt >= 0;
     let scale = 1;
     if (rightAge >= 0 && rightAge < 2.2 && !shieldOnly) {
-      scale = rightAge < 0.12 ? 1 + rightAge * 1.2 : Math.max(0, 1.15 - easeOut((rightAge - 0.12) / 0.2) * 1.15);
+      scale =
+        rightAge < 0.12
+          ? 1 + rightAge * 1.2
+          : Math.max(0, 1.15 - easeOut((rightAge - 0.12) / 0.2) * 1.15);
       if (rightAge > 0.32) this.gone = true;
     } else if (shieldOnly && rightAge >= 0 && rightAge < 0.6) {
       squash = Math.sin((rightAge / 0.6) * Math.PI) * 0.12;
@@ -844,12 +879,20 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       ring.rotation.y = calm ? index : t * (0.5 + index * 0.15) * (index % 2 ? -1 : 1);
     // The badge rides above its head while a sum is open.
     const badgeOn =
-      frame.started && !hidden && (frame.phase === 'ready' || frame.phase === 'casting' || frame.phase === 'wrong') && !walking;
+      frame.started &&
+      !hidden &&
+      (frame.phase === 'ready' || frame.phase === 'casting' || frame.phase === 'wrong') &&
+      !walking;
     this.badge.visible = badgeOn;
     this.badgeLabel.update(frame.badge);
     const pulse = urgency > 0.6 && !calm ? 1 + Math.sin(t * 9) * 0.06 : 1;
-    this.badge.scale.set(0.62 * pulse, 0.5 * pulse, 1);
-    this.badge.position.copy(position).setY(this.monsterGroup.position.y + this.monster.height * scale + 0.32);
+    const size = this.badgeSize * pulse;
+    this.badge.scale.set(0.62 * size, 0.5 * size, 1);
+    this.badge.position
+      .copy(position)
+      .setY(
+        this.monsterGroup.position.y + this.monster.height * scale + 0.07 + 0.25 * this.badgeSize,
+      );
     // Waiting in line at the forest's edge.
     const waiting = !!frame.waiting && frame.phase !== 'complete';
     const show = waiting && !(walking && walkAge < 0.6);
@@ -859,7 +902,11 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     this.waiting.mesh.position.copy(along(WAIT_S, -0.9));
     this.waiting.mesh.position.y = calm ? 0 : Math.abs(Math.sin(t * 1.6 + 1)) * 0.05;
     this.waiting.mesh.rotation.set(0, yaw, 0);
-    this.waiting.mesh.scale.set(this.waiting.height * this.waiting.aspect * appear, this.waiting.height * appear, 1);
+    this.waiting.mesh.scale.set(
+      this.waiting.height * this.waiting.aspect * appear,
+      this.waiting.height * appear,
+      1,
+    );
     // Posts the monster has passed burn red.
     for (const [index, { top, light }] of this.markers.entries()) {
       const danger = frame.started && s <= MARKER_S[index] + 0.05;
@@ -878,7 +925,18 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     this.colour.set('#efe2c4');
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * Math.PI * 2;
-      this.dust.emit(p.x + Math.cos(a) * 0.4, 0.12, p.z + Math.sin(a) * 0.3, Math.cos(a) * 1.4, 0.4 + Math.random() * 0.4, Math.sin(a) * 0.8, this.colour, 0.7, 0.4, 0.8);
+      this.dust.emit(
+        p.x + Math.cos(a) * 0.4,
+        0.12,
+        p.z + Math.sin(a) * 0.3,
+        Math.cos(a) * 1.4,
+        0.4 + Math.random() * 0.4,
+        Math.sin(a) * 0.8,
+        this.colour,
+        0.7,
+        0.4,
+        0.8,
+      );
     }
   }
   private dustAt = -99;
@@ -898,7 +956,8 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     this.gem.material.rotation = calm ? 0 : Math.sin(age * 20) * 0.2;
     this.gemGlow.material.opacity = 0.75;
     // A trail of sparks and soft glow behind it.
-    if (Math.random() < 0.6) this.glows.emit(position.x, position.y, position.z, 0, 0, 0, this.castColour, 0.3, 0, 0.5);
+    if (Math.random() < 0.6)
+      this.glows.emit(position.x, position.y, position.z, 0, 0, 0, this.castColour, 0.3, 0, 0.5);
     for (let i = 0; i < 4; i++)
       this.sparks.emit(
         position.x + (Math.random() - 0.5) * 0.12,
@@ -916,7 +975,17 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       this.gem.visible = this.gemGlow.visible = false;
       for (let i = 0; i < 18; i++) {
         const a = (i / 18) * Math.PI * 2;
-        this.sparks.emit(to.x, to.y, to.z, Math.cos(a) * 2.2, Math.sin(a) * 2.2, 0.3, this.castColour, 0.5, 1.5);
+        this.sparks.emit(
+          to.x,
+          to.y,
+          to.z,
+          Math.cos(a) * 2.2,
+          Math.sin(a) * 2.2,
+          0.3,
+          this.castColour,
+          0.5,
+          1.5,
+        );
       }
       this.glows.emit(to.x, to.y, to.z, 0, 0, 0, this.castColour, 0.35);
     } else {
@@ -942,7 +1011,17 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       this.colour.set('#ff5c9a');
       for (let i = 0; i < 24; i++) {
         const a = (i / 24) * Math.PI * 2;
-        this.sparks.emit(top.x, top.y, top.z, Math.cos(a) * 2.2, Math.sin(a) * 2.2, 0, this.colour, 0.7, 2);
+        this.sparks.emit(
+          top.x,
+          top.y,
+          top.z,
+          Math.cos(a) * 2.2,
+          Math.sin(a) * 2.2,
+          0,
+          this.colour,
+          0.7,
+          2,
+        );
       }
     }
     for (const [side, half] of this.halves.entries()) {
@@ -995,7 +1074,17 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       mesh.scale.set(-size * butterfly.art.aspect * flap, size, 1);
       if (Math.random() < 0.4) {
         this.colour.set('#ffe27a');
-        this.sparks.emit(mesh.position.x, mesh.position.y + size * 0.4, mesh.position.z, 0, -0.3, 0, this.colour, 0.6, 0.5);
+        this.sparks.emit(
+          mesh.position.x,
+          mesh.position.y + size * 0.4,
+          mesh.position.z,
+          0,
+          -0.3,
+          0,
+          this.colour,
+          0.6,
+          0.5,
+        );
       }
     }
   }
@@ -1022,7 +1111,11 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     const colour = this.fireflies.geometry.getAttribute('color') as BufferAttribute;
     const clock = calm ? 0 : t;
     for (const [index, seed] of this.fireflySeeds.entries()) {
-      const base = along(-1 + ((seed * 7.1) % 11), -2.6 + ((seed * 3.3) % 5.5), 0.5 + ((seed * 1.9) % 3));
+      const base = along(
+        -1 + ((seed * 7.1) % 11),
+        -2.6 + ((seed * 3.3) % 5.5),
+        0.5 + ((seed * 1.9) % 3),
+      );
       position.setXYZ(
         index,
         base.x + Math.sin(clock * 0.4 + seed) * 0.6,
@@ -1038,7 +1131,8 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
       if (!calm) {
         petal.p.addScaledVector(petal.v, dt);
         petal.p.x += Math.sin(t + petal.phase) * 0.15 * dt;
-        if (petal.p.y < 0.05 || petal.p.x > 8) petal.p.set(-8 + Math.random() * 3, 2.5 + Math.random() * 2.5, -5 + Math.random() * 8);
+        if (petal.p.y < 0.05 || petal.p.x > 8)
+          petal.p.set(-8 + Math.random() * 3, 2.5 + Math.random() * 2.5, -5 + Math.random() * 8);
       }
       this.dummy.position.copy(petal.p);
       const spin = calm ? petal.phase : t * petal.spin + petal.phase;
@@ -1049,7 +1143,8 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     this.petals.instanceMatrix.needsUpdate = true;
     // The pennants on the towers flutter.
     for (const child of this.gate.children)
-      if (child.name === 'flag') child.rotation.y = calm ? 0.3 : Math.sin(t * 3 + child.position.x) * 0.35;
+      if (child.name === 'flag')
+        child.rotation.y = calm ? 0.3 : Math.sin(t * 3 + child.position.x) * 0.35;
   }
 
   private firework() {
@@ -1059,7 +1154,17 @@ export class CastleWorld extends Stage implements StateWorld<CastleFrame> {
     for (let i = 0; i < 34; i++) {
       const a = (i / 34) * Math.PI * 2;
       const b = Math.random() * Math.PI;
-      this.sparks.emit(at.x, at.y, at.z, Math.cos(a) * Math.sin(b) * 2.6, Math.cos(b) * 2.6, Math.sin(a) * Math.sin(b) * 2.6, this.colour, 1.1, 1.6);
+      this.sparks.emit(
+        at.x,
+        at.y,
+        at.z,
+        Math.cos(a) * Math.sin(b) * 2.6,
+        Math.cos(b) * 2.6,
+        Math.sin(a) * Math.sin(b) * 2.6,
+        this.colour,
+        1.1,
+        1.6,
+      );
     }
     this.glows.emit(at.x, at.y, at.z, 0, 0, 0, this.colour, 0.4);
   }

@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
 import { emptyProgress, WORLD_CATALOG, worlds } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
+import { navigate, openRoute } from '../../testing/route-harness';
 const everyLevel = worlds.flatMap((world) => world.chapters).flatMap((chapter) => chapter.levels);
 describe('Games hub', () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Games hub', () => {
     };
   });
   it('lists every game and level as a direct play link for a brand-new player', async () => {
-    const h = await RouterTestingHarness.create('/games');
+    const h = await openRoute('/games');
     const page = h.routeNativeElement!;
     for (const chapter of worlds.flatMap((world) => world.chapters))
       expect(page.querySelector(`section#${chapter.id}`), chapter.id).toBeTruthy();
@@ -35,7 +35,7 @@ describe('Games hub', () => {
     expect(TestBed.inject(ProgressService).progress().mastered).toEqual([]);
   });
   it('sorts every game into topics, one tab each, opening the topic a child is on', async () => {
-    const h = await RouterTestingHarness.create('/games');
+    const h = await openRoute('/games');
     const page = h.routeNativeElement!;
     const tabs = (game: string) => [
       ...page.querySelectorAll<HTMLButtonElement>(`#${game} [role="tab"]`),
@@ -97,12 +97,12 @@ describe('Games hub', () => {
     expect(tabs('compare-crocodile')[4]!.getAttribute('aria-selected')).toBe('true');
   });
   it('opens the topic of a level a link points at', async () => {
-    const h = await RouterTestingHarness.create('/games#crocodile-7');
+    const h = await openRoute('/games#crocodile-7');
     const panel = h.routeNativeElement!.querySelector(
       '#compare-crocodile [role="tabpanel"]:not([hidden])',
     );
     expect(panel?.querySelector('#crocodile-7')).toBeTruthy();
-    await h.navigateByUrl('/games#number-wall-9');
+    await navigate(h, '/games#number-wall-9');
     expect(
       h.routeNativeElement!.querySelector(
         '#number-walls [role="tabpanel"]:not([hidden]) #number-wall-9',
@@ -110,7 +110,7 @@ describe('Games hub', () => {
     ).toBeTruthy();
   });
   it('offers a chip per game that jumps to its section', async () => {
-    const h = await RouterTestingHarness.create('/games');
+    const h = await openRoute('/games');
     const page = h.routeNativeElement!;
     const chips = [...page.querySelectorAll<HTMLAnchorElement>('nav.game-jump a')];
     const chapters = worlds.flatMap((world) => world.chapters);
@@ -119,24 +119,24 @@ describe('Games hub', () => {
     );
   });
   it('opens any level directly, in any order, without recording progress', async () => {
-    const h = await RouterTestingHarness.create('/adventure/crocodile-6');
+    const h = await openRoute('/adventure/crocodile-6');
     const router = TestBed.inject(Router);
     expect(router.url).toBe('/adventure/crocodile-6');
-    await h.navigateByUrl('/adventure/practice-30-9');
+    await navigate(h, '/adventure/practice-30-9');
     expect(router.url).toBe('/adventure/practice-30-9');
-    await h.navigateByUrl('/adventure/number-wall?level=4');
+    await navigate(h, '/adventure/number-wall?level=4');
     expect(router.url).toBe('/adventure/number-wall?level=4');
     // Level 4 (two missing bricks) is seventh in the list, easiest first.
     expect(h.routeNativeElement?.querySelector('.level-tag')?.textContent).toContain('Level 7');
     expect(TestBed.inject(ProgressService).progress()).toEqual(emptyProgress);
   });
   it('sends old world and chapter links to the matching games-hub section', async () => {
-    const h = await RouterTestingHarness.create('/worlds');
+    const h = await openRoute('/worlds');
     const router = TestBed.inject(Router);
     expect(router.url).toBe('/games');
-    await h.navigateByUrl('/worlds/numbers');
+    await navigate(h, '/worlds/numbers');
     expect(router.url).toBe('/games#numbers');
-    await h.navigateByUrl('/worlds/numbers/chapters/compare-crocodile');
+    await navigate(h, '/worlds/numbers/chapters/compare-crocodile');
     expect(router.url).toBe('/games#compare-crocodile');
     expect(h.routeNativeElement?.querySelector('#compare-crocodile h2')?.textContent).toBe(
       TestBed.inject(LocaleService).t('crocodileChapter'),
@@ -152,7 +152,7 @@ describe('Games hub', () => {
         stars: { 'crocodile-1': 3, 'crocodile-2': 1 },
       }),
     );
-    const h = await RouterTestingHarness.create('/games');
+    const h = await openRoute('/games');
     const page = h.routeNativeElement!;
     const i = TestBed.inject(LocaleService);
     expect(page.querySelector('#crocodile-1 .stars')?.getAttribute('aria-label')).toBe(
@@ -188,12 +188,12 @@ describe('Games hub', () => {
         },
       ],
     });
-    const h = await RouterTestingHarness.create('/games');
+    const h = await openRoute('/games');
     expect(h.routeNativeElement?.querySelector('section#new-game')).toBeTruthy();
     expect(
       h.routeNativeElement?.querySelector('a#new-level[href="/adventure/new-level"]'),
     ).toBeTruthy();
-    await h.navigateByUrl('/');
+    await navigate(h, '/');
     expect(h.routeNativeElement?.querySelector('[data-game="new-game"]')).toBeTruthy();
   });
 });
