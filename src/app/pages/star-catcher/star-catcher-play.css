@@ -1,7 +1,8 @@
 /* While playing, the page is one screen: header, HUD, then the board and controls share the rest. */
 .game.playing {
   max-width: 1240px;
-  min-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  /* The host's own padding (16px top, 32px bottom) is part of the screen too. */
+  min-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   gap: 10px;
 }
 
@@ -308,19 +309,6 @@
   font-size: 17px;
   line-height: 1.45;
 }
-.help-card {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 10px 14px;
-  border-radius: var(--radius-chip);
-  background: var(--warm-ground);
-  border: 2px solid var(--sun);
-}
-.help-card p {
-  margin: 0;
-  line-height: 1.45;
-}
 .help-extra {
   display: block;
   margin-top: 4px;
@@ -365,6 +353,12 @@
 @media (orientation: landscape) and (max-height: 560px) {
   .game.playing {
     gap: 6px;
+  }
+  .play-area {
+    grid-template-rows: minmax(180px, 1fr);
+  }
+  .board {
+    min-height: 180px;
   }
   .hud > p {
     min-height: 34px;
