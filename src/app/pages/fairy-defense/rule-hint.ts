@@ -31,7 +31,13 @@ const rules: readonly [RegExp, (x: number, y: number) => RuleHint][] = [
 export function ruleHint(question: string): RuleHint | null {
   for (const [pattern, hint] of rules) {
     const match = pattern.exec(question.trim());
-    if (match) return hint(Number(match[1]), Number(match[2]));
+    if (!match) continue;
+    const found = hint(Number(match[1]), Number(match[2]));
+    // 40 = 40 + □: "count on from 40 to 40" would point straight at the answer, so say what
+    // the child can see instead: the same number already stands on both sides.
+    return found.key === 'hintCountOn' && found.values['a'] === found.values['c']
+      ? { key: 'hintBothSides', values: { a: found.values['a'] } }
+      : found;
   }
   return null;
 }
