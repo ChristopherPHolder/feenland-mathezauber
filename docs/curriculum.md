@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 68 selectable levels across four games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 89 selectable levels across five games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -33,18 +33,21 @@ Round lengths are data, not code paths: `snacks` on each crocodile stage, `walls
 
 Ids never change once shipped, because progress and bookmarks use them. New levels got new ids and were slotted into the list by difficulty. The number on a card is its position, not its id.
 
-### Defend the Fairy Castle: 24 stages (`core/practice.ts`)
+### Defend the Fairy Castle: 30 stages (`core/practice.ts`)
 
-| Topic         | Stages, easiest first                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------ |
-| Castle waves  | the twenty-wave making-ten campaign                                                                    |
-| Tens and ones | 17 = 10 + □ (to 20) · 24 = □ + 4 (to 30) · 68 = 60 + □ (to 100)                                        |
-| Adding        | make ten 7 + □ = 10 · to 10 · to 20 · across ten to 20 · across ten to 30 · to 100 · across ten to 100 |
-| Taking away   | to 10 · to 20 · across ten 13 − □ = 6 · to 30 · find the starting number □ − 8 = 12 · to 100           |
-| Times tables  | ×2 ×5 ×10 to 100 · tables to 30 · ×3 ×4 · ×6 ×7 ×8 ×9 · missing factor to 30 · missing factor to 100   |
-| Mixed magic   | mixed to 30 · mixed to 100                                                                             |
+| Topic         | Stages, easiest first                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Castle waves  | the twenty-wave making-ten campaign                                                                         |
+| Tens and ones | 17 = 10 + □ (to 20) · 24 = □ + 4 (to 30) · 68 = 60 + □ (to 100)                                             |
+| Adding        | make ten 7 + □ = 10 · to 10 · to 20 · across ten to 20 · across ten to 30 · to 100 · across ten to 100      |
+| Taking away   | to 10 · to 20 · across ten 13 − □ = 6 · to 30 · find the starting number □ − 8 = 12 · to 100                |
+| Times tables  | ×2 ×5 ×10 to 100 · tables to 30 · ×3 ×4 · ×6 ×7 ×8 ×9 · missing factor to 30 · missing factor to 100        |
+| Sharing       | half of 14 · half of 48 · ÷2 ÷5 ÷10 (35 ÷ 5) · ÷3 ÷4 · ÷6 ÷7 ÷8 ÷9 · times and sharing (□ × 6 = 42, 42 ÷ 6) |
+| Mixed magic   | mixed to 30 · mixed to 100                                                                                  |
 
-Easy, medium and hard stay a separate, remembered choice. For the row-based table stages, easy keeps to ×2…×6 of each row and hard to ×5…×10, and both orders (4 × 7 and 7 × 4) appear.
+Easy, medium and hard stay a separate, remembered choice. For the row-based table stages, easy keeps to ×2…×6 of each row and hard to ×5…×10, and both orders (4 × 7 and 7 × 4) appear. Sharing stages use the same rows and limits, so every division is exact and every half is of an even number.
+
+German and French schools write division with a colon, so `localQuestion` (castle) and `raceSumText` (race) show `35 : 5` and the localized "half of" in those languages. Questions are generated in English form and translated only for display.
 
 ### The Hungry Crocodile: 14 levels (`pages/crocodile/comparison.ts`)
 
@@ -67,27 +70,27 @@ The seven original levels keep their hats; the new ones add rounds, not hats.
 
 Every wall is checked to have exactly one solution. Missing-brick patterns are `top`, `bottom`, `any`, `buildUp` and `mixed` (one bottom brick plus others).
 
-### Unicorn Rainbow Race: 19 tracks (`pages/unicorn-race/race-questions.ts`)
+### Unicorn Rainbow Race: 22 tracks (`pages/unicorn-race/race-questions.ts`)
 
-| Cup (topic)              | Tracks, easiest first                                                                     |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| Meadow · up to 20        | make ten 6 + ? = 10 · adding to 10 · taking away within 10 · plus and minus to 20         |
-| Sky · up to 100          | doubles · across ten 8 + 5, 13 − 6 · plus and minus to 100 · two-digit, no carrying       |
-| Starlight · times tables | ×2 ×5 ×10 · ×3 ×4 · missing factor · ×6 ×7 ×8 ×9                                          |
-| Castle · missing numbers | missing numbers · hard tables to 30 · two-digit across a ten 37 + 25 · castle cup (mixed) |
-| Rainbow · everything     | rainbow run · dream ride · grand prix                                                     |
+| Cup (topic)              | Tracks, easiest first                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Meadow · up to 20        | make ten 6 + ? = 10 · adding to 10 · taking away within 10 · plus and minus to 20                                   |
+| Sky · up to 100          | doubles · halves (half of 18) · across ten 8 + 5, 13 − 6 · plus and minus to 100 · two-digit, no carrying           |
+| Starlight · times tables | ×2 ×5 ×10 · ×3 ×4 · share by 2, 5, 10 (35 ÷ 5) · missing factor · ×6 ×7 ×8 ×9                                       |
+| Castle · missing numbers | missing numbers · hard tables to 30 · two-digit across a ten 37 + 25 · sharing to 100 (42 ÷ 6) · castle cup (mixed) |
+| Rainbow · everything     | rainbow run · dream ride · grand prix                                                                               |
 
-A cup's keepsake needs three of its tracks finished, so the keepsakes children already earned stay theirs now that cups have four tracks.
+A cup's keepsake needs three of its tracks finished, so the keepsakes children already earned stay theirs now that cups have four or five tracks. Maths that is slower than the rest of its cup gets an `ease` on its track (sharing to 100 has 0.9 and a shorter length), so the rivals stay a fair race.
 
-### The Treasure Lock: 7 levels (`pages/treasure-lock/lock-puzzles.ts`)
+### The Treasure Lock: 9 levels (`pages/treasure-lock/lock-puzzles.ts`)
 
-| Topic       | Levels, easiest first                                                                          |
-| ----------- | ---------------------------------------------------------------------------------------------- |
-| Hops to 20  | hops of five +5 +5 −1 → 9 · threes and twos +3 +3 +2 → 8                                       |
-| Tens tricks | tens and ones +10 +10 +1 → 21 · the nine trick +10 +10 −1 → 19 · hopping back 50 −10 −1 → 39   |
-| Doubling    | doubling magic 1 +1 ×2 ×2 → 8 · treasure master on a dial to 100 with thorns +10 ×2 ×2 −1 → 39 |
+| Topic                | Levels, easiest first                                                                                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hops to 20           | hops of five +5 +5 −1 → 9 · threes and twos +3 +3 +2 → 8                                                                                                         |
+| Tens tricks          | tens and ones +10 +10 +1 → 21 · the nine trick +10 +10 −1 → 19 · hopping back 50 −10 −1 → 39                                                                     |
+| Doubling and halving | doubling magic 1 +1 ×2 ×2 → 8 · halving back 40 ÷2 ÷2 → 10 · treasure master on a dial to 100 with thorns +10 ×2 ×2 −1 → 39 · double and halve 40 ×2 +10 ÷2 → 45 |
 
-Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets whose fewest hops fall in the level's `par` range, so a round never asks for more hops than its level allows.
+Every lock is checked by the solver in `lock-puzzles.ts`, which picks targets whose fewest hops fall in the level's `par` range, so a round never asks for more hops than its level allows. The ÷2 spell only works on an even number; on an odd one the button is greyed out with a line saying why, and the solver follows the same rule. Halving levels only pick locks where ÷2 is part of every fewest-hops way.
 
 ## Adding a level
 
