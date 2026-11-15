@@ -243,6 +243,7 @@ export const en = {
   wallTrollFrozen: 'Fairy dust! The troll is asleep.',
   wallGems: 'Gems',
   wallGemsWon: '+{n} gems!',
+  wallGemWon: '+1 gem!',
   wallDust: 'Fairy dust',
   wallDustHelp:
     'Three bricks in a row earn fairy dust. Tap it to put the troll to sleep and see the trick.',
@@ -514,6 +515,7 @@ export const translations: Record<Locale, Messages> = {
     wallTrollFrozen: 'Feenstaub! Der Troll schläft.',
     wallGems: 'Edelsteine',
     wallGemsWon: '+{n} Edelsteine!',
+    wallGemWon: '+1 Edelstein!',
     wallDust: 'Feenstaub',
     wallDustHelp:
       'Drei Steine hintereinander geben Feenstaub. Tippe darauf, damit der Troll einschläft und du den Trick siehst.',
@@ -778,6 +780,7 @@ export const translations: Record<Locale, Messages> = {
     wallTrollFrozen: '¡Polvo de hada! El trol duerme.',
     wallGems: 'Gemas',
     wallGemsWon: '¡+{n} gemas!',
+    wallGemWon: '¡+1 gema!',
     wallDust: 'Polvo de hada',
     wallDustHelp:
       'Tres ladrillos seguidos dan polvo de hada. Tócalo para dormir al trol y ver el truco.',
@@ -1042,6 +1045,7 @@ export const translations: Record<Locale, Messages> = {
     wallTrollFrozen: 'Poussière de fée ! Le troll dort.',
     wallGems: 'Gemmes',
     wallGemsWon: '+{n} gemmes !',
+    wallGemWon: '+1 gemme !',
     wallDust: 'Poussière de fée',
     wallDustHelp:
       'Trois briques d’affilée donnent de la poussière de fée. Touche-la pour endormir le troll et voir l’astuce.',

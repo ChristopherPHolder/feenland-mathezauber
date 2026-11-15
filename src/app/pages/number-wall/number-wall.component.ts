@@ -215,7 +215,7 @@ export class NumberWallComponent {
       case 'built':
         return [
           this.t('wallBuilt'),
-          this.t('wallGemsWon', { n: feedback.gems }),
+          feedback.gems === 1 ? this.t('wallGemWon') : this.t('wallGemsWon', { n: feedback.gems }),
           feedback.fast ? this.t('wallFast') : '',
           feedback.perfect ? this.t('wallPerfect') : '',
         ]
