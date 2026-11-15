@@ -253,6 +253,17 @@
                 {{ wallIndex() + 1 < walls().length ? i.t('wallNext') : i.t('wallWorldDone') }}
                 <app-icon kind="arrow" />
               </button>
+              @if (feedback(); as won) {
+                @if (won.kind === 'built') {
+                  <app-wall-reward
+                    [perfect]="won.perfect"
+                    [fast]="won.fast"
+                    [timed]="timed()"
+                    [gems]="gems()"
+                    [wallsDone]="wallsDone()"
+                  />
+                }
+              }
             } @else if (crumbled()) {
               <button #nextButton type="button" class="button primary next" (click)="rebuild()">
                 {{ i.t('wallRebuild') }} <span aria-hidden="true">🧱</span>
