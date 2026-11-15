@@ -11,7 +11,8 @@ import type { Level } from '../../core/catalog';
 import type { MessageKey } from '../../core/messages';
 import { practiceBattle, practiceSpells, withCampaignMath } from './practice-battle';
 import { WavePathComponent } from './wave-path/wave-path.component';
-import { CampaignStore } from './campaign';
+import { CampaignStore, waveStars } from './campaign';
+import { WaveReward } from './wave-reward';
 import { TOTAL_WAVES } from './waves';
 import { CompletionService } from '../../core/completion';
 import { Router } from '@angular/router';
@@ -34,7 +35,8 @@ import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
 import { GameHeader } from '../../shared/game-header';
 import { Icon } from '../../shared/icon';
-import { advance, cast, freshBattle, resolveSpell, revealHint } from './battle';
+import { advance, Battle, cast, freshBattle, resolveSpell, revealHint, timeOut } from './battle';
+import { FuseTimer } from './fuse-timer';
 import { GameAudio } from './game-audio';
 import { gameText, GameMessageKey } from './game-messages';
 import { AudioSettings, PlaytestStore } from './playtest-store';
@@ -49,6 +51,8 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
     RouterLink,
     Icon,
     GameHeader,
+    WaveReward,
+    FuseTimer,
   ],
   providers: [GameAudio],
   templateUrl: './fairy-defense.component.html',
@@ -86,7 +90,19 @@ export class FairyDefenseComponent {
   protected readonly settings = form(this.settingsModel);
   protected readonly difficulties = ['easy', 'medium', 'hard'] as const;
   protected readonly paces = ['relaxed', 'steady', 'quick'] as const;
+  /** Seconds a monster waits for a spell at this pace. */
+  protected readonly thinkingTotal = computed(() =>
+    this.settingsModel().pace === 'quick' ? 20 : 45,
+  );
   protected readonly thinkingTime = signal(45);
+  /** The last slip was the ring running out, not a wrong spell. */
+  private readonly timedOut = signal(false);
+  /** How close the thinking timer is to running out, for the scene: 0 without a timer. */
+  protected readonly pressure = computed(() => {
+    const pace = this.settingsModel().pace;
+    if (pace === 'relaxed') return 0;
+    return 1 - this.thinkingTime() / this.thinkingTotal();
+  });
   protected readonly spells = computed(() => {
     const question = this.encounter()?.question;
     return question ? practiceSpells(question.answer) : this.battle().wave.spells;
@@ -120,6 +136,10 @@ export class FairyDefenseComponent {
   protected readonly encounter = computed(
     () => this.battle().wave.encounters[this.battle().encounter],
   );
+  /** Stars for the wave just won, from the gems in the pouch. */
+  protected readonly earnedStars = computed(() =>
+    waveStars(this.battle().wave.encounters.length, this.battle().gems),
+  );
   protected readonly dots = Array.from({ length: 10 }, (_, index) => index);
   /** Where the games hub lands when leaving: this game's section, or the practice stage. */
   protected readonly gamesAnchor = computed(() => {
@@ -136,6 +156,8 @@ export class FairyDefenseComponent {
   private returnFocus?: HTMLElement;
   protected readonly message = computed(() => {
     const state = this.battle();
+    if (this.timedOut() && (state.phase === 'wrong' || state.phase === 'ready'))
+      return this.t(state.damaged && !this.encounter().question ? 'damage' : 'timeUp');
     if (this.encounter()?.question)
       return (
         this.equation() +
@@ -208,7 +230,11 @@ export class FairyDefenseComponent {
         this.settingsModel().pace === 'relaxed'
       )
         return;
-      const timer = setInterval(() => this.thinkingTime.update((n) => Math.max(0, n - 1)), 1000);
+      const timer = setInterval(() => {
+        const left = Math.max(0, this.thinkingTime() - 1);
+        this.thinkingTime.set(left);
+        if (left === 0) this.runOutOfTime();
+      }, 1000);
       cleanup(() => clearInterval(timer));
     });
     effect(() => {
@@ -227,6 +253,7 @@ export class FairyDefenseComponent {
       return;
     this.clearTurn();
     this.instructionOverride.set(null);
+    this.timedOut.set(false);
     const training = this.training();
     let fresh = training
       ? practiceBattle(training, this.settingsModel().difficulty)
@@ -244,7 +271,7 @@ export class FairyDefenseComponent {
           }
         : fresh,
     );
-    this.thinkingTime.set(this.settingsModel().pace === 'quick' ? 20 : 45);
+    this.thinkingTime.set(this.thinkingTotal());
     this.started.set(true);
     this.fullExplanation.set(number === 1 && !this.hasPlayed());
     this.hasPlayed.set(true);
@@ -263,6 +290,7 @@ export class FairyDefenseComponent {
     const next = cast(this.battle(), spell);
     if (next === this.battle()) return;
     this.instructionOverride.set(null);
+    this.timedOut.set(false);
     this.battle.set(next);
     this.fullExplanation.set(false);
     this.audio.effect('cast');
@@ -270,44 +298,59 @@ export class FairyDefenseComponent {
       this.instructionOverride.set(null);
       const resolved = resolveSpell(this.battle());
       this.battle.set(resolved);
-      if (resolved.phase === 'transforming') this.hatchery.warm();
-      this.audio.effect(
-        resolved.phase === 'lost' || resolved.damaged
-          ? 'damage'
-          : resolved.phase === 'transforming'
-            ? 'correct'
-            : 'wrong',
-      );
-      this.audio.speak(this.message());
-      if (resolved.phase === 'lost') {
-        this.focusOutcome();
-        return;
-      }
-      this.schedule(
-        () => {
-          this.battle.update((state) => advance(state));
-          this.thinkingTime.set(this.settingsModel().pace === 'quick' ? 20 : 45);
-          if (this.battle().phase === 'complete') {
-            this.audio.effect('complete');
-            const state = this.battle();
-            if (!this.training())
-              this.campaign.complete({
-                wave: state.wave.number,
-                independent: state.independent.filter(Boolean).length,
-              });
-            this.audio.speak(
-              this.t('complete', { n: state.wave.number }) + ' ' + this.t('restored'),
-            );
-            if (this.training() || this.campaign.finished()) this.recordCompletion();
-            this.focusOutcome();
-          } else {
-            if (resolved.phase === 'transforming') this.audio.speak(this.message());
-            this.focusSpells();
-          }
-        },
-        resolved.phase === 'transforming' ? 2100 : 750,
-      );
+      this.settle(resolved);
     }, 550);
+  }
+  /** The ring ran out: the monster takes one step, like one wrong spell, and the ring refills. */
+  private runOutOfTime() {
+    if (!this.started() || this.paused()) return;
+    const next = timeOut(this.battle());
+    if (next === this.battle()) return;
+    this.instructionOverride.set(null);
+    this.timedOut.set(true);
+    this.fullExplanation.set(false);
+    this.battle.set(next);
+    this.settle(next);
+  }
+  /** Sound, speech and the next step after a spell or the ring has been decided. */
+  private settle(resolved: Battle) {
+    if (resolved.phase === 'transforming') this.hatchery.warm();
+    this.audio.effect(
+      resolved.phase === 'lost' || resolved.damaged
+        ? 'damage'
+        : resolved.phase === 'transforming'
+          ? 'correct'
+          : 'wrong',
+    );
+    this.audio.speak(this.message());
+    if (resolved.phase === 'lost') {
+      this.focusOutcome();
+      return;
+    }
+    this.schedule(
+      () => {
+        this.battle.update((state) => advance(state));
+        this.thinkingTime.set(this.thinkingTotal());
+        if (this.battle().phase === 'complete') {
+          this.audio.effect('complete');
+          const state = this.battle();
+          if (!this.training())
+            this.campaign.complete({
+              wave: state.wave.number,
+              independent: state.independent.filter(Boolean).length,
+              stars: this.earnedStars(),
+            });
+          this.audio.speak(this.t('complete', { n: state.wave.number }) + ' ' + this.t('restored'));
+          if (this.training() || this.campaign.finished()) this.recordCompletion();
+          this.focusOutcome();
+        } else {
+          if (resolved.phase === 'transforming') this.audio.speak(this.message());
+          this.focusSpells();
+        }
+      },
+      // A run-out ring holds a little longer, so the child sees the monster's step.
+      resolved.phase === 'transforming' ? 2100 : this.timedOut() ? 1400 : 750,
+    );
   }
   protected help(full = false) {
     if (this.battle().phase !== 'ready') return;

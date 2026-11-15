@@ -7,7 +7,13 @@ import { TOTAL_WAVES } from '../waves';
   selector: 'app-wave-path',
   imports: [Icon],
   template: `<h2 id="wave-path-title">{{ t('chooseWave') }}</h2>
-    <p class="wave-status">{{ t('savedWaves', { n: completed().length }) }}</p>
+    <p class="wave-status">
+      {{ t('savedWaves', { n: completed().length }) }}
+      <span class="star-total"
+        ><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="star" /></svg
+        >{{ t('starTotal', { n: starTotal() }) }}</span
+      >
+    </p>
     <ol class="wave-path" aria-labelledby="wave-path-title">
       @for (wave of waves; track wave) {
         <li>
@@ -19,12 +25,23 @@ import { TOTAL_WAVES } from '../waves';
             [attr.aria-label]="
               t(done().has(wave) ? 'completedWave' : 'waveButton', { n: wave }) +
               (wave % 5 === 0 ? ' · ' + t('bossWave') : '') +
-              (wave === next() ? ' · ' + t('nextUp') : '')
+              (wave === next() ? ' · ' + t('nextUp') : '') +
+              (starsFor(wave) ? ' · ' + t('starsLabel', { n: starsFor(wave) }) : '')
             "
             (click)="selectWave.emit(wave)"
           >
-            <span>{{ wave }}</span
-            ><app-icon [kind]="done().has(wave) ? 'check' : wave % 5 === 0 ? 'cup' : 'gem'" />
+            <span>{{ wave }}</span>
+            @if (starsFor(wave); as earned) {
+              <span class="tile-stars" aria-hidden="true">
+                @for (slot of slots; track slot) {
+                  <svg viewBox="0 0 24 24" [class.earned]="slot <= earned">
+                    <path [attr.d]="star" />
+                  </svg>
+                }
+              </span>
+            } @else {
+              <app-icon [kind]="done().has(wave) ? 'check' : wave % 5 === 0 ? 'cup' : 'gem'" />
+            }
           </button>
         </li>
       }
@@ -61,7 +78,7 @@ import { TOTAL_WAVES } from '../waves';
       align-items: center;
       justify-content: center;
       gap: 5px;
-      padding: 10px;
+      padding: 10px 4px;
       border: 2px solid #75857a;
       border-radius: 16px;
       color: #172555;
@@ -76,6 +93,42 @@ import { TOTAL_WAVES } from '../waves';
     .wave-path app-icon {
       width: 18px;
       height: 18px;
+    }
+    .wave-status {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 14px;
+    }
+    .star-total {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+      color: #6b3d00;
+    }
+    .star-total svg {
+      width: 18px;
+      height: 18px;
+      fill: #f4b622;
+      stroke: #8a5300;
+      stroke-width: 1.5;
+    }
+    .tile-stars {
+      display: flex;
+      gap: 1px;
+    }
+    .tile-stars svg {
+      width: 16px;
+      height: 16px;
+      fill: #fffdf5;
+      stroke: #75857a;
+      stroke-width: 1.5;
+      stroke-linejoin: round;
+    }
+    .tile-stars .earned {
+      fill: #f4b622;
+      stroke: #8a5300;
     }
     .wave-path .done {
       background: #dfefe3;
@@ -108,7 +161,16 @@ export class WavePathComponent {
   readonly completed = input<readonly number[]>([]);
   /** The wave the child is expected to play next; highlighted, never gated. */
   readonly next = input(1);
+  /** Best stars per wave; waves saved before stars existed have none and keep their check. */
+  readonly stars = input<ReadonlyMap<number, number>>(new Map());
+  readonly starTotal = input(0);
   readonly selectWave = output<number>();
+  protected readonly slots = [1, 2, 3];
+  protected readonly star =
+    'm12 2 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 16.8l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8Z';
+  protected starsFor(wave: number) {
+    return this.stars().get(wave) ?? 0;
+  }
   protected readonly waves = Array.from({ length: TOTAL_WAVES }, (_, i) => i + 1);
   protected readonly done = computed(() => new Set(this.completed()));
   private readonly i = inject(LocaleService);

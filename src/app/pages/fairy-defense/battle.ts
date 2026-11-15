@@ -64,6 +64,17 @@ export function resolveSpell(state: Battle): Battle {
       gems: state.gems + gemsFor(state.attempts),
       streak: state.attempts === 1 ? state.streak + 1 : 0,
     };
+  return slip(state);
+}
+/**
+ * Thinking time ran out: the monster takes one step closer, exactly like one wrong
+ * spell and never more. It counts as a try, so the rescue is no longer a first try.
+ */
+export function timeOut(state: Battle): Battle {
+  if (state.phase !== 'ready') return state;
+  return slip({ ...state, attempts: state.attempts + 1, spell: null, damaged: false });
+}
+function slip(state: Battle): Battle {
   const damaged = state.mistakes === 2;
   const hearts = state.hearts - Number(damaged);
   return {

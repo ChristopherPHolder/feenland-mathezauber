@@ -1,0 +1,179 @@
+/* A golden snack: the lily pads themselves turn to treasure, on ordinary blue water. A feeding
+   frenzy is told apart by the water instead: the pond glows like a sunset. Loaded last so these
+   beat the per-screen pad rings in crocodile-responsive.css. This is the 2D pond, which also
+   stands in wherever the 3D pond cannot draw. Animations live beside their
+   keyframes (Angular scopes keyframe names per stylesheet). */
+.board.frenzy:not(.boss, .in-3d) {
+  background: linear-gradient(180deg, #ffe6d9 0%, #ffc4b4 70%, #ffa99a 100%);
+}
+.board.frenzy:not(.boss) {
+  box-shadow:
+    0 0 0 4px #ff8fb6,
+    0 0 0 8px var(--gold),
+    0 8px 30px #e0567a55;
+}
+
+.board.golden:not(.in-3d) .side,
+.board.golden:not(.in-3d) .side:hover:not([aria-disabled='true']) {
+  background: linear-gradient(155deg, #fff7d1 0%, var(--gold) 48%, var(--sun) 100%);
+  box-shadow:
+    0 0 0 5px var(--gold-deep),
+    0 0 0 9px #ffe98f,
+    0 10px 26px #c98a0080;
+}
+.board.golden .side::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 38%, #ffffffb3 50%, transparent 62%) no-repeat;
+  background-size: 260% 100%;
+  pointer-events: none;
+  animation: shine 2.8s ease-in-out infinite;
+}
+.board.golden .side::after {
+  content: '✦' / '';
+  position: absolute;
+  bottom: 8%;
+  inset-inline-end: 9%;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  text-shadow:
+    0 0 6px #fff,
+    0 0 12px var(--gold-deep);
+  pointer-events: none;
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+.board.golden .side:last-child::after {
+  inset-inline: 9% auto;
+  top: 10%;
+  bottom: auto;
+  animation-delay: -0.8s;
+}
+.board.golden .expression {
+  position: relative;
+  z-index: 1;
+}
+.board.golden .tile {
+  background: #fffbea;
+  box-shadow:
+    0 5px 0 #d9a520,
+    0 8px 18px #7a4f0026;
+}
+.board.golden .operator {
+  background: var(--paper);
+}
+
+/* The 3D pond draws its own golden rafts and sparks; only the coin floats over them. */
+.board.pond.in-3d .side::before,
+.board.pond.in-3d .side::after {
+  content: none;
+}
+
+/* The coin on each golden pad says what a first-try answer is worth. Its number is drawn as
+   decoration, so the pad's spoken name stays exactly the sum written on it. */
+.coin::before {
+  content: attr(data-points) / '';
+}
+.coin {
+  position: absolute;
+  z-index: 2;
+  top: -16px;
+  display: grid;
+  place-items: center;
+  --coin: 50px;
+  width: var(--coin);
+  height: var(--coin);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6c2 0%, var(--gold) 45%, var(--sun) 100%);
+  box-shadow:
+    inset 0 0 0 3px var(--gold-deep),
+    inset 0 0 0 6px #ffe98f,
+    0 4px 10px #7a4f0055;
+  color: #4a2a00;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  pointer-events: none;
+  animation:
+    coin-in 0.5s ease-out,
+    coin-wobble 2.4s ease-in-out 0.5s infinite;
+}
+.side:first-child .coin {
+  inset-inline-start: -12px;
+  rotate: -10deg;
+}
+.side:last-child .coin {
+  inset-inline-end: -12px;
+  rotate: 10deg;
+}
+/* Over the 3D rafts the coin floats just above the sum, never on top of a number. */
+.board.pond.in-3d .side .coin {
+  inset-inline: calc(50% - var(--coin) / 2) auto;
+  top: calc(var(--coin) * -0.8);
+}
+.side.eaten .coin,
+.side.snatched .coin {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.golden .points-float {
+  background: var(--gold);
+  color: #4a2a00;
+  box-shadow:
+    inset 0 0 0 3px var(--gold-deep),
+    var(--shadow-float);
+}
+
+@media (max-width: 640px) {
+  .coin {
+    --coin: 40px;
+    top: -14px;
+    font-size: 14px;
+  }
+  .side:first-child .coin {
+    inset-inline-start: -4px;
+  }
+  .side:last-child .coin {
+    inset-inline-end: -4px;
+  }
+  .board.golden .side::after {
+    font-size: 20px;
+  }
+}
+
+@keyframes shine {
+  0%,
+  25% {
+    background-position: 130% 0;
+  }
+  75%,
+  100% {
+    background-position: -30% 0;
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    scale: 0.6;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.15;
+  }
+}
+@keyframes coin-in {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+}
+@keyframes coin-wobble {
+  50% {
+    translate: 0 -4px;
+  }
+}

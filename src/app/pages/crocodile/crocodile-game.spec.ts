@@ -167,6 +167,68 @@ describe('the hungry crocodile game', () => {
     expect(progress.mastered).not.toContain('crocodile-1');
     expect(progress.stars?.['crocodile-1']).toBe(1);
   });
+  it('keeps the 2D pond inside the 3D stage wherever WebGL is missing', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    fixture.detectChanges();
+    const pond = element.querySelector('.board.pond')!;
+    expect(pond.classList).not.toContain('in-3d');
+    expect(pond.querySelector('app-three-stage canvas')?.getAttribute('aria-hidden')).toBe('true');
+    expect(pond.querySelector('app-three-stage app-pond-scene')).not.toBeNull();
+    expect(pond.querySelectorAll('button[data-side]').length).toBe(3);
+  });
+  it('puts a coin on each golden pad that shows what a first try is worth', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    fixture.detectChanges();
+    const coins = () =>
+      [...element.querySelectorAll('.side .coin')].map((c) => c.getAttribute('data-points'));
+    let golden = 0;
+    for (let n = 0; n < SNACKS; n++) {
+      const kind = element.querySelector<HTMLElement>('.board')!.dataset['snackKind'];
+      const question = current(element);
+      if (kind === 'golden') {
+        golden++;
+        // Every earlier snack was a first try, so the coin carries the combo with it.
+        const promised = `+${snackPoints('golden', n + 1)}`;
+        expect(coins()).toEqual([promised, promised]);
+        expect(element.querySelector('.board')!.classList.contains('frenzy')).toBe(n >= 6);
+        // The coins are decoration: the pads keep their plain spoken names.
+        expect(element.querySelector('.side')!.getAttribute('aria-label')).not.toContain('+');
+      } else expect(coins()).toEqual([]);
+      pick(element, question.answer);
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1400);
+      fixture.detectChanges();
+    }
+    expect(golden).toBe(2);
+  });
+  it('drops the golden coin back to base points after a wrong pick', () => {
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    fixture.detectChanges();
+    for (let n = 0; n < SNACKS; n++) {
+      const question = current(element);
+      if (element.querySelector<HTMLElement>('.board')!.dataset['snackKind'] === 'golden') {
+        pick(element, question.answer === '=' ? '<' : '=');
+        fixture.detectChanges();
+        const coin = element.querySelector('.side .coin')!;
+        expect(coin.getAttribute('data-points')).toBe(`+${snackPoints('golden', 0)}`);
+        return;
+      }
+      pick(element, question.answer);
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1400);
+      fixture.detectChanges();
+    }
+    throw new Error('no golden snack in the round');
+  });
   it('starts neutral, previews each direction and returns to neutral after a snack', () => {
     const fixture = TestBed.createComponent(CrocodileGame);
     fixture.detectChanges();

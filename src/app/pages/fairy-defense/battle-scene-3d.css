@@ -1,0 +1,73 @@
+/* The 3D battlefield (castle-world.ts) draws the forest, the characters and every reaction.
+   Until it is up, and wherever WebGL is missing, the painted 2D scene shows instead. */
+.world {
+  position: absolute;
+  inset: 0;
+}
+.is-3d :is(
+    .forest,
+    .scene-shade,
+    .fireflies,
+    .character,
+    .waiting-monster,
+    .projectile,
+    .damage-ripple,
+    .butterfly,
+    .sparkles,
+    .number-badge,
+    .burst,
+    .dust
+  ),
+.is-3d .monster-position::after {
+  display: none;
+}
+/* The dropped gem starts by the creature on the path, then flies to the pouch. */
+.is-3d .gem-flight {
+  left: 72%;
+  top: 36%;
+}
+/* The step and shield counts stay for screen readers; the path stones and crystal rings show
+   them in the picture. */
+.is-3d :is(.steps, .shield-layers) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* The finished sum floats in the sky, clear of the HUD, while the creature turns into a
+   butterfly below it. */
+.is-3d .monster-position,
+:host.fit .is-3d .monster-position {
+  inset: 0;
+  width: auto;
+  height: auto;
+  transition: none;
+  pointer-events: none;
+}
+.is-3d .equation,
+:host.fit .is-3d .boss .equation {
+  top: 76px;
+  /* Over the creature's side of the path, clear of the fairy. */
+  left: 62%;
+  translate: -50% 0;
+  animation: equation-in 0.35s ease-out both;
+}
+@media (max-height: 500px) {
+  .is-3d .equation,
+  :host.fit .is-3d .boss .equation {
+    top: 64px;
+  }
+}
+@keyframes equation-in {
+  from {
+    scale: 0.6;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-3d .equation {
+    animation: none;
+  }
+}

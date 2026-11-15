@@ -150,16 +150,8 @@ app-game-header {
   );
   transition: background 0.5s;
 }
-.board.golden {
-  background: linear-gradient(180deg, #fff1c2 0%, #ffd97a 70%, #f4c04a 100%);
-}
 .board.boss {
   background: linear-gradient(180deg, #a9c9ea 0%, #5f93c9 70%, #3f6fa8 100%);
-}
-.board.frenzy {
-  box-shadow:
-    0 0 0 4px var(--gold),
-    0 8px 30px #c98a0055;
 }
 .banner {
   position: relative;
@@ -200,11 +192,6 @@ app-game-header {
   background: var(--paper);
   box-shadow: var(--shadow-pond-ring);
   transition: background 0.3s;
-}
-.golden .side {
-  box-shadow:
-    0 0 0 8px var(--sun),
-    0 10px 20px #0f4c5c33;
 }
 .boss .side {
   box-shadow:
@@ -369,9 +356,6 @@ app-game-header {
   font-weight: 600;
   box-shadow: var(--shadow-float);
   pointer-events: none;
-}
-.golden .points-float {
-  color: #a86b00;
 }
 .instruction {
   position: relative;

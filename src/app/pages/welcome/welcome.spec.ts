@@ -24,7 +24,7 @@ describe('Home game cards', () => {
     const card = h.routeNativeElement?.querySelector('[data-game="number-walls"]');
     const i = TestBed.inject(LocaleService);
     expect(card?.textContent).toContain(i.t('chapterStars', { n: 4, total: 33 }));
-    expect(card?.textContent).toContain(i.t('levelsLabel', { n: 11 }));
+    expect(card?.textContent).toContain(i.t('allLevelsCount', { n: 11 }));
   });
   it('counts catalog levels for the other games', async () => {
     const h = await RouterTestingHarness.create('/');
@@ -32,5 +32,12 @@ describe('Home game cards', () => {
     expect(card?.textContent).toContain(
       TestBed.inject(LocaleService).t('chapterStars', { n: 0, total: 51 }),
     );
+  });
+  it('offers one "All games" button, not a second link beside the games heading', async () => {
+    const h = await RouterTestingHarness.create('/');
+    const toHub = [...(h.routeNativeElement?.querySelectorAll('a') ?? [])].filter(
+      (link) => link.getAttribute('href') === '/games',
+    );
+    expect(toHub.length).toBe(1);
   });
 });
