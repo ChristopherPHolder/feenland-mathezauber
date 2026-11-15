@@ -4,8 +4,9 @@ import { RouteLoader } from '../../shared/loading/route-loader';
 import { routeShellStyles } from '../../shared/loading/route-shell';
 import { WorldLoader } from '../../shared/three/three-stage';
 import { TreasureLock } from './treasure-lock';
-/** The treasure lock's small loading scene; `undefined` keeps the CSS loader. */
-const loaderScene: WorldLoader<null> | undefined = undefined;
+/** The treasure lock's small loading scene: the chest's number dial clicking round. */
+const loaderScene: WorldLoader<null> | undefined = () =>
+  import('./lock-loader-world').then((m) => m.LockLoaderWorld);
 
 /**
  * A treasure lock level.
