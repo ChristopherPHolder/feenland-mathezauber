@@ -14,6 +14,11 @@ describe('ruleHint', () => {
     expect(ruleHint('20 ÷ 5 = □')).toEqual({ key: 'hintSkip', values: { a: 5, c: 20 } });
     expect(ruleHint('3 × 4 = □')).toEqual({ key: 'hintJumps', values: { a: 4, c: 3 } });
   });
+  it('does not turn an answer of zero into "count on from 40 to 40"', () => {
+    expect(ruleHint('40 = 40 + □')).toEqual({ key: 'hintBothSides', values: { a: 40 } });
+    expect(ruleHint('12 + □ = 12')).toEqual({ key: 'hintBothSides', values: { a: 12 } });
+    expect(ruleHint('16 − □ = 16')).toEqual({ key: 'hintBothSides', values: { a: 16 } });
+  });
   it('never carries a number that is not already in the question', () => {
     for (const [question, answer] of [
       ['7 + □ = 16', 9],

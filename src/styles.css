@@ -422,3 +422,51 @@ main.focused-game {
     white-space: nowrap;
   }
 }
+
+/* Loading views (shared/loading): each game's colours, picked from that game's own backdrop so
+   the hand-over to the game feels like one place. Hosts carry `is-route-tone` and `data-tone`. */
+.is-route-tone {
+  --loader-ground: linear-gradient(var(--ground), var(--lagoon-ground));
+  --loader-orb: var(--paper);
+  --loader-star: var(--sun);
+  --loader-dot: var(--pink);
+  --loader-ink: var(--ink);
+  --loader-pill: var(--paper-veil);
+}
+.is-route-tone[data-tone='castle'] {
+  --loader-ground: radial-gradient(circle at 50% 38%, #2c5f57, var(--forest-night) 70%);
+  --loader-orb: #336f65;
+  --loader-star: var(--gold);
+  --loader-dot: var(--pink-tint);
+  --loader-ink: var(--cream);
+  --loader-pill: #0f2b28cc;
+}
+.is-route-tone[data-tone='pond'] {
+  --loader-ground: linear-gradient(
+    var(--croc-pond-top),
+    var(--croc-pond-mid) 60%,
+    var(--croc-ground)
+  );
+  --loader-star: var(--leaf);
+  --loader-dot: var(--lagoon);
+}
+.is-route-tone[data-tone='race'] {
+  --loader-ground: linear-gradient(#e9dcff, var(--ground) 55%, #dff5e6);
+  --loader-star: #ff8fb8;
+  --loader-dot: #6d4a9a;
+}
+.is-route-tone[data-tone='lock'] {
+  --loader-ground: linear-gradient(#ece6ff, #f8f1ff 40%, #fff6dc);
+  --loader-star: var(--gold);
+  --loader-dot: var(--bronze);
+}
+.is-route-tone[data-tone='wall'] {
+  --loader-ground: linear-gradient(var(--wall-sky), var(--ground) 55%, var(--wall-grass));
+  --loader-star: var(--sun);
+  --loader-dot: var(--brick-filled);
+}
+.is-route-tone[data-tone='hatchery'] {
+  --loader-ground: linear-gradient(var(--warm-ground), var(--parchment));
+  --loader-star: var(--gold-deep);
+  --loader-dot: var(--violet);
+}

@@ -218,7 +218,7 @@
               [class.alert]="feedback().kind === 'troll' || crumbled()"
               [class.hint]="hinting()"
             >
-              @if (hinting()) {
+              @if (hinting() && hintKind() !== 'fillOther') {
                 @let below = hintKind() === 'complete';
                 <span class="hint-wall" aria-hidden="true">
                   <span class="hint-brick" [class.ask]="!below">{{ below ? '' : '?' }}</span>

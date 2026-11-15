@@ -35,3 +35,9 @@
 .board.pond.in-3d .slot-empty {
   visibility: hidden;
 }
+
+/* Kiki lunges to the pads in the middle of the pond, so the "+points" chip rises from the open
+   water below her instead of landing on her head. */
+.board.pond.in-3d .points-float {
+  top: 64%;
+}

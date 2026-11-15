@@ -158,6 +158,48 @@ describe('the treasure lock game', () => {
     );
   });
 
+  it('celebrates an opened chest over the dial with the cheer, the keys won and the coins', () => {
+    const fixture = setup('treasure-lock-1');
+    start(fixture);
+    const element = fixture.nativeElement as HTMLElement;
+    const lock: LockPuzzle = {
+      start: 0,
+      target: 9,
+      max: 20,
+      spells: internals(fixture).lock().spells,
+      thorns: [],
+      gem: null,
+      par: 3,
+    };
+    internals(fixture).round.update((round) => ({
+      ...round,
+      locks: [lock, lock, ...round.locks.slice(2)],
+    }));
+    fixture.detectChanges();
+    expect(element.querySelector('app-lock-reward')).toBeNull();
+    for (const hop of ['+5', '+5', '−1']) {
+      spellButton(fixture, hop).click();
+      fixture.detectChanges();
+    }
+    const reward = element.querySelector('.board app-lock-reward')!;
+    expect(reward.getAttribute('aria-hidden')).toBe('true');
+    expect(reward.querySelector('.cheer')!.textContent).toBe(en.rewardPerfect);
+    expect(reward.querySelectorAll('.key.won').length).toBe(3);
+    expect(reward.querySelector('.gain')!.textContent).toBe('+30 coins');
+    // The card goes away with the next chest.
+    vi.advanceTimersByTime(3000);
+    fixture.detectChanges();
+    expect(element.querySelector('app-lock-reward')).toBeNull();
+    // Five hops on a three-hop lock still opens it, for two keys.
+    for (const hop of ['+1', '+1', '+1', '+1', '+5']) {
+      spellButton(fixture, hop).click();
+      fixture.detectChanges();
+    }
+    expect(element.querySelector('.cheer')!.textContent).toBe(en.rewardOpened);
+    expect(element.querySelectorAll('app-lock-reward .key.won').length).toBe(2);
+    expect(element.querySelector('app-lock-reward .gain')!.textContent).toBe('+20 coins');
+  });
+
   it('numbers a slotted-in level by its place and greys out halving on odd numbers', () => {
     const fixture = setup('treasure-lock-8');
     const element = fixture.nativeElement as HTMLElement;
