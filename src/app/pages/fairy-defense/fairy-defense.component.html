@@ -107,6 +107,7 @@
               <p class="rule-copy">{{ t('waveSaved') }}</p>
             }
           } @else {
+            <app-lost-progress [count]="battle().encounter" [boss]="battle().wave.boss" />
             <p>{{ t('retryText') }}</p>
           }
           <div class="outcome-actions">
