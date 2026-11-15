@@ -39,9 +39,11 @@ app-game-header {
   gap: 4px;
   min-width: 0;
 }
+/* On one row (phones) the pips shrink to fit, so the count beside them is never cut off. */
 .snacks {
   display: flex;
   flex-wrap: wrap;
+  min-width: 0;
   gap: 6px;
   list-style: none;
   margin: 0;
@@ -52,6 +54,7 @@ app-game-header {
   height: 18px;
   border-radius: 60% 40% 40% 60%;
   border: 2px dashed #6ea274;
+  min-width: 10px;
   background: var(--paper);
   transition: transform 0.2s;
 }
@@ -82,6 +85,7 @@ app-game-header {
   border-color: var(--sky-deep);
 }
 .snack-count {
+  flex: none;
   margin: 0;
   font-size: 14px;
   color: var(--muted);
