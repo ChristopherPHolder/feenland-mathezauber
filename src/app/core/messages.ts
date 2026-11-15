@@ -259,6 +259,7 @@ export const en = {
   wallStars: '{n} of 3 stars',
   wallStarsHelp: 'More gems mean more stars. Try again for three!',
   wallThreeStars: 'Three stars! A perfect magic wall!',
+  loading: 'Loading…',
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = { [K in MessageKey]: string };
@@ -531,6 +532,7 @@ export const translations: Record<Locale, Messages> = {
     wallStars: '{n} von 3 Sternen',
     wallStarsHelp: 'Mehr Edelsteine, mehr Sterne. Versuch es nochmal für drei!',
     wallThreeStars: 'Drei Sterne! Eine perfekte Zaubermauer!',
+    loading: 'Wird geladen…',
   },
   es: {
     ...curriculumEs,
@@ -796,6 +798,7 @@ export const translations: Record<Locale, Messages> = {
     wallStars: '{n} de 3 estrellas',
     wallStarsHelp: 'Más gemas, más estrellas. ¡Inténtalo otra vez para conseguir tres!',
     wallThreeStars: '¡Tres estrellas! ¡Un muro mágico perfecto!',
+    loading: 'Cargando…',
   },
   fr: {
     ...curriculumFr,
@@ -1061,5 +1064,6 @@ export const translations: Record<Locale, Messages> = {
     wallStars: '{n} étoile(s) sur 3',
     wallStarsHelp: 'Plus de gemmes, plus d’étoiles. Réessaie pour en avoir trois !',
     wallThreeStars: 'Trois étoiles ! Un mur magique parfait !',
+    loading: 'Chargement…',
   },
 };
