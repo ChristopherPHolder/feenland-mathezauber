@@ -248,6 +248,56 @@ describe('the firework show', () => {
     expect(internals(fixture).frame().launches).toBe(0);
   });
 
+  it('shows how to play with a film instead of paragraphs', () => {
+    const fixture = setup('fireworks-1');
+    const film = element(fixture).querySelector('app-firework-demo');
+    expect(film).not.toBeNull();
+    expect(film!.querySelectorAll('.cell.lit')).toHaveLength(7);
+    expect(element(fixture).querySelector('.intro .sr-only')).not.toBeNull();
+  });
+
+  it('opens the film from ? and glows the burst again afterwards, at no cost', () => {
+    const fixture = setup('fireworks-1');
+    start(fixture);
+    tick(fixture, RISE + 0.5);
+    const bursts = internals(fixture).frame().bursts;
+    element(fixture).querySelector<HTMLButtonElement>('.hud .help')!.click();
+    fixture.detectChanges();
+    expect(element(fixture).querySelector('app-firework-coach')).not.toBeNull();
+    // The show waits while the film is open.
+    tick(fixture, 20);
+    expect(internals(fixture).frame().phase).toBe('look');
+    element(fixture)
+      .querySelector<HTMLButtonElement>('app-firework-coach .button.primary')!
+      .click();
+    fixture.detectChanges();
+    expect(element(fixture).querySelector('app-firework-coach')).toBeNull();
+    expect(internals(fixture).frame().bursts).toBe(bursts + 1);
+    tap(fixture, internals(fixture).pattern().answer);
+    expect(internals(fixture).round().score).toBe(20);
+  });
+
+  it('shows what to tap next on the first fireworks, never one key', () => {
+    const fixture = setup('fireworks-1');
+    start(fixture);
+    watch(fixture);
+    const pad = element(fixture).querySelector('.pad')!;
+    expect(pad.classList).toContain('is-guided');
+    expect(element(fixture).querySelectorAll('.key.is-guided')).toHaveLength(0);
+    tap(fixture, internals(fixture).pattern().answer);
+    expect(element(fixture).querySelector('.next')!.classList).toContain('is-guided');
+  });
+
+  it('stops guiding after three fireworks, until the child waits', () => {
+    localStorage.setItem('feenland.firework-guided.v1', '3');
+    const fixture = setup('fireworks-1');
+    start(fixture);
+    watch(fixture);
+    expect(element(fixture).querySelector('.pad')!.classList).not.toContain('is-guided');
+    tick(fixture, 6.1);
+    expect(element(fixture).querySelector('.pad')!.classList).toContain('is-guided');
+  });
+
   it('plays twelve fireworks and a grand finale, then the show, and records three stars', () => {
     const fixture = setup('fireworks-6');
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);

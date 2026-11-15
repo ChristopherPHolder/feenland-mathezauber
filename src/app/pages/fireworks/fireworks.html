@@ -9,6 +9,7 @@
 
   @if (!started()) {
     <section class="panel intro" aria-labelledby="intro-title">
+      <h2 id="intro-title" class="sr-only">{{ i.t(levelKey(level().level)) }}</h2>
       <nav class="level-strip" [attr.aria-label]="t('allLevels')">
         @for (link of levelLinks; track link.level) {
           <a
@@ -23,51 +24,56 @@
         }
       </nav>
       <div class="intro-grid">
-        <div class="intro-art"><app-firework-sky [frame]="preview()" /></div>
-        <div class="intro-copy">
-          <h2 id="intro-title">{{ i.t(levelKey(level().level)) }}</h2>
-          <p>{{ t('story') }}</p>
-          <p class="how">{{ t('storyHow') }}</p>
+        <app-firework-demo class="demo" />
+        <div class="intro-side">
           <div class="trick-card">
             <h3>{{ t('trickTitle') }}</h3>
             <p>{{ t(trickKey(level().level)) }}</p>
           </div>
+          <fieldset class="pace" aria-describedby="pace-help">
+            <legend>{{ t('paceTitle') }}</legend>
+            <p id="pace-help" class="pace-help">{{ t('paceHelp') }}</p>
+            <div class="pace-options">
+              @for (option of paces; track option.id) {
+                <label
+                  class="pace-choice"
+                  [class.selected]="pace() === option.id"
+                  [attr.data-pace]="option.id"
+                >
+                  <input
+                    type="radio"
+                    name="firework-pace"
+                    [value]="option.id"
+                    [checked]="pace() === option.id"
+                    (change)="selectPace(option.id)"
+                  />
+                  <span class="pace-glow" aria-hidden="true"></span>
+                  <strong>{{ t(option.label) }}</strong>
+                  <span class="pace-time">{{
+                    t('paceSeconds', { n: paceSeconds(option.id) })
+                  }}</span>
+                  @if (option.freePeek) {
+                    <span class="pace-free">{{ t('paceFree') }}</span>
+                  }
+                </label>
+              }
+            </div>
+          </fieldset>
           @if (best() > 0) {
             <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
           }
         </div>
       </div>
-      <fieldset class="pace" aria-describedby="pace-help">
-        <legend>{{ t('paceTitle') }}</legend>
-        <p id="pace-help">{{ t('paceHelp') }}</p>
-        <div class="pace-options">
-          @for (option of paces; track option.id) {
-            <label
-              class="pace-choice"
-              [class.selected]="pace() === option.id"
-              [attr.data-pace]="option.id"
-            >
-              <input
-                type="radio"
-                name="firework-pace"
-                [value]="option.id"
-                [checked]="pace() === option.id"
-                (change)="selectPace(option.id)"
-              />
-              <span class="pace-glow" aria-hidden="true"></span>
-              <strong>{{ t(option.label) }}</strong>
-              <span>{{ t('paceSeconds', { n: paceSeconds(option.id) }) }}</span>
-              @if (option.freePeek) {
-                <span class="pace-free">{{ t('paceFree') }}</span>
-              }
-            </label>
-          }
-        </div>
-        <p class="pace-rule">{{ t('paceRule') }}</p>
-      </fieldset>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<app-icon kind="arrow" />
+        </button>
+      </div>
       <section class="book" aria-labelledby="book-title">
-        <h3 id="book-title">{{ t('bookTitle') }}</h3>
-        <p>{{ t('bookFound', { n: scores.book().length, total: bookShapes.length }) }}</p>
+        <h3 id="book-title">
+          {{ t('bookTitle') }}
+          <span>{{ t('bookFound', { n: scores.book().length, total: bookShapes.length }) }}</span>
+        </h3>
         <ul>
           @for (shape of bookShapes; track shape) {
             <li
@@ -92,11 +98,6 @@
           }
         </ul>
       </section>
-      <div class="start-dock">
-        <button class="button primary" type="button" (click)="play()">
-          {{ t('start') }}<app-icon kind="arrow" />
-        </button>
-      </div>
     </section>
   } @else if (round().done) {
     <section
@@ -166,6 +167,15 @@
           ></li>
         }
       </ol>
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openHelp()"
+      >
+        ?
+      </button>
       <p class="points">
         <span>{{ t('points') }}</span>
         <strong>{{ i.format(round().score) }}</strong>
@@ -242,6 +252,7 @@
           <fieldset
             class="pad"
             [class.is-wide]="wide()"
+            [class.is-guided]="guidePad()"
             [class.is-covered]="!!round().ways"
             [attr.inert]="round().ways ? '' : null"
             [disabled]="!answerable()"
@@ -270,7 +281,12 @@
                   </button>
                 }
               </div>
-              <button class="button primary next" type="button" (click)="see(null)">
+              <button
+                class="button primary next"
+                [class.is-guided]="guideNext()"
+                type="button"
+                (click)="see(null)"
+              >
                 {{ round().index + 1 === roundLength ? t('toFinale') : t('next')
                 }}<app-icon kind="arrow" />
               </button>
@@ -280,5 +296,8 @@
         <p class="keys-help">{{ t('keysHelp') }}</p>
       </section>
     </div>
+    @if (coaching()) {
+      <app-firework-coach (done)="closeHelp()" />
+    }
   }
 </section>
