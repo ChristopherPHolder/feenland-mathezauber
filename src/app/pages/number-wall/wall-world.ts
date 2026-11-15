@@ -356,11 +356,27 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
     // Roomy boxes (an iPad) may back off a touch for the towers; small ones keep the wall close.
     const room = 1 + 0.08 * clamp01((this.height - 320) / 300);
     this.restDistance = Math.min(full, tight * room);
-    this.lookY = this.centreOn(wall, this.restDistance);
+    this.lookY = this.centreOn(wall, this.restDistance) + this.groundDrop(wall);
     this.placeCamera(this.camera, 0, 1);
     this.camera.aspect = this.aspect;
     this.camera.updateProjectionMatrix();
     this.rectsDirty = true;
+  }
+
+  /**
+   * How far to raise the look point so the wall stands near the bottom of a box taller than it
+   * needs (a phone held upright once the keypad goes): the ground under it stays a strip and the
+   * sky above holds the fairy, the gems and the troll's road instead of a field of grass.
+   */
+  private groundDrop(points: readonly Vector3[]): number {
+    const tanV = Math.tan((FOV * Math.PI) / 360);
+    const { minY, maxY } = this.project(
+      points,
+      this.restDistance,
+      this.centreOn(points, this.restDistance),
+    );
+    const slack = Math.max(0, 0.92 - (maxY - minY) / 2);
+    return slack * 0.7 * this.restDistance * tanV;
   }
 
   /** The nearest camera distance at which every point lies within `margin` of the box edges. */
