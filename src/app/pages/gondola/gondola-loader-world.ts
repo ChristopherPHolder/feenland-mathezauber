@@ -78,9 +78,18 @@ export class GondolaLoaderWorld extends Stage implements StateWorld<null> {
 
     this.cabin = new Cabin(kit, { color: CABIN_COLORS[0] });
     this.cabin.root.scale.setScalar(CABIN_SCALE);
+    // Three riders at the front window, big enough to read as bunnies at loader size; the
+    // middle one waves.
     this.bunny = new Bunny(kit, bunnyLook(1));
-    this.cabin.seats[2].add(this.bunny.root);
-    this.bunny.root.scale.setScalar(CABIN.rider * 1.2);
+    for (const [seat, rider] of [
+      [1, new Bunny(kit, bunnyLook(4))],
+      [2, this.bunny],
+      [3, new Bunny(kit, bunnyLook(7))],
+    ] as const) {
+      this.cabin.seats[seat].add(rider.root);
+      rider.root.scale.setScalar(CABIN.rider * 1.55);
+      rider.root.position.set(0, 0.06, 0.32);
+    }
     this.bunny.paw.rotation.x = -2.3;
     this.scene.add(this.cabin.root);
     const drop = (CABIN.height + CABIN.hanger) * CABIN_SCALE;
