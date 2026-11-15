@@ -97,6 +97,17 @@ function status(fixture: ComponentFixture<Potions>) {
   return element(fixture).querySelector('.status')!.textContent!;
 }
 
+/** The mix line under the spells, read as the child sees it: "8 + 5 = 13 19". */
+function mixLine(fixture: ComponentFixture<Potions>) {
+  return [...element(fixture).querySelectorAll('.mix-line > span')]
+    .map((span) => span.textContent!.trim() || '_')
+    .join(' ');
+}
+
+function guide(fixture: ComponentFixture<Potions>) {
+  return element(fixture).querySelector('.controls')!.getAttribute('data-guide');
+}
+
 describe('the potion cauldron', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -135,26 +146,36 @@ describe('the potion cauldron', () => {
     expect(TestBed.inject(PotionScores).best()['potion-4']).toBeGreaterThan(0);
   });
 
-  it('walks the child through a mix and writes the recipe down', () => {
+  it('walks the child through a mix on the mix line', () => {
     const fixture = setup('potion-2');
     start(fixture);
     usePotion(fixture, [8, 5, 3], 10);
     expect(status(fixture)).toContain(en.pickFirst);
+    expect(mixLine(fixture)).toBe('_ _ _ 10');
     expect(spell(fixture, '+').closest('fieldset')!.disabled).toBe(true);
     bottle(fixture, 8).click();
     fixture.detectChanges();
     expect(bottle(fixture, 8).getAttribute('aria-pressed')).toBe('true');
     expect(status(fixture)).toContain('Now pick a spell for 8.');
+    expect(mixLine(fixture)).toBe('8 _ _ 10');
     spell(fixture, '+').click();
     fixture.detectChanges();
     expect(status(fixture)).toContain('Which bottle goes in? 8 + …');
+    expect(mixLine(fixture)).toBe('8 + _ 10');
     bottle(fixture, 5).click();
     fixture.detectChanges();
     expect(status(fixture)).toContain('8 + 5 makes 13.');
     expect(bottles(fixture).map((b) => b.textContent!.trim())).toEqual(['13', '3']);
-    expect(element(fixture).querySelector('.recipe li')!.textContent).toBe('8 + 5 = 13');
-    pour(fixture, 13, '−', 3);
+    expect(mixLine(fixture)).toBe('8 + 5 = 13 10');
+    bottle(fixture, 13).click();
+    fixture.detectChanges();
+    expect(mixLine(fixture)).toBe('13 _ _ 10');
+    spell(fixture, '−').click();
+    bottle(fixture, 3, true).click();
+    fixture.detectChanges();
     expect(status(fixture)).toContain(en.brewedPerfect);
+    expect(mixLine(fixture)).toBe('13 − 3 = 10 10');
+    expect(element(fixture).querySelector('.target-chip.match')).not.toBeNull();
     expect(element(fixture).querySelector('.coins strong')!.textContent).toBe('40');
     const card = element(fixture).querySelector('app-potion-reward')!;
     expect(card.getAttribute('aria-hidden')).toBe('true');
@@ -194,10 +215,15 @@ describe('the potion cauldron', () => {
     usePotion(fixture, [9, 4], 5);
     pour(fixture, 9, '+', 4);
     expect(status(fixture)).toContain('Fizz! That potion is 13, but the cauldron needs 5.');
+    expect(mixLine(fixture)).toBe('9 + 4 = 13 5');
+    expect(element(fixture).querySelector('.mix-line')!.getAttribute('data-outcome')).toBe(
+      'fizzle',
+    );
     expect(bottle(fixture, 9)).toBeUndefined();
     vi.advanceTimersByTime(2000);
     fixture.detectChanges();
     expect(bottles(fixture).map((b) => b.textContent!.trim())).toEqual(['9', '4']);
+    expect(mixLine(fixture)).toBe('_ _ _ 5');
     expect(element(fixture).querySelector('.hint')).toBeNull();
     pour(fixture, 4, '+', 9);
     vi.advanceTimersByTime(2000);
@@ -217,7 +243,7 @@ describe('the potion cauldron', () => {
     element(fixture).querySelector<HTMLButtonElement>('.undo')!.click();
     fixture.detectChanges();
     expect(bottles(fixture).map((b) => b.textContent!.trim())).toEqual(['8', '5', '3']);
-    expect(element(fixture).querySelector('.recipe li')).toBeNull();
+    expect(mixLine(fixture)).toBe('_ _ _ 10');
     pour(fixture, 8, '+', 5);
     pour(fixture, 13, '−', 3);
     expect(status(fixture)).toContain(en.brewedPerfect);
@@ -236,6 +262,73 @@ describe('the potion cauldron', () => {
     brew(fixture);
     expect(element(fixture).querySelector('.potion-actions .primary')).not.toBeNull();
     expect(element(fixture).querySelector('.coins strong')!.textContent).toBe('40');
+  });
+
+  it('shows how to brew on the level card with made-up numbers', () => {
+    const fixture = setup('potion-4');
+    const demo = element(fixture).querySelector('app-potion-demo')!;
+    expect(demo.textContent).toContain(en.demoSummary);
+    expect([...demo.querySelectorAll('.spell')].map((s) => s.textContent!.trim())).toEqual([
+      '+',
+      '−',
+      '×',
+    ]);
+    expect(element(fixture).querySelector('.trick-card')!.textContent).toContain(en.times);
+  });
+
+  it('bounces the buttons to tap next for the first potions, then only after a wait', () => {
+    const fixture = setup('potion-1');
+    start(fixture);
+    usePotion(fixture, [9, 4], 5);
+    expect(guide(fixture)).toBe('bottle');
+    bottle(fixture, 9).click();
+    fixture.detectChanges();
+    expect(guide(fixture)).toBe('spell');
+    spell(fixture, '−').click();
+    fixture.detectChanges();
+    expect(guide(fixture)).toBe('second');
+    bottle(fixture, 4, true).click();
+    fixture.detectChanges();
+    expect(guide(fixture)).toBeNull();
+    expect(localStorage.getItem('feenland.potion-guided.v1')).toBe('1');
+
+    TestBed.resetTestingModule();
+    localStorage.setItem('feenland.potion-guided.v1', '3');
+    const later = setup('potion-1');
+    start(later);
+    expect(guide(later)).toBeNull();
+    vi.advanceTimersByTime(6000);
+    later.detectChanges();
+    expect(guide(later)).toBe('bottle');
+    bottles(later)[0].click();
+    later.detectChanges();
+    expect(guide(later)).toBeNull();
+  });
+
+  it('opens how to brew from the ? button and holds the hourglass meanwhile', () => {
+    localStorage.setItem('feenland.potion-pace.v1', 'fast');
+    const fixture = setup('potion-1');
+    start(fixture);
+    const help = element(fixture).querySelector<HTMLButtonElement>('.help')!;
+    expect(help.getAttribute('aria-label')).toBe(en.help);
+    help.click();
+    fixture.detectChanges();
+    const coach = element(fixture).querySelector('app-potion-coach')!;
+    expect(coach.querySelector('h2')!.textContent).toBe(en.demoTitle);
+    expect(guide(fixture)).toBeNull();
+    vi.advanceTimersByTime(60_000);
+    fixture.detectChanges();
+    expect(status(fixture)).not.toContain(en.sandOut);
+    // Bottles can't be poured from behind the coach.
+    bottles(fixture)[0].click();
+    fixture.detectChanges();
+    expect(bottles(fixture)[0].getAttribute('aria-pressed')).toBe('false');
+    coach.querySelector<HTMLButtonElement>('.button.primary')!.click();
+    fixture.detectChanges();
+    expect(element(fixture).querySelector('app-potion-coach')).toBeNull();
+    vi.advanceTimersByTime(60_000);
+    fixture.detectChanges();
+    expect(status(fixture)).toContain(en.sandOut);
   });
 
   it('writes sharing as a colon in German', () => {
