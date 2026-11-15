@@ -20,6 +20,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
   'unicorn-race': 'racePlay',
   'treasure-lock': 'lockPlay',
   potions: 'potionPlay',
+  'star-catcher': 'starCatcherPlay',
   fireworks: 'fireworksPlay',
 };
 @Component({

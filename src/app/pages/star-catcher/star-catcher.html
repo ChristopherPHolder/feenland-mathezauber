@@ -1,0 +1,319 @@
+<section class="game" [class.playing]="started() && !finished()" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.position }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <div class="intro-art"><app-star-bridge [frame]="preview()" /></div>
+        <div class="intro-copy">
+          <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
+          <p>{{ t('story') }} {{ t('storyGoal') }}</p>
+          <div class="trick-card">
+            <h3>{{ t('trickTitle') }}</h3>
+            <p>{{ t(stage().trick) }}</p>
+            <p class="example">{{ stage().example }}</p>
+          </div>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+        </div>
+      </div>
+      <section class="collection" aria-labelledby="collection-title">
+        <h3 id="collection-title">
+          {{ t('collectionTitle') }}
+          <span>{{
+            t('collectionCount', { n: collection().length, total: allConstellations.length })
+          }}</span>
+        </h3>
+        <ul>
+          @for (id of allConstellations; track id) {
+            <li
+              [class.is-done]="collection().includes(id)"
+              [class.is-current]="id === stage().constellation"
+            >
+              <app-star-picture [id]="id" [complete]="true" [faint]="!collection().includes(id)" />
+              <span class="picture-name">{{ t(id) }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+      <fieldset class="pace" aria-describedby="pace-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="pace-help">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id) {
+            <label class="pace-choice" [class.selected]="pace() === option.id">
+              <input
+                type="radio"
+                name="star-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <span class="pace-art" [attr.data-pace]="option.id" aria-hidden="true">
+                <span class="pace-star"></span>
+              </span>
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceHover')
+                  : t('paceSeconds', { n: paceSeconds(option.id) })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+      </fieldset>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<app-icon kind="arrow" />
+        </button>
+      </div>
+    </section>
+  } @else if (finished()) {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <app-star-reward
+        [constellation]="stage().constellation"
+        [stars]="stars()"
+        [drew]="t('drew', { name: t(stage().constellation) })"
+      />
+      <div class="outcome-copy">
+        <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
+        <p class="sr-only">{{ t('starsLabel', { n: stars() }) }}</p>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+        <ul class="tiles">
+          <li class="tile golden-tile">{{ goldenText() }}</li>
+          <li class="tile">{{ t('streakBest', { n: round().bestStreak }) }}</li>
+          <li class="tile">
+            {{ t('firstTry', { n: round().firstTries, total: round().items.length }) }}
+          </li>
+        </ul>
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        </p>
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('nextLevel') }}<app-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<app-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <p class="count" [class.is-finale]="finale()">
+        <span class="count-text">{{
+          finale()
+            ? t('finaleCount', { n: round().index - count() + 1 })
+            : t('starCount', { n: round().index + 1, total: count() })
+        }}</span>
+        <span class="dots" aria-hidden="true">
+          @for (dot of progressDots(); track dot) {
+            <span
+              [class.is-done]="dot < round().lit"
+              [class.is-current]="dot === round().index"
+              [class.is-finale]="dot >= count()"
+            ></span>
+          }
+        </span>
+      </p>
+      <p class="points" [class.bump]="round().phase === 'caught'">
+        <span>{{ t('points') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (comet()) {
+        <p class="comet-chip">{{ t('comet') }}</p>
+      }
+      @if (timed()) {
+        <p class="stardust" [class.is-empty]="stardustLeft() === 0">
+          <span class="stardust-label">{{ t('stardust') }}</span>
+          <span class="stardust-bar" aria-hidden="true"
+            ><span [style.--left]="stardustLeft() / 15"></span
+          ></span>
+          <strong>+{{ stardustLeft() }}</strong>
+        </p>
+      }
+    </div>
+    <div class="play-area" [class.is-finale]="finale()">
+      <section class="board" [attr.aria-label]="t('boardLabel')">
+        <app-three-stage class="scene" [world]="loadWorld" [state]="frame()">
+          <app-star-bridge [frame]="frame()" />
+        </app-three-stage>
+        @if (item().kind === 'place') {
+          <div
+            class="track"
+            [style.--bridge-left.%]="bridge.left * 100"
+            [style.--bridge-right.%]="(1 - bridge.right) * 100"
+            [style.--bridge-y.%]="bridge.y * 100"
+            (pointerdown)="pointerDown($event)"
+            (pointermove)="pointerMove($event)"
+            (pointerup)="pointerUp($event)"
+            (pointercancel)="pointerUp($event)"
+          >
+            <span
+              class="handle"
+              role="slider"
+              tabindex="0"
+              [style.left.%]="round().net * 100"
+              [class.is-cue-further]="round().cue === 'further'"
+              [class.is-cue-back]="round().cue === 'back'"
+              [attr.aria-label]="t('sliderLabel')"
+              aria-valuemin="0"
+              aria-valuemax="10"
+              [attr.aria-valuenow]="valueStep()"
+              [attr.aria-valuetext]="valueText()"
+              [attr.aria-disabled]="!falling() && round().phase !== 'bounced'"
+              (keydown)="sliderKey($event)"
+              ><span class="grip" aria-hidden="true"></span
+            ></span>
+          </div>
+        }
+        @if (round().cue; as cue) {
+          <p
+            class="cue"
+            aria-hidden="true"
+            [class.is-back]="cue === 'back'"
+            [style.left]="cueLeft()"
+          >
+            {{ t(cue) }}
+          </p>
+        }
+      </section>
+      <div class="controls">
+        <div class="question">
+          <h2 class="ask">
+            {{ question().before }}
+            @if (question().big) {
+              <span class="big">{{ question().big }}</span>
+            }
+            {{ question().after }}
+          </h2>
+          @if (question().help) {
+            <p class="ask-help">{{ question().help }}</p>
+          }
+        </div>
+        @switch (item().kind) {
+          @case ('place') {
+            <button
+              class="button primary catch"
+              type="button"
+              [disabled]="!falling()"
+              (click)="catchStar()"
+            >
+              {{ t('catch') }}
+            </button>
+            <p class="drag-help">{{ t('dragHelp') }}</p>
+          }
+          @case ('landed') {
+            <div class="options" role="group" [attr.aria-label]="t('askLanded')">
+              @for (value of landedOptions(); track value) {
+                <button
+                  type="button"
+                  class="option"
+                  [disabled]="round().wrong.includes(value) || !falling()"
+                  (click)="pickLanded(value)"
+                >
+                  {{ i.format(value) }}
+                </button>
+              }
+            </div>
+          }
+          @case ('compare') {
+            <div class="options pair" role="group" [attr.aria-label]="t('askCompare')">
+              @for (value of pairValues(); track $index) {
+                <button
+                  type="button"
+                  class="option star-option"
+                  [disabled]="round().wrong.includes($index) || !falling()"
+                  (click)="pickPair($index)"
+                >
+                  <svg viewBox="0 0 40 40" aria-hidden="true">
+                    <path
+                      d="m20 2 5.3 11.6 12.7 1.4-9.4 8.6 2.6 12.4L20 29.7 8.8 36l2.6-12.4L2 15l12.7-1.4z"
+                    />
+                  </svg>
+                  {{ i.format(value) }}
+                </button>
+              }
+            </div>
+          }
+        }
+        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+          {{ statusText() }}
+        </p>
+        @if (help(); as help) {
+          <div class="help-card">
+            <span class="help-nova" aria-hidden="true"></span>
+            <p>
+              <strong>{{ t('hintLead') }}</strong> {{ help.text }}
+              @for (extra of help.extras; track extra) {
+                <span class="help-extra">{{ extra }}</span>
+              }
+            </p>
+          </div>
+        }
+        <div class="picture-card">
+          <app-star-picture
+            [id]="stage().constellation"
+            [lit]="round().lit"
+            [complete]="round().phase === 'complete'"
+          />
+          <p>{{ t('picture', { n: round().lit, total: round().items.length }) }}</p>
+        </div>
+        @if (round().phase === 'complete') {
+          <button class="button primary finish" type="button" (click)="finish()">
+            {{ t('done') }}<app-icon kind="arrow" />
+          </button>
+        } @else if (round().phase === 'caught') {
+          <button class="button secondary next" type="button" (click)="advance()">
+            {{ t('next') }}<app-icon kind="arrow" />
+          </button>
+        }
+      </div>
+    </div>
+  }
+</section>

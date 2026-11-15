@@ -1,0 +1,327 @@
+:host {
+  position: relative;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(#0b1440, #1d2a6b 58%, #2a3a7c);
+  container-type: size;
+}
+/* Sized from the board itself; container units only work inside the container. */
+:host > * {
+  --label-size: clamp(14px, 3.4cqmin, 22px);
+  --star-size: clamp(30px, 9cqmin, 58px);
+}
+.sky {
+  position: absolute;
+  inset: 0;
+}
+.dot {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.7;
+}
+.moon {
+  position: absolute;
+  top: 7%;
+  right: 7%;
+  width: clamp(26px, 9cqmin, 64px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 40%, #fffbe8, #f3e3a8 70%);
+  box-shadow: 0 0 24px #fff3c255;
+}
+.constellation {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  height: 40%;
+  translate: -50% 0;
+  opacity: 0.95;
+}
+.meadow {
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(100% - var(--bridge-y, 78%) + 4%);
+  background: radial-gradient(120% 90% at 50% 100%, #2f6b52, #183c3a 70%);
+}
+
+/* The bridge: a straight glowing walkway with posts. Labels sit under it, clear of Nova. */
+.bridge {
+  position: absolute;
+  left: var(--bridge-left, 8%);
+  right: var(--bridge-right, 8%);
+  top: var(--bridge-y, 78%);
+  height: 0;
+}
+.walkway {
+  position: absolute;
+  inset: -5px -10px auto;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(#bfe6ff, #6f9ddc);
+  box-shadow:
+    0 0 14px #9fd3ff99,
+    0 4px 0 #3b5a9a;
+}
+.post {
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 14px;
+  translate: -50% 0;
+  border-radius: 2px;
+  background: #d6ecff;
+}
+.post.is-labelled {
+  height: 24px;
+  width: 6px;
+  background: #fff4c2;
+  box-shadow: 0 0 8px var(--gold);
+}
+.post.is-hint {
+  background: #d6ecff66;
+  height: 12px;
+}
+.post-label {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 50%;
+  translate: -50% 0;
+  min-width: 2ch;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #0b1440;
+  border: 2px solid #fff4c2;
+  color: #fff;
+  font-size: var(--label-size);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Nova and her lantern net */
+.nova {
+  position: absolute;
+  top: var(--bridge-y, 78%);
+  width: clamp(44px, 16cqmin, 104px);
+  translate: -40% -98%;
+  transition: left 0.25s ease-out;
+}
+.nova svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.wing {
+  fill: #c8f2ffaa;
+  stroke: #e8fbff;
+  stroke-width: 1.5;
+}
+.pole {
+  stroke: #b98a5a;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.lantern-glow {
+  fill: #ffd23f40;
+}
+:host(.is-comet) .lantern-glow {
+  fill: #ff7ad966;
+  r: 22;
+}
+.net {
+  fill: #ffffff2e;
+  stroke: #fff4c2;
+  stroke-width: 1.5;
+}
+.lantern {
+  fill: #ffe066;
+}
+.dress {
+  fill: #8f6ad8;
+}
+.legs {
+  stroke: #f2c9a8;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.head {
+  fill: #f6d3b8;
+}
+.hair {
+  fill: #ff9ec4;
+}
+.eye {
+  fill: #2a1d3a;
+}
+.smile {
+  fill: none;
+  stroke: #2a1d3a;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* The falling star with its label and stardust trail */
+.star {
+  position: absolute;
+  top: var(--top, 30%);
+  width: var(--star-size);
+  translate: -50% 0;
+  transition:
+    left 0.6s ease-out,
+    top 0.3s linear;
+  z-index: 2;
+}
+.star-shape {
+  display: block;
+  width: 100%;
+  fill: #fff4c2;
+  filter: drop-shadow(0 0 8px var(--gold));
+}
+:host(.is-finale) .star:not(.is-landed) .star-shape {
+  fill: #ffc2ea;
+  filter: drop-shadow(0 0 10px #ff5fb8);
+}
+.star-label {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 6px);
+  translate: 0 -50%;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: #0b1440e6;
+  border: 2px solid #fff4c2;
+  color: #fff;
+  font-size: calc(var(--label-size) * 1.35);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.star.is-flip .star-label {
+  left: auto;
+  right: calc(100% + 6px);
+}
+.trail {
+  position: absolute;
+  bottom: 60%;
+  left: 50%;
+  width: 30%;
+  height: calc(var(--trail) * 260%);
+  translate: -50% 0;
+  border-radius: 50%;
+  background: linear-gradient(#ffd23f00, #ffe9a8);
+  opacity: calc(0.25 + var(--trail) * 0.75);
+}
+.star.is-landed {
+  top: calc(var(--bridge-y, 78%) - var(--star-size) * 0.6);
+}
+.star.is-pair {
+  top: 30%;
+}
+.star.is-pair.is-down {
+  top: calc(var(--bridge-y, 78%) - var(--star-size) * 0.6);
+}
+.star.is-golden .star-shape {
+  fill: var(--gold);
+  filter: drop-shadow(0 0 14px #ffb300);
+}
+.gain {
+  position: absolute;
+  top: calc(var(--bridge-y, 78%) - 30%);
+  translate: -50% 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #3d2a00;
+  font-size: calc(var(--label-size) * 1.2);
+  font-weight: 600;
+  z-index: 3;
+}
+.queue {
+  position: absolute;
+  top: 5%;
+  left: 6%;
+  display: flex;
+  gap: 8px;
+}
+.queue span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffc2ea;
+  box-shadow: 0 0 10px #ff5fb8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .star.is-caught {
+    animation: into-net 0.6s ease-in forwards;
+  }
+  .star.is-bounced {
+    animation: bounce-off 0.9s ease-in-out;
+  }
+  .gain {
+    animation: rise 1.2s ease-out forwards;
+  }
+  .nova.is-shrug {
+    animation: shrug 0.6s ease-in-out;
+  }
+  .dot {
+    animation: twinkle 3s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i) * -0.37s);
+  }
+}
+:host-context(.calm-motion) .dot,
+:host-context(.calm-motion) .nova {
+  animation: none;
+}
+/* Under calm motion the catch still shows where the star went, without the swoop. */
+:host-context(.calm-motion) .star.is-caught {
+  animation: none;
+  opacity: 0;
+}
+@keyframes into-net {
+  to {
+    top: calc(var(--bridge-y, 78%) - 18%);
+    scale: 0.35;
+    opacity: 0;
+  }
+}
+@keyframes bounce-off {
+  45% {
+    top: calc(var(--bridge-y, 78%) - 22%);
+  }
+  55% {
+    top: calc(var(--bridge-y, 78%) - 26%);
+    rotate: 25deg;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: -50% 20px;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    translate: -50% -40px;
+  }
+}
+@keyframes shrug {
+  30%,
+  70% {
+    rotate: -6deg;
+  }
+  50% {
+    rotate: 6deg;
+  }
+}
+@keyframes twinkle {
+  to {
+    opacity: 0.25;
+  }
+}
