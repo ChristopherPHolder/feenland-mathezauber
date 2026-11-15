@@ -53,6 +53,7 @@ import { WallPick } from './wall-pick';
 import { WallScene } from './wall-scene';
 import { WallTroll } from './wall-troll';
 import { wallText } from './wall-text';
+import { WallReward } from './wall-reward';
 type Feedback =
   | { readonly kind: 'idle' }
   | { readonly kind: 'correct'; readonly value: number; readonly streak: number }
@@ -69,7 +70,17 @@ type Feedback =
 const TICK_MS = 100;
 @Component({
   selector: 'app-number-wall',
-  imports: [RouterLink, Icon, GameHeader, WallScene, WallPick, WallTroll, ThreeStage, NgOptimizedImage],
+  imports: [
+    RouterLink,
+    Icon,
+    GameHeader,
+    WallScene,
+    WallPick,
+    WallTroll,
+    WallReward,
+    ThreeStage,
+    NgOptimizedImage,
+  ],
   providers: [GameAudio],
   templateUrl: './number-wall.component.html',
   styleUrls: ['./number-wall.component.css', './number-wall-play.css', './number-wall-summary.css'],

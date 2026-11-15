@@ -132,6 +132,7 @@ describe('Number wall game', () => {
       solveSelected();
       expect(status()).toContain('Wall built! +3 gems! Super fast!');
       expect(element.querySelector('.brick.filled')).toBeTruthy();
+      expect(element.querySelectorAll('app-wall-reward .row.is-earned')).toHaveLength(3);
       expect(gems()).toBe(String((wall + 1) * 3));
       click(wall < 7 ? 'Next wall' : 'You earned a star!');
     }
@@ -293,6 +294,13 @@ describe('Number wall game', () => {
     typeNumber(answer);
     expect(element.querySelector('app-wall-scene')?.classList).not.toContain('is-hinting');
     expect(status()).toMatch(/^Wall built! \+\d gems!/);
+    // The prize card shows the gem won and the one missed for mistakes, still to win next time.
+    const rows = [...element.querySelectorAll('app-wall-reward .row')];
+    expect(rows[0]?.textContent).toContain('Wall built');
+    expect(rows[0]?.classList).toContain('is-earned');
+    expect(rows[1]?.textContent).toContain('No mistakes');
+    expect(rows[1]?.textContent).toContain('+0');
+    expect(rows[1]?.classList).not.toContain('is-earned');
   });
 
   it('lets the child choose which glowing brick to fill in level 4, in German and without a troll', () => {

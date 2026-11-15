@@ -302,6 +302,22 @@
 .dock-rule {
   display: none;
 }
+/* The prize card fills the empty keypad space on tablets; phones have no room for it. */
+app-wall-reward {
+  display: none;
+}
+@media (min-width: 700px) and (min-height: 700px) {
+  app-wall-reward {
+    display: flex;
+  }
+}
+/* Sideways the card runs down the column like the keypad it replaces. */
+@media (min-width: 700px) and (min-height: 700px) and (orientation: landscape) {
+  app-wall-reward {
+    flex: 1;
+    max-height: 460px;
+  }
+}
 
 /* Wider screens: one slim bar for level, progress and counters. */
 @media (min-width: 700px) {
@@ -333,6 +349,13 @@
   }
   .pad {
     grid-auto-rows: 74px;
+  }
+  .next {
+    grid-row: 1;
+  }
+  app-wall-reward {
+    grid-column: 2;
+    grid-row: 2 / span 3;
   }
   .status {
     min-height: 96px;
