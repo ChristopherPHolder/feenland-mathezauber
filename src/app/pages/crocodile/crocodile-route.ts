@@ -5,7 +5,8 @@ import { routeShellStyles } from '../../shared/loading/route-shell';
 import { WorldLoader } from '../../shared/three/three-stage';
 import { CrocodileGame } from './crocodile-game';
 /** The crocodile pond's small loading scene; `undefined` keeps the CSS loader. */
-const loaderScene: WorldLoader<null> | undefined = undefined;
+const loaderScene: WorldLoader<null> | undefined = () =>
+  import('./crocodile-loader-world').then((m) => m.CrocodileLoaderWorld);
 
 /**
  * A crocodile level.
