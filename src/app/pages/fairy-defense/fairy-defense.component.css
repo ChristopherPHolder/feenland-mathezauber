@@ -536,7 +536,11 @@
 }
 .training-position {
   margin: 0;
+  overflow: hidden;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 15px;
+  font-weight: 600;
   color: var(--moss-ink);
 }

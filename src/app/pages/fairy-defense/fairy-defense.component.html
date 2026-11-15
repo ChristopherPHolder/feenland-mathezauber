@@ -141,12 +141,8 @@
   @if (started() && battle().phase !== 'lost' && battle().phase !== 'complete') {
     <div class="learning-dock">
       @if (training(); as config) {
-        <p class="training-position">
-          {{ i.t('stage') }} {{ config.stage }} / {{ stages.length }} ·
-          {{ i.t(config.title ?? config.skill) }} ·
-          {{ i.t('upTo') }}
-          {{ config.max }}
-        </p>
+        <!-- The stage number is in the HUD chip; here only the kind of magic, on one line. -->
+        <p class="training-position">{{ i.t(config.title ?? config.skill) }}</p>
       }
       <p class="instruction sr-only" role="status" aria-live="polite" aria-atomic="true">
         {{ message() }}
