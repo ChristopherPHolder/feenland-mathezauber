@@ -1,0 +1,138 @@
+/* What helps a child play without reading: the film on the level card, the ? button, and the hop
+   that says which controls to use next. */
+.intro-demo {
+  width: 100%;
+  max-width: 340px;
+  margin: auto;
+}
+.help {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--pink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--pink-deep);
+  font: 600 24px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+  cursor: pointer;
+}
+.help:hover {
+  background: var(--warm-ground);
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* "Use one of these": a gold halo on the group, never on one answer, and a little hop. */
+[data-guide='knife'] .cut-button,
+[data-guide='choices'] .choice,
+[data-guide='pad'] .answer-box {
+  box-shadow:
+    0 0 0 4px var(--sun),
+    0 5px 0 #4f2f12;
+}
+[data-guide='pad'] .answer-box {
+  border-color: var(--gold-deep);
+  box-shadow: 0 0 0 4px var(--sun);
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-guide='knife'] .cut-button,
+  [data-guide='choices'] .choice,
+  [data-guide='pad'] .answer-box {
+    animation: tap-me 1.6s ease-in-out infinite;
+  }
+  [data-guide='choices'] .choice:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  [data-guide='choices'] .choice:nth-child(4) {
+    animation-delay: 0.24s;
+  }
+  [data-guide='choices'] .choice:nth-child(5) {
+    animation-delay: 0.36s;
+  }
+}
+@keyframes tap-me {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  70% {
+    transform: translateY(-9px);
+  }
+  80% {
+    transform: translateY(0);
+  }
+  88% {
+    transform: translateY(-4px);
+  }
+}
+:host-context(.calm-motion) [data-guide] :is(.cut-button, .choice, .answer-box) {
+  animation: none;
+}
+
+/* The phone intro fits one screen: the film, the trick, the menu board and the timer choice. */
+@media (max-width: 520px) {
+  .intro .trick-card {
+    margin: 8px 0 4px;
+    padding: 10px 14px;
+  }
+  .intro .trick-card p {
+    margin: 4px 0;
+  }
+  .intro .trick-card .example {
+    font-size: 19px;
+  }
+  .intro h2,
+  .intro .trick-card h3,
+  .intro .trick-card p:not(.example) {
+    display: none;
+  }
+  .intro-grid {
+    gap: 8px;
+  }
+  .pace-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .pace-choice strong {
+    font-size: 14px;
+  }
+  .pace legend {
+    font-size: 17px;
+  }
+  .menu-strip {
+    margin: 8px 0 0;
+    padding: 8px 12px;
+  }
+  .menu-mini {
+    width: 64px;
+    height: 64px;
+  }
+  .pace {
+    margin-top: 10px;
+  }
+  .pace-choice {
+    padding: 8px 6px;
+  }
+  .pace-choice span {
+    display: none;
+  }
+  .pace-rule {
+    display: none;
+  }
+  .intro .level-strip {
+    margin-bottom: 8px;
+  }
+  .panel.intro {
+    padding: 12px 14px 0;
+  }
+  .intro .start-dock {
+    padding-top: 10px;
+  }
+}

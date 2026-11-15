@@ -23,6 +23,9 @@ import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 import { dragonById } from '../hatchery/dragons';
 import { HatcheryStore } from '../hatchery/hatchery-store';
 import { BakeryCard } from './bakery-card';
+import { BakeryCoach } from './bakery-coach';
+import { BakeryDemo, DemoKind } from './bakery-demo';
+import { countGuidedBake, GUIDED_BAKES, guidedBakes, IDLE_GUIDE } from './bakery-guide';
 import { ANIMALS, BakeryFrame, Customer } from './bakery-frame';
 import {
   BAKERY_PACES,
@@ -138,10 +141,20 @@ const NO_COUNTERS: Counters = {
 
 @Component({
   selector: 'app-bakery',
-  imports: [RouterLink, Icon, GameHeader, ThreeStage, BakeryTray, BakeryReward, BakeryCard],
+  imports: [
+    RouterLink,
+    Icon,
+    GameHeader,
+    ThreeStage,
+    BakeryTray,
+    BakeryReward,
+    BakeryCard,
+    BakeryDemo,
+    BakeryCoach,
+  ],
   providers: [BakerySounds],
   templateUrl: './bakery.html',
-  styleUrls: ['./bakery.css', './bakery-play.css'],
+  styleUrls: ['./bakery.css', './bakery-play.css', './bakery-guide.css'],
   host: {
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
@@ -197,6 +210,30 @@ export class Bakery {
   /** Whether the 3D bakery is drawing; the reward card waits for the oven in 3D. */
   protected readonly scene3d = signal(false);
 
+  protected readonly coachOpen = signal(false);
+  /** The first few trays on a device always show what to tap next. */
+  private readonly learning = signal(guidedBakes() < GUIDED_BAKES);
+  /** The child has waited a while without tapping. */
+  private readonly idle = signal(false);
+  /** The film on the level card and in the ? dialog: the level's trick with made-up numbers. */
+  protected readonly demoCard = computed(() => trickCard(this.stage(), this.order()));
+  protected readonly demoKind = computed<DemoKind>(() => {
+    const trick = this.stage().trick;
+    return trick === 'read' || trick === 'turn' || trick === 'ghost' ? trick : 'cut';
+  });
+  /** Which controls hop to say "tap one of these": always while learning, else after a wait. */
+  protected readonly nextTap = computed(() => {
+    if (!this.started() || this.round().complete || this.coachOpen()) return null;
+    if (!this.learning() && !this.idle()) return null;
+    const phase = this.phase();
+    return phase === 'cut'
+      ? 'knife'
+      : phase === 'total'
+        ? 'pad'
+        : phase === 'baked'
+          ? null
+          : 'choices';
+  });
   protected readonly order = computed(() => this.round().order);
   protected readonly phase = computed(() => this.order().phase);
   protected readonly shown = computed(() => shownFact(this.order()));
@@ -398,6 +435,7 @@ export class Bakery {
   private readonly boardRef = viewChild<ElementRef<HTMLElement>>('board');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private timer?: ReturnType<typeof setTimeout>;
+  private idleTimer?: ReturnType<typeof setTimeout>;
   private bannerTimer?: ReturnType<typeof setTimeout>;
   private tick?: ReturnType<typeof setInterval>;
   private ovenDue = 0;
@@ -423,6 +461,7 @@ export class Bakery {
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.timer);
       clearTimeout(this.bannerTimer);
+      clearTimeout(this.idleTimer);
       clearInterval(this.tick);
       this.resize?.disconnect();
     });
@@ -465,6 +504,7 @@ export class Bakery {
     this.started.set(true);
     this.sounds.play('start');
     this.beginOrder();
+    this.armIdle();
   }
 
   // ---- Cutting ----------------------------------------------------------------------------
@@ -748,6 +788,7 @@ export class Bakery {
       help: null,
       entry: '',
     });
+    if (countGuidedBake() >= GUIDED_BAKES) this.learning.set(false);
     this.sounds.play('oven');
     this.sounds.play('ding', streak);
     if (streak === GOLDEN_STREAK) {
@@ -890,7 +931,15 @@ export class Bakery {
 
   /** Keys: R and C pick the knife's direction, 1–4 pick a choice, digits type the total. */
   protected onKey(event: KeyboardEvent) {
-    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || !this.started()) return;
+    if (
+      event.repeat ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !this.started() ||
+      this.coachOpen()
+    )
+      return;
     const target = event.target instanceof Element ? event.target : null;
     if (target?.closest('input, textarea, select')) return;
     const phase = this.phase();
@@ -1045,7 +1094,14 @@ export class Bakery {
 
   protected visibilityChanged() {
     const round = this.round();
-    if (!this.started() || round.complete || round.crispy || round.order.phase === 'baked') return;
+    if (
+      !this.started() ||
+      this.coachOpen() ||
+      round.complete ||
+      round.crispy ||
+      round.order.phase === 'baked'
+    )
+      return;
     if (this.document.hidden && this.tick) {
       this.ovenRemaining = Math.max(0, this.ovenDue - Date.now());
       this.stopOven();
@@ -1058,6 +1114,38 @@ export class Bakery {
 
   private patch(change: Partial<Round>) {
     this.round.update((round) => ({ ...round, ...change }));
+    this.armIdle();
+  }
+
+  /** After a quiet spell without a tap, the controls hop to show what to tap next. */
+  private armIdle() {
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
+    if (this.started()) this.idleTimer = setTimeout(() => this.idle.set(true), IDLE_GUIDE);
+  }
+
+  /** Opens "how to bake". The oven timer holds while the film is open. */
+  protected openCoach() {
+    if (!this.started() || this.coachOpen()) return;
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
+    if (this.tick) {
+      this.ovenRemaining = Math.max(0, this.ovenDue - Date.now());
+      this.stopOven();
+    }
+    this.coachOpen.set(true);
+  }
+
+  protected closeCoach() {
+    if (!this.coachOpen()) return;
+    this.coachOpen.set(false);
+    const round = this.round();
+    if (this.ovenTotal() && !round.crispy && round.order.phase !== 'baked' && !this.document.hidden)
+      this.armOven();
+    this.armIdle();
+    requestAnimationFrame(() =>
+      this.host.nativeElement.querySelector<HTMLElement>('.help')?.focus({ preventScroll: true }),
+    );
   }
 
   private showBanner(key: BakeryMessageKey) {

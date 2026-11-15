@@ -160,7 +160,7 @@
 .board {
   position: relative;
   /* Tall screens: leave room below for the controls, so they stay above the fold. */
-  height: clamp(250px, calc(100dvh - 470px), 680px);
+  height: clamp(250px, calc(100dvh - 490px), 680px);
   border-radius: var(--radius-panel);
   background: #fbe7cf;
   box-shadow: var(--shadow-panel);
