@@ -206,6 +206,32 @@ describe('Number wall game', () => {
     );
   });
 
+  it('hands the 3D castle a frame that counts every wall, brick, miss and bonk once', () => {
+    const { fixture, click, wait, typeNumber, openBricks, answerFor } = setup();
+    const frame = () => fixture.componentInstance['frame']();
+    click('Level 1');
+    const first = frame();
+    expect(first.rows).toEqual(fixture.componentInstance['wall']()!.rows);
+    expect(first.selected).toEqual({ row: 1, col: 0 });
+    expect(first.pair).toEqual({ row: 0, col: 0 });
+    expect(first.troll).toBe(0);
+    const brick = openBricks()[0]!;
+    const answer = answerFor(brick);
+    typeNumber(answer === 1 ? 2 : 1);
+    expect(frame().misses).toBe(first.misses + 1);
+    typeNumber(answer);
+    expect(frame()).toMatchObject({
+      placed: first.placed + 1,
+      justFilled: { row: 1, col: 0 },
+      built: true,
+      pair: undefined,
+    });
+    click('Next wall');
+    expect(frame().build).toBe(first.build + 1);
+    wait(40_100);
+    expect(frame()).toMatchObject({ bonks: first.bonks + 1, trollBump: true, cracks: 1 });
+  });
+
   it('earns fairy dust after three bricks in a row and uses it to freeze the troll', () => {
     const { fixture, element, click, wait, status, solveSelected } = setup();
     click('Level 1');
