@@ -33,4 +33,11 @@ describe('Home game cards', () => {
       TestBed.inject(LocaleService).t('chapterStars', { n: 0, total: 42 }),
     );
   });
+  it('offers one "All games" button, not a second link beside the games heading', async () => {
+    const h = await RouterTestingHarness.create('/');
+    const toHub = [...(h.routeNativeElement?.querySelectorAll('a') ?? [])].filter(
+      (link) => link.getAttribute('href') === '/games',
+    );
+    expect(toHub.length).toBe(1);
+  });
 });
