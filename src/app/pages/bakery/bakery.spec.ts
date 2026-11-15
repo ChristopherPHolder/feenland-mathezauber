@@ -253,4 +253,45 @@ describe('the fairy bakery', () => {
       en.perfectBonus,
     );
   });
+
+  it('shows the film on the level card with other numbers than the order', () => {
+    const fixture = setup('bakery-4');
+    const demo = el(fixture).querySelector('app-bakery-demo')!;
+    expect(demo).not.toBeNull();
+    useOrder(fixture, { rows: 6, cols: 7 });
+    vi.advanceTimersByTime(20_000);
+    fixture.detectChanges();
+    const lines = [...demo.querySelectorAll('.line')].map((l) => l.textContent!.trim());
+    expect(lines.at(-1)).toMatch(/=/);
+    for (const line of lines) expect(line).not.toMatch(/\b42\b/);
+  });
+
+  it('opens the film from ? during play and holds the oven timer', () => {
+    localStorage.setItem('feenland.bakery-pace.v1', 'fast');
+    const fixture = setup('bakery-4');
+    start(fixture);
+    click(fixture, '.help');
+    expect(el(fixture).querySelector('app-bakery-coach')).not.toBeNull();
+    vi.advanceTimersByTime(120_000);
+    fixture.detectChanges();
+    expect(status(fixture)).not.toBe(en.crispy);
+    click(fixture, 'app-bakery-coach .button');
+    expect(el(fixture).querySelector('app-bakery-coach')).toBeNull();
+  });
+
+  it('shows what to use next for the first trays, then only after a wait', () => {
+    const fixture = setup('bakery-1');
+    start(fixture);
+    const controls = () => el(fixture).querySelector('.controls')!;
+    expect(controls().getAttribute('data-guide')).toBe('pad');
+    localStorage.setItem('feenland.bakery-guided.v1', '3');
+    TestBed.resetTestingModule();
+    const later = setup('bakery-1');
+    start(later);
+    const laterControls = () => (later.nativeElement as HTMLElement).querySelector('.controls')!;
+    expect(laterControls().getAttribute('data-guide')).toBeNull();
+    vi.advanceTimersByTime(6500);
+    later.detectChanges();
+    expect(laterControls().getAttribute('data-guide')).toBe('pad');
+  });
 });

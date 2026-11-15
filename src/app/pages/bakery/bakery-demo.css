@@ -1,0 +1,177 @@
+/* The film draws the bakery's own tray small: dough, cookies, the knife and the sums. */
+:host {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+.film {
+  width: min(100%, 320px);
+  padding: 6px;
+  border-radius: var(--radius-surface);
+  background: #fbe7cf;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.dough {
+  fill: #b8bec8;
+  stroke: #8e95a1;
+  stroke-width: 1.5;
+  transition:
+    y 0.45s ease-out,
+    height 0.45s ease-out,
+    fill 0.4s;
+}
+.dough.done {
+  fill: #d8b27a;
+}
+circle {
+  fill: #f2d3a0;
+  stroke: #c98a45;
+  stroke-width: 1;
+  transition:
+    cy 0.45s ease-out,
+    cx 0.45s ease-out,
+    fill 0.4s,
+    opacity 0.4s;
+}
+circle.baked {
+  fill: #d08f45;
+}
+circle.ghost {
+  fill: #cfe7ff;
+  stroke: #6fb6ff;
+  stroke-dasharray: 2 2;
+}
+circle.gone {
+  opacity: 0;
+}
+.knife {
+  transition: transform 1s ease-in-out;
+}
+.knife line {
+  stroke: #e8edf3;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.knife rect {
+  fill: #b8763e;
+}
+.glow {
+  stroke: var(--gold);
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+.tray {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.line {
+  font: 600 15px var(--font-sans);
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.line.answer {
+  fill: var(--success-strong);
+}
+.finger {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 3px 3px #17255540);
+  transition: transform 0.6s ease-in-out;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.steps {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ground);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.steps li.on {
+  background: var(--pink);
+  color: var(--paper);
+}
+.steps li.done {
+  background: var(--success-ground);
+  color: var(--ink);
+}
+.replay {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--pink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--pink-deep);
+  cursor: pointer;
+}
+.replay svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.replay:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.caption {
+  min-height: 1.4em;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  circle.lit {
+    animation: count 0.5s ease-in-out both;
+    animation-delay: var(--d);
+  }
+}
+@keyframes count {
+  50% {
+    fill: #ffe14d;
+    r: 7px;
+  }
+}
+:host-context(.calm-motion) circle.lit {
+  animation: none;
+}
+:host-context(.calm-motion) :is(.knife, .finger, circle, .dough) {
+  transition: none;
+}

@@ -23,12 +23,12 @@
         }
       </nav>
       <div class="intro-grid">
-        <div class="intro-art">
-          <app-bakery-tray [frame]="frame()" [size]="{ width: 400, height: 300 }" />
+        <div class="intro-demo">
+          <app-bakery-demo [card]="demoCard()" [kind]="demoKind()" />
         </div>
         <div class="intro-copy">
           <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
-          <p>{{ t('story') }} {{ t(stage().cut ? 'storyGoal' : 'storyRead') }}</p>
+          <p class="sr-only">{{ t('story') }} {{ t(stage().cut ? 'storyGoal' : 'storyRead') }}</p>
           <div class="trick-card">
             <h3>{{ t('trickTitle') }}</h3>
             <p>{{ t(tipKey(stage().stage)) }}</p>
@@ -51,12 +51,12 @@
         </div>
         <p>
           <strong>{{ t('menuProgress', { n: scores.baked() }) }}</strong>
-          <span>{{ t('menuHelp') }}</span>
+          <span class="sr-only">{{ t('menuHelp') }}</span>
         </p>
       </div>
       <fieldset class="pace" aria-describedby="pace-help">
         <legend>{{ t('paceTitle') }}</legend>
-        <p id="pace-help">{{ t('paceHelp') }}</p>
+        <p id="pace-help" class="sr-only">{{ t('paceHelp') }}</p>
         <div class="pace-options">
           @for (option of paces; track option.id) {
             <label class="pace-choice" [class.selected]="pace() === option.id">
@@ -238,6 +238,15 @@
           </button>
         </div>
       }
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openCoach()"
+      >
+        ?
+      </button>
     </div>
     <div class="play-area">
       <section class="board-wrap" [attr.aria-label]="t('boardLabel')">
@@ -312,7 +321,7 @@
           }
         </div>
       </section>
-      <div class="controls">
+      <div class="controls" [attr.data-guide]="nextTap()">
         <div class="order-line">
           <p class="order-count">
             {{ cake() ? t('cakeOrder') : t('orderCount', { n: round().index + 1, total: orders }) }}
@@ -547,5 +556,8 @@
         }
       </div>
     </div>
+    @if (coachOpen()) {
+      <app-bakery-coach [card]="demoCard()" [kind]="demoKind()" (done)="closeCoach()" />
+    }
   }
 </section>
