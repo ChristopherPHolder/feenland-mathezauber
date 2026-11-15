@@ -89,6 +89,31 @@ import { Component, input } from '@angular/core';
         <path d="M43 11c-2-3-6-2-6 0m14 0c2-3 6-2 6 0" stroke-width="1.5" />
       </svg>
     }
+    @case ('fireworks') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="2" y="2" width="60" height="60" rx="14" fill="#2b2161" />
+        <path d="M2 48h60v0a14 14 0 0 1-14 14H16A14 14 0 0 1 2 48z" fill="#3b4aa0" />
+        <path d="M12 50h10m8 0h6m8 0h10" stroke="#ffd45c" stroke-width="1.5" opacity=".7" />
+        <path d="M14 48q4-12 16-24" stroke="#ffd45c" stroke-width="2" stroke-dasharray="2 3" />
+        <g fill="#ffd45c">
+          <circle cx="24" cy="18" r="3" />
+          <circle cx="32" cy="18" r="3" />
+          <circle cx="40" cy="18" r="3" />
+          <circle cx="24" cy="26" r="3" />
+          <circle cx="32" cy="26" r="3" />
+        </g>
+        <g fill="#ff9ccf">
+          <circle cx="48" cy="26" r="2.6" />
+          <circle cx="40" cy="26" r="2.6" />
+        </g>
+        <path
+          d="M32 6v4M32 34v-3M14 22h4M50 22h4M19 9l3 3M45 9l-3 3"
+          stroke="#fff4c2"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    }
     @case ('potions') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <circle cx="25" cy="11" r="4" fill="#c9b2f2" />
@@ -123,6 +148,22 @@ import { Component, input } from '@angular/core';
         <circle cx="44" cy="4" r="3" class="gold" />
         <circle cx="52" cy="8" r="3" class="gold" />
         <path d="M6 56h52" />
+      </svg>
+    }
+    @case ('star-catcher') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="30" r="26" fill="#22306b" />
+        <circle cx="16" cy="18" r="1.4" fill="#fff4c2" stroke="none" />
+        <circle cx="45" cy="13" r="1.2" fill="#fff4c2" stroke="none" />
+        <circle cx="50" cy="32" r="1.4" fill="#fff4c2" stroke="none" />
+        <path d="M11 13 34 31" stroke="#8ec5ee" stroke-width="4" opacity=".7" />
+        <path d="M14 11 36 28" stroke="#f4a0c0" stroke-width="2" />
+        <path d="m39 23 3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z" class="gold" />
+        <path d="M4 50q28-6 56 0v6q-28-6-56 0z" fill="#b9a3e3" />
+        <path d="M14 48v-6m18 4v-6m18 6v-6" stroke-width="2.5" />
+        <circle cx="14" cy="40" r="2.5" class="gold" />
+        <circle cx="32" cy="38" r="2.5" class="gold" />
+        <circle cx="50" cy="40" r="2.5" class="gold" />
       </svg>
     }
     @case ('numbers') {

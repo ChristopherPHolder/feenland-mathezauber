@@ -5,6 +5,8 @@ import { raceLevelEntries } from '../pages/unicorn-race/race-questions';
 import { lockLevels } from '../pages/treasure-lock/lock-puzzles';
 import { potionLevels } from '../pages/potions/potion-puzzles';
 import { drumLevels } from '../pages/drums/drum-patterns';
+import { starLevels } from '../pages/star-catcher/star-levels';
+import { fireworkCatalogLevels } from '../pages/fireworks/firework-levels';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
@@ -76,6 +78,13 @@ export const worlds: readonly World[] = [
         emblem: '🥁',
         levels: drumLevels,
       },
+      {
+        id: 'fireworks',
+        title: 'fireworksChapter',
+        description: 'fireworksChapterHelp',
+        emblem: '🎆',
+        levels: fireworkCatalogLevels,
+      },
     ],
   },
   {
@@ -121,6 +130,13 @@ export const worlds: readonly World[] = [
         description: 'potionChapterHelp',
         emblem: '🧪',
         levels: potionLevels,
+      },
+      {
+        id: 'star-catcher',
+        title: 'starCatcherChapter',
+        description: 'starCatcherChapterHelp',
+        emblem: '🌠',
+        levels: starLevels,
       },
     ],
   },
