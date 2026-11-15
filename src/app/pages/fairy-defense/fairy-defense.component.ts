@@ -38,6 +38,7 @@ import { Icon } from '../../shared/icon';
 import { advance, Battle, cast, freshBattle, resolveSpell, revealHint, timeOut } from './battle';
 import { FuseTimer } from './fuse-timer';
 import { SlipCallout, SlipKind } from './slip-callout';
+import { LostProgress } from './lost-progress';
 import { GameAudio } from './game-audio';
 import { gameText, GameMessageKey } from './game-messages';
 import { AudioSettings, PlaytestStore } from './playtest-store';
@@ -55,6 +56,7 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
     WaveReward,
     FuseTimer,
     SlipCallout,
+    LostProgress,
   ],
   providers: [GameAudio],
   templateUrl: './fairy-defense.component.html',

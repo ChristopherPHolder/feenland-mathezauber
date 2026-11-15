@@ -170,6 +170,21 @@ describe('Wave 1 playable integration', () => {
     fixture.detectChanges();
     expect(bubble()).toBeNull();
   });
+  it('counts the butterfly friends made when a wave is lost', () => {
+    const { fixture, element, click } = setup();
+    click('Play');
+    click('Cast spell 1');
+    vi.advanceTimersByTime(2650);
+    fixture.detectChanges();
+    for (let wrong = 0; wrong < 9; wrong++) {
+      click('Cast spell 5');
+      vi.advanceTimersByTime(1300);
+      fixture.detectChanges();
+    }
+    const progress = element.querySelector('app-lost-progress');
+    expect(progress?.textContent?.trim()).toBe('You made a new butterfly friend!');
+    expect(progress?.querySelectorAll('img')).toHaveLength(1);
+  });
   it('shows no ring at the relaxed pace, however long the child thinks', () => {
     const { fixture, element, click } = setup();
     click('Play');
@@ -205,6 +220,9 @@ describe('Wave 1 playable integration', () => {
     }
     expect(element.textContent).toContain('Try this wave again');
     expect(element.querySelector('[aria-label="0 hearts remaining out of three"]')).toBeTruthy();
+    expect(element.querySelector('app-lost-progress')?.textContent?.trim()).toBe(
+      'Every try makes your magic stronger.',
+    );
     vi.advanceTimersByTime(60000);
     fixture.detectChanges();
     expect(element.textContent).toContain('Try this wave again');
