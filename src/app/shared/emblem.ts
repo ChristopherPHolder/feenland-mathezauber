@@ -89,6 +89,31 @@ import { Component, input } from '@angular/core';
         <path d="M43 11c-2-3-6-2-6 0m14 0c2-3 6-2 6 0" stroke-width="1.5" />
       </svg>
     }
+    @case ('fireworks') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="2" y="2" width="60" height="60" rx="14" fill="#2b2161" />
+        <path d="M2 48h60v0a14 14 0 0 1-14 14H16A14 14 0 0 1 2 48z" fill="#3b4aa0" />
+        <path d="M12 50h10m8 0h6m8 0h10" stroke="#ffd45c" stroke-width="1.5" opacity=".7" />
+        <path d="M14 48q4-12 16-24" stroke="#ffd45c" stroke-width="2" stroke-dasharray="2 3" />
+        <g fill="#ffd45c">
+          <circle cx="24" cy="18" r="3" />
+          <circle cx="32" cy="18" r="3" />
+          <circle cx="40" cy="18" r="3" />
+          <circle cx="24" cy="26" r="3" />
+          <circle cx="32" cy="26" r="3" />
+        </g>
+        <g fill="#ff9ccf">
+          <circle cx="48" cy="26" r="2.6" />
+          <circle cx="40" cy="26" r="2.6" />
+        </g>
+        <path
+          d="M32 6v4M32 34v-3M14 22h4M50 22h4M19 9l3 3M45 9l-3 3"
+          stroke="#fff4c2"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    }
     @case ('potions') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <circle cx="25" cy="11" r="4" fill="#c9b2f2" />
