@@ -1,4 +1,4 @@
-import { type FlightLayout, heronLapSeconds, heronLoop } from './heron-flight';
+import { type FlightLayout, heronLapAngle, heronLoop } from './heron-flight';
 
 // Pond layouts measured in the browser: the pond's size, Kiki and the pads, and the instruction.
 const phone: FlightLayout = {
@@ -93,6 +93,26 @@ describe('the heron flight loop', () => {
   });
 
   it('laps faster as the snack is nearly gone', () => {
-    expect(heronLapSeconds(1)).toBeLessThan(heronLapSeconds(0));
+    for (const duration of [8000, 15000, 45000]) {
+      const step = 0.01;
+      const early = heronLapAngle(step, duration) - heronLapAngle(0, duration);
+      const late = heronLapAngle(1, duration) - heronLapAngle(1 - step, duration);
+      expect(early).toBeGreaterThan(0);
+      expect(late).toBeGreaterThan(early * 1.8);
+    }
+  });
+
+  it('swoops from the middle of the top pass, in view, whatever the flight time', () => {
+    for (const layout of [phone, tabletPortrait, tabletLandscape])
+      for (const duration of [8000, 15000, 25000, 30000, 45000, 53000]) {
+        const point = heronLoop(1, heronLapAngle(1, duration), layout);
+        expect(point.x).toBeCloseTo(layout.width / 2, 3);
+        expect(point.y).toBeLessThan(layout.padsTop);
+        expect(point.y).toBeGreaterThan(-layout.reach);
+      }
+  });
+
+  it('starts each flight off the right edge of the pond', () => {
+    for (const duration of [8000, 45000]) expect(heronLapAngle(0, duration)).toBe(0);
   });
 });
