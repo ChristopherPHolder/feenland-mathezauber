@@ -260,6 +260,17 @@ describe('Number wall game', () => {
     expect(element.querySelector('.troll')).toBeTruthy();
   });
 
+  it('draws no rule picture when the hint asks for the other brick first', () => {
+    const { fixture, element, click, status } = setup();
+    click('Level 3');
+    fixture.componentInstance['feedback'].set({ kind: 'hint', hint: { kind: 'fillOther' } });
+    fixture.detectChanges();
+    expect(status()).toBe('Fill the other glowing brick first.');
+    // The add-the-two-below picture would contradict the words, so the status shows only the text.
+    expect(element.querySelector('.status .hint-wall')).toBeNull();
+    expect(element.querySelector('app-wall-scene')?.classList).toContain('is-hinting');
+  });
+
   it('gives a gentle retry, then the rule as a picture, and never gives the answer away', () => {
     localStorage.setItem(
       'feenland.number-wall.v1',
