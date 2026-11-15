@@ -49,7 +49,7 @@ Easy, medium and hard stay a separate, remembered choice. For the row-based tabl
 
 German and French schools write division with a colon, so `localQuestion` (castle) and `raceSumText` (race) show `35 : 5` and the localized "half of" in those languages. Questions are generated in English form and translated only for display.
 
-### The Hungry Crocodile: 14 levels (`pages/crocodile/comparison.ts`)
+### The Hungry Crocodile: 17 levels (`pages/crocodile/comparison.ts`)
 
 | Topic             | Levels, easiest first                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------------------ |
@@ -57,6 +57,9 @@ German and French schools write division with a colon, so `localQuestion` (castl
 | Work it out first | sums to 10 · sums to 20 · differences to 10 · differences to 20 · two sums to 20                       |
 | Up to 100         | the big number buffet (40 + 8 ○ 50) · two calculations to 100 (30 + 15 ○ 50 − 4)                       |
 | Times tables      | ×2 ×5 ×10 against a number (5 × 3 ○ 12) · tables to 30 (4 × 5 ○ 3 × 7) · tables to 100 (6 × 7 ○ 8 × 5) |
+| Sharing           | halves (½ of 16 ○ 7) · share by 2, 5 and 10 (30 ÷ 5 ○ 7) · times or sharing (4 × 3 ○ 24 ÷ 2)           |
+
+On a halving side the screen shows a ½ tile, the word "of" in the child's language and a number; the Halves level adds the "forgot to halve" trap (½ of 16 ○ 10). Every division is a times-table fact backwards.
 
 The seven original levels keep their hats; the new ones add rounds, not hats.
 

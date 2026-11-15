@@ -279,6 +279,8 @@
   font-size: 20px;
   font-weight: 600;
   line-height: 1.2;
+  /* Long German names like "Regenbogenbrücke" break at a syllable with a hyphen, not mid-letter. */
+  hyphens: auto;
   overflow-wrap: anywhere;
 }
 .level-help {

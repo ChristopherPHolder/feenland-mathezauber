@@ -40,7 +40,7 @@ export const en = {
 
   crocodileChapter: 'The Hungry Crocodile',
   crocodileChapterHelp:
-    'Learn the crocodile trick for greater, less and equal. Then compare numbers, sums and times tables.',
+    'Learn the crocodile trick for greater, less and equal. Then compare numbers, sums, times tables and sharing.',
   crocodilePlay: 'Feed the crocodile',
   crocodile1: 'Numbers up to 20',
   crocodile1Help: 'Compare two numbers up to 20, like 5 ○ 12.',
@@ -264,7 +264,7 @@ export const translations: Record<Locale, Messages> = {
     ...curriculumDe,
     crocodileChapter: 'Das hungrige Krokodil',
     crocodileChapterHelp:
-      'Lerne den Krokodil-Trick für größer, kleiner und gleich. Dann vergleiche Zahlen, Rechnungen und Einmaleins.',
+      'Lerne den Krokodil-Trick für größer, kleiner und gleich. Dann vergleiche Zahlen, Rechnungen, Einmaleins und Teilen.',
     crocodilePlay: 'Krokodil füttern',
     crocodile1: 'Zahlen bis 20',
     crocodile1Help: 'Vergleiche zwei Zahlen bis 20, zum Beispiel 5 ○ 12.',
@@ -524,7 +524,7 @@ export const translations: Record<Locale, Messages> = {
     ...curriculumEs,
     crocodileChapter: 'El cocodrilo hambriento',
     crocodileChapterHelp:
-      'Aprende el truco del cocodrilo para mayor, menor e igual. Luego compara números, cuentas y tablas de multiplicar.',
+      'Aprende el truco del cocodrilo para mayor, menor e igual. Luego compara números, cuentas, tablas de multiplicar y repartos.',
     crocodilePlay: 'Alimentar al cocodrilo',
     crocodile1: 'Números hasta 20',
     crocodile1Help: 'Compara dos números hasta 20, como 5 ○ 12.',
@@ -783,7 +783,7 @@ export const translations: Record<Locale, Messages> = {
     ...curriculumFr,
     crocodileChapter: 'Le crocodile affamé',
     crocodileChapterHelp:
-      'Apprends l’astuce du crocodile pour plus grand, plus petit et égal. Puis compare des nombres, des calculs et des tables de multiplication.',
+      'Apprends l’astuce du crocodile pour plus grand, plus petit et égal. Puis compare des nombres, des calculs, des tables de multiplication et des partages.',
     crocodilePlay: 'Nourrir le crocodile',
     crocodile1: 'Nombres jusqu’à 20',
     crocodile1Help: 'Compare deux nombres jusqu’à 20, comme 5 ○ 12.',
