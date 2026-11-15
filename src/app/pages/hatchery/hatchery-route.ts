@@ -4,8 +4,9 @@ import { RouteLoader } from '../../shared/loading/route-loader';
 import { routeShellStyles } from '../../shared/loading/route-shell';
 import { WorldLoader } from '../../shared/three/three-stage';
 import { Hatchery } from './hatchery';
-/** The dragon hatchery's small loading scene; `undefined` keeps the CSS loader. */
-const loaderScene: WorldLoader<null> | undefined = undefined;
+/** The dragon hatchery's small loading scene: an egg wobbling in its nest. */
+const loaderScene: WorldLoader<null> | undefined = () =>
+  import('./hatchery-loader-world').then((m) => m.HatcheryLoaderWorld);
 
 /**
  * The dragon hatchery.
