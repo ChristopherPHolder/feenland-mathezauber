@@ -15,7 +15,6 @@ export const en = {
   upTo: 'Numbers up to',
   difficulty: 'Difficulty',
   gameSettings: 'Game settings',
-  mathComplexity: 'Maths complexity',
   mathTen: 'Making ten · 7 + □ = 10',
   mathThirty: 'Mixed sums to 30 · 23 − □ = 16',
   mathHundred: 'Mixed sums to 100 · □ − 28 = 47',
@@ -244,6 +243,7 @@ export const en = {
   wallTrollFrozen: 'Fairy dust! The troll is asleep.',
   wallGems: 'Gems',
   wallGemsWon: '+{n} gems!',
+  wallGemWon: '+1 gem!',
   wallDust: 'Fairy dust',
   wallDustHelp:
     'Three bricks in a row earn fairy dust. Tap it to put the troll to sleep and see the trick.',
@@ -304,7 +304,6 @@ export const translations: Record<Locale, Messages> = {
     upTo: 'Zahlen bis',
     difficulty: 'Schwierigkeit',
     gameSettings: 'Spieleinstellungen',
-    mathComplexity: 'Rechenumfang',
     mathTen: 'Ergänzen auf 10 · 7 + □ = 10',
     mathThirty: 'Gemischte Aufgaben bis 30 · 23 − □ = 16',
     mathHundred: 'Gemischte Aufgaben bis 100 · □ − 28 = 47',
@@ -517,6 +516,7 @@ export const translations: Record<Locale, Messages> = {
     wallTrollFrozen: 'Feenstaub! Der Troll schläft.',
     wallGems: 'Edelsteine',
     wallGemsWon: '+{n} Edelsteine!',
+    wallGemWon: '+1 Edelstein!',
     wallDust: 'Feenstaub',
     wallDustHelp:
       'Drei Steine hintereinander geben Feenstaub. Tippe darauf, damit der Troll einschläft und du den Trick siehst.',
@@ -570,7 +570,6 @@ export const translations: Record<Locale, Messages> = {
     upTo: 'Números hasta',
     difficulty: 'Dificultad',
     gameSettings: 'Opciones del juego',
-    mathComplexity: 'Complejidad matemática',
     mathTen: 'Completar 10 · 7 + □ = 10',
     mathThirty: 'Operaciones hasta 30 · 23 − □ = 16',
     mathHundred: 'Operaciones hasta 100 · □ − 28 = 47',
@@ -783,6 +782,7 @@ export const translations: Record<Locale, Messages> = {
     wallTrollFrozen: '¡Polvo de hada! El trol duerme.',
     wallGems: 'Gemas',
     wallGemsWon: '¡+{n} gemas!',
+    wallGemWon: '¡+1 gema!',
     wallDust: 'Polvo de hada',
     wallDustHelp:
       'Tres ladrillos seguidos dan polvo de hada. Tócalo para dormir al trol y ver el truco.',
@@ -836,7 +836,6 @@ export const translations: Record<Locale, Messages> = {
     upTo: 'Nombres jusqu’à',
     difficulty: 'Difficulté',
     gameSettings: 'Réglages du jeu',
-    mathComplexity: 'Complexité des calculs',
     mathTen: 'Compléter 10 · 7 + □ = 10',
     mathThirty: 'Calculs jusqu’à 30 · 23 − □ = 16',
     mathHundred: 'Calculs jusqu’à 100 · □ − 28 = 47',
@@ -1049,6 +1048,7 @@ export const translations: Record<Locale, Messages> = {
     wallTrollFrozen: 'Poussière de fée ! Le troll dort.',
     wallGems: 'Gemmes',
     wallGemsWon: '+{n} gemmes !',
+    wallGemWon: '+1 gemme !',
     wallDust: 'Poussière de fée',
     wallDustHelp:
       'Trois briques d’affilée donnent de la poussière de fée. Touche-la pour endormir le troll et voir l’astuce.',
