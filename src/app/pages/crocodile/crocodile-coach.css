@@ -1,0 +1,407 @@
+/* The coach is a modal over the whole game: frosted water hides the snack, one card in the middle. */
+dialog {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  border: 0;
+  background: transparent;
+  overflow: auto;
+  container-type: size;
+}
+dialog[open] {
+  display: grid;
+  place-items: center;
+}
+dialog::backdrop {
+  background: rgb(169 216 238 / 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.card {
+  width: 100%;
+  max-width: 460px;
+  padding: 16px 18px 18px;
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-float);
+  color: var(--ink);
+  text-align: center;
+  animation: coach-in 0.35s ease-out both;
+}
+h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 1.2;
+}
+.maths {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+.steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.caption {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.scene {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  align-items: center;
+  width: min(100%, 300px);
+  height: 78px;
+  --toward: -1;
+}
+.flip .scene {
+  --toward: 1;
+}
+.pad {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  aspect-ratio: 1.3;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #6cc77a, #3d9450);
+}
+.tile {
+  min-width: 40px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 3px 0 #17255533;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+.kiki {
+  position: relative;
+  justify-self: center;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1.6;
+}
+.kiki app-crocodile {
+  position: absolute;
+  inset: 0;
+}
+.eating-kiki {
+  opacity: 0;
+}
+.ping,
+.finger {
+  position: absolute;
+  top: 50%;
+  left: 83%;
+  pointer-events: none;
+}
+.flip .ping,
+.flip .finger {
+  left: 17%;
+}
+.equal .ping,
+.equal .finger {
+  left: 50%;
+}
+.ping {
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border: 4px solid var(--paper);
+  border-radius: 50%;
+  opacity: 0;
+}
+.finger {
+  width: 34px;
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 3px 3px #17255540);
+  opacity: 0;
+  transform: translate(-49%, 0);
+}
+.button {
+  width: min(100%, 280px);
+  margin: 14px auto 0;
+}
+
+/* One step at a time: the finger taps the bigger number and Kiki gulps it, then a finger taps
+   Kiki when both sides match. Each step plays in its half of an eight-second loop. */
+.finger {
+  animation: coach-finger 8s ease-in-out infinite both;
+}
+.ping {
+  animation: coach-ping 8s ease-out infinite both;
+}
+.calm-kiki {
+  animation: coach-calm 8s linear infinite both;
+}
+.eating-kiki {
+  animation: coach-eat 8s ease-out infinite both;
+}
+.bigger .pad.target .tile {
+  animation: coach-gulp 8s ease-in infinite both;
+}
+.equal .eating-kiki {
+  animation-name: coach-hop;
+}
+.equal .finger,
+.equal .ping,
+.equal .calm-kiki,
+.equal .eating-kiki {
+  animation-delay: 4s;
+}
+@keyframes coach-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+}
+@keyframes coach-finger {
+  0% {
+    opacity: 0;
+    transform: translate(-49%, 70%);
+  }
+  6% {
+    opacity: 1;
+  }
+  16% {
+    transform: translate(-49%, 0) scale(1);
+  }
+  19% {
+    transform: translate(-49%, 0) scale(0.84);
+  }
+  23% {
+    transform: translate(-49%, 0) scale(1);
+  }
+  38% {
+    opacity: 1;
+    transform: translate(-49%, 0);
+  }
+  46%,
+  100% {
+    opacity: 0;
+    transform: translate(-49%, 40%);
+  }
+}
+@keyframes coach-ping {
+  0%,
+  18% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  19% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  32%,
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+@keyframes coach-calm {
+  0%,
+  19% {
+    opacity: 1;
+  }
+  20.5%,
+  43.5% {
+    opacity: 0;
+  }
+  45%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes coach-eat {
+  0%,
+  19% {
+    opacity: 0;
+    transform: none;
+  }
+  20% {
+    opacity: 1;
+  }
+  26% {
+    transform: translateX(calc(var(--toward) * -12%));
+  }
+  38% {
+    transform: none;
+  }
+  44% {
+    opacity: 1;
+  }
+  45%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes coach-hop {
+  0%,
+  19% {
+    opacity: 0;
+    transform: none;
+  }
+  20% {
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-14%);
+  }
+  29% {
+    transform: none;
+  }
+  32% {
+    transform: translateY(-7%);
+  }
+  35% {
+    transform: none;
+  }
+  44% {
+    opacity: 1;
+  }
+  45%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes coach-gulp {
+  0%,
+  21% {
+    opacity: 1;
+    transform: none;
+  }
+  28% {
+    opacity: 0;
+    transform: translateX(calc(var(--toward) * 70%)) scale(0.2);
+  }
+  44% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  50%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Calm motion: one still picture of each step, the finger resting on what to tap. */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .finger,
+  .ping,
+  .calm-kiki,
+  .eating-kiki,
+  .bigger .pad.target .tile {
+    animation: none;
+  }
+  .finger,
+  .eating-kiki {
+    opacity: 1;
+  }
+  .calm-kiki {
+    opacity: 0;
+  }
+}
+:host-context(.calm-motion) .card,
+:host-context(.calm-motion) .finger,
+:host-context(.calm-motion) .ping,
+:host-context(.calm-motion) .calm-kiki,
+:host-context(.calm-motion) .eating-kiki,
+:host-context(.calm-motion) .bigger .pad.target .tile {
+  animation: none;
+}
+:host-context(.calm-motion) .finger,
+:host-context(.calm-motion) .eating-kiki {
+  opacity: 1;
+}
+:host-context(.calm-motion) .calm-kiki {
+  opacity: 0;
+}
+
+/* A short pond: smaller pictures and type, so the card and its button fit without scrolling. */
+@container (max-height: 440px) {
+  .card {
+    padding: 12px 14px 14px;
+  }
+  h3 {
+    margin-bottom: 4px;
+    font-size: 19px;
+  }
+  .steps {
+    gap: 6px;
+  }
+  .scene {
+    height: 60px;
+  }
+  .pad {
+    width: 56px;
+  }
+  .tile {
+    min-width: 32px;
+    font-size: 21px;
+  }
+  .caption {
+    font-size: 15px;
+  }
+  .button {
+    margin-top: 10px;
+  }
+}
+/* A short, wide pond (a phone on its side): the two steps sit side by side. */
+@container (max-height: 440px) and (min-width: 540px) {
+  .card {
+    max-width: 640px;
+  }
+  .steps {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
+/* A tablet: bigger pictures and type. */
+@container (min-width: 700px) and (min-height: 700px) {
+  .card {
+    max-width: 560px;
+    padding: 24px 28px 26px;
+  }
+  h3 {
+    font-size: 28px;
+  }
+  .scene {
+    width: min(100%, 380px);
+    height: 100px;
+  }
+  .pad {
+    width: 92px;
+  }
+  .tile {
+    min-width: 50px;
+    font-size: 34px;
+  }
+  .caption {
+    font-size: 20px;
+  }
+  .finger {
+    width: 42px;
+  }
+}

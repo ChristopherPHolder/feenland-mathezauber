@@ -430,5 +430,14 @@
         </button>
       }
     </fieldset>
+    @if (coach(); as coaching) {
+      <app-crocodile-coach
+        [again]="coaching.again"
+        [maths]="needsMaths()"
+        [flip]="coaching.flip"
+        [hat]="hat()"
+        (done)="closeCoach()"
+      />
+    }
   }
 </section>

@@ -64,6 +64,8 @@ const FRENZY_SPARKS = ['#ffe27a', '#ff9fc0', '#ffb36b'] as const;
 const NO_GLOW = new Color('#000000');
 const STEAL_SECONDS = 1.3;
 const SHOO_SECONDS = 0.8;
+/** The highest the waves reach; ripples float just above them so no wave cuts them in half. */
+const WAVE_TOP = 0.1;
 /** How long Kiki's "no thanks" lasts after a wrong pick. */
 const WRONG_SECONDS = 1.1;
 
@@ -261,6 +263,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       for (const raft of Object.values(this.rafts)) {
         raft.born = fresh ? this.elapsed : -10;
         raft.tiles.visible = raft.pad.visible = true;
+        // The new numbers grow out of their own pad, not from wherever the last ones went
+        // (Kiki's mouth, or off-screen in the heron's beak).
+        raft.tiles.position.copy(raft.home);
       }
       this.tries.take(0);
     }
@@ -1061,7 +1066,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       new MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity, depthWrite: false }),
     );
     mesh.rotation.x = -Math.PI / 2;
-    mesh.position.copy(at);
+    mesh.position.copy(at).setY(Math.max(at.y, WAVE_TOP));
     this.addBurst(mesh, new Vector3(), life, size, 'ring');
   }
 

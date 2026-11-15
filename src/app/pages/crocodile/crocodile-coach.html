@@ -1,0 +1,59 @@
+<dialog
+  #dialog
+  aria-labelledby="coach-title"
+  aria-describedby="coach-steps"
+  (cancel)="cancel($event)"
+>
+  <div class="card">
+    <h3 id="coach-title">{{ t(again() ? 'coachAgain' : 'coachTitle') }}</h3>
+    @if (maths()) {
+      <p class="maths">{{ t('computeFirst') }}</p>
+    }
+    <ol id="coach-steps" class="steps">
+      <li class="step bigger" [class.flip]="flip()">
+        <span class="scene" aria-hidden="true">
+          <span class="pad" [class.target]="flip()"
+            ><span class="tile">{{ flip() ? 8 : 3 }}</span></span
+          >
+          <span class="kiki">
+            <app-crocodile class="calm-kiki" kind="waiting" [hat]="hat()" />
+            <app-crocodile
+              class="eating-kiki"
+              [facing]="flip() ? 'left' : 'right'"
+              [open]="true"
+              [hat]="hat()"
+            />
+          </span>
+          <span class="pad" [class.target]="!flip()"
+            ><span class="tile">{{ flip() ? 3 : 8 }}</span></span
+          >
+          <span class="ping"></span>
+          <svg class="finger" viewBox="0 0 40 50">
+            <path
+              d="M15 25V7a4.5 4.5 0 0 1 9 0v13l9.5 2.2A5 5 0 0 1 37 27.6L35 40a9 9 0 0 1-9 7.5h-8.6a9 9 0 0 1-7.3-3.8L4 35.4a4 4 0 0 1 6-5.2l5 4.3z"
+            />
+          </svg>
+        </span>
+        <span class="caption">{{ t('coachBigger') }}</span>
+      </li>
+      <li class="step equal">
+        <span class="scene" aria-hidden="true">
+          <span class="pad"><span class="tile">5</span></span>
+          <span class="kiki target">
+            <app-crocodile class="calm-kiki" kind="waiting" [hat]="hat()" />
+            <app-crocodile class="eating-kiki" kind="front" [hat]="hat()" />
+          </span>
+          <span class="pad"><span class="tile">5</span></span>
+          <span class="ping"></span>
+          <svg class="finger" viewBox="0 0 40 50">
+            <path
+              d="M15 25V7a4.5 4.5 0 0 1 9 0v13l9.5 2.2A5 5 0 0 1 37 27.6L35 40a9 9 0 0 1-9 7.5h-8.6a9 9 0 0 1-7.3-3.8L4 35.4a4 4 0 0 1 6-5.2l5 4.3z"
+            />
+          </svg>
+        </span>
+        <span class="caption">{{ t('coachEqual') }}</span>
+      </li>
+    </ol>
+    <button class="button primary" type="button" (click)="done.emit()">{{ t('coachGo') }}</button>
+  </div>
+</dialog>
