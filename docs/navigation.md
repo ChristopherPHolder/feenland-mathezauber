@@ -47,6 +47,12 @@ Switching levels never requires leaving the game:
 - **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the thirty practice stages, grouped under a heading per topic. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
 - Finishing a round offers Next level, Play again and All games.
 
+### After a deploy
+
+A tab left open across a deploy still runs the old build, whose lazy chunks are gone from the server (Cloudflare answers every missing file with `index.html`). Without help, a tap on All games or any other page would change the URL and then show nothing. `core/stale-build.ts` catches that failure, both a route shell's `@defer` block (Angular's NG0750, through the app's `ErrorHandler`) and a lazy route (the router's navigation error handler), and loads the page afresh from the server. It does this once per URL within 30 seconds, never offline and never without session storage, so a page that truly cannot load does not reload forever.
+
+Games handle keys on `document`. A handler that cancels Enter or Space must let a focused link or a button outside the game's own controls keep its action, or All games stops working from the keyboard (see `NumberWallComponent.onKey`).
+
 ## Where the data comes from
 
 `core/catalog.ts` is the single source: World → Chapter → Level. A chapter _is_ a game (it carries an emblem and a description), and its levels are the game's selectable levels. Home and the hub both render straight from `WORLD_CATALOG`, so adding a chapter adds a card on Home and a section in the hub with no template changes.
