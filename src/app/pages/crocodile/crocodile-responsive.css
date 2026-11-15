@@ -417,3 +417,24 @@
     padding: 4px 12px;
   }
 }
+
+/* An upright phone: callouts float over the top of the pond and the help card hugs its text,
+   so a golden snack and a "Try again!" never push the answers below the screen. */
+@media (max-width: 640px) and (orientation: portrait) {
+  .playing .banner {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+  }
+  .playing .instruction.has-rule {
+    margin-top: 8px;
+    padding: 6px 10px;
+  }
+}
+@media (max-width: 640px) and (orientation: portrait) and (max-height: 759px) {
+  .playing .choice {
+    min-height: 100px;
+  }
+}

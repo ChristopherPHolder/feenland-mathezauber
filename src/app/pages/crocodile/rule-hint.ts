@@ -93,7 +93,7 @@ import { RuleHint } from './rule-hints';
     </span>
     <span class="words">
       <strong>{{ text('tryAgain') }}</strong>
-      {{ text(rule()) }}
+      <span class="rule-text">{{ text(rule()) }}</span>
     </span>`,
   styles: `
     :host {
@@ -170,8 +170,24 @@ import { RuleHint } from './rule-hints';
       color: var(--pink-deep);
     }
     @media (max-width: 420px) {
+      /* A narrow phone: the picture and "Try again!" share the first row and the rule runs the
+         full width under them, so the card stays short and the answers stay on screen. */
       :host {
-        gap: 8px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 4px 10px;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+      .words {
+        display: contents;
+      }
+      .words strong {
+        align-self: center;
+        font-size: 17px;
+      }
+      .rule-text {
+        grid-column: 1 / -1;
       }
       .picture {
         width: 84px;
