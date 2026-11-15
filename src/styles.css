@@ -460,6 +460,14 @@ main.focused-game {
   --loader-star: var(--gold);
   --loader-dot: var(--bronze);
 }
+.is-route-tone[data-tone='fireworks'] {
+  --loader-ground: linear-gradient(#141238, #2b2161 55%, #5b3a7d);
+  --loader-orb: #2b2161;
+  --loader-star: var(--gold);
+  --loader-dot: #ff9ccf;
+  --loader-ink: var(--cream);
+  --loader-pill: #0d0b22cc;
+}
 .is-route-tone[data-tone='potion'] {
   --loader-ground: linear-gradient(#e6e0ff, #f4eefc 40%, #e9f6ee);
   --loader-star: var(--violet);

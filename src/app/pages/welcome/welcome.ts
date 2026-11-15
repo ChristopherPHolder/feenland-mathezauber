@@ -21,6 +21,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
   'treasure-lock': 'lockPlay',
   potions: 'potionPlay',
   'star-catcher': 'starCatcherPlay',
+  fireworks: 'fireworksPlay',
 };
 @Component({
   selector: 'app-welcome',
