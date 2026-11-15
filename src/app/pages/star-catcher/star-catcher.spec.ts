@@ -151,7 +151,7 @@ describe('the star catcher', () => {
     fixture.detectChanges();
     expect(status(fixture)).toBe(en.further);
     expect(element(fixture).querySelector('.cue')!.textContent).toContain(en.further);
-    expect(element(fixture).querySelector('.help-card')).toBeNull();
+    expect(element(fixture).querySelector('.tip')).toBeNull();
     vi.advanceTimersByTime(1000);
     fixture.detectChanges();
     expect(internals(fixture).item().kind === 'place' && internals(fixture).item()).toMatchObject({
@@ -163,7 +163,7 @@ describe('the star catcher', () => {
     expect(status(fixture)).toBe(en.back);
     vi.advanceTimersByTime(1000);
     fixture.detectChanges();
-    const help = element(fixture).querySelector('.help-card')!.textContent!;
+    const help = element(fixture).querySelector('.tip')!.textContent!;
     expect(help).toContain('Is 63 more or less than 50, the middle?');
     // Help never names a spot or a number the star does not already show.
     const numbers = help.match(/\d+/g) ?? [];
@@ -187,7 +187,9 @@ describe('the star catcher', () => {
       vi.advanceTimersByTime(1000);
       fixture.detectChanges();
     }
-    const text = element(fixture).querySelector('.controls')!.textContent!;
+    const text =
+      element(fixture).querySelector('.controls')!.textContent! +
+      element(fixture).querySelector('.tip')!.textContent!;
     expect(text).toContain(en.hintWider);
     expect(text).not.toContain('63');
     expect(text).not.toContain('60');
@@ -349,5 +351,99 @@ describe('the star catcher', () => {
     start(fixture);
     expect(catchButton(fixture).textContent!.trim()).toBe(starTranslations.de.catch);
     expect(starTranslations.de.catch).not.toBe(en.catch);
+  });
+});
+
+describe('showing the star catcher instead of telling', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    localStorage.clear();
+  });
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+  });
+
+  it('plays a short film on the level card, then waits on the last picture', () => {
+    const fixture = setup('star-catcher-5');
+    const film = () => element(fixture).querySelector('app-star-demo .film')!;
+    const caption = () => element(fixture).querySelector('app-star-demo .caption')!.textContent;
+    expect(caption()).toBe(en.demoStar);
+    expect(element(fixture).querySelector('app-star-demo .label')!.textContent).toBe('80');
+    for (const [ms, text] of [
+      [2100, en.demoSlide],
+      [1700, en.demoCatch],
+      [1100, en.demoCaught],
+    ] as const) {
+      vi.advanceTimersByTime(ms);
+      fixture.detectChanges();
+      expect(caption()).toBe(text);
+    }
+    vi.advanceTimersByTime(5000);
+    fixture.detectChanges();
+    expect(film().getAttribute('data-step')).toBe('5');
+    const replay = element(fixture).querySelector<HTMLButtonElement>('app-star-demo .replay')!;
+    expect(replay.getAttribute('aria-label')).toBe(en.demoReplay);
+    replay.click();
+    fixture.detectChanges();
+    expect(film().getAttribute('data-step')).toBe('0');
+    expect(element(fixture).querySelector('app-star-demo .sr-only')!.textContent).toBe(
+      en.demoSummary,
+    );
+  });
+
+  it('hops Nova first, then Catch!, for the first three catches on a device', () => {
+    const fixture = setup('star-catcher-4');
+    start(fixture);
+    const handle = () => element(fixture).querySelector('[role="slider"]')!;
+    expect(handle().classList).toContain('is-hop');
+    expect(catchButton(fixture).classList).not.toContain('is-hop');
+    moveTo(fixture, 0.3);
+    expect(handle().classList).not.toContain('is-hop');
+    expect(catchButton(fixture).classList).toContain('is-hop');
+    for (let star = 0; star < 3; star++) answer(fixture);
+    expect(localStorage.getItem('feenland.star-guided.v1')).toBe('3');
+    expect(handle().classList).not.toContain('is-hop');
+    // After a quiet wait it shows what to tap next again.
+    vi.advanceTimersByTime(6000);
+    fixture.detectChanges();
+    expect(handle().classList).toContain('is-hop');
+  });
+
+  it('shows Nova’s tip over the sky, away from Nova', () => {
+    const fixture = setup('star-catcher-6');
+    start(fixture);
+    useStar(fixture, 63);
+    for (const net of [0.2, 0.2]) {
+      moveTo(fixture, net);
+      catchButton(fixture).click();
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1000);
+      fixture.detectChanges();
+    }
+    const tip = element(fixture).querySelector('.board .tip')!;
+    expect(tip.textContent).toContain('Is 63 more or less than 50, the middle?');
+    expect(tip.classList).toContain('is-right');
+  });
+
+  it('opens the film from ? and holds the falling star while it is open', () => {
+    localStorage.setItem('feenland.star-pace.v1', 'fast');
+    const fixture = setup('star-catcher-4');
+    start(fixture);
+    useStar(fixture, 30);
+    const dialog = element(fixture).querySelector<HTMLDialogElement>('dialog.how-to-dialog')!;
+    dialog.showModal = vi.fn(() => dialog.setAttribute('open', ''));
+    element(fixture).querySelector<HTMLButtonElement>('.how-to')!.click();
+    fixture.detectChanges();
+    expect(dialog.showModal).toHaveBeenCalled();
+    expect(dialog.querySelector('app-star-demo')).not.toBeNull();
+    vi.advanceTimersByTime(20_000);
+    fixture.detectChanges();
+    expect(element(fixture).querySelector('.stardust strong')!.textContent).toBe('+15');
+    dialog.dispatchEvent(new Event('close'));
+    fixture.detectChanges();
+    vi.advanceTimersByTime(4000);
+    fixture.detectChanges();
+    expect(element(fixture).querySelector('.stardust strong')!.textContent).not.toBe('+15');
   });
 });

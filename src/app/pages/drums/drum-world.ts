@@ -305,6 +305,8 @@ export class DrumWorld extends Stage implements StateWorld<DrumFrame> {
   }
 
   protected override layout(aspect: number) {
+    // On all but wide boards Pom shrinks a little, so his spines leave his own number readable.
+    this.pom.group.scale.setScalar(aspect < 1.4 ? 0.78 : 0.95);
     // Narrow boards pull back and widen the view so the path's sway and the next mushrooms fit.
     const narrow = aspect < 1.25 ? 1.25 / aspect : 1;
     this.camera.fov = 44 + Math.min(12, (narrow - 1) * 10);

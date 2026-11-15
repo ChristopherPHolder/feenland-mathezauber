@@ -249,6 +249,10 @@
 }
 /* A narrow phone keeps the HUD on one row. */
 @media (max-width: 480px) {
+  /* The pause dialog holds the film too, so one button is enough and the title keeps its room. */
+  .help-button {
+    display: none;
+  }
   .drum-count .short {
     display: inline;
   }

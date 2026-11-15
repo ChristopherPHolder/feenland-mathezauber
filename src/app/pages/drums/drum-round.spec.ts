@@ -135,6 +135,8 @@ describe('mushroom drums timing', () => {
     expect(done.play.phase).toBe('done');
     // The solo is a bonus: only verse questions count for stars.
     expect(done.play.stats.firstTry).toBe(2);
+    // The streak counts verse drums only, so it never tops the first-try tile.
+    expect(done.play.stats.bestStreak).toBe(2);
   });
 
   it('skips the title and demo straight to the first question', () => {
