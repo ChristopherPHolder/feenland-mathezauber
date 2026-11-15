@@ -1,0 +1,128 @@
+:host {
+  display: grid;
+  grid-template-columns: minmax(180px, 300px) 1fr;
+  align-items: center;
+  gap: clamp(16px, 3vw, 28px);
+  padding: clamp(16px, 3vw, 24px);
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+}
+:host(:focus) {
+  outline: none;
+}
+.picture {
+  width: 100%;
+  max-width: 300px;
+  margin: auto;
+}
+.picture-name {
+  margin: 6px 0 0;
+  text-align: center;
+  font-weight: 600;
+  color: var(--violet);
+}
+h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.stars {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+.star {
+  width: 52px;
+  height: 52px;
+  color: var(--star-empty);
+}
+.star app-icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.star.earned {
+  color: var(--star-earned-big);
+}
+.score-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+}
+.new-best {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 600;
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+  font-size: 18px;
+}
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.tiles li {
+  display: grid;
+  gap: 2px;
+  min-width: 110px;
+  padding: 8px 14px;
+  border-radius: var(--radius-chip);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+}
+.tiles span {
+  font-size: 14px;
+  color: var(--muted);
+}
+.tiles strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.help {
+  color: var(--muted);
+}
+.save-note {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: #fff2d2;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+@media (max-width: 700px) {
+  :host {
+    grid-template-columns: 1fr;
+  }
+  .picture {
+    max-width: 220px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .star.earned {
+    animation: star-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    animation-delay: calc(var(--i) * 160ms);
+  }
+}
+@keyframes star-pop {
+  from {
+    transform: scale(0);
+  }
+}
+:host-context(.calm-motion) .star.earned {
+  animation: none;
+}

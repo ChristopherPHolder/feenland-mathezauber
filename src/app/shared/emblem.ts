@@ -128,6 +128,28 @@ import { Component, input } from '@angular/core';
         <rect x="45" y="6" width="8" height="5" rx="2" fill="#b98a5a" />
       </svg>
     }
+    @case ('mushroom-drums') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M27 38h10l3 18H24z" fill="#f4ead6" />
+        <path d="M6 36c0-14 12-24 26-24s26 10 26 24z" fill="#e8669a" />
+        <ellipse cx="32" cy="36" rx="26" ry="5" fill="#b84a78" />
+        <ellipse
+          cx="32"
+          cy="24"
+          rx="15"
+          ry="5"
+          fill="#fff8e8"
+          stroke="#8a5a2b"
+          stroke-width="2.5"
+        />
+        <circle cx="16" cy="28" r="2.5" fill="#fff4e0" />
+        <circle cx="47" cy="29" r="2" fill="#fff4e0" />
+        <path d="M44 4 36 20M52 8 40 21" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round" />
+        <circle cx="44" cy="4" r="3" class="gold" />
+        <circle cx="52" cy="8" r="3" class="gold" />
+        <path d="M6 56h52" />
+      </svg>
+    }
     @case ('star-catcher') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <circle cx="32" cy="30" r="26" fill="#22306b" />
