@@ -92,7 +92,7 @@ import { RuleHint } from './rule-hints';
       }
     </span>
     <span class="words">
-      <strong>{{ text('tryAgain') }}</strong>
+      <strong>{{ text('tryAgain') }}</strong>&ngsp;
       <span class="rule-text">{{ text(rule()) }}</span>
     </span>`,
   styles: `
