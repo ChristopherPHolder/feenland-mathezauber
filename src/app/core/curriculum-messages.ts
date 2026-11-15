@@ -75,6 +75,13 @@ export const curriculumEn = {
   race18Help: 'Times 6, 7, 8 and 9, like 7 × 8.',
   race19: 'Knight’s bridge',
   race19Help: 'Two-digit sums across a ten, like 37 + 25 and 62 − 28.',
+  race20: 'Half-moon hill',
+  race20Help: 'Halves up to 100, like half of 18 and half of 40.',
+  race21: 'Twinkle trail',
+  race21Help: 'Share by 2, 5 and 10, like 35 ÷ 5.',
+  race22: 'Treasure hall',
+  race22Help: 'Share up to 100 by 3 to 9, like 42 ÷ 6.',
+  raceHalfOf: 'half of {n}',
 };
 export type CurriculumKey = keyof typeof curriculumEn;
 type CurriculumMessages = { readonly [K in CurriculumKey]: string };
@@ -147,6 +154,13 @@ export const curriculumDe: CurriculumMessages = {
   race18Help: 'Mal 6, 7, 8 und 9, wie 7 × 8.',
   race19: 'Ritterbrücke',
   race19Help: 'Zweistellig über den Zehner, wie 37 + 25 und 62 − 28.',
+  race20: 'Halbmondhügel',
+  race20Help: 'Halbieren bis 100, wie die Hälfte von 18 und die Hälfte von 40.',
+  race21: 'Funkelpfad',
+  race21Help: 'Teilen durch 2, 5 und 10, wie 35 ÷ 5.',
+  race22: 'Schatzsaal',
+  race22Help: 'Teilen bis 100 durch 3 bis 9, wie 42 ÷ 6.',
+  raceHalfOf: 'die Hälfte von {n}',
 };
 
 export const curriculumEs: CurriculumMessages = {
@@ -217,6 +231,13 @@ export const curriculumEs: CurriculumMessages = {
   race18Help: 'Por 6, 7, 8 y 9, como 7 × 8.',
   race19: 'Puente del caballero',
   race19Help: 'Sumas de dos cifras pasando la decena, como 37 + 25 y 62 − 28.',
+  race20: 'Colina de la media luna',
+  race20Help: 'Mitades hasta 100, como la mitad de 18 y la mitad de 40.',
+  race21: 'Sendero centelleante',
+  race21Help: 'Repartir entre 2, 5 y 10, como 35 ÷ 5.',
+  race22: 'Sala del tesoro',
+  race22Help: 'Repartir hasta 100 entre números del 3 al 9, como 42 ÷ 6.',
+  raceHalfOf: 'la mitad de {n}',
 };
 
 export const curriculumFr: CurriculumMessages = {
@@ -287,4 +308,11 @@ export const curriculumFr: CurriculumMessages = {
   race18Help: 'Fois 6, 7, 8 et 9, comme 7 × 8.',
   race19: 'Pont du chevalier',
   race19Help: 'Nombres à deux chiffres en passant la dizaine, comme 37 + 25 et 62 − 28.',
+  race20: 'Colline de la demi-lune',
+  race20Help: 'Les moitiés jusqu’à 100, comme la moitié de 18 et la moitié de 40.',
+  race21: 'Sentier scintillant',
+  race21Help: 'Partager par 2, 5 et 10, comme 35 ÷ 5.',
+  race22: 'Salle du trésor',
+  race22Help: 'Partager jusqu’à 100 par un nombre de 3 à 9, comme 42 ÷ 6.',
+  raceHalfOf: 'la moitié de {n}',
 };

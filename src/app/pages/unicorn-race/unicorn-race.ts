@@ -53,6 +53,7 @@ import {
   RaceQuestion,
   raceQuestion,
   RaceStage,
+  raceSumText,
   raceTrack,
   RaceTrack,
   raceTracks,
@@ -231,17 +232,11 @@ export class UnicornRace {
     ].join(' · ');
   });
   /** A missing-number question already carries its equals sign. */
-  protected readonly equation = computed(() => {
-    const text = this.question().text;
-    return text.includes('=') ? text : `${text} = ?`;
-  });
-  protected readonly exampleEquation = computed(() => {
-    const text = this.stage().example;
-    return text.includes('=') ? text : `${text} = ?`;
-  });
+  protected readonly equation = computed(() => this.withAnswerSlot(this.question().text));
+  protected readonly exampleEquation = computed(() => this.withAnswerSlot(this.stage().example));
   protected readonly questionLabel = computed(() =>
     this.t(this.question().text.includes('=') ? 'missing' : 'question', {
-      text: this.question().text,
+      text: this.sumText(this.question().text),
     }),
   );
   protected readonly names = computed<Readonly<Record<RacerId, string>>>(() => ({
@@ -426,7 +421,15 @@ export class UnicornRace {
     return Math.round(ms / 1000);
   }
   protected example(track: RaceTrack): string {
-    return track.example.includes('=') ? track.example : `${track.example} = ?`;
+    return this.withAnswerSlot(track.example);
+  }
+  /** Halves are worded, so they read in the child's language. */
+  private sumText(text: string): string {
+    return raceSumText(text, (n) => this.i.t('raceHalfOf', { n }));
+  }
+  private withAnswerSlot(text: string): string {
+    const shown = this.sumText(text);
+    return text.includes('=') ? shown : `${shown} = ?`;
   }
   protected choosePace(pace: Pace) {
     this.store.setPace(pace);

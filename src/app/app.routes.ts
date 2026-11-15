@@ -64,7 +64,7 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^unicorn-race-(?:[1-9]|1[0-9])$/.test(segments[1].path)
+      /^unicorn-race-(?:[1-9]|1[0-9]|2[0-2])$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
