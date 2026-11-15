@@ -74,7 +74,7 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^treasure-lock-[1-7]$/.test(segments[1].path)
+      /^treasure-lock-[1-9]$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },

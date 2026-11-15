@@ -84,6 +84,12 @@ export const curriculumEn = {
   race18Help: 'Times 6, 7, 8 and 9, like 7 × 8.',
   race19: 'Knight’s bridge',
   race19Help: 'Two-digit sums across a ten, like 37 + 25 and 62 − 28.',
+
+  // Treasure lock levels
+  lock8: 'Halving back',
+  lock8Help: 'Start at 40 and halve your way down with ÷2, then fix it with +1 or −1.',
+  lock9: 'Double and halve',
+  lock9Help: 'Double, halve and hop tens on a dial up to 100, with thorns.',
 };
 export type CurriculumKey = keyof typeof curriculumEn;
 type CurriculumMessages = { readonly [K in CurriculumKey]: string };
@@ -165,6 +171,11 @@ export const curriculumDe: CurriculumMessages = {
   race18Help: 'Mal 6, 7, 8 und 9, wie 7 × 8.',
   race19: 'Ritterbrücke',
   race19Help: 'Zweistellig über den Zehner, wie 37 + 25 und 62 − 28.',
+
+  lock8: 'Halbieren',
+  lock8Help: 'Starte bei 40, halbiere dich mit ÷2 nach unten und korrigiere mit +1 oder −1.',
+  lock9: 'Doppelt und halb',
+  lock9Help: 'Verdoppeln, halbieren und Zehner hüpfen auf einem Rad bis 100, mit Dornen.',
 };
 
 export const curriculumEs: CurriculumMessages = {
@@ -244,6 +255,11 @@ export const curriculumEs: CurriculumMessages = {
   race18Help: 'Por 6, 7, 8 y 9, como 7 × 8.',
   race19: 'Puente del caballero',
   race19Help: 'Sumas de dos cifras pasando la decena, como 37 + 25 y 62 − 28.',
+
+  lock8: 'Mitades hacia atrás',
+  lock8Help: 'Empieza en 40, baja haciendo la mitad con ÷2 y ajusta con +1 o −1.',
+  lock9: 'Doble y mitad',
+  lock9Help: 'Duplica, haz la mitad y salta decenas en un disco hasta 100, con espinas.',
 };
 
 export const curriculumFr: CurriculumMessages = {
@@ -323,4 +339,9 @@ export const curriculumFr: CurriculumMessages = {
   race18Help: 'Fois 6, 7, 8 et 9, comme 7 × 8.',
   race19: 'Pont du chevalier',
   race19Help: 'Nombres à deux chiffres en passant la dizaine, comme 37 + 25 et 62 − 28.',
+
+  lock8: 'Couper en deux',
+  lock8Help: 'Pars de 40, descends en prenant la moitié avec ÷2, puis corrige avec +1 ou −1.',
+  lock9: 'Double et moitié',
+  lock9Help: 'Double, moitié et sauts de dix sur un cadran jusqu’à 100, avec des épines.',
 };

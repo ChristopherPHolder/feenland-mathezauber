@@ -14,7 +14,11 @@ const en = {
   nines: 'Nearly a ten? Hop to the ten, then step back. +9 is the same as +10 −1.',
   back: 'Going down? Hop back the tens first, then fix the ones.',
   doubles: 'Doubling is a giant hop: 3 doubled is 6, and doubled again is 12.',
+  halving:
+    'Halving is a giant hop back: half of 8 is 4. Halve until you are close, then take little steps.',
   mixed: 'Mix your tricks: tens, doubles and one little step to finish.',
+  doubleHalve:
+    'Halving undoes doubling: half of 18 is 9. Can’t reach the keyhole? Hop to its double, then halve.',
   hintLead: 'Pip remembers the trick:',
   start: 'Open the treasure',
   paceTitle: 'Do you want an hourglass?',
@@ -41,6 +45,7 @@ const en = {
   spellsLabel: 'Hop spells',
   hopLabel: 'Hop {spell}',
   tooFar: 'Too far: Pip would fall off the dial.',
+  cannotHalve: '{n} is odd: it can’t be split into two equal halves.',
   startAgain: 'Back to the start',
   ready: 'Pick a hop spell. Where will Pip land?',
   thorn: 'Ouch, thorns! Pip hops back.',
@@ -89,7 +94,11 @@ const de: Messages = {
     'Fast ein Zehner? Hüpf zum Zehner und geh einen Schritt zurück. +9 ist dasselbe wie +10 −1.',
   back: 'Rückwärts? Hüpf zuerst die Zehner zurück, dann korrigiere die Einer.',
   doubles: 'Verdoppeln ist ein Riesenhüpfer: 3 verdoppelt ist 6, noch mal verdoppelt 12.',
+  halving:
+    'Halbieren ist ein Riesenhüpfer zurück: Die Hälfte von 8 ist 4. Halbiere, bis du nah dran bist, dann mach kleine Schritte.',
   mixed: 'Misch deine Tricks: Zehner, Verdoppeln und ein kleiner Schritt zum Schluss.',
+  doubleHalve:
+    'Halbieren macht Verdoppeln rückgängig: Die Hälfte von 18 ist 9. Kommst du nicht zum Schlüsselloch? Hüpf zum Doppelten und halbiere.',
   hintLead: 'Pip erinnert sich an den Trick:',
   start: 'Schatz öffnen',
   paceTitle: 'Möchtest du eine Sanduhr?',
@@ -116,6 +125,7 @@ const de: Messages = {
   spellsLabel: 'Hüpfzauber',
   hopLabel: 'Hüpf {spell}',
   tooFar: 'Zu weit: Pip würde vom Rad fallen.',
+  cannotHalve: '{n} ist ungerade: Das kann man nicht in zwei gleiche Hälften teilen.',
   startAgain: 'Zurück zum Anfang',
   ready: 'Wähle einen Hüpfzauber. Wo landet Pip?',
   thorn: 'Autsch, Dornen! Pip hüpft zurück.',
@@ -161,7 +171,11 @@ const es: Messages = {
   nines: '¿Casi una decena? Salta a la decena y retrocede un paso. +9 es lo mismo que +10 −1.',
   back: '¿Hacia abajo? Retrocede primero las decenas y luego ajusta las unidades.',
   doubles: 'Duplicar es un salto gigante: el doble de 3 es 6, y el doble otra vez es 12.',
+  halving:
+    'La mitad es un salto gigante hacia atrás: la mitad de 8 es 4. Haz la mitad hasta acercarte y luego da pasitos.',
   mixed: 'Mezcla tus trucos: decenas, dobles y un pasito para terminar.',
+  doubleHalve:
+    'La mitad deshace el doble: la mitad de 18 es 9. ¿No llegas a la cerradura? Salta a su doble y haz la mitad.',
   hintLead: 'Pip recuerda el truco:',
   start: 'Abrir el tesoro',
   paceTitle: '¿Quieres un reloj de arena?',
@@ -188,6 +202,7 @@ const es: Messages = {
   spellsLabel: 'Hechizos de salto',
   hopLabel: 'Saltar {spell}',
   tooFar: 'Demasiado lejos: Pip se caería del disco.',
+  cannotHalve: '{n} es impar: no se puede partir en dos mitades iguales.',
   startAgain: 'Volver al inicio',
   ready: 'Elige un hechizo de salto. ¿Dónde caerá Pip?',
   thorn: '¡Ay, espinas! Pip salta hacia atrás.',
@@ -233,7 +248,11 @@ const fr: Messages = {
     'Presque une dizaine ? Saute à la dizaine, puis recule d’un pas. +9, c’est pareil que +10 −1.',
   back: 'Vers le bas ? Recule d’abord les dizaines, puis corrige les unités.',
   doubles: 'Doubler, c’est un saut de géant : le double de 3 est 6, et encore le double, 12.',
+  halving:
+    'Prendre la moitié, c’est un saut de géant en arrière : la moitié de 8 est 4. Prends la moitié jusqu’à être tout près, puis fais de petits pas.',
   mixed: 'Mélange tes astuces : dizaines, doubles et un petit pas pour finir.',
+  doubleHalve:
+    'La moitié défait le double : la moitié de 18 est 9. Tu n’arrives pas à la serrure ? Saute jusqu’à son double, puis prends la moitié.',
   hintLead: 'Pip se souvient de l’astuce :',
   start: 'Ouvrir le trésor',
   paceTitle: 'Veux-tu un sablier ?',
@@ -260,6 +279,7 @@ const fr: Messages = {
   spellsLabel: 'Sorts de saut',
   hopLabel: 'Sauter {spell}',
   tooFar: 'Trop loin : Pip tomberait du cadran.',
+  cannotHalve: '{n} est impair : on ne peut pas le couper en deux moitiés égales.',
   startAgain: 'Retour au départ',
   ready: 'Choisis un sort de saut. Où Pip va-t-elle atterrir ?',
   thorn: 'Aïe, des épines ! Pip revient en arrière.',

@@ -5,7 +5,7 @@
 >
   <app-game-header
     [title]="t('title')"
-    [detail]="t('level', { n: stage().stage, total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
     [anchor]="levelId()"
     [sound]="sounds.enabled"
     (soundToggle)="sounds.toggle()"
@@ -20,9 +20,9 @@
             [routerLink]="link.route"
             [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
             [attr.aria-label]="
-              t('level', { n: link.stage, total: total }) + ' · ' + i.t(levelKey(link.stage))
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
             "
-            >{{ link.stage }}</a
+            >{{ link.position }}</a
           >
         }
       </nav>
@@ -231,13 +231,17 @@
               [disabled]="!canCast(spell)"
               [attr.aria-disabled]="round().phase !== 'ready' ? true : null"
               [attr.aria-label]="t('hopLabel', { spell: spellText(spell) })"
-              [title]="canCast(spell) ? '' : t('tooFar')"
+              [attr.aria-describedby]="spell.op === '÷' && halveNote() ? 'halve-note' : null"
+              [title]="blockedText(spell)"
               (click)="hop(spell)"
             >
               {{ spellText(spell) }}
             </button>
           }
         </fieldset>
+        @if (halveNote(); as note) {
+          <p id="halve-note" class="halve-note">{{ note }}</p>
+        }
         <div class="lock-actions">
           @if (round().phase === 'opened') {
             <button class="button primary" type="button" (click)="advance()">
