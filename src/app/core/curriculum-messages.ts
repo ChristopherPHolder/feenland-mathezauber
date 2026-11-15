@@ -90,6 +90,13 @@ export const curriculumEn = {
   lock8Help: 'Start at 40 and halve your way down with ÷2, then fix it with +1 or −1.',
   lock9: 'Double and halve',
   lock9Help: 'Double, halve and hop tens on a dial up to 100, with thorns.',
+  race20: 'Half-moon hill',
+  race20Help: 'Halves up to 100, like half of 18 and half of 40.',
+  race21: 'Twinkle trail',
+  race21Help: 'Share by 2, 5 and 10, like 35 ÷ 5.',
+  race22: 'Treasure hall',
+  race22Help: 'Share up to 100 by 3 to 9, like 42 ÷ 6.',
+  raceHalfOf: 'half of {n}',
 };
 export type CurriculumKey = keyof typeof curriculumEn;
 type CurriculumMessages = { readonly [K in CurriculumKey]: string };
@@ -176,6 +183,13 @@ export const curriculumDe: CurriculumMessages = {
   lock8Help: 'Starte bei 40, halbiere dich mit ÷2 nach unten und korrigiere mit +1 oder −1.',
   lock9: 'Doppelt und halb',
   lock9Help: 'Verdoppeln, halbieren und Zehner hüpfen auf einem Rad bis 100, mit Dornen.',
+  race20: 'Halbmondhügel',
+  race20Help: 'Halbieren bis 100, wie die Hälfte von 18 und die Hälfte von 40.',
+  race21: 'Funkelpfad',
+  race21Help: 'Teilen durch 2, 5 und 10, wie 35 ÷ 5.',
+  race22: 'Schatzsaal',
+  race22Help: 'Teilen bis 100 durch 3 bis 9, wie 42 ÷ 6.',
+  raceHalfOf: 'die Hälfte von {n}',
 };
 
 export const curriculumEs: CurriculumMessages = {
@@ -260,6 +274,13 @@ export const curriculumEs: CurriculumMessages = {
   lock8Help: 'Empieza en 40, baja haciendo la mitad con ÷2 y ajusta con +1 o −1.',
   lock9: 'Doble y mitad',
   lock9Help: 'Duplica, haz la mitad y salta decenas en un disco hasta 100, con espinas.',
+  race20: 'Colina de la media luna',
+  race20Help: 'Mitades hasta 100, como la mitad de 18 y la mitad de 40.',
+  race21: 'Sendero centelleante',
+  race21Help: 'Repartir entre 2, 5 y 10, como 35 ÷ 5.',
+  race22: 'Sala del tesoro',
+  race22Help: 'Repartir hasta 100 entre números del 3 al 9, como 42 ÷ 6.',
+  raceHalfOf: 'la mitad de {n}',
 };
 
 export const curriculumFr: CurriculumMessages = {
@@ -344,4 +365,11 @@ export const curriculumFr: CurriculumMessages = {
   lock8Help: 'Pars de 40, descends en prenant la moitié avec ÷2, puis corrige avec +1 ou −1.',
   lock9: 'Double et moitié',
   lock9Help: 'Double, moitié et sauts de dix sur un cadran jusqu’à 100, avec des épines.',
+  race20: 'Colline de la demi-lune',
+  race20Help: 'Les moitiés jusqu’à 100, comme la moitié de 18 et la moitié de 40.',
+  race21: 'Sentier scintillant',
+  race21Help: 'Partager par 2, 5 et 10, comme 35 ÷ 5.',
+  race22: 'Salle du trésor',
+  race22Help: 'Partager jusqu’à 100 par un nombre de 3 à 9, comme 42 ÷ 6.',
+  raceHalfOf: 'la moitié de {n}',
 };
