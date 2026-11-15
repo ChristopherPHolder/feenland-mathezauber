@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { CampaignStore, campaignStars, parseCampaign } from './campaign';
+import { CampaignStore, campaignStars, parseCampaign, waveStars } from './campaign';
 import { createWave, waveSize } from './waves';
 import { advance, cast, freshBattle, resolveSpell, revealHint } from './battle';
 
@@ -144,6 +144,31 @@ describe('saved campaign', () => {
         })),
       }),
     ).toBe(2);
+  });
+  it('earns one to three stars per wave from first tries and keeps the best', () => {
+    // Four creatures: eight gems means four first tries.
+    expect(waveStars(4, 8)).toBe(3);
+    expect(waveStars(4, 7)).toBe(2);
+    expect(waveStars(4, 6)).toBe(2);
+    expect(waveStars(4, 5)).toBe(1);
+    expect(waveStars(4, 4)).toBe(1);
+    expect(waveStars(3, 5)).toBe(2);
+    expect(waveStars(3, 4)).toBe(1);
+    const store = TestBed.inject(CampaignStore);
+    store.complete({ wave: 3, independent: 1, stars: 2 });
+    store.complete({ wave: 3, independent: 0, stars: 1 });
+    expect(store.waveStars().get(3)).toBe(2);
+    store.complete({ wave: 3, independent: 0, stars: 3 });
+    store.complete({ wave: 4, independent: 0 });
+    expect(store.waveStars().get(3)).toBe(3);
+    expect(store.waveStars().get(4)).toBe(0);
+    expect(store.starTotal()).toBe(3);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    expect(TestBed.inject(CampaignStore).waveStars().get(3)).toBe(3);
+    expect(
+      parseCampaign({ version: 1, results: [{ wave: 1, independent: 0, stars: 4 }] }).results,
+    ).toEqual([]);
   });
   it('continues in memory when storage fails', () => {
     const store = TestBed.inject(CampaignStore);

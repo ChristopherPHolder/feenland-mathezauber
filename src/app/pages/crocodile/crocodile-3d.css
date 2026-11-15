@@ -1,0 +1,37 @@
+/* The 3D pond fills the board behind the buttons. Until it is up (and wherever WebGL is
+   missing) the 2D pond inside it shows instead. */
+.pond-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Once the 3D pond is drawing, the side pads and Kiki's button stay real buttons, but
+   see-through: the lily pads, tiles and Kiki in the scene sit right under them. The buttons
+   keep their names, sizes and focus rings. They stand still, since the world measures them. */
+.board.pond.in-3d {
+  background: var(--croc-pond-mid);
+}
+.board.pond.in-3d .side,
+.board.pond.in-3d .side.winner,
+.board.pond.in-3d .side.eaten {
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  opacity: 1;
+  animation: none;
+  transition: none;
+}
+.board.pond.in-3d .side .expression,
+.board.pond.in-3d .side .splash,
+.board.pond.in-3d .slot-croc > * {
+  visibility: hidden;
+}
+.board.pond.in-3d .slot-croc,
+.board.pond.in-3d .slot-croc.shake {
+  transform: none;
+  animation: none;
+}
+.board.pond.in-3d .slot-empty {
+  visibility: hidden;
+}

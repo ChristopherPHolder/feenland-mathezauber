@@ -3,7 +3,8 @@ import { form, FormField } from '@angular/forms/signals';
 import { Difficulty, Pace, PracticeConfig, practiceLevels } from '../../core/practice';
 import { practiceBattle, practiceSpells, withCampaignMath } from './practice-battle';
 import { WavePathComponent } from './wave-path/wave-path.component';
-import { CampaignStore } from './campaign';
+import { CampaignStore, waveStars } from './campaign';
+import { WaveReward } from './wave-reward';
 import { TOTAL_WAVES } from './waves';
 import { CompletionService } from '../../core/completion';
 import { Router } from '@angular/router';
@@ -41,6 +42,7 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
     RouterLink,
     Icon,
     GameHeader,
+    WaveReward,
   ],
   providers: [GameAudio],
   templateUrl: './fairy-defense.component.html',
@@ -69,6 +71,12 @@ export class FairyDefenseComponent {
   protected readonly difficulties = ['easy', 'medium', 'hard'] as const;
   protected readonly paces = ['relaxed', 'steady', 'quick'] as const;
   protected readonly thinkingTime = signal(45);
+  /** How close the thinking timer is to running out, for the scene: 0 without a timer. */
+  protected readonly pressure = computed(() => {
+    const pace = this.settingsModel().pace;
+    if (pace === 'relaxed') return 0;
+    return 1 - this.thinkingTime() / (pace === 'quick' ? 20 : 45);
+  });
   protected readonly spells = computed(() => {
     const question = this.encounter()?.question;
     return question ? practiceSpells(question.answer) : this.battle().wave.spells;
@@ -96,6 +104,10 @@ export class FairyDefenseComponent {
   private readonly instructionOverride = signal<'full' | 'short' | null>(null);
   protected readonly encounter = computed(
     () => this.battle().wave.encounters[this.battle().encounter],
+  );
+  /** Stars for the wave just won, from the gems in the pouch. */
+  protected readonly earnedStars = computed(() =>
+    waveStars(this.battle().wave.encounters.length, this.battle().gems),
   );
   protected readonly dots = Array.from({ length: 10 }, (_, index) => index);
   /** Where the games hub lands when leaving: this game's section, or the practice stage. */
@@ -271,6 +283,7 @@ export class FairyDefenseComponent {
               this.campaign.complete({
                 wave: state.wave.number,
                 independent: state.independent.filter(Boolean).length,
+                stars: this.earnedStars(),
               });
             this.audio.speak(
               this.t('complete', { n: state.wave.number }) + ' ' + this.t('restored'),
