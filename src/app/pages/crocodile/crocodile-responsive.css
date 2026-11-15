@@ -421,12 +421,17 @@
 /* An upright phone: callouts float over the top of the pond and the help card hugs its text,
    so a golden snack and a "Try again!" never push the answers below the screen. */
 @media (max-width: 640px) and (orientation: portrait) {
+  /* Low in the pond, in the open water above the help line: the pads and their coins sit at
+     the top, Kiki in the middle. */
   .playing .banner {
     position: absolute;
-    top: 6px;
+    bottom: 88px;
     left: 0;
     right: 0;
     margin: 0 auto;
+  }
+  .playing .board:has(.instruction.has-rule) .banner {
+    bottom: 140px;
   }
   .playing .instruction.has-rule {
     margin-top: 8px;
