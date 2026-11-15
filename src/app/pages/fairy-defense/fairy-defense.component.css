@@ -315,6 +315,10 @@
   /* A phone is much taller than the picture; past this the sum and spells get the room. */
   max-height: 125vw;
 }
+/* The 3D battlefield reframes its camera to any shape, so it can take the whole free height. */
+:host.playing app-battle-scene:has(.is-3d) {
+  max-height: none;
+}
 :host.playing .learning-dock {
   flex: 1 0 auto;
   display: flex;
