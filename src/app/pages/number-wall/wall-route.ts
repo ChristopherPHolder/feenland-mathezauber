@@ -5,7 +5,8 @@ import { routeShellStyles } from '../../shared/loading/route-shell';
 import { WorldLoader } from '../../shared/three/three-stage';
 import { NumberWallComponent } from './number-wall.component';
 /** The number wall's small loading scene; `undefined` keeps the CSS loader. */
-const loaderScene: WorldLoader<null> | undefined = undefined;
+const loaderScene: WorldLoader<null> | undefined = () =>
+  import('./wall-loader-world').then((m) => m.WallLoaderWorld);
 
 /**
  * The number wall.
