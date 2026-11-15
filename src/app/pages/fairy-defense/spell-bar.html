@@ -11,6 +11,7 @@
       class="spell"
       [class.zero]="spell === 0"
       [class.selected]="selected() === spell && locked()"
+      [class.fizzled]="selected() === spell && locked() && fizzled()"
       [attr.aria-label]="t('spell', { n: spell })"
       (click)="castSpell.emit(spell)"
     >

@@ -182,6 +182,7 @@
       [spells]="spells()"
       [locked]="battle().phase !== 'ready'"
       [selected]="battle().spell"
+      [fizzled]="battle().phase === 'wrong'"
       (castSpell)="castSpell($event)"
     />
   }

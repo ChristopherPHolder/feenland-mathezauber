@@ -11,6 +11,8 @@ import { gameText, GameMessageKey } from './game-messages';
 export class SpellBar {
   readonly locked = input(false);
   readonly selected = input<number | null>(null);
+  /** The selected spell just missed: it fizzles out instead of glowing. */
+  readonly fizzled = input(false);
   readonly castSpell = output<number>();
   readonly spells = input<readonly number[]>([1, 2, 3, 4, 5]);
   protected readonly quantities = Array.from({ length: 10 }, (_, index) => index);
