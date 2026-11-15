@@ -11,6 +11,9 @@ import { SettingsRoute } from './pages/settings/settings-route';
 import { LockRoute } from './pages/treasure-lock/lock-route';
 import { PotionRoute } from './pages/potions/potion-route';
 import { BakeryRoute } from './pages/bakery/bakery-route';
+import { DrumRoute } from './pages/drums/drum-route';
+import { StarRoute } from './pages/star-catcher/star-route';
+import { FireworkRoute } from './pages/fireworks/firework-route';
 import { RaceRoute } from './pages/unicorn-race/race-route';
 import { WelcomeRoute } from './pages/welcome/welcome-route';
 /**
@@ -107,6 +110,36 @@ export const routes: Routes = [
         : null,
     data: { focusedGame: true },
     component: BakeryRoute,
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^drums-(?:[1-9]|1[0-2])$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    component: DrumRoute,
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^star-catcher-([1-9]|1[0-2])$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    component: StarRoute,
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^fireworks-(?:[1-9]|1[0-2])$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    component: FireworkRoute,
   },
   {
     path: 'adventure/number-wall',

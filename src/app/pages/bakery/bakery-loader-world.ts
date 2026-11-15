@@ -50,16 +50,29 @@ export class BakeryLoaderWorld extends Stage implements StateWorld<null> {
     this.fill.intensity = 1.7;
     this.sun.position.set(-3, 9, 7);
     const oven = new Group();
-    const body = new Mesh(new BoxGeometry(2.4, 1.9, 1.2), new MeshStandardMaterial({ color: '#b5523b', roughness: 0.8 }));
+    const body = new Mesh(
+      new BoxGeometry(2.4, 1.9, 1.2),
+      new MeshStandardMaterial({ color: '#b5523b', roughness: 0.8 }),
+    );
     body.position.y = 1.2;
-    this.window = new MeshStandardMaterial({ color: '#ffcf6b', emissive: '#ff9a1f', emissiveIntensity: 0.8 });
+    this.window = new MeshStandardMaterial({
+      color: '#ffcf6b',
+      emissive: '#ff9a1f',
+      emissiveIntensity: 0.8,
+    });
     const glass = new Mesh(new PlaneGeometry(1.5, 0.8), this.window);
     glass.position.set(0, 1.1, 0.61);
     oven.add(body, glass);
     oven.position.z = -1;
-    const tray = new Mesh(new BoxGeometry(2.6, 0.12, 1.7), new MeshStandardMaterial({ color: '#b8bec8', metalness: 0.5, roughness: 0.4 }));
+    const tray = new Mesh(
+      new BoxGeometry(2.6, 0.12, 1.7),
+      new MeshStandardMaterial({ color: '#b8bec8', metalness: 0.5, roughness: 0.4 }),
+    );
     tray.position.set(0, 0.06, 0.7);
-    const paper = new Mesh(new BoxGeometry(2.4, 0.02, 1.5), new MeshStandardMaterial({ color: '#f5e7c6' }));
+    const paper = new Mesh(
+      new BoxGeometry(2.4, 0.02, 1.5),
+      new MeshStandardMaterial({ color: '#f5e7c6' }),
+    );
     paper.position.set(0, 0.13, 0.7);
     this.scene.add(oven, tray, paper);
     const dome = new SphereGeometry(0.32, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2);

@@ -185,7 +185,14 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     this.chips = new InstancedMesh(chip, paint('#4a2a12', { roughness: 0.5 }), MAX_COOKIES * 3);
     this.ghosts = new InstancedMesh(
       dome,
-      new MeshStandardMaterial({ color: '#a9d8ff', emissive: '#6fb6ff', emissiveIntensity: 0.35, transparent: true, opacity: 0.6, depthWrite: false }),
+      new MeshStandardMaterial({
+        color: '#a9d8ff',
+        emissive: '#6fb6ff',
+        emissiveIntensity: 0.35,
+        transparent: true,
+        opacity: 0.6,
+        depthWrite: false,
+      }),
       10,
     );
     this.sugar = new InstancedMesh(
@@ -197,22 +204,48 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
       mesh.count = 0;
       mesh.frustumCulled = false;
     }
-    this.trayInner.add(this.sheets, this.lines, this.cookies, this.chips, this.ghosts, this.sugar, this.guides);
+    this.trayInner.add(
+      this.sheets,
+      this.lines,
+      this.cookies,
+      this.chips,
+      this.ghosts,
+      this.sugar,
+      this.guides,
+    );
     this.tray.add(this.trayInner);
     this.scene.add(this.tray);
 
     // A big, friendly baker's knife: a wide rounded blade and a chunky wooden handle.
     const bladeShape = roundedRect(1, 0.34, 0.16);
     this.blade = new Mesh(
-      new ExtrudeGeometry(bladeShape, { depth: 0.05, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.02, bevelSegments: 2 }),
-      paint('#e8edf3', { metalness: 0.6, roughness: 0.25, emissive: '#8aa0b8', emissiveIntensity: 0.1 }),
+      new ExtrudeGeometry(bladeShape, {
+        depth: 0.05,
+        bevelEnabled: true,
+        bevelSize: 0.03,
+        bevelThickness: 0.02,
+        bevelSegments: 2,
+      }),
+      paint('#e8edf3', {
+        metalness: 0.6,
+        roughness: 0.25,
+        emissive: '#8aa0b8',
+        emissiveIntensity: 0.1,
+      }),
     );
     this.knifeHandle = new Mesh(
-      new ExtrudeGeometry(roundedRect(1.25, 0.5, 0.24), { depth: 0.3, bevelEnabled: true, bevelSize: 0.06, bevelThickness: 0.06, bevelSegments: 3 }),
+      new ExtrudeGeometry(roundedRect(1.25, 0.5, 0.24), {
+        depth: 0.3,
+        bevelEnabled: true,
+        bevelSize: 0.06,
+        bevelThickness: 0.06,
+        bevelSegments: 3,
+      }),
       paint('#b8763e', { roughness: 0.7 }),
     );
     const rivet = paint('#f1d48a', { metalness: 0.7, roughness: 0.3 });
-    for (const x of [-0.3, 0.3]) this.knifeHandle.add(ball(rivet, 0.06, x, 0, 0.38, [1, 1, 0.5], 8));
+    for (const x of [-0.3, 0.3])
+      this.knifeHandle.add(ball(rivet, 0.06, x, 0, 0.38, [1, 1, 0.5], 8));
     this.knife.add(this.blade, this.knifeHandle);
     this.trayInner.add(this.knife);
 
@@ -221,7 +254,11 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     const body = new Mesh(new BoxGeometry(2.6, 2.3, 1.4), this.ovenBody);
     const door = new Mesh(new BoxGeometry(1.9, 1.3, 0.1), paint('#3a2318', { roughness: 0.6 }));
     door.position.set(0, -0.25, 0.72);
-    this.ovenWindow = new MeshStandardMaterial({ color: '#ffcf6b', emissive: '#ff9a1f', emissiveIntensity: 0.6 });
+    this.ovenWindow = new MeshStandardMaterial({
+      color: '#ffcf6b',
+      emissive: '#ff9a1f',
+      emissiveIntensity: 0.6,
+    });
     const window = new Mesh(new PlaneGeometry(1.5, 0.85), this.ovenWindow);
     window.position.set(0, -0.25, 0.78);
     const handleBar = new Mesh(new CylinderGeometry(0.05, 0.05, 1.2, 10), rivet);
@@ -246,14 +283,20 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     this.menuTexture = new CanvasTexture(this.menuCanvas);
     this.menuTexture.colorSpace = SRGBColorSpace;
     const frame = new Mesh(new BoxGeometry(2.3, 2.3, 0.12), paint('#9a6a3f'));
-    const chalk = new Mesh(new PlaneGeometry(2.05, 2.05), new MeshBasicMaterial({ map: this.menuTexture }));
+    const chalk = new Mesh(
+      new PlaneGeometry(2.05, 2.05),
+      new MeshBasicMaterial({ map: this.menuTexture }),
+    );
     chalk.position.z = 0.07;
     this.menu.add(frame, chalk);
     this.scene.add(this.menu);
 
     // The shop window: a wooden frame, pale glass and a shelf for the treats.
     const shopFrame = new Mesh(new BoxGeometry(2.4, 2.3, 0.14), paint('#9a6a3f'));
-    const glass = new Mesh(new PlaneGeometry(2.1, 2), paint('#cfe8f5', { roughness: 0.2, emissive: '#bfe3ff', emissiveIntensity: 0.25 }));
+    const glass = new Mesh(
+      new PlaneGeometry(2.1, 2),
+      paint('#cfe8f5', { roughness: 0.2, emissive: '#bfe3ff', emissiveIntensity: 0.25 }),
+    );
     glass.position.z = 0.08;
     const shelf = new Mesh(new BoxGeometry(2.1, 0.08, 0.4), paint('#7a4f2a'));
     shelf.position.set(0, -0.05, 0.25);
@@ -346,7 +389,14 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     const wide = width / height > WIDE_BOARD;
     const region = trayRegion(width, height);
     const finished = !!this.frame?.finished;
-    const place = (object: Object3D, u: number, v: number, depth: number, px: number, size: number) => {
+    const place = (
+      object: Object3D,
+      u: number,
+      v: number,
+      depth: number,
+      px: number,
+      size: number,
+    ) => {
       object.position.copy(this.anchor(u, v, depth));
       object.quaternion.copy(this.camera.quaternion);
       object.scale.setScalar((px * this.pixel(depth)) / size);
@@ -384,9 +434,22 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
       // Bruno and the customer stand behind the counter, peeking over the tray's top edge.
       const cast = Math.min(band * 2.1, width * 0.34);
       place(this.brunoHolder, 0.1, (band + cast * 0.5) / height, CAST_DEPTH, cast, 2.6);
-      place(this.guestHolder, 0.9, (band + cast * 0.62 * 0.45) / height, CAST_DEPTH, cast * 0.62, 1.6);
+      place(
+        this.guestHolder,
+        0.9,
+        (band + cast * 0.62 * 0.45) / height,
+        CAST_DEPTH,
+        cast * 0.62,
+        1.6,
+      );
     }
-    this.box.position.copy(this.anchor(wide ? 1 - region.left / 2 : 0.78, wide ? 0.62 : (fit.y * 0.95) / height, CAST_DEPTH - 1));
+    this.box.position.copy(
+      this.anchor(
+        wide ? 1 - region.left / 2 : 0.78,
+        wide ? 0.62 : (fit.y * 0.95) / height,
+        CAST_DEPTH - 1,
+      ),
+    );
     this.box.quaternion.copy(this.camera.quaternion);
     this.box.scale.setScalar((Math.min(height, width) * 0.13 * this.pixel(CAST_DEPTH - 1)) / 1);
     this.warmLight.position.copy(this.anchor(0.5, 0.4, TRAY_DEPTH - 3));
@@ -394,9 +457,20 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
 
   /** Rebuilds the tray's sheets, lines and guides when its shape changes. */
   private syncShape(frame: BakeryFrame) {
-    const key = [frame.order, frame.rows, frame.cols, frame.dir, frame.cuts.join('.'), frame.ghost, frame.look, frame.cookies, frame.cake].join('|');
+    const key = [
+      frame.order,
+      frame.rows,
+      frame.cols,
+      frame.dir,
+      frame.cuts.join('.'),
+      frame.ghost,
+      frame.look,
+      frame.cookies,
+      frame.cake,
+    ].join('|');
     const shape = trayGeometry(frame);
-    const resized = !this.shape || this.shape.width !== shape.width || this.shape.height !== shape.height;
+    const resized =
+      !this.shape || this.shape.width !== shape.width || this.shape.height !== shape.height;
     this.shape = shape;
     if (key !== this.shapeKey) {
       this.shapeKey = key;
@@ -408,7 +482,10 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     if (frame.guide && frame.phase === 'cut')
       for (const at of frame.guide.gaps) {
         const strip = new Mesh(
-          new PlaneGeometry(frame.guide.dir === 'rows' ? shape.width + 0.8 : 0.3, frame.guide.dir === 'rows' ? 0.3 : shape.height + 0.8),
+          new PlaneGeometry(
+            frame.guide.dir === 'rows' ? shape.width + 0.8 : 0.3,
+            frame.guide.dir === 'rows' ? 0.3 : shape.height + 0.8,
+          ),
           this.guideMaterial,
         );
         const gap = frame.guide.dir === 'rows' ? shape.rowGaps[at - 1] : shape.colGaps[at - 1];
@@ -435,17 +512,27 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     for (const rect of rects) {
       const [cx, cy] = toLocal(rect.x + rect.width / 2, rect.y + rect.height / 2);
       const metal = new Mesh(
-        new ExtrudeGeometry(roundedRect(rect.width, rect.height, 0.32), { depth: 0.12, bevelEnabled: true, bevelSize: 0.08, bevelThickness: 0.06, bevelSegments: 2 }),
+        new ExtrudeGeometry(roundedRect(rect.width, rect.height, 0.32), {
+          depth: 0.12,
+          bevelEnabled: true,
+          bevelSize: 0.08,
+          bevelThickness: 0.06,
+          bevelSegments: 2,
+        }),
         this.sheetMetal,
       );
       metal.position.set(cx, cy, -0.2);
-      const top = new Mesh(new ShapeGeometry(roundedRect(rect.width - 0.25, rect.height - 0.25, 0.22)), area ? paint('#e3b06a', { roughness: 0.9 }) : paper);
+      const top = new Mesh(
+        new ShapeGeometry(roundedRect(rect.width - 0.25, rect.height - 0.25, 0.22)),
+        area ? paint('#e3b06a', { roughness: 0.9 }) : paper,
+      );
       top.position.set(cx, cy, area ? 0.04 : -0.0);
       this.sheets.add(metal, top);
       if (area) {
         // The area model: a slab of dough with faint lines between the rows and columns.
         const points: number[] = [];
-        const inside = (gaps: readonly number[], lo: number, hi: number) => gaps.filter((g) => g > lo && g < hi);
+        const inside = (gaps: readonly number[], lo: number, hi: number) =>
+          gaps.filter((g) => g > lo && g < hi);
         for (const g of inside(shape.rowGaps, rect.y + 0.4, rect.y + rect.height - 0.4)) {
           const [, y] = toLocal(0, g);
           points.push(cx - rect.width / 2 + 0.2, y, 0.06, cx + rect.width / 2 - 0.2, y, 0.06);
@@ -456,7 +543,12 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
         }
         const geometry = new BufferGeometry();
         geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
-        this.lines.add(new LineSegments(geometry, new LineBasicMaterial({ color: '#fff3d6', transparent: true, opacity: 0.7 })));
+        this.lines.add(
+          new LineSegments(
+            geometry,
+            new LineBasicMaterial({ color: '#fff3d6', transparent: true, opacity: 0.7 }),
+          ),
+        );
       }
     }
     if (frame.look === 'blocks' && !area) {
@@ -464,7 +556,8 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
       const points: number[] = [];
       const edges = (count: number) => {
         const out: [number, number][] = [];
-        for (let start = 0; start < count; start += 5) out.push([start, Math.min(count, start + 5) - 1]);
+        for (let start = 0; start < count; start += 5)
+          out.push([start, Math.min(count, start + 5) - 1]);
         return out;
       };
       for (const piece of shape.pieces)
@@ -476,7 +569,32 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
             const bottom = shape.rowY[piece.row + r1] + 0.48;
             const [l, t] = toLocal(left, topY);
             const [r, b] = toLocal(right, bottom);
-            points.push(l, t, 0.03, r, t, 0.03, r, t, 0.03, r, b, 0.03, r, b, 0.03, l, b, 0.03, l, b, 0.03, l, t, 0.03);
+            points.push(
+              l,
+              t,
+              0.03,
+              r,
+              t,
+              0.03,
+              r,
+              t,
+              0.03,
+              r,
+              b,
+              0.03,
+              r,
+              b,
+              0.03,
+              l,
+              b,
+              0.03,
+              l,
+              b,
+              0.03,
+              l,
+              t,
+              0.03,
+            );
           }
       const geometry = new BufferGeometry();
       geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
@@ -553,7 +671,11 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
       const kind = index % 4;
       if (kind === 0) {
         const cup = new Mesh(new CylinderGeometry(0.18, 0.13, 0.22, 14), paint('#8fd0e8'));
-        treat.add(cup, ball(paint('#f7a8c4'), 0.2, 0, 0.17, 0, [1, 0.8, 1], 14), ball(paint('#e0304d'), 0.06, 0, 0.32, 0, [1, 1, 1], 8));
+        treat.add(
+          cup,
+          ball(paint('#f7a8c4'), 0.2, 0, 0.17, 0, [1, 0.8, 1], 14),
+          ball(paint('#e0304d'), 0.06, 0, 0.32, 0, [1, 1, 1], 8),
+        );
       } else if (kind === 1) {
         const donut = new Mesh(new TorusGeometry(0.15, 0.08, 10, 18), paint('#f28cb1'));
         donut.position.y = 0.12;
@@ -570,7 +692,19 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
         low.position.y = 0.08;
         const high = new Mesh(new CylinderGeometry(0.14, 0.14, 0.14, 18), paint('#f7c6d9'));
         high.position.y = 0.23;
-        treat.add(low, high, ball(paint('#ffd23f', { emissive: '#ff9a1f', emissiveIntensity: 0.5 }), 0.04, 0, 0.36, 0, [1, 1.6, 1], 8));
+        treat.add(
+          low,
+          high,
+          ball(
+            paint('#ffd23f', { emissive: '#ff9a1f', emissiveIntensity: 0.5 }),
+            0.04,
+            0,
+            0.36,
+            0,
+            [1, 1.6, 1],
+            8,
+          ),
+        );
       }
       treat.position.set(-0.75 + (index % 4) * 0.5, index < 4 ? 0 : index < 8 ? -0.8 : 0.5, 0);
       this.treats.add(treat);
@@ -585,7 +719,10 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
 
     // The tray slides in for a new order, wobbles at a slip and goes into the oven when baked.
     const arrive = (t - this.orderAt) / SLIDE_IN;
-    const intoOven = frame.phase === 'baked' && this.bakeAt > this.orderAt ? smooth((t - this.bakeAt) / INTO_OVEN) : 0;
+    const intoOven =
+      frame.phase === 'baked' && this.bakeAt > this.orderAt
+        ? smooth((t - this.bakeAt) / INTO_OVEN)
+        : 0;
     const hidden = frame.finished;
     this.tray.visible = !hidden && intoOven < 1;
     this.trayInner.position.x = arrive < 1 ? (1 - smooth(arrive)) * (shape.width * 1.6) : 0;
@@ -641,16 +778,27 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     this.updateParticles(t, dt);
   }
 
-  private updateCookies(frame: BakeryFrame, shape: TrayGeometry, t: number, dt: number, calm: boolean) {
+  private updateCookies(
+    frame: BakeryFrame,
+    shape: TrayGeometry,
+    t: number,
+    dt: number,
+    calm: boolean,
+  ) {
     const area = frame.look === 'area' && !frame.cookies;
     const base = new Color(cookieColor(frame));
     const rows = frame.rows;
     const cols = frame.cols;
     const pieceOf = (row: number, col: number) =>
-      shape.pieces.findIndex((p) => row >= p.row && row < p.row + p.rows && col >= p.col && col < p.col + p.cols);
+      shape.pieces.findIndex(
+        (p) => row >= p.row && row < p.row + p.rows && col >= p.col && col < p.col + p.cols,
+      );
     const twins = new Set<number>();
     shape.pieces.forEach((piece, index) => {
-      if (shape.pieces.some((o, at) => at !== index && o.rows === piece.rows && o.cols === piece.cols)) twins.add(index);
+      if (
+        shape.pieces.some((o, at) => at !== index && o.rows === piece.rows && o.cols === piece.cols)
+      )
+        twins.add(index);
     });
     let n = 0;
     let chipIndex = 0;
@@ -692,10 +840,13 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
         }
         if (piece === frame.active && frame.phase === 'pieces' && wrongAge < 0.9)
           this.tint.lerp(new Color('#ff9ab4'), Math.sin((wrongAge / 0.9) * Math.PI) * 0.6);
-        if (rightAge < 0.6 && (frame.phase === 'pieces' || frame.phase === 'total' || frame.phase === 'baked'))
+        if (
+          rightAge < 0.6 &&
+          (frame.phase === 'pieces' || frame.phase === 'total' || frame.phase === 'baked')
+        )
           scale += Math.sin((rightAge / 0.6) * Math.PI) * 0.08;
         this.dummy.position.set(spot.x, spot.y, 0.02);
-        this.dummy.rotation.set(0, 0, (row * 7 + col * 3) % 5 * 0.3);
+        this.dummy.rotation.set(0, 0, ((row * 7 + col * 3) % 5) * 0.3);
         this.dummy.scale.setScalar(area ? 0 : scale);
         this.dummy.updateMatrix();
         this.cookies.setMatrixAt(n, this.dummy.matrix);
@@ -778,7 +929,8 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     const target = rows
       ? { x: -0.1, y: shape.height / 2 - gap, angle: 0 }
       : { x: gap - shape.width / 2, y: 0.1, angle: -Math.PI / 2 };
-    if (!this.knifeAt.ready || this.knifeAt.angle !== target.angle) this.knifeAt = { ...target, ready: true };
+    if (!this.knifeAt.ready || this.knifeAt.angle !== target.angle)
+      this.knifeAt = { ...target, ready: true };
     this.knifeAt.x = approach(this.knifeAt.x, target.x, 18, dt);
     this.knifeAt.y = approach(this.knifeAt.y, target.y, 18, dt);
     this.blade.scale.set(length, 1, 1);
@@ -796,7 +948,12 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
   /** A little dragon swoops along the ghost row and nibbles it. */
   private updateNibbler(frame: BakeryFrame, shape: TrayGeometry, t: number) {
     const age = (t - this.nibbleAt) / 1.9;
-    const active = !!frame.ghost && frame.ghostValue !== null && age >= 0 && age < 1 && this.nibbleAt > this.orderAt;
+    const active =
+      !!frame.ghost &&
+      frame.ghostValue !== null &&
+      age >= 0 &&
+      age < 1 &&
+      this.nibbleAt > this.orderAt;
     const id = frame.customer.startsWith('dragon:') ? frame.customer.slice(7) : DAY_DRAGONS[0].id;
     if (active && (!this.nibbler || this.nibblerKey !== id)) {
       if (this.nibbler) {
@@ -813,8 +970,14 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     const ghostRows = frame.ghost === 'rows';
     const along = -0.2 + age * 1.4;
     const x = ghostRows ? (along - 0.5) * shape.width : shape.width / 2 - shape.colX[0] + 0.3;
-    const y = ghostRows ? shape.height / 2 - shape.rowY[shape.rowY.length - 1] - 0.4 : (0.5 - along) * shape.height;
-    this.nibbler.root.position.set(ghostRows ? x : shape.colX[shape.colX.length - 1] - shape.width / 2, y, 0.9);
+    const y = ghostRows
+      ? shape.height / 2 - shape.rowY[shape.rowY.length - 1] - 0.4
+      : (0.5 - along) * shape.height;
+    this.nibbler.root.position.set(
+      ghostRows ? x : shape.colX[shape.colX.length - 1] - shape.width / 2,
+      y,
+      0.9,
+    );
     this.nibbler.root.scale.setScalar(1.3);
     this.nibbler.root.rotation.set(0.9, ghostRows ? -0.7 : 0.3, 0);
     this.nibbler.update(t, true, this.calm);
@@ -856,20 +1019,52 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
     const origin = dance ? this.brunoHolder.position.clone() : this.tray.position.clone();
     const spread = dance ? this.brunoHolder.scale.x * 2 : this.trayScale * 5;
     for (let index = 0; index < (dance ? 2 : 7); index++) {
-      const mesh = new Mesh(this.puff, new MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.8, depthWrite: false }));
-      mesh.position.copy(origin).add(new Vector3((Math.random() - 0.5) * spread, (Math.random() - 0.3) * spread * 0.6, 0.6));
+      const mesh = new Mesh(
+        this.puff,
+        new MeshStandardMaterial({
+          color: '#ffffff',
+          transparent: true,
+          opacity: 0.8,
+          depthWrite: false,
+        }),
+      );
+      mesh.position
+        .copy(origin)
+        .add(
+          new Vector3((Math.random() - 0.5) * spread, (Math.random() - 0.3) * spread * 0.6, 0.6),
+        );
       mesh.scale.setScalar(this.trayScale * 2.2);
-      this.emit(mesh, new Vector3((Math.random() - 0.5) * 0.8, 0.6 + Math.random() * 0.5, 0), 1.2, 1.6, 0);
+      this.emit(
+        mesh,
+        new Vector3((Math.random() - 0.5) * 0.8, 0.6 + Math.random() * 0.5, 0),
+        1.2,
+        1.6,
+        0,
+      );
     }
   }
 
   private sparkle(at: Vector3, count: number, size: number) {
     for (let index = 0; index < count; index++) {
-      const mesh = new Mesh(this.spark, new MeshStandardMaterial({ color: '#fff3a0', emissive: '#ffcc33', emissiveIntensity: 1, transparent: true }));
+      const mesh = new Mesh(
+        this.spark,
+        new MeshStandardMaterial({
+          color: '#fff3a0',
+          emissive: '#ffcc33',
+          emissiveIntensity: 1,
+          transparent: true,
+        }),
+      );
       mesh.position.copy(at);
       mesh.scale.setScalar(size);
       const angle = (index / count) * Math.PI * 2;
-      this.emit(mesh, new Vector3(Math.cos(angle) * 1.6, Math.sin(angle) * 1.6 + 1, 0.4), 0.9, 0, 0);
+      this.emit(
+        mesh,
+        new Vector3(Math.cos(angle) * 1.6, Math.sin(angle) * 1.6 + 1, 0.4),
+        0.9,
+        0,
+        0,
+      );
     }
   }
 
@@ -879,13 +1074,27 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
       const mesh = new Mesh(this.crumb, paint('#d9a066'));
       mesh.position.copy(world);
       mesh.scale.setScalar(this.trayScale * 1.5);
-      this.emit(mesh, new Vector3((Math.random() - 0.5) * 1.5, Math.random() * 1.5, 0.5), 0.8, 0, 6);
+      this.emit(
+        mesh,
+        new Vector3((Math.random() - 0.5) * 1.5, Math.random() * 1.5, 0.5),
+        0.8,
+        0,
+        6,
+      );
     }
   }
 
   private steam() {
     const top = this.oven.localToWorld(new Vector3(0.8, 2, -0.2));
-    const mesh = new Mesh(this.puff, new MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.5, depthWrite: false }));
+    const mesh = new Mesh(
+      this.puff,
+      new MeshStandardMaterial({
+        color: '#ffffff',
+        transparent: true,
+        opacity: 0.5,
+        depthWrite: false,
+      }),
+    );
     mesh.position.copy(top);
     mesh.scale.setScalar(this.oven.scale.x * 0.8);
     this.emit(mesh, new Vector3(0.1, 0.7, 0).multiplyScalar(this.oven.scale.x * 2), 2.2, 1.2, 0);
@@ -920,12 +1129,18 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
 
   /** Frees an object's own geometry and materials, keeping the shared ones. */
   private disposeObject(root: Object3D, keepShared = false) {
-    const shared = new Set<unknown>([this.sheetMetal, this.parchment, this.cakePaper, this.guideMaterial]);
+    const shared = new Set<unknown>([
+      this.sheetMetal,
+      this.parchment,
+      this.cakePaper,
+      this.guideMaterial,
+    ]);
     root.traverse((object) => {
       if (!(object instanceof Mesh || object instanceof LineSegments)) return;
       object.geometry.dispose();
       const materials = Array.isArray(object.material) ? object.material : [object.material];
-      for (const material of materials) if (!keepShared || !shared.has(material)) material.dispose();
+      for (const material of materials)
+        if (!keepShared || !shared.has(material)) material.dispose();
     });
   }
 

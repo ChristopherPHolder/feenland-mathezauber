@@ -27,44 +27,62 @@
         }
       </nav>
       <div class="intro-grid">
-        <div class="intro-art"><app-potion-shelf [frame]="frame()" /></div>
+        <div class="intro-demo"><app-potion-demo [ops]="stage().ops" /></div>
         <div class="intro-copy">
           <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
-          <p>{{ t('story') }} {{ t('storyAll') }}</p>
+          <p class="goal-short">{{ t('goalShort') }}</p>
           <div class="trick-card">
-            <h3>{{ t('trickTitle') }}</h3>
-            <p>{{ t(stage().trick) }}</p>
-            <p class="example">{{ example() }}</p>
+            <p class="trick-head">
+              <span>{{ t('trickTitle') }}</span> <strong class="example">{{ example() }}</strong>
+            </p>
+            <p class="trick">{{ t(stage().trick) }}</p>
           </div>
           @if (best() > 0) {
             <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
           }
+          <fieldset class="pace" aria-describedby="pace-help">
+            <legend>{{ t('paceTitle') }}</legend>
+            <p id="pace-help" class="pace-help">{{ t('paceHelp') }}</p>
+            <div class="pace-options">
+              @for (option of paces; track option.id) {
+                <label class="pace-choice" [class.selected]="pace() === option.id">
+                  <input
+                    type="radio"
+                    name="potion-pace"
+                    [value]="option.id"
+                    [checked]="pace() === option.id"
+                    (change)="selectPace(option.id)"
+                  />
+                  <svg class="pace-picture" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      class="glass"
+                      d="M6 3h12M6 21h12M7 3q0 6 5 9-5 3-5 9M17 3q0 6-5 9 5 3 5 9"
+                    />
+                    @switch (option.id) {
+                      @case ('off') {
+                        <path class="cross" d="M3 3l18 18" />
+                      }
+                      @case ('relaxed') {
+                        <path class="sand" d="M8.5 19.5h7l-3.5-3z" />
+                      }
+                      @case ('normal') {
+                        <path class="sand" d="M9 7h6l-3 3zM8.5 19.5h7l-3.5-2.5z" />
+                      }
+                      @default {
+                        <path class="sand" d="M8 5h8l-4 5zM9 19.5h6l-3-1.5z" />
+                      }
+                    }
+                  </svg>
+                  <strong>{{ t(option.label) }}</strong>
+                  @if (option.id !== 'off') {
+                    <span>{{ t('paceSeconds', { n: paceSeconds(option.id) }) }}</span>
+                  }
+                </label>
+              }
+            </div>
+          </fieldset>
         </div>
       </div>
-      <fieldset class="pace" aria-describedby="pace-help">
-        <legend>{{ t('paceTitle') }}</legend>
-        <p id="pace-help">{{ t('paceHelp') }}</p>
-        <div class="pace-options">
-          @for (option of paces; track option.id) {
-            <label class="pace-choice" [class.selected]="pace() === option.id">
-              <input
-                type="radio"
-                name="potion-pace"
-                [value]="option.id"
-                [checked]="pace() === option.id"
-                (change)="selectPace(option.id)"
-              />
-              <strong>{{ t(option.label) }}</strong>
-              <span>{{
-                option.id === 'off'
-                  ? t('paceUnlimited')
-                  : t('paceSeconds', { n: paceSeconds(option.id) })
-              }}</span>
-            </label>
-          }
-        </div>
-        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
-      </fieldset>
       <div class="start-dock">
         <button class="button primary" type="button" (click)="play()">
           {{ t('start') }}<app-icon kind="arrow" />
@@ -155,6 +173,15 @@
       @if (fever()) {
         <p class="fever-chip">{{ t('fever') }}</p>
       }
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openCoach()"
+      >
+        ?
+      </button>
     </div>
     @if (timed()) {
       <section class="hourglass" [attr.aria-label]="t('hourglass')">
@@ -183,6 +210,14 @@
         <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
           <app-potion-shelf [frame]="frame()" />
         </app-three-stage>
+        @if (big() && round().phase === 'ready') {
+          <p class="big-badge" aria-hidden="true">{{ t('bigPotion') }}</p>
+        }
+        @if (showHint() && round().phase === 'ready') {
+          <p class="hint">
+            <strong>{{ t('hintLead') }}</strong> {{ t(stage().trick) }}
+          </p>
+        }
         @if (reward(); as reward) {
           <app-potion-reward
             [kind]="reward.kind"
@@ -193,23 +228,16 @@
           />
         }
       </section>
-      <div class="controls">
-        <div class="goal">
-          <p class="potion-name">
-            {{
-              big()
-                ? t('bigPotion')
-                : t('potionCount', { n: round().index + 1, total: roundLength })
-            }}
-          </p>
-          <p class="goal-line">
-            <span class="goal-text">{{ t('goal', { target: potion().target }) }}</span>
-            <span class="target-chip" aria-hidden="true"
-              ><small>{{ t('cauldron') }}</small
-              >{{ potion().target }}</span
-            >
-          </p>
-        </div>
+      <div class="controls" [attr.data-guide]="guide()">
+        <p class="sr-only">
+          {{
+            (big()
+              ? t('bigPotion')
+              : t('potionCount', { n: round().index + 1, total: roundLength })) +
+              ' ' +
+              t('goal', { target: potion().target })
+          }}
+        </p>
         <fieldset class="bottles" [attr.aria-busy]="round().phase !== 'ready'">
           <legend class="sr-only">{{ t('bottlesLabel') }}</legend>
           @for (bottle of round().bottles; track bottle.id) {
@@ -244,26 +272,41 @@
             </button>
           }
         </fieldset>
-        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+        @let line = mixLine();
+        <div class="mix-line" [attr.data-outcome]="line.outcome" aria-hidden="true">
+          <span
+            class="slot a"
+            [class.filled]="line.a !== null"
+            [class.next]="guide() === 'bottle'"
+            >{{ line.a }}</span
+          >
+          <span
+            class="slot op"
+            [class.filled]="line.op !== null"
+            [class.next]="guide() === 'spell'"
+            >{{ line.op === null ? '' : sign(line.op) }}</span
+          >
+          <span
+            class="slot b"
+            [class.filled]="line.b !== null"
+            [class.next]="guide() === 'second'"
+            >{{ line.b }}</span
+          >
+          @if (line.r !== null) {
+            <span class="equals">=</span>
+            <span class="slot r filled">{{ line.r }}</span>
+          }
+          <span class="target-chip" [class.match]="line.outcome === 'brewed'">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 9h16q1 9-5 11H9Q3 18 4 9z" />
+              <path d="M3 9h18" />
+            </svg>
+            {{ potion().target }}
+          </span>
+        </div>
+        <p class="status sr-only" role="status" aria-live="polite" aria-atomic="true">
           {{ statusText() }}
         </p>
-        @if (showHint() && round().phase === 'ready') {
-          <p class="hint">
-            <strong>{{ t('hintLead') }}</strong> {{ t(stage().trick) }}
-          </p>
-        }
-        <div class="recipe">
-          <h2>{{ t('recipe') }}</h2>
-          @if (round().steps.length) {
-            <ol>
-              @for (step of round().steps; track $index) {
-                <li>{{ stepText(step) }}</li>
-              }
-            </ol>
-          } @else {
-            <p>{{ t('noSteps') }}</p>
-          }
-        </div>
         <div class="potion-actions">
           @if (round().phase === 'brewed') {
             <button class="button primary" type="button" (click)="advance()">
@@ -276,6 +319,9 @@
               [disabled]="!round().steps.length || round().phase !== 'ready'"
               (click)="undo()"
             >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+              </svg>
               {{ t('undo') }}
             </button>
             <button
@@ -284,11 +330,17 @@
               [disabled]="round().steps.length < 2 || round().phase !== 'ready'"
               (click)="restart()"
             >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 2.6-6.4L3 8M3 3v5h5" />
+              </svg>
               {{ t('startAgain') }}
             </button>
           }
         </div>
       </div>
     </div>
+    @if (coachOpen()) {
+      <app-potion-coach [ops]="potion().ops" (done)="closeCoach()" />
+    }
   }
 </section>

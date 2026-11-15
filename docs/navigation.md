@@ -43,10 +43,19 @@ Switching levels never requires leaving the game:
 - **Magic walls** lists its eleven levels on the intro and also accepts `?level=n` (`/adventure/number-wall?level=3`) so the hub can open a level directly.
 - **The Unicorn Rainbow Race** has five race routes (`/adventure/unicorn-race-1` … `-5`); its intro lists all five as cards with the current one marked `aria-current="page"`, and the finish offers the next race directly.
 - **The Treasure Lock** has nine level routes (`/adventure/treasure-lock-1` … `-9`); its intro has a level strip 1–9, numbered by position (level 8, halving back, shows as 7), with the current level marked `aria-current="page"`, and the finish offers the next level.
+- **The Firework Show** has twelve level routes (`/adventure/fireworks-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Potion Cauldron** has seven level routes (`/adventure/potion-1` … `-7`); its intro has a level strip 1–7 with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Fairy Bakery** has twelve level routes (`/adventure/bakery-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
+- **The Mushroom Drums** has twelve level routes (`/adventure/drums-1` … `-12`); its intro has a level strip 1–12 in two rows of six with the current level marked `aria-current="page"`, the pause dialog can go back to the intro, and the finish offers the next level.
+- **The Star Catcher** has twelve level routes (`/adventure/star-catcher-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the thirty practice stages, grouped under a heading per topic. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
 - Finishing a round offers Next level, Play again and All games.
+
+### After a deploy
+
+A tab left open across a deploy still runs the old build, whose lazy chunks are gone from the server (Cloudflare answers every missing file with `index.html`). Without help, a tap on All games or any other page would change the URL and then show nothing. `core/stale-build.ts` catches that failure, both a route shell's `@defer` block (Angular's NG0750, through the app's `ErrorHandler`) and a lazy route (the router's navigation error handler), and loads the page afresh from the server. It does this once per URL within 30 seconds, never offline and never without session storage, so a page that truly cannot load does not reload forever.
+
+Games handle keys on `document`. A handler that cancels Enter or Space must let a focused link or a button outside the game's own controls keep its action, or All games stops working from the keyboard (see `NumberWallComponent.onKey`).
 
 ## Where the data comes from
 

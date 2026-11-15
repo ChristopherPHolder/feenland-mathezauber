@@ -57,7 +57,10 @@ import { fitTray, trayGeometry, trayRegion } from './tray-geometry';
       <ellipse class="nose" cx="0" cy="4" rx="4.5" ry="3" />
       <circle class="eye" cx="-9" cy="-5" r="3" />
       <circle class="eye" cx="9" cy="-5" r="3" />
-      <path class="hat" d="M-18 -22h36v-8c8-2 10-14 0-16-3-8-15-8-18-2-3-6-15-6-18 2-10 2-8 14 0 16z" />
+      <path
+        class="hat"
+        d="M-18 -22h36v-8c8-2 10-14 0-16-3-8-15-8-18-2-3-6-15-6-18 2-10 2-8 14 0 16z"
+      />
     </g>
     <g class="customer" [attr.transform]="guest().transform" [attr.data-kind]="guestKind()">
       <circle class="guest-ear" cx="-14" cy="-20" r="8" />
@@ -129,7 +132,13 @@ import { fitTray, trayGeometry, trayRegion } from './tray-geometry';
       }
       @if (knife(); as knife) {
         <g class="knife">
-          <line class="blade" [attr.x1]="knife.x1" [attr.y1]="knife.y1" [attr.x2]="knife.x2" [attr.y2]="knife.y2" />
+          <line
+            class="blade"
+            [attr.x1]="knife.x1"
+            [attr.y1]="knife.y1"
+            [attr.x2]="knife.x2"
+            [attr.y2]="knife.y2"
+          />
           <rect
             class="handle"
             [attr.x]="knife.hx - 0.55"
@@ -207,10 +216,19 @@ export class BakeryTray {
     const geometry = this.geometry();
     const ghostShown = frame.ghost && frame.ghostValue === null;
     const pulse = frame.pulses ? frame.pulse : null;
-    const out: { key: string; x: number; y: number; ghost: boolean; pulse: boolean; delay: number }[] = [];
+    const out: {
+      key: string;
+      x: number;
+      y: number;
+      ghost: boolean;
+      pulse: boolean;
+      delay: number;
+    }[] = [];
     geometry.rowY.forEach((y, row) =>
       geometry.colX.forEach((x, col) => {
-        const ghost = (frame.ghost === 'rows' && row === frame.rows) || (frame.ghost === 'cols' && col === frame.cols);
+        const ghost =
+          (frame.ghost === 'rows' && row === frame.rows) ||
+          (frame.ghost === 'cols' && col === frame.cols);
         if (ghost && !ghostShown) return;
         const piece = geometry.pieces.findIndex(
           (p) => row >= p.row && row < p.row + p.rows && col >= p.col && col < p.col + p.cols,
@@ -240,9 +258,19 @@ export class BakeryTray {
     const g = this.geometry();
     const lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
     for (let row = 5; row < g.rowY.length; row += 5)
-      lines.push({ x1: 0.25, x2: g.width - 0.25, y1: (g.rowY[row - 1] + g.rowY[row]) / 2, y2: (g.rowY[row - 1] + g.rowY[row]) / 2 });
+      lines.push({
+        x1: 0.25,
+        x2: g.width - 0.25,
+        y1: (g.rowY[row - 1] + g.rowY[row]) / 2,
+        y2: (g.rowY[row - 1] + g.rowY[row]) / 2,
+      });
     for (let col = 5; col < g.colX.length; col += 5)
-      lines.push({ y1: 0.25, y2: g.height - 0.25, x1: (g.colX[col - 1] + g.colX[col]) / 2, x2: (g.colX[col - 1] + g.colX[col]) / 2 });
+      lines.push({
+        y1: 0.25,
+        y2: g.height - 0.25,
+        x1: (g.colX[col - 1] + g.colX[col]) / 2,
+        x2: (g.colX[col - 1] + g.colX[col]) / 2,
+      });
     return lines;
   });
 

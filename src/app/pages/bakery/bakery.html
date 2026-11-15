@@ -1,8 +1,4 @@
-<section
-  class="game"
-  [class.playing]="started() && !round().complete"
-  aria-labelledby="game-title"
->
+<section class="game" [class.playing]="started() && !round().complete" aria-labelledby="game-title">
   <app-game-header
     [title]="t('title')"
     [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
@@ -137,16 +133,20 @@
         </p>
         <ul class="tiles">
           <li [style.--i]="1">
-            <strong>{{ round().index + 1 }}</strong><span>{{ t('tileOrders') }}</span>
+            <strong>{{ round().index + 1 }}</strong
+            ><span>{{ t('tileOrders') }}</span>
           </li>
           <li [style.--i]="2">
-            <strong>{{ round().tricks }}</strong><span>{{ t('tileTricks') }}</span>
+            <strong>{{ round().tricks }}</strong
+            ><span>{{ t('tileTricks') }}</span>
           </li>
           <li [style.--i]="3">
-            <strong>{{ round().bestStreak }}</strong><span>{{ t('tileStreak') }}</span>
+            <strong>{{ round().bestStreak }}</strong
+            ><span>{{ t('tileStreak') }}</span>
           </li>
           <li [style.--i]="4">
-            <strong>+{{ round().squares }}</strong><span>{{ t('tileSquares') }}</span>
+            <strong>+{{ round().squares }}</strong
+            ><span>{{ t('tileSquares') }}</span>
           </li>
         </ul>
         @if (treatAdded()) {
@@ -177,7 +177,10 @@
     </section>
   } @else {
     <div class="hud">
-      <ol class="slots" [attr.aria-label]="t('hud', { n: round().index, total: orderSlots.length })">
+      <ol
+        class="slots"
+        [attr.aria-label]="t('hud', { n: round().index, total: orderSlots.length })"
+      >
         @for (slot of orderSlots; track slot) {
           <li
             class="slot"
@@ -205,7 +208,11 @@
         <p class="golden-chip">{{ t('golden') }}</p>
       }
       @if (timed() && ovenTotal() && phase() !== 'baked') {
-        <div class="oven-chip" [class.urgent]="!round().crispy && secondsLeft() <= 5" [class.crispy]="round().crispy">
+        <div
+          class="oven-chip"
+          [class.urgent]="!round().crispy && secondsLeft() <= 5"
+          [class.crispy]="round().crispy"
+        >
           <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
             <circle class="ring-track" cx="18" cy="18" r="15" />
             <circle
@@ -221,7 +228,12 @@
           <span class="seconds" role="timer" aria-live="off">{{
             round().crispy ? '0' : t('secondsLeft', { n: secondsLeft() })
           }}</span>
-          <button type="button" class="timer-off" (click)="selectPace('off')" [attr.aria-label]="t('timerOff')">
+          <button
+            type="button"
+            class="timer-off"
+            (click)="selectPace('off')"
+            [attr.aria-label]="t('timerOff')"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
           </button>
         </div>
@@ -239,12 +251,7 @@
           (pointerup)="pointerUp()"
           (pointercancel)="pointerUp()"
         >
-          <app-three-stage
-            #scene
-            class="scene"
-            [world]="loadWorld"
-            [state]="frame()"
-          >
+          <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
             <app-bakery-tray [frame]="frame()" [size]="boardSize()" />
           </app-three-stage>
           <div class="labels" aria-hidden="true">
@@ -308,17 +315,17 @@
       <div class="controls">
         <div class="order-line">
           <p class="order-count">
-            {{
-              cake()
-                ? t('cakeOrder')
-                : t('orderCount', { n: round().index + 1, total: orders })
-            }}
+            {{ cake() ? t('cakeOrder') : t('orderCount', { n: round().index + 1, total: orders }) }}
           </p>
           <p class="wants">
-            {{ t('wants', { name: customerName(), rows: order().fact.rows, cols: order().fact.cols }) }}
+            {{
+              t('wants', { name: customerName(), rows: order().fact.rows, cols: order().fact.cols })
+            }}
           </p>
           <p class="question">
-            <span class="tray-text">{{ t('orderRows', { rows: shown().rows, cols: shown().cols }) }}</span>
+            <span class="tray-text">{{
+              t('orderRows', { rows: shown().rows, cols: shown().cols })
+            }}</span>
             <strong>{{ t('question', { a: shown().rows, b: shown().cols }) }}</strong>
           </p>
         </div>
@@ -328,7 +335,9 @@
         </p>
         @if (round().help) {
           <div class="hint" role="alert">
-            <p><strong>{{ t('hintLead') }}</strong> {{ helpText() }}</p>
+            <p>
+              <strong>{{ t('hintLead') }}</strong> {{ helpText() }}
+            </p>
             @if (card(); as card) {
               <app-bakery-card [card]="card" [title]="t('cardTitle')" [lines]="cardLines()" />
             }
@@ -347,7 +356,15 @@
                   [disabled]="(!!order().dir && order().dir !== 'rows') || shown().rows < 2"
                   (click)="setKnifeDir('rows')"
                 >
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18" /><circle cx="6" cy="6" r="2" /><circle cx="12" cy="6" r="2" /><circle cx="18" cy="6" r="2" /><circle cx="6" cy="18" r="2" /><circle cx="12" cy="18" r="2" /><circle cx="18" cy="18" r="2" /></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 12h18" />
+                    <circle cx="6" cy="6" r="2" />
+                    <circle cx="12" cy="6" r="2" />
+                    <circle cx="18" cy="6" r="2" />
+                    <circle cx="6" cy="18" r="2" />
+                    <circle cx="12" cy="18" r="2" />
+                    <circle cx="18" cy="18" r="2" />
+                  </svg>
                   {{ t('knifeRows') }}
                 </button>
                 <button
@@ -357,16 +374,34 @@
                   [disabled]="(!!order().dir && order().dir !== 'cols') || shown().cols < 2"
                   (click)="setKnifeDir('cols')"
                 >
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18" /><circle cx="6" cy="6" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="6" cy="18" r="2" /><circle cx="18" cy="6" r="2" /><circle cx="18" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3v18" />
+                    <circle cx="6" cy="6" r="2" />
+                    <circle cx="6" cy="12" r="2" />
+                    <circle cx="6" cy="18" r="2" />
+                    <circle cx="18" cy="6" r="2" />
+                    <circle cx="18" cy="12" r="2" />
+                    <circle cx="18" cy="18" r="2" />
+                  </svg>
                   {{ t('knifeCols') }}
                 </button>
               </div>
               <div class="knife-nudge">
-                <button type="button" class="nudge" [attr.aria-label]="knifeText() + ' −1'" (click)="nudgeKnife(-1)">
+                <button
+                  type="button"
+                  class="nudge"
+                  [attr.aria-label]="knifeText() + ' −1'"
+                  (click)="nudgeKnife(-1)"
+                >
                   <app-icon kind="back" />
                 </button>
                 <span class="knife-at" aria-hidden="true">{{ knifeText() }}</span>
-                <button type="button" class="nudge" [attr.aria-label]="knifeText() + ' +1'" (click)="nudgeKnife(1)">
+                <button
+                  type="button"
+                  class="nudge"
+                  [attr.aria-label]="knifeText() + ' +1'"
+                  (click)="nudgeKnife(1)"
+                >
                   <app-icon kind="arrow" />
                 </button>
               </div>
@@ -436,7 +471,11 @@
                 <button type="button" class="choice" (click)="choose(choice)">{{ choice }}</button>
               }
             </fieldset>
-            @if (!order().firstWay && !order().values.includes(0) && order().values.every((v) => v === null)) {
+            @if (
+              !order().firstWay &&
+              !order().values.includes(0) &&
+              order().values.every((v) => v === null)
+            ) {
               <div class="extra-row">
                 <button type="button" class="button secondary" (click)="join()">
                   {{ t('joinButton') }}
@@ -446,14 +485,23 @@
           }
           @case ('total') {
             <div class="answer">
-              <span class="answer-sum" aria-hidden="true">{{ shown().rows }} × {{ shown().cols }} =</span>
-              <output class="answer-box" [attr.aria-label]="t('answerLabel')">{{ round().entry || '?' }}</output>
+              <span class="answer-sum" aria-hidden="true"
+                >{{ shown().rows }} × {{ shown().cols }} =</span
+              >
+              <output class="answer-box" [attr.aria-label]="t('answerLabel')">{{
+                round().entry || '?'
+              }}</output>
             </div>
             <div class="pad" role="group" [attr.aria-label]="t('answerLabel')">
               @for (digit of digits; track digit) {
                 <button type="button" class="pad-key" (click)="type(digit)">{{ digit }}</button>
               }
-              <button type="button" class="pad-key erase" [attr.aria-label]="t('clear')" (click)="erase()">
+              <button
+                type="button"
+                class="pad-key erase"
+                [attr.aria-label]="t('clear')"
+                (click)="erase()"
+              >
                 <app-icon kind="back" />
               </button>
               <button
@@ -489,7 +537,11 @@
         }
         @if (stage().look === 'area' && phase() !== 'baked') {
           <label class="cookie-toggle">
-            <input type="checkbox" [checked]="showCookies()" (change)="showCookies.set(!showCookies())" />
+            <input
+              type="checkbox"
+              [checked]="showCookies()"
+              (change)="showCookies.set(!showCookies())"
+            />
             {{ t('showCookies') }}
           </label>
         }

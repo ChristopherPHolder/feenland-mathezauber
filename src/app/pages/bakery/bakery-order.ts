@@ -460,10 +460,12 @@ export function trickCard(stage: BakeryStage, state: OrderState): TrickCard {
   const avoid = new Set([shown.rows, shown.cols]);
   const total = product(shown);
   const rowsFor = (): number => {
-    if (stage.table) return stage.table === shown.rows || stage.table === shown.cols ? stage.table : shown.rows;
+    if (stage.table)
+      return stage.table === shown.rows || stage.table === shown.cols ? stage.table : shown.rows;
     return shown.rows >= 3 ? shown.rows : 6;
   };
-  let rows = stage.trick === 'read' || stage.trick === 'turn' ? (shown.rows === 4 ? 3 : 4) : rowsFor();
+  let rows =
+    stage.trick === 'read' || stage.trick === 'turn' ? (shown.rows === 4 ? 3 : 4) : rowsFor();
   if (state.ghost) rows = shownFact(state).rows === 4 || shownFact(state).cols === 4 ? 4 : 9;
   const cols =
     [4, 3, 6, 8, 7, 2, 9, 5].find((value) => !avoid.has(value) && rows * value !== total) ?? 4;

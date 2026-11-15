@@ -101,7 +101,13 @@ export const bakeryStages: readonly BakeryStage[] = [
     anotherWay: false,
     masteryStars: 2,
     // Rows of the hard number: turned round, every row is a friendly 2, 5 or 10.
-    pool: () => [2, 5, 10].flatMap((rows) => table(rows, range(3, 9).filter((n) => n !== rows))),
+    pool: () =>
+      [2, 5, 10].flatMap((rows) =>
+        table(
+          rows,
+          range(3, 9).filter((n) => n !== rows),
+        ),
+      ),
   },
   {
     stage: 3,

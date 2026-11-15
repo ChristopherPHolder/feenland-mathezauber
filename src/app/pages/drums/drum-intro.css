@@ -1,0 +1,269 @@
+:host {
+  display: block;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow-panel);
+}
+/* Twelve levels in two even rows of six, at every width. */
+.level-strip {
+  display: grid;
+  grid-template-columns: repeat(6, auto);
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 16px;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--violet);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--warm-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 340px) 1fr;
+  align-items: center;
+  gap: clamp(14px, 3vw, 24px);
+}
+.intro-demo {
+  width: 100%;
+  max-width: 340px;
+  margin: auto;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  margin: 0 0 8px;
+}
+.intro-copy p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.trick-card {
+  margin: 14px 0 6px;
+  padding: 12px 18px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-card p {
+  margin: 0;
+}
+.trick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+}
+.trick-head span {
+  font-size: 14px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.trick-card .example {
+  font-size: clamp(20px, 2.6vw, 26px);
+  font-weight: 600;
+  color: var(--violet);
+  font-variant-numeric: tabular-nums;
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+.tempo {
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.tempo legend {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 0;
+}
+.tempo-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.tempo-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.tempo-choice:hover {
+  background: var(--ground);
+}
+.tempo-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.tempo-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.tempo-choice input {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--success-strong);
+}
+.tempo-choice strong {
+  font-size: clamp(14px, 3.6vw, 17px);
+}
+.tempo-choice span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+/* A little row of beat dots: none glow in free play, more glow the quicker the tempo. */
+.beat-art {
+  display: flex;
+  gap: 4px;
+  padding: 6px 18px 2px 0;
+}
+.beat-art .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d8d0f2;
+}
+.beat-art[data-tempo='slow'] .dot:nth-child(1),
+.beat-art[data-tempo='medium'] .dot:nth-child(odd),
+.beat-art[data-tempo='quick'] .dot {
+  background: var(--pink);
+}
+.tempo-note {
+  color: var(--muted);
+  font-size: 15px;
+}
+.gallery {
+  margin-top: 18px;
+}
+.gallery h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.gallery p {
+  margin: 4px 0 10px;
+  color: var(--muted);
+}
+.gallery ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 110px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gallery li {
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.start-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 8px;
+  padding: 16px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 24px);
+}
+.start-dock .button {
+  margin: 0 auto;
+  max-width: 360px;
+}
+
+@media (max-width: 700px) {
+  .intro-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  /* The level's name is already in the header on a phone. */
+  h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .trick-card {
+    margin: 0;
+    padding: 8px 14px;
+  }
+  .tempo {
+    margin-top: 10px;
+  }
+  .tempo legend {
+    font-size: 17px;
+  }
+  .start-dock {
+    padding-top: 10px;
+  }
+  .level-pill {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  .level-strip {
+    gap: 6px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tempo-choice.selected .beat-art[data-tempo='slow'] .dot:nth-child(1),
+  .tempo-choice.selected .beat-art[data-tempo='medium'] .dot:nth-child(odd),
+  .tempo-choice.selected .beat-art[data-tempo='quick'] .dot {
+    animation: beat 0.8s ease-in-out infinite alternate;
+  }
+  .beat-art[data-tempo='quick'] .dot {
+    animation-duration: 0.5s;
+  }
+}
+@keyframes beat {
+  to {
+    transform: scale(1.35);
+  }
+}
+:host-context(.calm-motion) .beat-art .dot {
+  animation: none;
+}

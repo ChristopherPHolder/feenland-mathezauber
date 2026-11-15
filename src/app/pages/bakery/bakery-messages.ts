@@ -4,11 +4,11 @@ const en = {
   title: 'The Fairy Bakery',
   level: 'Level {n} of {total}',
   allLevels: 'All bakery levels',
-  story:
-    'Bruno the bear bakes cookies in trays of rows. Customers order a tray, like 6 rows of 7.',
+  story: 'Bruno the bear bakes cookies in trays of rows. Customers order a tray, like 6 rows of 7.',
   storyGoal:
     'Don’t count every cookie! Cut the tray into pieces you know, name each piece, and add them up.',
-  storyRead: 'Don’t count every cookie! Count the rows instead, and say how many cookies the tray has.',
+  storyRead:
+    'Don’t count every cookie! Count the rows instead, and say how many cookies the tray has.',
   trickTitle: 'Today’s trick',
   tip1: 'Every row is a 2, 5 or 10. Count the rows: 5, 10, 15 …',
   tip2: 'Turn the tray round so every row is a 2, 5 or 10. Same cookies, easier rows!',
@@ -176,9 +176,12 @@ const de: Messages = {
   tip7: '6 Reihen sind zweimal 3 Reihen. Schneide in der Mitte durch: Zwillinge!',
   tip8: '9 Reihen sind eine Reihe weniger als 10. Füg eine Geisterreihe dazu, dann knabbert der Drache sie weg.',
   tip9: '7 Reihen sind 5 Reihen und 2 Reihen. Schneide an der Fünferlinie.',
-  tip10: 'Heute gibt es keine leuchtende Linie. Schneide so, dass zwei Bleche entstehen, die du kennst.',
-  tip11: 'Die Plätzchen werden zu einem Rechteck. Die Zahlen an den Seiten verraten dir die Reihen.',
-  tip12: 'Die kniffligsten Bleche und die, die du schon mal verpasst hast. Such dir deinen besten Schnitt aus!',
+  tip10:
+    'Heute gibt es keine leuchtende Linie. Schneide so, dass zwei Bleche entstehen, die du kennst.',
+  tip11:
+    'Die Plätzchen werden zu einem Rechteck. Die Zahlen an den Seiten verraten dir die Reihen.',
+  tip12:
+    'Die kniffligsten Bleche und die, die du schon mal verpasst hast. Such dir deinen besten Schnitt aus!',
   start: 'Bäckerei öffnen',
   paceTitle: 'Möchtest du einen Ofenwecker?',
   paceHelp:
@@ -194,7 +197,8 @@ const de: Messages = {
   bestScore: 'Bestwert: {n} Punkte',
   menuBoard: 'Menütafel',
   menuProgress: '{n} von 100 Aufgaben gebacken',
-  menuHelp: 'Jedes Blech, das du backst, und jedes Stück, das du benennst, bringt ein Plätzchen auf die Tafel.',
+  menuHelp:
+    'Jedes Blech, das du backst, und jedes Stück, das du benennst, bringt ein Plätzchen auf die Tafel.',
   boardLabel: 'Brunos Bäckerei',
   orderCount: 'Bestellung {n} von {total}',
   cakeOrder: 'Die Partytorte!',
@@ -212,7 +216,8 @@ const de: Messages = {
   oven: 'Ofenwecker',
   secondsLeft: '{n} s',
   timerOff: 'Wecker ausschalten',
-  crispy: 'Kling-klang! Die Plätzchen sind etwas knusprig. Mach weiter: Die Bestellung verkauft sich trotzdem!',
+  crispy:
+    'Kling-klang! Die Plätzchen sind etwas knusprig. Mach weiter: Die Bestellung verkauft sich trotzdem!',
   hud: '{n} von {total} Blechen gebacken',
   knife: 'Messer',
   knifeRows: 'Zwischen den Reihen schneiden',
@@ -231,7 +236,8 @@ const de: Messages = {
   statusCut: 'Schieb das Messer in eine Lücke und tipp auf Schneiden!',
   statusCutGuide:
     'Schieb das Messer in eine Lücke und tipp auf Schneiden! Die leuchtende Linie macht es leicht.',
-  statusCutGhost: 'Schneide an einer Lücke oder füg eine Geisterreihe dazu, damit ein freundliches Zehner-Blech entsteht.',
+  statusCutGhost:
+    'Schneide an einer Lücke oder füg eine Geisterreihe dazu, damit ein freundliches Zehner-Blech entsteht.',
   statusCutMore: 'Schneide noch einmal oder benenne die Stücke.',
   statusCutAgain: 'Jetzt schneide es auf eine andere Art!',
   sameCut: 'Das ist derselbe Schnitt wie vorhin. Probier eine andere Lücke!',
@@ -240,8 +246,10 @@ const de: Messages = {
   cutDone: 'Zwei Stücke: {pieces}. Benenne jedes Stück.',
   cutDoneMany: 'Stücke: {pieces}. Benenne jedes Stück.',
   twinsCut: 'Zwillinge! Die Stücke sind gleich.',
-  ghostAdded: 'Mit der Geisterreihe ist das Blech voll: {rows} Reihen mit {cols}. Was ist {rows} × {cols}?',
-  ghostRight: 'Ein Drache knabbert die Geisterreihe weg: eine Reihe mit {n} ist fort! Jetzt das Ergebnis.',
+  ghostAdded:
+    'Mit der Geisterreihe ist das Blech voll: {rows} Reihen mit {cols}. Was ist {rows} × {cols}?',
+  ghostRight:
+    'Ein Drache knabbert die Geisterreihe weg: eine Reihe mit {n} ist fort! Jetzt das Ergebnis.',
   statusPiece: 'Was ist {a} × {b}?',
   pieceRight: '{a} × {b} = {n}. Mmh!',
   twinRight: '{a} × {b} = {n}, und sein Zwilling auch!',
@@ -273,7 +281,8 @@ const de: Messages = {
   pieceTenCols: 'Jede Reihe hat 10. Zähl die Reihen in Zehnerschritten!',
   pieceRows: 'Zähl die Reihen in {n}er-Schritten, Reihe für Reihe.',
   addedFactors: '{sum} wären {a} Plätzchen und {b} Plätzchen. Dieses Blech hat {a} Reihen mit {b}.',
-  ghostFull: 'Das ist das volle Blech mit der Geisterreihe. Der Drache hat eine Reihe weggeknabbert!',
+  ghostFull:
+    'Das ist das volle Blech mit der Geisterreihe. Der Drache hat eine Reihe weggeknabbert!',
   onePiece: 'Das ist nur ein Stück. Setz alle Stücke zusammen!',
   oneTwin: 'Das ist nur ein Zwilling. Zähl jeden Zwilling!',
   ownPieces: 'Du hast {list}. Setz die Stücke zusammen!',
@@ -304,7 +313,8 @@ const de: Messages = {
   tileSquares: 'Neue Felder auf der Tafel',
   treatAdded: 'Eine neue Leckerei für das Schaufenster!',
   threeStars: 'Wunderbar gebacken! Fast jedes Blech war gleich beim ersten Mal richtig.',
-  twoStars: 'Schön gebacken! Schneide an einer leuchtenden Linie, dann klappt es öfter gleich beim ersten Mal.',
+  twoStars:
+    'Schön gebacken! Schneide an einer leuchtenden Linie, dann klappt es öfter gleich beim ersten Mal.',
   oneStar: 'Jedes Blech ist verkauft! Spiel noch mal und back mehr gleich beim ersten Mal richtig.',
   save: 'Deine Sterne konnten auf diesem Gerät nicht gespeichert werden, aber die Runde zählt vorerst trotzdem.',
   nextLevel: 'Nächstes Level',
@@ -345,11 +355,13 @@ const es: Messages = {
   paceUnlimited: 'Todo el tiempo que necesites',
   paceSeconds: 'Unos {n} s por bandeja',
   paceCalm: 'Hornea a tu ritmo. Sin temporizador, sin prisa.',
-  paceTimed: 'Las bandejas que salen antes de que suene el temporizador son horneados perfectos: 15 puntos extra cada una.',
+  paceTimed:
+    'Las bandejas que salen antes de que suene el temporizador son horneados perfectos: 15 puntos extra cada una.',
   bestScore: 'Mejor: {n} puntos',
   menuBoard: 'Pizarra del menú',
   menuProgress: '{n} de 100 operaciones horneadas',
-  menuHelp: 'Cada bandeja que horneas y cada trozo al que le pones nombre pone una galleta en la pizarra.',
+  menuHelp:
+    'Cada bandeja que horneas y cada trozo al que le pones nombre pone una galleta en la pizarra.',
   boardLabel: 'La pastelería de Bruno',
   orderCount: 'Pedido {n} de {total}',
   cakeOrder: '¡La tarta de fiesta!',
@@ -374,8 +386,7 @@ const es: Messages = {
   knifeCols: 'Cortar entre columnas',
   knifeAtRows: 'Después de la fila {n} de {total}',
   knifeAtCols: 'Después de la columna {n} de {total}',
-  knifeHelp:
-    'Las flechas mueven el cuchillo. R cambia a filas y C a columnas. Enter corta.',
+  knifeHelp: 'Las flechas mueven el cuchillo. R cambia a filas y C a columnas. Enter corta.',
   cutButton: '¡Cortar!',
   turnButton: '¡Girar!',
   ghostRows: 'Añadir una fila fantasma: {n} filas',
@@ -384,7 +395,8 @@ const es: Messages = {
   doneCutting: 'Ponle nombre a los trozos',
   joinButton: 'Volver a juntarla',
   statusCut: 'Desliza el cuchillo a un hueco y toca ¡Cortar!',
-  statusCutGuide: 'Desliza el cuchillo a un hueco y toca ¡Cortar! La línea brillante lo hace fácil.',
+  statusCutGuide:
+    'Desliza el cuchillo a un hueco y toca ¡Cortar! La línea brillante lo hace fácil.',
   statusCutGhost: 'Corta por un hueco o añade una fila fantasma para formar un diez amigo.',
   statusCutMore: 'Corta otra vez o ponle nombre a los trozos.',
   statusCutAgain: '¡Ahora córtala de otra manera!',
@@ -394,7 +406,8 @@ const es: Messages = {
   cutDone: 'Dos trozos: {pieces}. Ponle nombre a cada trozo.',
   cutDoneMany: 'Trozos: {pieces}. Ponle nombre a cada trozo.',
   twinsCut: '¡Gemelos! Los trozos son iguales.',
-  ghostAdded: 'Con una fila fantasma la bandeja está llena: {rows} filas de {cols}. ¿Cuánto es {rows} × {cols}?',
+  ghostAdded:
+    'Con una fila fantasma la bandeja está llena: {rows} filas de {cols}. ¿Cuánto es {rows} × {cols}?',
   ghostRight: '¡Un dragón mordisquea la fila fantasma: se fue una fila de {n}! Ahora el total.',
   statusPiece: '¿Cuánto es {a} × {b}?',
   pieceRight: '{a} × {b} = {n}. ¡Qué rico!',
@@ -487,7 +500,8 @@ const fr: Messages = {
   tip9: '7 rangées, c’est 5 rangées et 2 rangées. Coupe sur la ligne du cinq.',
   tip10: 'Pas de ligne lumineuse aujourd’hui. Coupe là où tu obtiens deux plaques que tu connais.',
   tip11: 'Les biscuits forment un rectangle. Les nombres sur les côtés te donnent les rangées.',
-  tip12: 'Les plaques les plus difficiles et celles que tu as manquées avant. Choisis ta meilleure coupe !',
+  tip12:
+    'Les plaques les plus difficiles et celles que tu as manquées avant. Choisis ta meilleure coupe !',
   start: 'Ouvrir la boulangerie',
   paceTitle: 'Veux-tu un minuteur de four ?',
   paceHelp:
@@ -499,11 +513,13 @@ const fr: Messages = {
   paceUnlimited: 'Tout le temps qu’il te faut',
   paceSeconds: 'Environ {n} s par plaque',
   paceCalm: 'Cuis à ton rythme. Pas de minuteur, pas de précipitation.',
-  paceTimed: 'Les plaques sorties avant que le minuteur sonne sont parfaitement cuites : 15 points en plus chacune.',
+  paceTimed:
+    'Les plaques sorties avant que le minuteur sonne sont parfaitement cuites : 15 points en plus chacune.',
   bestScore: 'Meilleur score : {n} points',
   menuBoard: 'Ardoise du menu',
   menuProgress: '{n} calculs cuits sur 100',
-  menuHelp: 'Chaque plaque que tu cuis et chaque morceau que tu nommes met un biscuit sur l’ardoise.',
+  menuHelp:
+    'Chaque plaque que tu cuis et chaque morceau que tu nommes met un biscuit sur l’ardoise.',
   boardLabel: 'La boulangerie de Bruno',
   orderCount: 'Commande {n} sur {total}',
   cakeOrder: 'Le gâteau de fête !',
@@ -521,15 +537,15 @@ const fr: Messages = {
   oven: 'Minuteur du four',
   secondsLeft: '{n} s',
   timerOff: 'Éteindre le minuteur',
-  crispy: 'Ding-ding ! Les biscuits sont un peu croustillants. Continue : la commande se vend quand même !',
+  crispy:
+    'Ding-ding ! Les biscuits sont un peu croustillants. Continue : la commande se vend quand même !',
   hud: '{n} plaques cuites sur {total}',
   knife: 'Couteau',
   knifeRows: 'Couper entre les rangées',
   knifeCols: 'Couper entre les colonnes',
   knifeAtRows: 'Après la rangée {n} sur {total}',
   knifeAtCols: 'Après la colonne {n} sur {total}',
-  knifeHelp:
-    'Les flèches déplacent le couteau. R passe aux rangées, C aux colonnes. Entrée coupe.',
+  knifeHelp: 'Les flèches déplacent le couteau. R passe aux rangées, C aux colonnes. Entrée coupe.',
   cutButton: 'Couper !',
   turnButton: 'Tourner !',
   ghostRows: 'Ajouter une rangée fantôme : {n} rangées',
@@ -538,7 +554,8 @@ const fr: Messages = {
   doneCutting: 'Nommer les morceaux',
   joinButton: 'Tout remettre ensemble',
   statusCut: 'Glisse le couteau dans un espace, puis touche Couper !',
-  statusCutGuide: 'Glisse le couteau dans un espace, puis touche Couper ! La ligne lumineuse t’aide.',
+  statusCutGuide:
+    'Glisse le couteau dans un espace, puis touche Couper ! La ligne lumineuse t’aide.',
   statusCutGhost: 'Coupe dans un espace, ou ajoute une rangée fantôme pour faire un dix facile.',
   statusCutMore: 'Coupe encore, ou nomme les morceaux.',
   statusCutAgain: 'Maintenant, coupe d’une autre façon !',
@@ -548,8 +565,10 @@ const fr: Messages = {
   cutDone: 'Deux morceaux : {pieces}. Nomme chaque morceau.',
   cutDoneMany: 'Morceaux : {pieces}. Nomme chaque morceau.',
   twinsCut: 'Des jumeaux ! Les morceaux sont pareils.',
-  ghostAdded: 'Avec la rangée fantôme, la plaque est pleine : {rows} rangées de {cols}. Combien font {rows} × {cols} ?',
-  ghostRight: 'Un dragon grignote la rangée fantôme : une rangée de {n} a disparu ! Maintenant, le total.',
+  ghostAdded:
+    'Avec la rangée fantôme, la plaque est pleine : {rows} rangées de {cols}. Combien font {rows} × {cols} ?',
+  ghostRight:
+    'Un dragon grignote la rangée fantôme : une rangée de {n} a disparu ! Maintenant, le total.',
   statusPiece: 'Combien font {a} × {b} ?',
   pieceRight: '{a} × {b} = {n}. Miam !',
   twinRight: '{a} × {b} = {n}, et son jumeau aussi !',
@@ -612,7 +631,8 @@ const fr: Messages = {
   tileSquares: 'Nouvelles cases du menu',
   treatAdded: 'Une nouvelle gourmandise pour la vitrine !',
   threeStars: 'Quelle belle cuisson ! Presque toutes les plaques étaient bonnes du premier coup.',
-  twoStars: 'Belle cuisson ! Coupe sur une ligne lumineuse pour réussir plus souvent du premier coup.',
+  twoStars:
+    'Belle cuisson ! Coupe sur une ligne lumineuse pour réussir plus souvent du premier coup.',
   oneStar: 'Toutes les plaques sont vendues ! Rejoue pour en cuire plus du premier coup.',
   save: 'Tes étoiles n’ont pas pu être enregistrées sur cet appareil, mais la partie compte pour l’instant.',
   nextLevel: 'Niveau suivant',

@@ -99,7 +99,8 @@ export class BakeryCard {
       offset += 6;
     });
     return dots.filter(
-      (dot, index, all) => all.findIndex((other) => other.x === dot.x && other.y === dot.y) === index,
+      (dot, index, all) =>
+        all.findIndex((other) => other.x === dot.x && other.y === dot.y) === index,
     );
   });
   protected readonly box = computed(() => {

@@ -45,6 +45,9 @@ import {
   roundStars,
   TOTAL_STAGES,
 } from './potion-puzzles';
+import { PotionCoach } from './potion-coach';
+import { PotionDemo } from './potion-demo';
+import { countGuidedBrew, GUIDED_BREWS, guidedBrews } from './potion-guide';
 import { PotionReward, PotionRewardKind } from './potion-reward';
 import { PotionScores } from './potion-scores';
 import { PotionShelf } from './potion-shelf';
@@ -77,6 +80,18 @@ interface Round {
   readonly brews: number;
 }
 
+/** The last mix, shown on the mix line until the next tap. */
+interface LastMix {
+  readonly a: number;
+  readonly op: PotionOp;
+  readonly b: number;
+  readonly r: number;
+  readonly outcome: 'mixed' | 'fizzle' | 'brewed';
+}
+
+/** Which group of controls the child taps next. */
+type NextTap = 'bottle' | 'spell' | 'second';
+
 interface Status {
   readonly key: PotionMessageKey;
   readonly values?: Record<string, string | number>;
@@ -86,6 +101,8 @@ interface Status {
 const PACE_KEY = 'feenland.potion-pace.v1';
 const FIZZLE_DELAY = 1900;
 const BREW_DELAY = 3000;
+/** Waiting this long without a tap makes the controls show what to tap next again. */
+const IDLE_GUIDE = 6000;
 const OP_KEYS: Readonly<Record<string, PotionOp>> = {
   '+': '+',
   '-': '−',
@@ -97,10 +114,19 @@ const OP_KEYS: Readonly<Record<string, PotionOp>> = {
 
 @Component({
   selector: 'app-potions',
-  imports: [RouterLink, Icon, GameHeader, ThreeStage, PotionShelf, PotionReward],
+  imports: [
+    RouterLink,
+    Icon,
+    GameHeader,
+    ThreeStage,
+    PotionShelf,
+    PotionReward,
+    PotionDemo,
+    PotionCoach,
+  ],
   providers: [PotionSounds],
   templateUrl: './potions.html',
-  styleUrls: ['./potions.css', './potions-play.css'],
+  styleUrls: ['./potions.css', './potions-play.css', './potions-guide.css'],
   host: {
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
@@ -147,16 +173,46 @@ export class Potions {
   protected readonly status = signal<Status | null>(null);
   protected readonly saveFailed = signal(false);
   protected readonly newBest = signal(false);
+  protected readonly lastMix = signal<LastMix | null>(null);
+  protected readonly coachOpen = signal(false);
+  /** The first few potions on a device always show what to tap next. */
+  private readonly learning = signal(guidedBrews() < GUIDED_BREWS);
+  /** The child has waited a while without tapping. */
+  private readonly idle = signal(false);
 
   protected readonly potion = computed(() => {
     const round = this.round();
     return round.potions[Math.min(round.index, ROUND_LENGTH - 1)];
   });
   protected readonly big = computed(() => this.round().index === ROUND_LENGTH - 1);
-  protected readonly ready = computed(() => this.started() && this.round().phase === 'ready');
+  protected readonly ready = computed(
+    () => this.started() && this.round().phase === 'ready' && !this.coachOpen(),
+  );
   protected readonly first = computed(() => {
     const round = this.round();
     return round.bottles.find((bottle) => bottle.id === round.picked) ?? null;
+  });
+  protected readonly nextTap = computed<NextTap | null>(() => {
+    if (!this.ready()) return null;
+    const round = this.round();
+    return round.picked === null ? 'bottle' : round.op === null ? 'spell' : 'second';
+  });
+  /** The group that bounces to say "tap one of these": always while learning, else after a wait. */
+  protected readonly guide = computed(() =>
+    this.learning() || this.idle() ? this.nextTap() : null,
+  );
+  /** The mix line under the spells: the mix being built, or the last mix and how it went. */
+  protected readonly mixLine = computed(() => {
+    const last = this.lastMix();
+    if (last) return last;
+    const first = this.first();
+    return {
+      a: first?.value ?? null,
+      op: first ? this.round().op : null,
+      b: null,
+      r: null,
+      outcome: 'building',
+    } as const;
   });
   protected readonly sandShare = computed(() => {
     const seconds = hourglassSeconds(this.pace(), this.potion().values.length);
@@ -218,6 +274,7 @@ export class Potions {
   private readonly outcome = viewChild<ElementRef<HTMLElement>>('outcome');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private timer?: ReturnType<typeof setTimeout>;
+  private idleTimer?: ReturnType<typeof setTimeout>;
   private tick?: ReturnType<typeof setInterval>;
   private sandDue = 0;
   private sandRemaining = 0;
@@ -228,6 +285,7 @@ export class Potions {
     });
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.timer);
+      clearTimeout(this.idleTimer);
       clearInterval(this.tick);
     });
   }
@@ -241,9 +299,6 @@ export class Potions {
   /** The spell's sign as the child's school writes it. */
   protected sign(op: PotionOp) {
     return op === '÷' ? this.i.t('divide') : op;
-  }
-  protected stepText(step: MixStep) {
-    return `${step.a} ${this.sign(step.op)} ${step.b} = ${step.result}`;
   }
   protected color(bottle: FrameBottle) {
     return liquid(bottle.id);
@@ -281,9 +336,12 @@ export class Potions {
     this.status.set(null);
     this.saveFailed.set(false);
     this.newBest.set(false);
+    this.lastMix.set(null);
+    this.coachOpen.set(false);
     this.started.set(true);
     this.sounds.play('start');
     this.startSand();
+    this.armIdle();
     this.focusBottles();
   }
 
@@ -291,6 +349,8 @@ export class Potions {
   protected tapBottle(id: number) {
     const round = this.round();
     if (!this.ready()) return;
+    this.armIdle();
+    this.lastMix.set(null);
     if (round.picked !== null && round.picked !== id && round.op !== null) {
       this.pour(round, round.picked, round.op, id);
       return;
@@ -304,6 +364,7 @@ export class Potions {
   protected chooseOp(op: PotionOp) {
     const round = this.round();
     if (!this.ready() || round.picked === null) return;
+    this.armIdle();
     this.round.set({ ...round, op: round.op === op ? null : op });
     this.status.set(null);
   }
@@ -329,12 +390,15 @@ export class Potions {
       mixes: round.mixes + 1,
     };
     const values = { a: step.a, op: this.sign(op), b: step.b, r: result };
-    if (updated.bottles.length > 1) {
+    const outcome =
+      updated.bottles.length > 1 ? 'mixed' : result === potion.target ? 'brewed' : 'fizzle';
+    this.lastMix.set({ a: step.a, op, b: step.b, r: result, outcome });
+    if (outcome === 'mixed') {
       this.round.set(updated);
       this.status.set({ key: 'mixed', values });
       this.sounds.play('pour');
       this.focusBottles();
-    } else if (result === potion.target) {
+    } else if (outcome === 'brewed') {
       this.brew(updated);
     } else {
       this.fizzle(updated, result);
@@ -359,6 +423,8 @@ export class Potions {
         steps: r.steps.slice(0, -1),
         phase: 'ready',
       }));
+      this.lastMix.set(null);
+      this.armIdle();
       this.focusBottles();
     }, FIZZLE_DELAY);
   }
@@ -385,6 +451,9 @@ export class Potions {
       brews: round.brews + 1,
     });
     this.hatchery.warm();
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
+    if (this.learning()) this.learning.set(countGuidedBrew() < GUIDED_BREWS);
     const extras: PotionMessageKey[] = [];
     if (moon) extras.push('moon');
     if (streak === FEVER_STREAK) extras.push('fever');
@@ -416,11 +485,14 @@ export class Potions {
         nextId: round.nextId + bottles.length,
       });
       this.status.set(null);
+      this.lastMix.set(null);
       this.startSand();
+      this.armIdle();
       this.focusBottles();
       return;
     }
     this.round.set({ ...round, phase: 'complete' });
+    this.lastMix.set(null);
     this.saveFailed.set(!this.record());
     this.newBest.set(this.scores.record(this.levelId(), round.score));
     this.sounds.play('win');
@@ -440,6 +512,8 @@ export class Potions {
       undos: round.undos + 1,
     });
     this.status.set(null);
+    this.lastMix.set(null);
+    this.armIdle();
   }
 
   protected restart() {
@@ -455,6 +529,39 @@ export class Potions {
       undos: round.undos + 1,
     });
     this.status.set(null);
+    this.lastMix.set(null);
+    this.armIdle();
+  }
+
+  /** Opens "how to brew". The hourglass holds its sand until the child closes it. */
+  protected openCoach() {
+    if (!this.started() || this.coachOpen()) return;
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
+    if (this.tick) {
+      this.sandRemaining = Math.max(0, this.sandDue - Date.now());
+      this.stopSand();
+    }
+    this.coachOpen.set(true);
+  }
+
+  protected closeCoach() {
+    if (!this.coachOpen()) return;
+    this.coachOpen.set(false);
+    const round = this.round();
+    if (round.sparkle === 'shining' && round.phase === 'ready' && !this.document.hidden)
+      this.armSand();
+    this.armIdle();
+    requestAnimationFrame(() =>
+      this.host.nativeElement.querySelector<HTMLElement>('.help')?.focus({ preventScroll: true }),
+    );
+  }
+
+  /** After a quiet spell without a tap, the controls bounce to show what to tap next. */
+  private armIdle() {
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
+    this.idleTimer = setTimeout(() => this.idle.set(true), IDLE_GUIDE);
   }
 
   private startSand() {
@@ -487,7 +594,8 @@ export class Potions {
   }
 
   protected visibilityChanged() {
-    if (this.round().sparkle !== 'shining' || this.round().phase === 'complete') return;
+    if (this.coachOpen() || this.round().sparkle !== 'shining' || this.round().phase === 'complete')
+      return;
     if (this.document.hidden && this.tick) {
       this.sandRemaining = Math.max(0, this.sandDue - Date.now());
       this.stopSand();

@@ -135,7 +135,15 @@ export class Bruno {
     // Rosy cheeks, one dusted with flour.
     for (const side of [-1, 1])
       this.head.add(
-        ball(paint('#e98f80', { transparent: true, opacity: 0.6 }), 0.08, side * 0.3, -0.1, 0.36, [1, 0.7, 0.4], 10),
+        ball(
+          paint('#e98f80', { transparent: true, opacity: 0.6 }),
+          0.08,
+          side * 0.3,
+          -0.1,
+          0.36,
+          [1, 0.7, 0.4],
+          10,
+        ),
       );
     this.head.add(ball(flour, 0.05, 0.36, -0.02, 0.36, [1.3, 0.8, 0.4], 8));
 
@@ -262,8 +270,24 @@ export class Animal {
     this.head.add(ball(fur, 0.36, 0, 0, 0, [1.05, 0.95, 0.95], 24));
     this.eyes = eyes(this.head, 0.13, 0.05, 0.3, 0.05);
     this.head.add(
-      ball(paint('#f29a8f', { transparent: true, opacity: 0.55 }), 0.06, -0.22, -0.08, 0.27, [1, 0.7, 0.4], 10),
-      ball(paint('#f29a8f', { transparent: true, opacity: 0.55 }), 0.06, 0.22, -0.08, 0.27, [1, 0.7, 0.4], 10),
+      ball(
+        paint('#f29a8f', { transparent: true, opacity: 0.55 }),
+        0.06,
+        -0.22,
+        -0.08,
+        0.27,
+        [1, 0.7, 0.4],
+        10,
+      ),
+      ball(
+        paint('#f29a8f', { transparent: true, opacity: 0.55 }),
+        0.06,
+        0.22,
+        -0.08,
+        0.27,
+        [1, 0.7, 0.4],
+        10,
+      ),
     );
 
     if (kind === 'fox') {
@@ -299,7 +323,8 @@ export class Animal {
     } else if (kind === 'hedgehog') {
       this.head.add(ball(light, 0.17, 0, -0.08, 0.26, [0.9, 0.8, 1.3]));
       this.head.add(ball(nose, 0.05, 0, -0.06, 0.48, [1, 1, 1], 10));
-      for (const side of [-1, 1]) this.head.add(ball(dark, 0.07, side * 0.24, 0.24, 0.05, [1, 1, 0.6], 10));
+      for (const side of [-1, 1])
+        this.head.add(ball(dark, 0.07, side * 0.24, 0.24, 0.05, [1, 1, 0.6], 10));
       // A cloak of soft spines over the back of the head and body.
       const spines = paint(coat.dark, { roughness: 0.9 });
       const spine = new ConeGeometry(0.06, 0.24, 8);
@@ -309,7 +334,11 @@ export class Animal {
           const tilt = 0.2 + ring * 0.38;
           const mesh = new Mesh(spine, spines);
           const r = 0.4;
-          mesh.position.set(Math.sin(angle) * r * Math.cos(tilt - 0.6), 1.2 - ring * 0.22, -Math.cos(angle) * r * 0.8 - 0.05);
+          mesh.position.set(
+            Math.sin(angle) * r * Math.cos(tilt - 0.6),
+            1.2 - ring * 0.22,
+            -Math.cos(angle) * r * 0.8 - 0.05,
+          );
           mesh.lookAt(mesh.position.x * 3, mesh.position.y + 0.3, mesh.position.z * 3);
           mesh.rotateX(Math.PI / 2);
           this.body.add(mesh);

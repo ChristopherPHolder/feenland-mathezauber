@@ -1,0 +1,142 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.sky {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-surface);
+  background: radial-gradient(circle at 50% 30%, #2a3a8c, #0b1440 75%);
+  box-shadow: inset 0 0 40px #000a;
+  overflow: hidden;
+}
+.picture {
+  position: absolute;
+  top: 6%;
+  left: 6%;
+  width: 66%;
+  --line: #ffe9a8;
+  --lit: #fff8dc;
+}
+.nova {
+  position: absolute;
+  bottom: 4%;
+  right: 5%;
+  width: 20%;
+  overflow: visible;
+}
+.wing {
+  fill: #c8f2ffaa;
+  stroke: #e8fbff;
+  stroke-width: 1.5;
+}
+.pole,
+.arm {
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.pole {
+  stroke: #b98a5a;
+}
+.arm {
+  stroke: #f2c9a8;
+}
+.glow {
+  fill: #ffd23f55;
+}
+.lantern {
+  fill: #ffe066;
+}
+.dress {
+  fill: #8f6ad8;
+}
+.legs {
+  stroke: #f2c9a8;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.head {
+  fill: #f6d3b8;
+}
+.hair {
+  fill: #ff9ec4;
+}
+.eyes,
+.smile {
+  fill: none;
+  stroke: #2a1d3a;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff4c2;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+.drew {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--violet);
+}
+.stars {
+  display: flex;
+  gap: 8px;
+}
+.star {
+  width: 52px;
+  height: 52px;
+  color: var(--star-empty);
+}
+.star.won {
+  color: var(--star-earned-big);
+  fill: currentColor;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .star.won {
+    animation: pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    animation-delay: var(--at);
+  }
+  .sparkle {
+    animation: burst 1.4s ease-out both;
+    animation-delay: var(--at);
+  }
+  .nova {
+    animation: cheer 0.9s ease-in-out 0.4s 2;
+  }
+}
+:host-context(.calm-motion) .star,
+:host-context(.calm-motion) .sparkle,
+:host-context(.calm-motion) .nova {
+  animation: none;
+}
+@keyframes pop {
+  from {
+    transform: scale(0);
+  }
+}
+@keyframes burst {
+  from {
+    transform: scale(0) rotate(0);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.6) rotate(90deg);
+    opacity: 0.6;
+  }
+}
+@keyframes cheer {
+  50% {
+    translate: 0 -12px;
+  }
+}

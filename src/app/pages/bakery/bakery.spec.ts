@@ -133,7 +133,8 @@ describe('the fairy bakery', () => {
     expect(knife.getAttribute('aria-valuetext')).toBe('After column 5 of 7');
     key(fixture, 'Enter', knife);
     expect(status(fixture)).toBe(en.cutWorks);
-    const choices = () => [...el(fixture).querySelectorAll('.choice')].map((b) => b.textContent!.trim());
+    const choices = () =>
+      [...el(fixture).querySelectorAll('.choice')].map((b) => b.textContent!.trim());
     key(fixture, String(choices().indexOf('30') + 1));
     key(fixture, String(choices().indexOf('12') + 1));
     for (const d of '42') key(fixture, d);
@@ -219,7 +220,9 @@ describe('the fairy bakery', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     start(fixture);
     for (let order = 0; order < 7; order++) {
-      const [, a, b] = /(\d+) × (\d+)/.exec(el(fixture).querySelector('.question strong')!.textContent!)!;
+      const [, a, b] = /(\d+) × (\d+)/.exec(
+        el(fixture).querySelector('.question strong')!.textContent!,
+      )!;
       typeTotal(fixture, Number(a) * Number(b));
       vi.advanceTimersByTime(5000);
       fixture.detectChanges();
@@ -242,8 +245,12 @@ describe('the fairy bakery', () => {
     vi.advanceTimersByTime(60_000);
     fixture.detectChanges();
     expect(status(fixture)).toBe(en.crispy);
-    const [, a, b] = /(\d+) × (\d+)/.exec(el(fixture).querySelector('.question strong')!.textContent!)!;
+    const [, a, b] = /(\d+) × (\d+)/.exec(
+      el(fixture).querySelector('.question strong')!.textContent!,
+    )!;
     typeTotal(fixture, Number(a) * Number(b));
-    expect(el(fixture).querySelector('app-bakery-reward')!.textContent).not.toContain(en.perfectBonus);
+    expect(el(fixture).querySelector('app-bakery-reward')!.textContent).not.toContain(
+      en.perfectBonus,
+    );
   });
 });

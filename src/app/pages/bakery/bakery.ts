@@ -208,9 +208,7 @@ export class Bakery {
   protected readonly golden = computed(
     () => this.round().streak >= GOLDEN_STREAK && this.order().slips === 0,
   );
-  protected readonly canTurnTray = computed(
-    () => this.stage().stage >= 2 && canTurn(this.order()),
-  );
+  protected readonly canTurnTray = computed(() => this.stage().stage >= 2 && canTurn(this.order()));
   protected readonly customer = computed<Customer>(() => {
     const index = this.round().index;
     const hatched = this.hatchery.hatchery().hatched;
@@ -242,7 +240,10 @@ export class Bakery {
       if (this.stage().trick === 'turn')
         return [this.t('cardTurn', { a: cols, b: rows }), `${rows} × ${cols} = ${rows * cols}`];
       const counts = Array.from({ length: Math.min(rows, 3) }, (_, i) => cols * (i + 1));
-      return [this.t('cardCount', { list: counts.join(', ') }), `${rows} × ${cols} = ${rows * cols}`];
+      return [
+        this.t('cardCount', { list: counts.join(', ') }),
+        `${rows} × ${cols} = ${rows * cols}`,
+      ];
     }
     if (parts[1] < 0) {
       const full = parts[0] * cols;
@@ -301,7 +302,11 @@ export class Bakery {
   /** Row and column counts along the edges of each piece, for the labelled trays. */
   protected readonly sideLabels = computed(() => {
     const order = this.order();
-    if (this.stage().look === 'cookies' || order.phase === 'baked' || (order.ghost && order.ghostValue === null))
+    if (
+      this.stage().look === 'cookies' ||
+      order.phase === 'baked' ||
+      (order.ghost && order.ghostValue === null)
+    )
       return [];
     const fit = this.fit();
     const geometry = this.geometry();
@@ -532,7 +537,9 @@ export class Bakery {
 
   private toPieces(order: OrderState, counters: Counters, hadGuide: boolean) {
     const pieces = orderPieces(order);
-    const twins = pieces.length > 1 && pieces.every((p) => p.rows === pieces[0].rows && p.cols === pieces[0].cols);
+    const twins =
+      pieces.length > 1 &&
+      pieces.every((p) => p.rows === pieces[0].rows && p.cols === pieces[0].cols);
     const list = this.joinList(pieces.map((p) => `${p.rows} × ${p.cols}`));
     const trick = !order.firstWay && usedTrick(this.stage(), order);
     const key: BakeryMessageKey =
@@ -960,7 +967,11 @@ export class Bakery {
     const shown = this.shown();
     const values = { a: shown.rows, b: shown.cols };
     if (order.ghost && order.ghostValue !== null)
-      return this.t('statusTotalGhost', { ...values, full: order.ghostValue, line: ghostLine(order) });
+      return this.t('statusTotalGhost', {
+        ...values,
+        full: order.ghostValue,
+        line: ghostLine(order),
+      });
     return this.t(order.cuts.length ? 'statusTotal' : 'statusTotalRead', values);
   }
 
