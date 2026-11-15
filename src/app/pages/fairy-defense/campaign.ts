@@ -1,9 +1,21 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Service, signal, computed } from '@angular/core';
 import { TOTAL_WAVES, waveSize } from './waves';
+export type WaveStars = 1 | 2 | 3;
 export interface WaveResult {
   readonly wave: number;
   readonly independent: number;
+  /** Best stars for the wave; saves from before wave stars have none. */
+  readonly stars?: WaveStars;
+}
+/**
+ * Stars for one finished wave, from the gems in the pouch: every rescue drops one gem and a first
+ * try one more, so the gems over the creature count are the first tries. All first tries earn
+ * three stars, at least half two, and finishing always earns one.
+ */
+export function waveStars(creatures: number, gems: number): WaveStars {
+  const firstTries = gems - creatures;
+  return firstTries >= creatures ? 3 : firstTries * 2 >= creatures ? 2 : 1;
 }
 export interface Campaign {
   readonly version: 1;
@@ -22,7 +34,12 @@ function isValidResult(item: unknown): item is WaveResult {
     typeof item.independent === 'number' &&
     Number.isInteger(item.independent) &&
     item.independent >= 0 &&
-    item.independent <= waveSize(item.wave)
+    item.independent <= waveSize(item.wave) &&
+    (!('stars' in item) ||
+      item.stars === undefined ||
+      item.stars === 1 ||
+      item.stars === 2 ||
+      item.stars === 3)
   );
 }
 export function parseCampaign(value: unknown): Campaign {
@@ -40,7 +57,12 @@ export function parseCampaign(value: unknown): Campaign {
   const results = new Map<number, WaveResult>();
   for (const item of value.results as unknown[])
     if (isValidResult(item) && !results.has(item.wave))
-      results.set(item.wave, { wave: item.wave, independent: item.independent });
+      results.set(
+        item.wave,
+        item.stars
+          ? { wave: item.wave, independent: item.independent, stars: item.stars }
+          : { wave: item.wave, independent: item.independent },
+      );
   return { version: 1, results: [...results.values()].sort((a, b) => a.wave - b.wave) };
 }
 export function campaignStars(campaign: Campaign): number {
@@ -65,21 +87,31 @@ export class CampaignStore {
   });
   readonly finished = computed(() => this.state().results.length === TOTAL_WAVES);
   readonly stars = computed(() => campaignStars(this.state()));
+  /** Best stars per wave number, for the wave path. */
+  readonly waveStars = computed(
+    () => new Map(this.state().results.map((result) => [result.wave, result.stars ?? 0])),
+  );
+  /** Every wave star earned so far, out of sixty. */
+  readonly starTotal = computed(() =>
+    this.state().results.reduce((sum, result) => sum + (result.stars ?? 0), 0),
+  );
   complete(result: WaveResult) {
     if (!isValidResult(result)) return;
-    this.state.update((state) => ({
-      version: 1,
-      results: [
-        ...state.results.filter((entry) => entry.wave !== result.wave),
-        {
-          ...result,
-          independent: Math.max(
-            state.results.find((entry) => entry.wave === result.wave)?.independent ?? 0,
-            result.independent,
-          ),
-        },
-      ].sort((a, b) => a.wave - b.wave),
-    }));
+    this.state.update((state) => {
+      const before = state.results.find((entry) => entry.wave === result.wave);
+      const stars = Math.max(before?.stars ?? 0, result.stars ?? 0);
+      return {
+        version: 1,
+        results: [
+          ...state.results.filter((entry) => entry.wave !== result.wave),
+          {
+            wave: result.wave,
+            independent: Math.max(before?.independent ?? 0, result.independent),
+            ...(stars ? { stars: stars as WaveStars } : {}),
+          },
+        ].sort((a, b) => a.wave - b.wave),
+      };
+    });
     try {
       this.document.defaultView?.localStorage.setItem(
         'feenland.castle-campaign.v1',

@@ -49,6 +49,8 @@ import { CrocodileSounds } from './crocodile-sounds';
 import { HatWardrobe } from './hat-wardrobe';
 import { Heron } from './heron';
 import { PondScene } from './pond-scene';
+import type { PondFrame } from './pond-frame';
+import { ThreeStage } from '../../shared/three/three-stage';
 import { RuleHintCard } from './rule-hint';
 import { ruleHint } from './rule-hints';
 interface Round {
@@ -84,6 +86,7 @@ const BOSS_EXTRA = 3000;
     HatWardrobe,
     Heron,
     RuleHintCard,
+    ThreeStage,
   ],
   providers: [CrocodileSounds],
   templateUrl: './crocodile-game.html',
@@ -94,6 +97,7 @@ const BOSS_EXTRA = 3000;
     './crocodile-responsive.css',
     './crocodile-heron.css',
     './crocodile-outcome.css',
+    './crocodile-3d.css',
   ],
   host: {
     '(document:keydown)': 'onKey($event)',
@@ -213,6 +217,27 @@ export class CrocodileGame {
     const stage = this.stage();
     if (round.phase !== 'ready' || round.attempts === 0 || !stage) return null;
     return ruleHint(stage.skill, this.needsMaths(), round.attempts);
+  });
+  /** The 3D pond only draws: it gets the round as plain values and loads on demand. */
+  protected readonly loadPond = () => import('./pond-world').then((m) => m.PondWorld);
+  protected readonly pondFrame = computed<PondFrame>(() => {
+    const round = this.round();
+    const question = this.question();
+    const heron = this.heron();
+    return {
+      snack: round.index,
+      left: question.left.text,
+      right: question.right.text,
+      kind: this.kind(),
+      phase: round.phase,
+      chosen: round.chosen,
+      pose: this.pose(),
+      wrong: this.wrongPick(),
+      tries: round.attempts,
+      combo: this.combo(),
+      hat: this.hat(),
+      heron,
+    };
   });
   private readonly outcome = viewChild<ElementRef<HTMLElement>>('outcome');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
