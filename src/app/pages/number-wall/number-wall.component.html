@@ -29,7 +29,7 @@
             <span
               >{{ i.t('numberWallPlay')
               }}<small
-                >{{ t('wallLevelLabel', { n: suggestedLevel() }) }} ·
+                >{{ t('wallLevelLabel', { n: position(suggestedLevel()) }) }} ·
                 {{ i.t(levelTitle(suggestedLevel())) }}</small
               ></span
             ><app-icon kind="arrow" />
@@ -69,7 +69,7 @@
                 [class.starred]="store.hasStar(option)"
                 (click)="start(option)"
               >
-                <span class="level-number">{{ t('wallLevelLabel', { n: option }) }}</span>
+                <span class="level-number">{{ t('wallLevelLabel', { n: position(option) }) }}</span>
                 <span class="level-name">{{ i.t(levelTitle(option)) }}</span>
                 <span class="level-help">{{ i.t(levelHelp(option)) }}</span>
                 <span
@@ -97,15 +97,15 @@
       @if (wall(); as current) {
         <div class="hud">
           <p class="level-tag">
-            {{ t('wallLevelLabel', { n: level() }) }} · {{ i.t(levelTitle(level())) }}
+            {{ t('wallLevelLabel', { n: position(level()) }) }} · {{ i.t(levelTitle(level())) }}
           </p>
           <div
             class="progress"
             role="progressbar"
             [attr.aria-valuemin]="0"
-            [attr.aria-valuemax]="total"
+            [attr.aria-valuemax]="total()"
             [attr.aria-valuenow]="wallsDone()"
-            [attr.aria-label]="t('wallProgress', { n: wallIndex() + 1, total: total })"
+            [attr.aria-label]="t('wallProgress', { n: wallIndex() + 1, total: total() })"
           >
             @for (step of walls(); track $index) {
               <span
@@ -138,7 +138,8 @@
               <span aria-hidden="true">⚡</span>
               <span class="sr-only">{{ i.t('wallStreak') }}: </span>
               @if (combo() > 0) {
-                <strong>{{ t('wallCombo', { n: combo() }) }}</strong>
+                <span class="sr-only">{{ t('wallCombo', { n: combo() }) }}</span>
+                <strong aria-hidden="true">×{{ i.format(combo()) }}</strong>
               } @else {
                 <strong>{{ i.format(streak()) }}</strong>
               }
@@ -146,11 +147,15 @@
             <button
               type="button"
               class="dust"
+              [class.ready]="canDust()"
+              [class.pop]="dustPop()"
               [disabled]="!canDust()"
-              [attr.aria-label]="i.t('wallDust') + ' · ' + i.format(dust()) + ' / ' + maxDust"
               (click)="useDust()"
             >
-              <span aria-hidden="true">🪄</span><strong>{{ i.format(dust()) }}</strong>
+              <span aria-hidden="true">🪄</span>
+              <span class="dust-label">{{ i.t('wallDust') + ' ' }}</span>
+              <strong>{{ i.format(dust()) }}</strong
+              ><span class="sr-only"> / {{ i.format(maxDust) }}</span>
             </button>
           </div>
         </div>
@@ -159,9 +164,10 @@
             tabindex="-1"
             role="group"
             [attr.aria-label]="
-              i.t('wallScene') + ' · ' + t('wallProgress', { n: wallIndex() + 1, total: total })
+              i.t('wallScene') + ' · ' + t('wallProgress', { n: wallIndex() + 1, total: total() })
             "
             [wall]="current"
+            [total]="total()"
             [filled]="filled()"
             [golden]="golden()"
             [selected]="selected()"
@@ -172,6 +178,7 @@
             [wallsDone]="wallsDone()"
             [trollProgress]="trollProgress()"
             [trollAsleep]="trollAsleep()"
+            [sleepLeft]="sleepLeft()"
             [trollBump]="trollBump()"
             [cracks]="maxHearts - hearts()"
             [crumbled]="crumbled()"
@@ -193,7 +200,9 @@
                   <span class="hint-brick" [class.ask]="!below">{{ below ? '' : '?' }}</span>
                   <span class="hint-row"
                     ><span class="hint-brick"></span><span class="hint-plus">+</span
-                    ><span class="hint-brick" [class.ask]="below">{{ below ? '?' : '' }}</span></span
+                    ><span class="hint-brick" [class.ask]="below">{{
+                      below ? '?' : ''
+                    }}</span></span
                   >
                 </span>
               } @else if (built()) {
@@ -264,41 +273,77 @@
             }
           </div>
         }
-        <div class="star-row" role="img" [attr.aria-label]="t('wallStars', { n: rating() })">
-          @for (star of stars; track star) {
-            <app-icon kind="star" [class.earned]="rating() >= star" [style.--i]="star" />
-          }
+        <div class="summary-hero">
+          <div class="star-row" role="img" [attr.aria-label]="t('wallStars', { n: rating() })">
+            @for (star of stars; track star) {
+              <app-icon kind="star" [class.earned]="rating() >= star" [style.--i]="star" />
+            }
+          </div>
+          <div class="summary-fairy" [class.party]="rating() === 3" aria-hidden="true">
+            <img ngSrc="/images/fairy-defense/fairy.webp" width="1536" height="1024" alt="" />
+          </div>
         </div>
-        <div class="summary-fairy" [class.party]="rating() === 3" aria-hidden="true">🧚</div>
-        <h2 id="summary-title">
-          {{ rating() === 3 ? i.t('wallThreeStars') : i.t('wallWorldDone') }}
-        </h2>
-        <p>
-          {{ t('wallSummary', { n: total }) }} {{ t('wallGemsWon', { n: gems() }) }}
-          {{ t('wallFirstTry', { n: firstTry() }) }}
-          @if (knockedDown() > 0) {
-            {{ t('wallKnockedDown', { n: knockedDown() }) }}
+        <div class="summary-body">
+          <h2 id="summary-title">
+            {{ rating() === 3 ? i.t('wallThreeStars') : i.t('wallWorldDone') }}
+          </h2>
+          <p class="summary-lead">{{ t('wallSummary', { n: total() }) }}</p>
+          <ul class="rewards">
+            <li class="reward gems">
+              <span class="reward-icon" aria-hidden="true">💎</span>
+              <strong>+{{ i.format(gems()) }}</strong>
+              <span>{{ ' ' + i.t('wallGems') }}</span>
+            </li>
+            <li class="reward first-try">
+              <span class="reward-icon" aria-hidden="true">✨</span>
+              <strong
+                >{{ i.format(firstTry()) }}<small> / {{ i.format(totalBricks()) }}</small></strong
+              >
+              <span>{{ ' ' + t('wallTileFirstTry') }}</span>
+            </li>
+            <li class="reward streak">
+              <span class="reward-icon" aria-hidden="true">⚡</span>
+              <strong>{{ i.format(store.save().bestStreak) }}</strong>
+              <span>{{ ' ' + i.t('wallBestStreak') }}</span>
+            </li>
+            @if (timed()) {
+              <li class="reward troll">
+                <app-wall-troll
+                  class="reward-icon"
+                  [cheering]="knockedDown() > 0"
+                  [asleep]="knockedDown() === 0"
+                />
+                <strong>{{ i.format(knockedDown()) }}</strong>
+                <span>{{ ' ' + t('wallTileKnocked') }}</span>
+              </li>
+            }
+          </ul>
+          @if (rating() < 3) {
+            <p class="best">{{ i.t('wallStarsHelp') }}</p>
           }
-        </p>
-        <p class="best">
-          {{ rating() < 3 ? i.t('wallStarsHelp') : '' }} {{ i.t('wallBestStreak') }}:
-          {{ i.format(store.save().bestStreak) }}
-        </p>
-        <div class="summary-actions">
-          @if (nextLevel(); as upcoming) {
-            <button type="button" class="button primary" (click)="start(upcoming)">
-              {{ i.t('wallNextLevel') }} · {{ i.t(levelTitle(upcoming)) }}<app-icon kind="arrow" />
+          <div class="summary-actions">
+            @if (nextLevel(); as upcoming) {
+              <button type="button" class="button primary" (click)="start(upcoming)">
+                {{ i.t('wallNextLevel') }} · {{ i.t(levelTitle(upcoming))
+                }}<app-icon kind="arrow" />
+              </button>
+            }
+            <button
+              type="button"
+              class="button"
+              [class.primary]="!nextLevel()"
+              [class.secondary]="!!nextLevel()"
+              (click)="start(level())"
+            >
+              {{ i.t('wallPlayAgain') }}
             </button>
-          }
-          <button type="button" class="button secondary" (click)="start(level())">
-            {{ i.t('wallPlayAgain') }}
-          </button>
-          <button type="button" class="button secondary" (click)="chooseLevel()">
-            {{ i.t('wallChooseLevel') }}
-          </button>
-          <a class="button secondary" routerLink="/games" fragment="number-walls"
-            ><app-icon kind="grid" />{{ i.t('allGames') }}</a
-          >
+            <button type="button" class="button secondary" (click)="chooseLevel()">
+              {{ i.t('wallChooseLevel') }}
+            </button>
+            <a class="button secondary" routerLink="/games" fragment="number-walls"
+              ><app-icon kind="grid" />{{ i.t('allGames') }}</a
+            >
+          </div>
         </div>
       </section>
     }

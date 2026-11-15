@@ -63,6 +63,14 @@ describe('Completion flow', () => {
       h.routeNativeElement?.querySelector('a[href="/adventure/defend-fairy-castle"]'),
     ).toBeTruthy();
     expect(h.routeNativeElement?.querySelector(`a[href="/games#${wall}"]`)).toBeTruthy();
+    // The way on names the next level, and the stars are drawn: two of three earned.
+    expect(h.routeNativeElement?.querySelector('.next')?.textContent).toContain(
+      i.t('fairyCastle'),
+    );
+    expect(h.routeNativeElement?.querySelectorAll('.stars .star.earned').length).toBe(2);
+    expect(h.routeNativeElement?.querySelector('.game-name')?.textContent).toContain(
+      i.t('numberWalls'),
+    );
     expect(h.routeNativeElement?.querySelector(`a[href="/adventure/${wall}"]`)).toBeTruthy();
     expect(JSON.parse(localStorage.getItem('feenland.progress')!).mastered).toEqual([wall]);
   });
@@ -72,8 +80,8 @@ describe('Completion flow', () => {
     const c = TestBed.inject(CompletionService);
     expect(c.finish(earned)).toBe(true);
     await h.navigateByUrl('/complete/' + wall);
-    expect(h.routeNativeElement?.textContent).toContain(
-      TestBed.inject(LocaleService).t('starsEarned'),
+    expect(h.routeNativeElement?.querySelector('.stars')?.getAttribute('aria-label')).toBe(
+      TestBed.inject(LocaleService).t('starsOf', { n: 2 }),
     );
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });

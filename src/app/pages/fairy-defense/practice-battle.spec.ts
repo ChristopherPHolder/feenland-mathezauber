@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { practiceLevels } from '../../core/practice';
+import { practiceConfig, practiceLevels, STAGE_QUESTIONS } from '../../core/practice';
 import { ProgressService } from '../../core/progress';
 import { CampaignStore } from './campaign';
 import { FairyDefenseComponent } from './fairy-defense.component';
@@ -14,12 +14,13 @@ describe('tower defense math progression', () => {
     for (const level of practiceLevels)
       for (const difficulty of ['easy', 'medium', 'hard'] as const) {
         let state = practiceBattle(level.practice!, difficulty);
-        for (let index = 0; index < 8; index++) {
+        for (let index = 0; index < STAGE_QUESTIONS; index++) {
           const question = state.wave.encounters[state.encounter].question!;
           const spells = practiceSpells(question.answer);
           expect(new Set(spells).size).toBe(5);
           expect(spells).toContain(question.answer);
-          expect(spells.every((spell) => spell >= 0 && spell <= 30)).toBe(true);
+          const top = Math.max(30, level.practice!.max);
+          expect(spells.every((spell) => spell >= 0 && spell <= top)).toBe(true);
           const wrong = spells.find((spell) => spell !== question.answer)!;
           expect(resolveSpell(cast(state, wrong)).phase).toBe('wrong');
           state = advance(resolveSpell(cast(state, question.answer)));
@@ -136,14 +137,14 @@ describe('tower defense math progression', () => {
       JSON.stringify({ difficulty: 'hard', pace: 'quick' }),
     );
     const fixture = TestBed.createComponent(FairyDefenseComponent);
-    fixture.componentRef.setInput('practiceConfig', practiceLevels[7].practice);
+    fixture.componentRef.setInput('practiceConfig', practiceConfig('practice-30-8'));
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Stage 8 / 11');
+    expect(element.textContent).toContain(`Stage 15 / ${practiceLevels.length}`);
     expect(element.querySelector<HTMLInputElement>('input[value="hard"]')!.checked).toBe(true);
     element.querySelector<HTMLButtonElement>('.start-curtain button')!.click();
     fixture.detectChanges();
-    for (let n = 0; n < 8; n++) {
+    for (let n = 0; n < STAGE_QUESTIONS; n++) {
       const equation = element.querySelector('.math-prompt')!.textContent!;
       const values = equation.match(/\d+/g)!.map(Number);
       const answer = values[0] + values[1];

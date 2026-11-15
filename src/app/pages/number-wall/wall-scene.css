@@ -35,6 +35,9 @@
 :host(.three-rows) {
   --brick-h: clamp(44px, min(16cqh, 12cqw), 116px);
 }
+:host(.four-rows) {
+  --brick-h: clamp(34px, min(13cqh, 9cqw), 100px);
+}
 :host(.danger) {
   --sky-top: #f2b99a;
   --sky-bottom: #fde6d6;
@@ -80,11 +83,18 @@
 }
 .fairy {
   position: absolute;
-  left: 13%;
-  top: 9%;
+  left: 3%;
+  top: 4%;
+  width: clamp(96px, min(34cqh, 30cqw), 240px);
   font-size: clamp(38px, 10cqh, 84px);
   line-height: 1;
-  z-index: 2;
+  z-index: 3;
+}
+.fairy img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 6px #1f2a4433);
 }
 :host(.combo) .fairy::after,
 :host(.combo) .fairy::before {
@@ -290,12 +300,12 @@
 
 /* The troll walks down the road: far and small at the horizon, big once he reaches the wall. */
 .troll {
-  --start: calc(100% - 0.75em);
+  --start: calc(100% - 1.05em);
   --end: calc(50% + var(--wall-half) - 0.1em);
   position: absolute;
   bottom: calc(7cqh - var(--p) * 3cqh);
   left: calc(var(--start) + (var(--end) - var(--start)) * var(--p));
-  font-size: clamp(44px, 12cqh, 100px);
+  font-size: clamp(64px, 22cqh, 170px);
   line-height: 1;
   transform: scaleX(-1);
   transition:
@@ -304,9 +314,8 @@
   z-index: 2;
 }
 .troll-body {
-  display: inline-block;
   transform-origin: bottom center;
-  scale: calc(0.5 + var(--p) * 0.6);
+  scale: calc(0.55 + var(--p) * 0.45);
   transition: scale 0.2s linear;
 }
 .alert,
@@ -316,6 +325,22 @@
   left: 0.1em;
   font-size: 0.5em;
   transform: scaleX(-1);
+}
+.frost {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.frost span {
+  position: absolute;
+  left: 40%;
+  top: 30%;
+  font-size: 0.32em;
+  opacity: 0;
+}
+/* The snore floats toward the wall so it is never cut off at the edge of the scene. */
+.zzz {
+  left: 0.9em;
 }
 .dust-cloud {
   position: absolute;

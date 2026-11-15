@@ -1,0 +1,149 @@
+:host {
+  display: block;
+  width: 1.3em;
+  height: 1.62em;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.leg,
+.club,
+.torso,
+.arm {
+  transform-box: fill-box;
+}
+.leg {
+  transform-origin: 50% 0;
+  animation: march 0.7s ease-in-out infinite;
+}
+.leg-back {
+  animation-delay: -0.35s;
+}
+.torso {
+  transform-origin: 50% 100%;
+  animation: bob 0.35s ease-in-out infinite alternate;
+}
+.club {
+  transform-origin: 80% 95%;
+  animation: club-sway 0.7s ease-in-out infinite alternate;
+}
+.eyes-shut,
+.brows {
+  display: none;
+}
+
+/* Close to the wall he frowns. */
+:host(.is-angry) .brows {
+  display: inline;
+}
+
+/* Fairy dust: eyes shut, frozen mid-step, a frosty blue tint. */
+:host(.is-asleep) .eyes-open,
+:host(.is-asleep) .brows {
+  display: none;
+}
+:host(.is-asleep) .eyes-shut {
+  display: inline;
+}
+:host(.is-asleep) .leg,
+:host(.is-asleep) .torso {
+  filter: hue-rotate(60deg) saturate(0.7) brightness(1.08) drop-shadow(0 0 6px #c9ecff);
+}
+:host(.is-asleep) .leg,
+:host(.is-asleep) .club {
+  animation: none;
+}
+:host(.is-asleep) .torso {
+  animation: snore 1.6s ease-in-out infinite;
+}
+
+/* Bonk: the club comes down on the wall. */
+:host(.is-bonking) .club {
+  animation: bonk 0.45s ease-in 2;
+}
+:host(.is-bonking) .leg {
+  animation: none;
+}
+
+/* The wall is down: a little victory hop with the club held high. */
+:host(.is-cheering) .torso {
+  animation: hop 0.5s ease-in-out infinite;
+}
+:host(.is-cheering) .club {
+  animation: none;
+  transform: rotate(-25deg);
+}
+
+@keyframes march {
+  0%,
+  100% {
+    transform: rotate(16deg);
+  }
+  50% {
+    transform: rotate(-16deg);
+  }
+}
+@keyframes bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px) rotate(1.5deg);
+  }
+}
+@keyframes club-sway {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(8deg);
+  }
+}
+@keyframes bonk {
+  0%,
+  100% {
+    transform: rotate(-20deg);
+  }
+  55% {
+    transform: rotate(70deg);
+  }
+}
+@keyframes snore {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04, 0.97);
+  }
+}
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}
+.sleep-clock {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: clock-in 0.5s ease-out;
+}
+@keyframes clock-in {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}

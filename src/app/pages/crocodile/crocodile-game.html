@@ -7,7 +7,7 @@
     [title]="t('title')"
     [detail]="
       stage()
-        ? t('level', { n: stage()!.stage, total: total }) + ' · ' + i.t(levelKey(stage()!.stage))
+        ? t('level', { n: stage()!.position, total: total }) + ' · ' + i.t(levelKey(stage()!.stage))
         : ''
     "
     [anchor]="levelId()"
@@ -24,9 +24,9 @@
             [routerLink]="link.route"
             [attr.aria-current]="link.stage === stage()?.stage ? 'page' : null"
             [attr.aria-label]="
-              t('level', { n: link.stage, total: total }) + ' · ' + i.t(levelKey(link.stage))
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
             "
-            >{{ link.stage }}</a
+            >{{ link.position }}</a
           >
         }
       </nav>
@@ -112,72 +112,83 @@
     >
       @if (stars() === 3) {
         <div class="confetti" aria-hidden="true">
-          @for (piece of snacks; track piece) {
+          @for (piece of snacks(); track piece) {
             <span [style.--i]="piece"></span>
           }
         </div>
       }
-      <span class="outcome-croc"><app-crocodile kind="front" [hat]="hat()" /></span>
-      <h2>{{ t(stars() === 3 ? 'perfect' : 'done', { n: i.format(round().score) }) }}</h2>
-      <p class="score-line">
-        <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
-        @if (newBest()) {
-          <span class="new-best">{{ t('newBest') }}</span>
-        } @else {
-          <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
-        }
-      </p>
-      <p>
-        {{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}
-        @if (timed()) {
-          {{ t('stolenCount', { n: round().stolen }) }}
-        }
-      </p>
-      <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
-        @for (star of starSlots; track star) {
-          <app-icon kind="star" [class.earned]="star <= stars()" [style.--i]="star" />
-        }
-      </div>
-      <p class="outcome-help">
-        {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
-        @if (stars() >= 2 && stage()?.stage === total) {
-          {{ t('lastLevel') }}
-        }
-      </p>
-      @if (newHat(); as unlocked) {
-        <p class="hat-unlocked" role="status">
-          <span class="hat-badge"><app-crocodile kind="hat" [hat]="unlocked.id" /></span>
-          {{ t('hatUnlocked', { hat: t(unlocked.name) }) }}
+      <div class="outcome-hero">
+        <span class="outcome-croc"><app-crocodile kind="front" [hat]="hat()" /></span>
+        <h2>{{ t(stars() === 3 ? 'perfect' : 'done', { n: i.format(round().score) }) }}</h2>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
         </p>
-      }
-      @if (saveFailed()) {
-        <p class="save-note" role="alert">{{ t('save') }}</p>
-      }
-      <div class="outcome-actions">
-        @if (nextLink(); as next) {
-          <a class="button primary" [routerLink]="next">{{ t('next') }}<app-icon kind="arrow" /></a>
-          <button class="button secondary" type="button" (click)="celebrate()">
-            {{ t('celebrate') }}
-          </button>
-        } @else {
-          <button class="button primary" type="button" (click)="celebrate()">
-            {{ t('celebrate') }}<app-icon kind="arrow" />
-          </button>
-        }
-        <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (star of starSlots; track star) {
+            <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
+              ><app-icon kind="star"
+            /></span>
+          }
+        </div>
+        <p>
+          {{ t('doneText') }} {{ t('mistakes', { n: round().mistakes }) }}
+          @if (timed()) {
+            {{ t('stolenCount', { n: round().stolen }) }}
+          }
+        </p>
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+          @if (stars() >= 2 && stage()?.position === total) {
+            {{ t('lastLevel') }}
+          }
+        </p>
       </div>
-      <app-hat-wardrobe [owned]="ownedHats()" [fresh]="newHat()" />
+      <div class="outcome-side">
+        @if (newHat(); as unlocked) {
+          <p class="hat-unlocked" role="status">
+            <span class="hat-badge"><app-crocodile kind="front" [hat]="unlocked.id" /></span>
+            <span>
+              <small>{{ t('hatUnlockedTitle') }}</small>
+              <strong>{{ t(unlocked.name) }}</strong>
+            </span>
+          </p>
+        }
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('next') }}<app-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<app-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+        <app-hat-wardrobe [owned]="ownedHats()" [fresh]="newHat()" />
+      </div>
     </section>
   } @else {
     <div class="hud">
       <div class="snack-bar">
         <ol class="snacks" [attr.aria-label]="t('snackBar')">
-          @for (snack of snacks; track snack) {
+          @for (snack of snacks(); track snack) {
             <li
               [class.eaten]="snack < round().index"
               [class.current]="snack === round().index"
               [class.golden]="round().golden.has(snack)"
-              [class.boss]="snack === roundLength - 1"
+              [class.boss]="snack === roundLength() - 1"
               aria-hidden="true"
             ></li>
           }

@@ -1,3 +1,4 @@
+import { HatcheryStore } from '../hatchery/hatchery-store';
 import {
   Component,
   computed,
@@ -40,10 +41,14 @@ import {
   valueOf,
   Wall,
   WallLevel,
-  WALLS_PER_WORLD,
+  wallsFor,
+  isWallLevel,
+  levelAfter,
+  levelPosition,
 } from './number-wall';
 import { NumberWallStore } from './number-wall-store';
 import { WallScene } from './wall-scene';
+import { WallTroll } from './wall-troll';
 import { wallText } from './wall-text';
 type Feedback =
   | { readonly kind: 'idle' }
@@ -61,10 +66,10 @@ type Feedback =
 const TICK_MS = 100;
 @Component({
   selector: 'app-number-wall',
-  imports: [RouterLink, Icon, GameHeader, WallScene, NgOptimizedImage],
+  imports: [RouterLink, Icon, GameHeader, WallScene, WallTroll, NgOptimizedImage],
   providers: [GameAudio],
   templateUrl: './number-wall.component.html',
-  styleUrls: ['./number-wall.component.css', './number-wall-play.css'],
+  styleUrls: ['./number-wall.component.css', './number-wall-play.css', './number-wall-summary.css'],
   host: {
     '(document:keydown)': 'onKey($event)',
     '(document:visibilitychange)': 'visibilityChanged()',
@@ -76,6 +81,7 @@ export class NumberWallComponent {
   protected readonly sound = inject(PlaytestStore);
   private readonly audio = inject(GameAudio);
   private readonly progress = inject(ProgressService);
+  private readonly hatchery = inject(HatcheryStore);
   private readonly document = inject(DOCUMENT);
   protected readonly levels = levels;
   protected readonly paces = paces;
@@ -91,7 +97,8 @@ export class NumberWallComponent {
   );
   protected readonly stars = [1, 2, 3] as const;
   protected readonly confetti = Array.from({ length: 12 }, (_, index) => index);
-  protected readonly total = WALLS_PER_WORLD;
+  /** Walls in the current level's run. */
+  protected readonly total = computed(() => wallsFor(this.level()));
   protected readonly maxDust = MAX_DUST;
   protected readonly maxHearts = MAX_HEARTS;
   protected readonly heartSlots = Array.from({ length: MAX_HEARTS }, (_, index) => index + 1);
@@ -100,6 +107,10 @@ export class NumberWallComponent {
   protected readonly walls = signal<readonly Wall[]>([]);
   protected readonly wallIndex = signal(0);
   protected readonly wall = computed(() => this.walls()[this.wallIndex()]);
+  /** Every brick the child had to find in this level, for the first-try reward. */
+  protected readonly totalBricks = computed(() =>
+    this.walls().reduce((sum, wall) => sum + wall.missing.length, 0),
+  );
   protected readonly filled = signal<readonly BrickId[]>([]);
   protected readonly golden = signal<readonly BrickId[]>([]);
   protected readonly selected = signal<BrickId | undefined>(undefined);
@@ -133,6 +144,9 @@ export class NumberWallComponent {
   protected readonly wallsDone = computed(() => this.wallIndex() + (this.built() ? 1 : 0));
   protected readonly combo = computed(() => (this.streak() >= DUST_EVERY ? this.streak() : 0));
   protected readonly trollAsleep = computed(() => this.frozenMs() > 0);
+  /** How much of the fairy-dust nap is left, from 1 down to 0, for the troll's sleep timer. */
+  protected readonly sleepLeft = computed(() => this.frozenMs() / FREEZE_MS);
+  protected readonly dustPop = signal(false);
   /**
    * From the second miss on a brick the help shows the rule as a picture and the pair to add
    * pulses harder. It never shows the result: the child keeps working the brick out.
@@ -193,7 +207,7 @@ export class NumberWallComponent {
     const requested = Number(
       inject(ActivatedRoute, { optional: true })?.snapshot.queryParamMap.get('level'),
     );
-    if (levels.includes(requested as WallLevel)) this.start(requested as WallLevel);
+    if (isWallLevel(requested)) this.start(requested);
     effect(() => this.audio.updateVoice(this.i.locale()));
     effect(() => {
       if (this.locked()) this.nextButton()?.nativeElement.focus();
@@ -205,6 +219,9 @@ export class NumberWallComponent {
   }
   protected t(key: MessageKey, params: Record<string, string | number> = {}): string {
     return wallText(this.i, key, params);
+  }
+  protected position(level: WallLevel): number {
+    return levelPosition(level);
   }
   protected levelTitle(level: WallLevel): MessageKey {
     return `wallLevel${level}` as MessageKey;
@@ -360,13 +377,18 @@ export class NumberWallComponent {
     if (!wall || !brick || !this.canDust()) return;
     this.dust.update((count) => count - 1);
     if (this.timed()) this.frozenMs.set(FREEZE_MS);
-    this.feedback.set({ kind: 'hint', hint: hintFor(wall, brick, this.filled()), dust: true });
+    this.feedback.set({
+      kind: 'hint',
+      hint: hintFor(wall, brick, this.filled()),
+      dust: this.timed(),
+    });
     this.audio.effect('cast');
   }
   private place(brick: BrickId, value: number, firstTry: boolean) {
     const wall = this.wall()!;
     this.filled.update((filled) => [...filled, brick]);
     this.justFilled.set(brick);
+    this.hatchery.warm();
     this.entry.set('');
     this.misses.set(0);
     this.brickMissed = false;
@@ -374,8 +396,10 @@ export class NumberWallComponent {
       this.firstTry.update((count) => count + 1);
       this.streak.update((count) => count + 1);
       this.store.recordStreak(this.streak());
-      if (this.streak() % DUST_EVERY === 0)
+      if (this.streak() % DUST_EVERY === 0) {
         this.dust.update((count) => Math.min(MAX_DUST, count + 1));
+        this.flash(this.dustPop, 900);
+      }
       if (this.streak() >= DUST_EVERY) this.golden.update((golden) => [...golden, brick]);
     }
     const remaining = fillOrder(wall).filter((id) => !this.isFilled(id));
@@ -410,7 +434,7 @@ export class NumberWallComponent {
   }
   private finishWorld() {
     const level = this.level();
-    const rating = ratingFor(this.gems(), this.timed());
+    const rating = ratingFor(this.gems(), this.timed(), this.total());
     this.rating.set(rating);
     this.store.recordWorld(level, rating, this.gems());
     const starred = this.store.starredLevels();
@@ -424,8 +448,7 @@ export class NumberWallComponent {
     this.phase.set('summary');
   }
   protected nextLevel(): WallLevel | undefined {
-    const level = this.level();
-    return level < 4 ? ((level + 1) as WallLevel) : undefined;
+    return levelAfter(this.level());
   }
   protected chooseLevel() {
     this.phase.set('intro');

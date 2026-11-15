@@ -15,7 +15,13 @@ export interface Battle {
   readonly phase: Phase;
   readonly spell: number | null;
   readonly damaged: boolean;
+  /** Gems in the pouch this wave: one per rescued creature, one more for a first try. */
+  readonly gems: number;
+  /** First-try answers in a row; any slip starts it again. */
+  readonly streak: number;
 }
+/** Gems one rescue drops: a first try is worth double. */
+export const gemsFor = (attempts: number) => (attempts === 1 ? 2 : 1);
 export const freshBattle = (number = 1): Battle => ({
   wave: createWave(number),
   encounter: 0,
@@ -28,6 +34,8 @@ export const freshBattle = (number = 1): Battle => ({
   phase: 'ready',
   spell: null,
   damaged: false,
+  gems: 0,
+  streak: 0,
 });
 export function revealHint(state: Battle): Battle {
   return state.phase === 'ready' ? { ...state, hintVisible: true, helpUsed: true } : state;
@@ -53,6 +61,8 @@ export function resolveSpell(state: Battle): Battle {
       ...state,
       phase: 'transforming',
       independent: [...state.independent, state.attempts === 1 && !state.helpUsed],
+      gems: state.gems + gemsFor(state.attempts),
+      streak: state.attempts === 1 ? state.streak + 1 : 0,
     };
   const damaged = state.mistakes === 2;
   const hearts = state.hearts - Number(damaged);
@@ -61,6 +71,7 @@ export function resolveSpell(state: Battle): Battle {
     mistakes: damaged ? 0 : state.mistakes + 1,
     hearts,
     damaged,
+    streak: 0,
     hintVisible: true,
     helpUsed: true,
     phase: hearts === 0 ? 'lost' : 'wrong',

@@ -4,12 +4,14 @@
   <span class="bird">🐦</span>
 </div>
 @for (dive of [justFilled()]; track dive ? dive.row + '-' + dive.col : 'none') {
-  <div class="fairy" [class.dive]="!!dive" aria-hidden="true">🧚</div>
+  <div class="fairy" [class.dive]="!!dive" aria-hidden="true">
+    <img ngSrc="/images/fairy-defense/fairy.webp" width="1536" height="1024" priority alt="" />
+  </div>
 }
 <div class="tower left" aria-hidden="true"></div>
 <div class="tower right" aria-hidden="true"></div>
 <div class="road" aria-hidden="true"></div>
-@if (wallsDone() >= total) {
+@if (wallsDone() >= total()) {
   <div class="flag" aria-hidden="true">🚩</div>
 }
 <div class="wall" [class.hit]="trollBump()" [class.crumble]="crumbled()">
@@ -43,6 +45,8 @@
         } @else {
           <div
             class="brick"
+            [attr.data-row]="row.rowIndex"
+            [attr.data-col]="col"
             [class.filled]="isFilled({ row: row.rowIndex, col })"
             [class.pair]="isPair({ row: row.rowIndex, col })"
             [class.golden]="isGolden({ row: row.rowIndex, col })"
@@ -69,7 +73,14 @@
     [attr.aria-valuenow]="trollPercent()"
     [attr.aria-label]="t('wallTrollLabel')"
   >
-    <span class="troll-body" aria-hidden="true">🧌</span>
+    <app-wall-troll
+      class="troll-body"
+      [asleep]="trollAsleep()"
+      [bonking]="trollBump()"
+      [cheering]="crumbled()"
+      [angry]="danger()"
+      [sleepLeft]="sleepLeft()"
+    />
     @if (!trollAsleep() && !trollBump() && !crumbled()) {
       <span class="dust-cloud" aria-hidden="true">💨</span>
     }
@@ -86,6 +97,11 @@
     }
     @if (trollAsleep()) {
       <span class="zzz" aria-hidden="true">💤</span>
+      <span class="frost" aria-hidden="true">
+        @for (flake of frost; track $index) {
+          <span [style.--i]="$index">{{ flake }}</span>
+        }
+      </span>
     }
   </div>
 }

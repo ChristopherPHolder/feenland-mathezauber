@@ -13,6 +13,10 @@ export const routes: Routes = [
   },
   { path: 'games', loadComponent: () => import('./pages/games/games').then((m) => m.Games) },
   {
+    path: 'hatchery',
+    loadComponent: () => import('./pages/hatchery/hatchery').then((m) => m.Hatchery),
+  },
+  {
     path: 'settings',
     loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
   },
@@ -39,7 +43,7 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^practice-30-([1-9]|1[01])$/.test(segments[1].path)
+      /^practice-30-(?:[1-9]|1[0-9]|2[0-4])$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
@@ -50,7 +54,7 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^crocodile-[1-7]$/.test(segments[1].path)
+      /^crocodile-(?:[1-9]|1[0-4])$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
@@ -60,11 +64,21 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^unicorn-race-(?:[1-9]|1[0-5])$/.test(segments[1].path)
+      /^unicorn-race-(?:[1-9]|1[0-9])$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
     loadComponent: () => import('./pages/unicorn-race/unicorn-race').then((m) => m.UnicornRace),
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^treasure-lock-[1-7]$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    loadComponent: () => import('./pages/treasure-lock/treasure-lock').then((m) => m.TreasureLock),
   },
   {
     path: 'adventure/number-wall',

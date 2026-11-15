@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 import { practiceLevels, PracticeConfig } from './practice';
 import { comparisonLevels } from '../pages/crocodile/comparison';
 import { raceLevelEntries } from '../pages/unicorn-race/race-questions';
+import { lockLevels } from '../pages/treasure-lock/lock-puzzles';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
@@ -11,6 +12,8 @@ export interface Level {
   readonly skills: readonly string[];
   readonly format: string;
   readonly playtest?: boolean;
+  /** The topic this level belongs to inside its game, like "Adding" or "Times tables". */
+  readonly group?: MessageKey;
 }
 /** A chapter is one game: its levels are the game's selectable levels. */
 export interface Chapter {
@@ -51,6 +54,7 @@ export const worlds: readonly World[] = [
             description: 'fairyBattleDescription',
             skills: ['make-ten'],
             format: 'fairy-defense',
+            group: 'castleWaveTopic',
           },
           // The path to 30 stages are castle battles with their own question sets.
           ...practiceLevels,
@@ -94,6 +98,13 @@ export const worlds: readonly World[] = [
         description: 'raceChapterHelp',
         emblem: '🦄',
         levels: raceLevelEntries,
+      },
+      {
+        id: 'treasure-lock',
+        title: 'lockChapter',
+        description: 'lockChapterHelp',
+        emblem: '🗝️',
+        levels: lockLevels,
       },
     ],
   },

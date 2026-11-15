@@ -183,15 +183,15 @@ describe('Wave 1 playable integration', () => {
   it('starts a practice stage with one tap on its card', () => {
     const { fixture, element, click } = setup();
     const cards = element.querySelectorAll<HTMLInputElement>('.level-card input');
-    expect(cards).toHaveLength(12);
+    expect(cards).toHaveLength(25);
     expect(cards[0].checked).toBe(true);
     expect(element.textContent).toContain('4 + □ = 9');
-    cards[3].click();
+    cards[5].click();
     fixture.detectChanges();
     expect(element.querySelector('.level-picker')).toBeNull();
     expect(element.querySelector('.wave-path')).toBeNull();
     expect(element.querySelector('.spell-bar')).toBeTruthy();
-    expect(element.textContent).toContain('Stage 3 / 11');
+    expect(element.textContent).toContain('Stage 5 / 24');
     click('Pause');
     click('Choose a wave');
     fixture.detectChanges();

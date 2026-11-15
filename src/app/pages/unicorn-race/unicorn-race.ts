@@ -1,3 +1,4 @@
+import { HatcheryStore } from '../hatchery/hatchery-store';
 import {
   Component,
   computed,
@@ -59,6 +60,8 @@ import {
   stageFor,
   TOTAL_HEATS,
   TOTAL_STAGES,
+  trackAfter,
+  trackPosition,
 } from './race-questions';
 import { RaceOverview } from './race-overview';
 import { RaceScene } from './race-scene';
@@ -125,6 +128,7 @@ export class UnicornRace {
   protected readonly sounds = inject(RaceSounds);
   private readonly completion = inject(CompletionService);
   private readonly progress = inject(ProgressService);
+  private readonly hatchery = inject(HatcheryStore);
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
@@ -132,7 +136,7 @@ export class UnicornRace {
   protected readonly heats = heats;
   protected readonly detail = computed(
     () =>
-      `${this.t('level', { n: this.level() })} · ${this.i.t(this.levelTitle(this.level()))} · ${this.t('heatLabel', { n: this.heat() })}`,
+      `${this.t('level', { n: trackPosition(this.level()) })} · ${this.i.t(this.levelTitle(this.level()))} · ${this.t('heatLabel', { n: this.heat() })}`,
   );
   protected readonly totalHeats = TOTAL_HEATS;
   protected readonly outfits = outfits;
@@ -313,9 +317,10 @@ export class UnicornRace {
   protected readonly nextHeat = computed<HeatNumber | undefined>(() =>
     this.heat() < TOTAL_HEATS ? ((this.heat() + 1) as HeatNumber) : undefined,
   );
-  protected readonly nextLevel = computed<RaceLevel | undefined>(() =>
-    this.level() < TOTAL_STAGES ? ((this.level() + 1) as RaceLevel) : undefined,
-  );
+  protected position(level: RaceLevel): number {
+    return trackPosition(level);
+  }
+  protected readonly nextLevel = computed<RaceLevel | undefined>(() => trackAfter(this.level()));
   protected readonly cupsComplete = computed(() => {
     this.store.save();
     return this.store.completedCups();
@@ -489,6 +494,7 @@ export class UnicornRace {
     const next = answer(this.race(), correct);
     this.race.set(next);
     if (correct) {
+      this.hatchery.warm();
       const rainbow = isRainbow(next);
       this.sounds.play(rainbow ? 'rainbow' : 'gallop');
       this.flashFeedback(rainbow ? { kind: 'rainbow', streak: next.streak } : { kind: 'gallop' });

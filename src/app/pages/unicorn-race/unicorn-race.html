@@ -17,7 +17,7 @@
           </p>
           <div class="lineup" aria-hidden="true">
             @for (id of lineup(); track id) {
-              <span class="lineup-racer" [class.lead]="id === 'player'">
+              <span class="lineup-racer" [class.is-lumi]="id === 'player'">
                 <app-racer
                   [kind]="id"
                   [outfit]="id === 'player' ? outfit() : null"
@@ -146,7 +146,9 @@
                       [routerLink]="['/adventure', 'unicorn-race-' + option.stage]"
                       [attr.aria-current]="option.stage === level() ? 'page' : null"
                     >
-                      <span class="level-number">{{ t('raceLabel', { n: option.stage }) }}</span>
+                      <span class="level-number">{{
+                        t('raceLabel', { n: position(option.stage) })
+                      }}</span>
                       <span class="level-mode">{{
                         t('heatsDone', { n: done, total: totalHeats })
                       }}</span>
@@ -240,6 +242,7 @@
           [labels]="labels()"
           [placeLabels]="placeLabels()"
           [title]="t('standings')"
+          [started]="phase() !== 'countdown'"
         />
         <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
         @if (phase() === 'finished') {
