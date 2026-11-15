@@ -191,6 +191,21 @@ import { Component, input } from '@angular/core';
         <circle cx="50" cy="40" r="2.5" class="gold" />
       </svg>
     }
+    @case ('gondola') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M4 50 22 24l10 12 10-18 18 32z" fill="#e1effa" />
+        <path d="m22 24-5 7 5-2 4 3zM42 18l-5 9 5-3 5 4z" fill="#fdfeff" />
+        <path d="M2 14 62 4" stroke-width="2.5" />
+        <path d="M33 9v10" stroke-width="2.5" />
+        <rect x="20" y="19" width="26" height="22" rx="7" fill="#e2467c" />
+        <rect x="23.5" y="23" width="19" height="9" rx="3" fill="#eef7ff" />
+        <circle cx="28" cy="27.5" r="2.2" fill="#fffaf3" />
+        <circle cx="33" cy="27.5" r="2.2" fill="#fffaf3" />
+        <circle cx="38" cy="27.5" r="2.2" fill="#fffaf3" />
+        <path d="M27 25l-1-4m3 4 1-4" stroke-width="1.2" />
+        <path d="M4 58h56" />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />

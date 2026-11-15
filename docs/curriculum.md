@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 144 selectable levels across ten games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 156 selectable levels across eleven games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -29,6 +29,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Star Catcher     | 10 stars (8 on sum levels) and a 3-star finale                   | 13 × 6–10 s ≈ 1.5–2.5 min; 11 × 15–20 s ≈ 2.5–3.5 min |
 | The Mushroom Drums   | 3 verses of 7–10 drums plus a 4-drum solo, about 34 answers      | 34 × 2.5–3.5 s + demos and titles ≈ 2.5–3.5 min       |
 | The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
+| The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min       |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -147,6 +148,16 @@ Only the look is timed, never the answer. Three remembered paces set how long a 
 | Big bridges     | bridge to 1000 with 500 as the middle · mystery bridge, the far end hidden, count steps of 10 or 100                     |
 
 The generator spreads a round's numbers across the bridge, one from each equal slice, because feedback works by adding local reference points. Levels 5 and 11 put at least 30% of their stars in the squash zone (11–30 and 100–250), where children squeeze big numbers toward 0, and level 11 starts with three hundreds. Level 6 adds two pairs either side of a ten (59 then 61) against left-digit bias. No number repeats within a round until a small pool (1–9, the nine tens) runs out, and then never twice in a row. Stars avoid the last 3% at either end except on levels 1–2. Sum levels make sure every result stays on the bridge. The catch and golden windows are shares of the bridge (±10%/±3% on the small bridges down to ±7%/±2%), and from the third miss on a star the catch window widens by half its size each time, up to a quarter of the bridge each way, so a child is never stuck; the star is still only caught where its number belongs. From level 5 on, about one star in five is another item type: where did it land (pick the number of an unlabelled star), which is further (two numbers either side of a landmark), and on levels 6–7 a middle star.
+### The Mountain Gondola: 12 levels (`pages/gondola/gondola-levels.ts`)
+
+| Topic             | Levels, easiest first                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Fill the cabin    | one empty seat 9 + 4 → 10 + 3 · two empty seats 8 + 5 · sevens and sixes 7 + 6 · either order 5 + 8 → 8 + 5        |
+| Down the mountain | back to ten 13 − 5 → 10 − 2 · take from the ten 13 − 9 → 1 + 3                                                     |
+| Bigger mountains  | bigger mountain up 47 + 6 → 50 + 3 · bigger mountain down 43 − 6 → 40 − 3 · tens and a bridge 38 + 25 → 40 + 23    |
+| Clever tricks     | the express 34 + 9 → 44 − 1 · express both ways 63 − 9 → 53 + 1 · mountain master (mixed, numbers only)            |
+
+Every cabin holds ten, in two rows of five. Every item crosses a ten (the generator filters for it), no item repeats in a round, and the last cabin is a big summit cabin from a harder pool that pays double. Single-digit levels (1–6) play 8 or 10 cabins with four answer buttons; levels 1 and 2 have only 8 different sums, so they play 8. Two-digit levels play 8 cabins with a number pad laid out in fives. The split must fill the cabin exactly (or, from level 6, take everything from a full ten; from level 10, send the express): a wrong split bounces a bunny off or jams the door, and after two slips Gusti shows a picture card with other numbers. Levels 1–6 show bunnies, 7–9 show full tens as "10" cabins, and 10–12 show numbers with a split diagram and a "Show the bunnies" button. Within a level, three quick first-try turns in a row bring a snow tarp over the cabins until the next miss. Level 10 asks for +9 and +8 rather than the issue's +11, because +11 only crosses a ten after a number ending in 9. Round stars come from first-try splits (three for 75%, two for half), and the master level needs three to be mastered.
 
 ## Adding a level
 

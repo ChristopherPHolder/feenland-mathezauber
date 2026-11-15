@@ -1,0 +1,157 @@
+/* The waiting group with its split handle. The range input spans the whole row; the bunnies sit
+   inset by half a thumb on each side, so every value of the input lands exactly between two
+   bunnies (or at either end). */
+:host {
+  display: block;
+  --thumb: 52px;
+  --token: 72px;
+}
+.row {
+  position: relative;
+  width: 100%;
+  max-width: calc(var(--n) * 68px + var(--thumb));
+  margin: 0 auto;
+  padding: 10px calc(var(--thumb) / 2) 6px;
+  box-sizing: border-box;
+  touch-action: none;
+}
+.first-band {
+  position: absolute;
+  top: 4px;
+  bottom: 0;
+  left: calc(var(--thumb) / 2);
+  width: calc((100% - var(--thumb)) * var(--split) / var(--n));
+  border-radius: 18px;
+  background: #ffe7a8;
+  box-shadow: inset 0 0 0 3px var(--gold);
+  transition: width 0.12s;
+}
+.row.is-down .first-band {
+  background: #e3dcff;
+  box-shadow: inset 0 0 0 3px var(--violet);
+}
+.tokens {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  align-items: end;
+}
+.token {
+  display: grid;
+  place-items: center;
+  padding: 0 8%;
+  transition: transform 0.15s;
+}
+.token.is-first {
+  transform: translateY(-6px);
+}
+.token svg {
+  width: 100%;
+  max-width: 52px;
+  max-height: var(--token);
+}
+.ear,
+.fur {
+  fill: #fffaf3;
+  stroke: #8d7a6a;
+  stroke-width: 1.6;
+}
+.ear-in {
+  fill: #f6b8cb;
+}
+.eye {
+  fill: #2a1d12;
+}
+.nose {
+  fill: var(--confetti-pink);
+}
+.crown {
+  fill: var(--gold);
+  stroke: var(--gold-deep);
+  stroke-width: 1.2;
+}
+
+/* The handle: a tall grab bar that stands between bunnies. */
+.handle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  cursor: grab;
+  touch-action: none;
+}
+.handle:active {
+  cursor: grabbing;
+}
+.handle:disabled {
+  cursor: default;
+}
+.handle::-webkit-slider-runnable-track {
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+.handle::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--thumb);
+  height: 100%;
+  border: 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(90deg, transparent 38%, var(--pink) 38% 62%, transparent 62%),
+    radial-gradient(circle at 50% 50%, var(--paper) 0 13px, var(--pink) 13px 17px, transparent 18px);
+  box-shadow: none;
+}
+.handle::-moz-range-track {
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+.handle::-moz-range-thumb {
+  width: var(--thumb);
+  height: 100%;
+  border: 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(90deg, transparent 38%, var(--pink) 38% 62%, transparent 62%),
+    radial-gradient(circle at 50% 50%, var(--paper) 0 13px, var(--pink) 13px 17px, transparent 18px);
+}
+.handle:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 18px;
+}
+.handle:disabled::-webkit-slider-thumb {
+  opacity: 0.4;
+}
+
+@media (max-width: 420px) {
+  :host {
+    --thumb: 44px;
+  }
+}
+/* A phone on its side has little height: smaller bunnies keep the taps in view. */
+@media (orientation: landscape) and (max-height: 520px) {
+  :host {
+    --token: 48px;
+  }
+  .row {
+    padding-top: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .first-band,
+  .token {
+    transition: none;
+  }
+}
+:host-context(.calm-motion) .first-band,
+:host-context(.calm-motion) .token {
+  transition: none;
+}

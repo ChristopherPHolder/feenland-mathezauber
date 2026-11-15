@@ -1,0 +1,405 @@
+<section
+  class="game"
+  [class.playing]="started() && round().phase !== 'complete'"
+  aria-labelledby="game-title"
+>
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.position }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <app-three-stage class="intro-art" [world]="loadWorld" [state]="introFrame()">
+            <app-gondola-platform [frame]="introFrame()" />
+          </app-three-stage>
+        <div class="intro-copy">
+          <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
+          <p>{{ t('story') }} {{ t('storyAll') }}</p>
+          <div class="trick-card">
+            <h3>{{ t('trickTitle') }}</h3>
+            <p>{{ t(stage().trick) }}</p>
+            <p class="example">{{ stage().example }}</p>
+          </div>
+          <div class="village">
+            <h3>{{ t('villageTitle') }}</h3>
+            <ol class="village-row" [attr.aria-label]="t('villageCount', { n: scores.village(), total: total })">
+              @for (slot of villageSlots; track slot) {
+                <li class="house-slot" [class.built]="slot < scores.village()" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10H3z" /></svg>
+                </li>
+              }
+            </ol>
+            <p class="village-line">
+              {{
+                scores.village()
+                  ? t('villageCount', { n: scores.village(), total: total })
+                  : t('villageEmpty')
+              }}
+            </p>
+          </div>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+        </div>
+      </div>
+      <fieldset class="pace" aria-describedby="pace-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="pace-help">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id; let index = $index) {
+            <label class="pace-choice" [class.selected]="pace() === option.id">
+              <input
+                type="radio"
+                name="gondola-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <svg class="pace-art" viewBox="0 0 64 36" aria-hidden="true">
+                @if (option.id === 'off') {
+                  <circle class="sun" cx="32" cy="18" r="11" />
+                } @else {
+                  <path
+                    class="cloud-icon"
+                    [style.--dark]="index / 3"
+                    d="M14 30q-10-1-8-10 2-7 10-6 3-9 13-8 9 1 11 9 10-2 12 7 1 8-8 8z"
+                  />
+                  @for (line of [1, 2, 3].slice(0, index); track line) {
+                    <path class="speed" [attr.d]="'M58 ' + (8 + line * 6) + 'h-' + (4 + line * 2)" />
+                  }
+                }
+              </svg>
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceUnlimited')
+                  : t('paceSeconds', { n: paceSeconds(option.id) })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+      </fieldset>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<app-icon kind="arrow" />
+        </button>
+      </div>
+    </section>
+  } @else if (round().phase === 'complete') {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <app-three-stage class="outcome-art" [world]="loadWorld" [state]="outcomeFrame()">
+          <app-gondola-platform [frame]="outcomeFrame()" />
+        </app-three-stage>
+      <div class="outcome-copy">
+        <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (star of starSlots; track star) {
+            <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
+              ><app-icon kind="star"
+            /></span>
+          }
+        </div>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+        <dl class="tiles">
+          <div class="tile" style="--i: 1">
+            <dt>{{ t('tileCabins') }}</dt>
+            <dd>{{ i.format(round().delivered) }}</dd>
+          </div>
+          <div class="tile" style="--i: 2">
+            <dt>{{ t('tileFirst') }}</dt>
+            <dd>{{ i.format(round().firstTries) }} / {{ i.format(turns()) }}</dd>
+          </div>
+          <div class="tile" style="--i: 3">
+            <dt>{{ t('tileClever') }}</dt>
+            <dd>{{ i.format(round().cleverCount) }}</dd>
+          </div>
+          <div class="tile" style="--i: 4">
+            <dt>{{ t('tileStreak') }}</dt>
+            <dd>{{ i.format(round().bestStreak) }}</dd>
+          </div>
+        </dl>
+        @if (newBuilding(); as building) {
+          <p class="building-line">
+            {{ t('newBuilding', { name: buildingName(building) }) }}
+          </p>
+        }
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        </p>
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('nextLevel') }}<app-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<app-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <ol class="cabin-strip" [attr.aria-label]="t('turnsHud', { n: round().delivered, total: turns() })">
+        @for (slot of cabinSlots(); track slot) {
+          <li
+            class="cabin-slot"
+            [class.done]="slot < round().delivered"
+            [class.first]="round().log[slot]"
+            [class.current]="slot === round().index"
+            [class.big]="slot === turns() - 1"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24">
+              <path class="hang" d="M12 1v5" />
+              <rect x="3" y="6" width="18" height="15" rx="5" />
+              @if (round().log[slot]) {
+                <path class="slot-star" d="m12 9 1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" />
+              }
+            </svg>
+          </li>
+        }
+      </ol>
+      <p class="points" [class.bump]="round().phase === 'solved'">
+        <span>{{ t('points') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (round().golden) {
+        <p class="golden-chip">{{ t('goldenChip') }}</p>
+      }
+      @if (timed()) {
+        <p
+          class="cocoa-chip"
+          [class.cold]="round().cocoa === 'cold'"
+          [style.--cloud]="round().cocoa === 'warm' ? cloud() : 1"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="mug" d="M4 9h12v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" />
+            <path class="mug-handle" d="M16 11h2a3 3 0 0 1 0 6h-2" />
+            @if (round().cocoa !== 'cold') {
+              <path class="steam" d="M8 6q-1-2 0-4m4 4q-1-2 0-4" />
+            }
+          </svg>
+          <span>{{ t('cocoa') }}: {{ t(round().cocoa === 'cold' ? 'cocoaCold' : 'cocoaWarm') }}</span>
+          <span class="cloud-meter" aria-hidden="true"><span></span></span>
+        </p>
+      }
+    </div>
+    <div class="play-area" [class.is-down]="item().kind === 'sub'">
+      <section class="board" [class.big]="big()" [attr.aria-label]="t('boardLabel')">
+        <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
+          <app-gondola-platform [frame]="frame()" />
+        </app-three-stage>
+        @if (big() && round().phase === 'split') {
+          <p class="big-banner" aria-hidden="true">{{ t('bigBanner') }}</p>
+        }
+        @if (reward(); as reward) {
+          <app-gondola-reward
+            [kind]="reward.kind"
+            [cheer]="reward.cheer"
+            [points]="reward.points"
+            [badges]="reward.badges"
+            [waitForRide]="scene.ready()"
+          />
+        }
+      </section>
+      <div class="controls">
+        <div class="question">
+          <p class="turn-name">
+            {{ big() ? t('bigCabin') : t('turnCount', { n: round().index + 1, total: turns() }) }}
+          </p>
+          <p class="sum">
+            {{ sum() }} =
+            <span class="unknown" [class.solved]="round().phase === 'solved'" [class.typing]="!!round().typed">{{
+              round().phase === 'solved' ? shape().answer : round().typed || '?'
+            }}</span>
+          </p>
+          <p class="step">
+            {{
+              round().phase === 'split' || round().phase === 'moving'
+                ? t(item().kind === 'add' ? 'stepFill' : 'stepDown')
+                : t('stepAnswer')
+            }}
+          </p>
+        </div>
+        <p
+          class="status"
+          [class.is-scene]="status()?.key?.startsWith('scene')"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {{ statusText() }}
+        </p>
+
+        @if (round().phase === 'split' || round().phase === 'moving') {
+          <div class="split-zone">
+            @if (numbersOnly()) {
+              <div class="cherry-row">
+                <app-gondola-cherry [whole]="shape().group" />
+                <p>{{ t('splitNumbers') }}</p>
+              </div>
+            } @else {
+              <p class="split-help">{{ t(item().kind === 'add' ? 'splitAdd' : 'splitSub') }}</p>
+              <app-gondola-split
+                #splitter
+                [group]="shape().group"
+                [kind]="item().kind"
+                [split]="round().split"
+                (splitChange)="setSplit($event)"
+                [vip]="vipIndex()"
+                [disabled]="!splitting()"
+                [label]="t(item().kind === 'add' ? 'sliderAdd' : 'sliderSub')"
+                [valueText]="splitValueText()"
+                (gesture)="countGesture()"
+                (confirm)="hopIn()"
+              />
+              <button
+                class="button primary hop"
+                type="button"
+                [disabled]="!splitting() || round().split < 1"
+                (click)="hopIn()"
+              >
+                {{ t(item().kind === 'add' ? 'hopIn' : 'sendDown') }}
+              </button>
+            }
+            <div class="taps" role="group" [attr.aria-labelledby]="'tap-label'">
+              <p id="tap-label" class="tap-label">
+                {{ t(item().kind === 'add' ? 'tapAdd' : 'tapSub') }}
+              </p>
+              @for (n of tapCounts(); track n) {
+                <button
+                  type="button"
+                  class="tap-button"
+                  [attr.aria-label]="tapText(n)"
+                  [disabled]="!splitting()"
+                  (click)="tapSplit(n)"
+                >
+                  {{ n }}
+                </button>
+              }
+            </div>
+            @if (swappable() || takeTenOffer() || expressOffer() || stage().representation === 'numbers') {
+              <div class="tricks">
+                @if (swappable()) {
+                  <button type="button" class="trick swap" (click)="swap()">{{ t('swap') }}</button>
+                }
+                @if (takeTenOffer()) {
+                  <button
+                    type="button"
+                    class="trick take-ten"
+                    [disabled]="!splitting()"
+                    (click)="takeTen()"
+                  >
+                    {{ t('takeTen') }}
+                  </button>
+                }
+                @if (expressOffer()) {
+                  <button
+                    type="button"
+                    class="trick express"
+                    [disabled]="!splitting()"
+                    (click)="sendExpress()"
+                  >
+                    {{ expressText() }}
+                  </button>
+                }
+                @if (stage().representation === 'numbers' && !round().showBunnies) {
+                  <button type="button" class="trick show" (click)="revealBunnies()">
+                    {{ t('showBunnies') }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="answer-zone">
+            @if (round().move === 'express') {
+              <p class="express-note">{{ expressText() }}</p>
+            } @else {
+              <app-gondola-cherry
+                class="record"
+                [whole]="shape().group"
+                [first]="cherryFirst()"
+                [label]="t('cherryLabel', { n: shape().group, first: cherryFirst() ?? 0, rest: shape().group - (cherryFirst() ?? 0) })"
+              />
+            }
+            @if (round().phase === 'answer') {
+              @if (stage().choices) {
+                <div class="choices" role="group" [attr.aria-label]="t('choicesLabel')">
+                  @for (choice of round().choices; track choice) {
+                    <button type="button" class="choice" (click)="answer(choice)">
+                      {{ choice }}
+                    </button>
+                  }
+                </div>
+              } @else {
+                <app-gondola-keypad
+                  [value]="round().typed"
+                  [answerLabel]="t('answerLabel')"
+                  [padLabel]="t('keypadLabel')"
+                  [deleteLabel]="t('delete')"
+                  [okLabel]="t('ok')"
+                  (digit)="typeDigit($event)"
+                  (erase)="eraseDigit()"
+                  (submit)="submitTyped()"
+                />
+              }
+            } @else {
+              <button class="button primary next" type="button" (click)="advance()">
+                {{ t('next') }}<app-icon kind="arrow" />
+              </button>
+            }
+          </div>
+        }
+
+        @if (round().card; as card) {
+          <div class="rule">
+            <p class="rule-lead">{{ t('hintLead') }}</p>
+            <app-gondola-card [card]="card" [caption]="cardCaption(card)" />
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,268 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.far {
+  fill: #c9def0;
+}
+.slope {
+  fill: #f7fbff;
+  stroke: #d5e6f4;
+  stroke-width: 2;
+}
+.snowcap {
+  fill: var(--paper);
+}
+.tree {
+  fill: #2f7a4d;
+}
+.house {
+  stroke: #5a3d24;
+  stroke-width: 1;
+}
+.roof {
+  fill: #fff;
+  stroke: #8a6a4a;
+  stroke-width: 1;
+}
+.window {
+  fill: #ffe9a8;
+}
+.lantern {
+  fill: #cfd8e3;
+  stroke: #7a8796;
+  stroke-width: 1;
+}
+.lantern.is-lit {
+  fill: var(--gold);
+  stroke: var(--gold-deep);
+  filter: drop-shadow(0 0 3px var(--gold));
+}
+.cable {
+  stroke: #4a4f5c;
+  stroke-width: 2;
+}
+.tower {
+  fill: #8a6a4a;
+}
+.station {
+  fill: #a0703f;
+}
+.deck {
+  fill: #c89a64;
+}
+.deck-edge {
+  stroke: #8a5a2b;
+  stroke-width: 3;
+}
+.hanger {
+  stroke: #4a4f5c;
+  stroke-width: 3;
+}
+.body {
+  stroke: #26304a;
+  stroke-width: 2;
+}
+.glass {
+  fill: #eef7ff;
+  stroke: #26304a33;
+  stroke-width: 1.5;
+}
+.cabin.is-golden .body {
+  stroke: var(--gold-deep);
+  stroke-width: 4;
+}
+.seat {
+  fill: #ffd9e6;
+  stroke: #c98aa0;
+  stroke-width: 1.2;
+}
+.seat.is-second {
+  fill: #d6ecff;
+  stroke: #7fa6c9;
+}
+.seat.is-empty {
+  fill: var(--paper);
+  stroke-dasharray: 2 2;
+}
+.cabin.is-glow .seat.is-empty {
+  fill: #fff3b0;
+  stroke: var(--gold-deep);
+  stroke-width: 2.4;
+  stroke-dasharray: none;
+}
+.mini-ear,
+.mini-head {
+  fill: #fffaf3;
+  stroke: #8d7a6a;
+  stroke-width: 1;
+}
+.mini-eye,
+.eye {
+  fill: #2a1d12;
+}
+.tag,
+.count {
+  font: 600 15px var(--font-sans);
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.count {
+  font-size: 40px;
+}
+.cabin .tag {
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
+}
+.tarp {
+  fill: #f4f8fc;
+  stroke: #a9bfd4;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.ear,
+.fur {
+  fill: #fffaf3;
+  stroke: #8d7a6a;
+  stroke-width: 1.4;
+}
+.scarf {
+  fill: var(--pink);
+}
+.bunny.is-first .scarf {
+  fill: var(--gold-deep);
+}
+.bunny.is-away {
+  opacity: 0.75;
+}
+.crown {
+  fill: var(--gold);
+  stroke: var(--gold-deep);
+  stroke-width: 1;
+}
+.ticket rect {
+  fill: #fff;
+  stroke: var(--violet);
+  stroke-width: 3;
+}
+.ticket text {
+  font: 600 18px var(--font-sans);
+  fill: var(--violet);
+  text-anchor: middle;
+}
+.cocoa rect,
+.cocoa .handle {
+  fill: var(--confetti-pink);
+  stroke: #7d0e3b;
+  stroke-width: 1.5;
+}
+.cocoa .handle {
+  fill: none;
+}
+.cocoa.is-cold rect {
+  fill: #9fb3c8;
+  stroke: var(--muted);
+}
+.steam {
+  fill: none;
+  stroke: #ffffffcc;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.frost {
+  stroke: #6aa0d0;
+  stroke-width: 1.5;
+}
+.cloud path:first-child {
+  fill: color-mix(in srgb, #8a95a8 calc(var(--dark) * 100%), var(--paper));
+  stroke: #7a8796;
+  stroke-width: 1.5;
+}
+.flakes {
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.goat-body,
+.goat-head,
+.goat-neck {
+  fill: #f3ece0;
+  stroke: #6a5a48;
+  stroke-width: 1.4;
+}
+.goat-leg {
+  stroke: #6a5a48;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.goat-horn {
+  fill: none;
+  stroke: #8a7a68;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.goat-beard {
+  fill: #d9cdb8;
+}
+.cap {
+  fill: var(--sky-deep);
+}
+.cap-brim {
+  stroke: #16264f;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cabin.is-pulse {
+    animation: pulse 0.9s ease-in-out 3;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .cabin.is-glow .seat.is-empty {
+    animation: glow 0.8s ease-in-out infinite alternate;
+  }
+  .is-complete .goat {
+    animation: dance 0.6s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: bottom;
+  }
+  .steam {
+    animation: steam 1.6s ease-in-out infinite;
+  }
+}
+@keyframes pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+@keyframes glow {
+  to {
+    fill: #ffe066;
+  }
+}
+@keyframes dance {
+  to {
+    transform: translate(40px, 246px) rotate(8deg);
+  }
+}
+@keyframes steam {
+  50% {
+    opacity: 0.3;
+    transform: translateY(-3px);
+  }
+}
+:host-context(.calm-motion) .cabin.is-pulse,
+:host-context(.calm-motion) .cabin.is-glow .seat.is-empty,
+:host-context(.calm-motion) .is-complete .goat,
+:host-context(.calm-motion) .steam {
+  animation: none;
+}
