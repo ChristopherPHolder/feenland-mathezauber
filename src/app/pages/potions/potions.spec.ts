@@ -156,6 +156,11 @@ describe('the potion cauldron', () => {
     pour(fixture, 13, '−', 3);
     expect(status(fixture)).toContain(en.brewedPerfect);
     expect(element(fixture).querySelector('.coins strong')!.textContent).toBe('40');
+    const card = element(fixture).querySelector('app-potion-reward')!;
+    expect(card.getAttribute('aria-hidden')).toBe('true');
+    expect(card.querySelector('.cheer')!.textContent).toBe(en.rewardPerfect);
+    expect(card.querySelectorAll('.star.won').length).toBe(3);
+    expect(card.querySelector('.gain')!.textContent).toBe('+40 coins');
   });
 
   it('greys out bottles a spell cannot pour, and says why', () => {

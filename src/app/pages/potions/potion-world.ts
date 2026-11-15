@@ -1,12 +1,9 @@
 import {
   BoxGeometry,
-  CircleGeometry,
   Color,
   ConeGeometry,
   CylinderGeometry,
-  DoubleSide,
   Group,
-  LatheGeometry,
   Mesh,
   MeshStandardMaterial,
   OctahedronGeometry,
@@ -14,25 +11,22 @@ import {
   SphereGeometry,
   Sprite,
   SpriteMaterial,
-  TorusGeometry,
-  Vector2,
 } from 'three';
 import { TextLabel } from '../../shared/three/labels';
 import { easeOutBack, EventCounter, shake, smooth } from '../../shared/three/motion';
 import { disposeTree, Stage } from '../../shared/three/stage';
 import { StateWorld } from '../../shared/three/three-stage';
+import { BREW_COLOR, bubble, buildCauldron, Cauldron, SURFACE_Y } from './potion-cauldron';
 import { FrameBottle, liquid, PotionFrame, shelfSpot } from './potion-frame';
 
-/** Where the cauldron stands and where its potion surface is. */
+/** Where the cauldron stands, and where the bottle shelf is. */
 const POT_Z = -0.7;
-const SURFACE_Y = 1.55;
 const SHELF_Z = 2.1;
 const SHELF_WIDTH = 6.6;
 const POP_TIME = 0.4;
 const FLY_TIME = 0.45;
 const POUR_DELAY = 0.9;
 
-const BREW_COLOR = '#8a5cc7';
 const DONE_COLOR = '#ffd23f';
 const FIZZ_COLOR = '#8f8d9e';
 
@@ -80,16 +74,9 @@ export class PotionWorld extends Stage implements StateWorld<PotionFrame> {
   private readonly bottleNeck = new CylinderGeometry(0.13, 0.15, 0.36, 18);
   private readonly bottleCork = new CylinderGeometry(0.15, 0.13, 0.16, 18);
   private readonly corkMaterial = new MeshStandardMaterial({ color: '#b98a5a', roughness: 0.8 });
-  private readonly brew = new MeshStandardMaterial({
-    color: BREW_COLOR,
-    emissive: BREW_COLOR,
-    emissiveIntensity: 0.6,
-    roughness: 0.3,
-  });
+  private readonly brew: MeshStandardMaterial;
   private readonly potLight = new PointLight(BREW_COLOR, 5, 6);
-  private readonly bubbles: Mesh[] = [];
-  private readonly flames: Mesh[] = [];
-  private readonly cauldron = new Group();
+  private readonly cauldron: Cauldron;
   private readonly signLabel = new TextLabel('0', {
     fill: '#ffd23f',
     border: '#8a5a00',
@@ -140,67 +127,13 @@ export class PotionWorld extends Stage implements StateWorld<PotionFrame> {
     shelf.receiveShadow = true;
     this.scene.add(floor, shelf);
 
-    // The cauldron: a round iron pot on three legs, with a fire underneath.
-    const profile = [
-      [0, 0.25],
-      [0.7, 0.3],
-      [1.15, 0.6],
-      [1.38, 1.0],
-      [1.3, 1.45],
-      [1.2, 1.62],
-      [1.3, 1.7],
-    ].map(([x, y]) => new Vector2(x, y));
-    const iron = new MeshStandardMaterial({
-      color: '#2d2a3e',
-      metalness: 0.5,
-      roughness: 0.55,
-      side: DoubleSide,
-    });
-    const pot = new Mesh(new LatheGeometry(profile, 48), iron);
-    pot.castShadow = true;
-    const rim = new Mesh(
-      new TorusGeometry(1.27, 0.09, 12, 48),
-      new MeshStandardMaterial({ color: '#4a4560', metalness: 0.6, roughness: 0.4 }),
-    );
-    rim.rotation.x = Math.PI / 2;
-    rim.position.y = 1.7;
-    const surface = new Mesh(new CircleGeometry(1.2, 48), this.brew);
-    surface.rotation.x = -Math.PI / 2;
-    surface.position.y = SURFACE_Y;
-    this.cauldron.add(pot, rim, surface);
-    for (let leg = 0; leg < 3; leg++) {
-      const angle = (leg / 3) * Math.PI * 2 + 0.5;
-      const mesh = new Mesh(new CylinderGeometry(0.1, 0.07, 0.5), iron);
-      mesh.position.set(Math.cos(angle) * 0.75, 0.2, Math.sin(angle) * 0.75);
-      this.cauldron.add(mesh);
-    }
-    const flame = new MeshStandardMaterial({
-      color: '#ff9a3d',
-      emissive: '#ff5a00',
-      emissiveIntensity: 1.2,
-    });
-    for (let index = 0; index < 5; index++) {
-      const mesh = new Mesh(new ConeGeometry(0.16, 0.5, 10), flame);
-      mesh.position.set((index - 2) * 0.22, 0.2, ((index % 2) - 0.5) * 0.2);
-      this.flames.push(mesh);
-      this.cauldron.add(mesh);
-    }
-    const bubbleMaterial = new MeshStandardMaterial({
-      color: '#d9c6ff',
-      emissive: '#7a52c7',
-      emissiveIntensity: 0.5,
-      transparent: true,
-      opacity: 0.9,
-    });
-    for (let index = 0; index < 9; index++) {
-      const bubble = new Mesh(new SphereGeometry(0.1, 12, 8), bubbleMaterial);
-      this.bubbles.push(bubble);
-      this.cauldron.add(bubble);
-    }
+    // The cauldron, shared with the loading scene.
+    this.cauldron = buildCauldron();
+    this.brew = this.cauldron.brew;
     this.potLight.position.set(0, 2.2, 0);
-    this.cauldron.add(this.potLight);
-    this.cauldron.position.set(0, 0, POT_Z);
-    this.scene.add(this.cauldron);
+    this.cauldron.group.add(this.potLight);
+    this.cauldron.group.position.set(0, 0, POT_Z);
+    this.scene.add(this.cauldron.group);
 
     // The potion number floats over the cauldron, with the hourglass sparkle beside it.
     this.sign = new Sprite(new SpriteMaterial({ map: this.signLabel.texture, transparent: true }));
@@ -247,7 +180,7 @@ export class PotionWorld extends Stage implements StateWorld<PotionFrame> {
       this.landedAt = Infinity;
     }
     this.signLabel.update(String(frame.target));
-    this.cauldron.scale.setScalar(frame.big ? 1.12 : 1);
+    this.cauldron.group.scale.setScalar(frame.big ? 1.12 : 1);
     this.sparkle.visible = frame.sparkle !== 'none';
     (this.sparkle.material as MeshStandardMaterial).opacity = frame.sparkle === 'faded' ? 0.2 : 1;
     this.draw();
@@ -315,25 +248,10 @@ export class PotionWorld extends Stage implements StateWorld<PotionFrame> {
     this.brew.emissive.copy(this.liquidColor);
     this.potLight.color.copy(this.liquidColor);
     this.potLight.intensity = frame.brewed && landed ? 9 : 5;
-    this.cauldron.position.x = shake(t, this.fizzedAt, 0.6, 0.12);
+    this.cauldron.group.position.x = shake(t, this.fizzedAt, 0.6, 0.12);
 
-    // Bubbles rise from the surface and pop; flames flicker.
-    this.bubbles.forEach((bubble, index) => {
-      const speed = frame.brewed ? 1.4 : 0.7;
-      const phase = calm ? 0.5 : (t * speed + index / this.bubbles.length) % 1;
-      const angle = index * 2.4;
-      const radius = 0.25 + (index % 3) * 0.28;
-      bubble.position.set(
-        Math.cos(angle) * radius,
-        SURFACE_Y + phase * 0.35,
-        Math.sin(angle) * radius,
-      );
-      bubble.scale.setScalar(calm ? 0.8 : 0.5 + phase * 0.9);
-      bubble.visible = calm ? index % 3 === 0 : phase < 0.92;
-    });
-    this.flames.forEach((flame, index) => {
-      flame.scale.y = calm ? 1 : 0.8 + Math.sin(t * 11 + index * 1.7) * 0.25;
-    });
+    // Bubbles rise faster once the potion is brewed; flames flicker.
+    bubble(this.cauldron, t, frame.brewed ? 1.4 : 0.7, calm);
 
     this.sign.position.y = 3.0 + (calm ? 0 : Math.sin(t * 2) * 0.05);
     this.sparkle.rotation.y += dt * (calm ? 0 : 1.5);

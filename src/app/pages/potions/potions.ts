@@ -45,6 +45,7 @@ import {
   roundStars,
   TOTAL_STAGES,
 } from './potion-puzzles';
+import { PotionReward, PotionRewardKind } from './potion-reward';
 import { PotionScores } from './potion-scores';
 import { PotionShelf } from './potion-shelf';
 import { PotionSounds } from './potion-sounds';
@@ -65,6 +66,8 @@ interface Round {
   /** Stars won per brewed potion. */
   readonly stars: readonly number[];
   readonly score: number;
+  /** Coins the last brewed potion paid, for the reward card. */
+  readonly gain: number;
   readonly streak: number;
   readonly sparkle: 'none' | 'shining' | 'faded';
   readonly phase: 'ready' | 'fizzing' | 'brewed' | 'complete';
@@ -94,7 +97,7 @@ const OP_KEYS: Readonly<Record<string, PotionOp>> = {
 
 @Component({
   selector: 'app-potions',
-  imports: [RouterLink, Icon, GameHeader, ThreeStage, PotionShelf],
+  imports: [RouterLink, Icon, GameHeader, ThreeStage, PotionShelf, PotionReward],
   providers: [PotionSounds],
   templateUrl: './potions.html',
   styleUrls: ['./potions.css', './potions-play.css'],
@@ -167,6 +170,31 @@ export class Potions {
   protected readonly best = computed(() => this.scores.best()[this.levelId()] ?? 0);
   /** After two fizzles Olli reminds the child of the level's trick, never of a recipe. */
   protected readonly showHint = computed(() => this.round().fizzles >= 2);
+  /** What the reward card over the cauldron shows while a brewed potion stands ready. */
+  protected readonly reward = computed(() => {
+    const round = this.round();
+    if (round.phase !== 'brewed') return null;
+    const stars = round.stars.at(-1) ?? 1;
+    const kind: PotionRewardKind = this.big()
+      ? 'big'
+      : round.streak === FEVER_STREAK
+        ? 'fever'
+        : stars === 3
+          ? 'perfect'
+          : 'brewed';
+    const cheers = {
+      big: 'rewardBig',
+      fever: 'rewardFever',
+      perfect: 'rewardPerfect',
+      brewed: 'rewardBrewed',
+    } as const;
+    return {
+      kind,
+      stars,
+      cheer: this.t(cheers[kind]),
+      coins: this.t('rewardCoins', { n: this.i.format(round.gain) }),
+    };
+  });
   protected readonly frame = computed<PotionFrame>(() => {
     const round = this.round();
     return {
@@ -353,6 +381,7 @@ export class Potions {
       stars: [...round.stars, stars],
       streak,
       score: round.score + coins,
+      gain: coins,
       brews: round.brews + 1,
     });
     this.hatchery.warm();
@@ -557,6 +586,7 @@ export class Potions {
       undos: 0,
       stars: [],
       score: 0,
+      gain: 0,
       streak: 0,
       sparkle: 'none',
       phase: 'ready',

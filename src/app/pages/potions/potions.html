@@ -180,9 +180,18 @@
         [class.big]="big()"
         [attr.aria-label]="t('boardLabel')"
       >
-        <app-three-stage class="scene" [world]="loadWorld" [state]="frame()">
+        <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
           <app-potion-shelf [frame]="frame()" />
         </app-three-stage>
+        @if (reward(); as reward) {
+          <app-potion-reward
+            [kind]="reward.kind"
+            [stars]="reward.stars"
+            [cheer]="reward.cheer"
+            [coins]="reward.coins"
+            [waitForPour]="scene.ready()"
+          />
+        }
       </section>
       <div class="controls">
         <div class="goal">

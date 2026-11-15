@@ -9,6 +9,7 @@ import { HatcheryRoute } from './pages/hatchery/hatchery-route';
 import { WallRoute } from './pages/number-wall/wall-route';
 import { SettingsRoute } from './pages/settings/settings-route';
 import { LockRoute } from './pages/treasure-lock/lock-route';
+import { PotionRoute } from './pages/potions/potion-route';
 import { RaceRoute } from './pages/unicorn-race/race-route';
 import { WelcomeRoute } from './pages/welcome/welcome-route';
 /**
@@ -94,7 +95,7 @@ export const routes: Routes = [
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
-    loadComponent: () => import('./pages/potions/potions').then((m) => m.Potions),
+    component: PotionRoute,
   },
   {
     path: 'adventure/number-wall',

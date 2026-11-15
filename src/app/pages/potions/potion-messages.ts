@@ -83,6 +83,11 @@ const en = {
   again: 'Play again',
   save: 'Your stars could not be saved on this device.',
   allLevels: 'All levels',
+  rewardBrewed: 'Brewed!',
+  rewardPerfect: 'Perfect potion!',
+  rewardFever: 'Rainbow fever!',
+  rewardBig: 'The big potion is ready!',
+  rewardCoins: '+{n} coins',
 };
 
 export type PotionMessageKey = keyof typeof en;
@@ -171,6 +176,11 @@ const de: Messages = {
   again: 'Noch mal',
   save: 'Deine Sterne konnten auf diesem Gerät nicht gespeichert werden.',
   allLevels: 'Alle Level',
+  rewardBrewed: 'Gebraut!',
+  rewardPerfect: 'Perfekter Trank!',
+  rewardFever: 'Regenbogenfieber!',
+  rewardBig: 'Der große Trank ist fertig!',
+  rewardCoins: '+{n} Münzen',
 };
 
 const es: Messages = {
@@ -257,6 +267,11 @@ const es: Messages = {
   again: 'Jugar otra vez',
   save: 'No se pudieron guardar tus estrellas en este dispositivo.',
   allLevels: 'Todos los niveles',
+  rewardBrewed: '¡Preparada!',
+  rewardPerfect: '¡Poción perfecta!',
+  rewardFever: '¡Fiebre arcoíris!',
+  rewardBig: '¡La gran poción está lista!',
+  rewardCoins: '+{n} monedas',
 };
 
 const fr: Messages = {
@@ -345,6 +360,11 @@ const fr: Messages = {
   again: 'Rejouer',
   save: 'Tes étoiles n’ont pas pu être enregistrées sur cet appareil.',
   allLevels: 'Tous les niveaux',
+  rewardBrewed: 'Préparée !',
+  rewardPerfect: 'Potion parfaite !',
+  rewardFever: 'Fièvre arc-en-ciel !',
+  rewardBig: 'La grande potion est prête !',
+  rewardCoins: '+{n} pièces',
 };
 
 export const potionTranslations: Record<Locale, Messages> = { en, de, es, fr };

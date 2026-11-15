@@ -55,6 +55,7 @@
 }
 .mini-star.won {
   color: var(--star-earned-big);
+  fill: currentColor;
 }
 .coins {
   display: flex;
