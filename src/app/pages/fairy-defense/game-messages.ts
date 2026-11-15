@@ -26,7 +26,8 @@ const en = {
   backWaves: 'Choose a wave',
   nextUp: 'Next up',
   completedWave: 'Wave {n} · completed',
-  starsLabel: '{n} stars earned',
+  starsLabel: '{n} of 3 stars',
+  starTotal: '{n} of 60 stars',
 
   title: 'Defend the Fairy Castle',
   chapter: 'Friends of Ten',
@@ -111,7 +112,8 @@ export const gameMessages: Record<Locale, GameMessages> = {
     backWaves: 'Welle auswählen',
     nextUp: 'Als Nächstes',
     completedWave: 'Welle {n} · geschafft',
-    starsLabel: '{n} Sterne verdient',
+    starsLabel: '{n} von 3 Sternen',
+    starTotal: '{n} von 60 Sternen',
 
     title: 'Beschütze das Feenschloss',
     chapter: 'Freunde der Zehn',
@@ -193,7 +195,8 @@ export const gameMessages: Record<Locale, GameMessages> = {
     backWaves: 'Elige una oleada',
     nextUp: 'Siguiente',
     completedWave: 'Oleada {n} · completada',
-    starsLabel: '{n} estrellas ganadas',
+    starsLabel: '{n} de 3 estrellas',
+    starTotal: '{n} de 60 estrellas',
 
     title: 'Defiende el Castillo de las Hadas',
     chapter: 'Amigos del diez',
@@ -275,7 +278,8 @@ export const gameMessages: Record<Locale, GameMessages> = {
     backWaves: 'Choisir une vague',
     nextUp: 'À suivre',
     completedWave: 'Vague {n} · terminée',
-    starsLabel: '{n} étoiles gagnées',
+    starsLabel: '{n} étoiles sur 3',
+    starTotal: '{n} étoiles sur 60',
 
     title: 'Protège le château des fées',
     chapter: 'Les amis de dix',

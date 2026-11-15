@@ -421,3 +421,11 @@
     width: auto;
   }
 }
+@media (orientation: landscape) and (max-height: 500px) {
+  .games-intro {
+    margin-bottom: 16px;
+  }
+  .games-intro img {
+    max-width: 220px;
+  }
+}

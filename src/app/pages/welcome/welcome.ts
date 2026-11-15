@@ -81,10 +81,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
       <span class="hatchery-go">{{ h('homeAction') }}<app-icon kind="arrow" /></span>
     </a>
     <section class="games" aria-labelledby="games-title">
-      <div class="section-head">
-        <h2 id="games-title">{{ i.t('homeGames') }}</h2>
-        <a class="all-link" routerLink="/games">{{ i.t('allGames') }}<app-icon kind="arrow" /></a>
-      </div>
+      <h2 id="games-title">{{ i.t('homeGames') }}</h2>
       <ul class="game-list">
         @for (game of games(); track game.chapter.id) {
           <li
@@ -113,7 +110,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
                 >{{ i.t(game.play) }}<app-icon kind="arrow"
               /></a>
               <a class="levels-link" routerLink="/games" [fragment]="game.chapter.id"
-                >{{ i.t('allLevels') }} · {{ i.t('levelsLabel', { n: game.levels }) }}</a
+                >{{ i.t('allLevelsCount', { n: game.levels }) }}<app-icon kind="arrow" /></a
               >
             </div>
           </li>

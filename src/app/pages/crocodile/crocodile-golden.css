@@ -1,17 +1,20 @@
 /* A golden snack: the lily pads themselves turn to treasure, on ordinary blue water. A feeding
    frenzy is told apart by the water instead: the pond glows like a sunset. Loaded last so these
-   beat the per-screen pad rings in crocodile-responsive.css. Animations live beside their
+   beat the per-screen pad rings in crocodile-responsive.css. This is the 2D pond, which also
+   stands in wherever the 3D pond cannot draw. Animations live beside their
    keyframes (Angular scopes keyframe names per stylesheet). */
-.board.frenzy:not(.boss) {
+.board.frenzy:not(.boss, .in-3d) {
   background: linear-gradient(180deg, #ffe6d9 0%, #ffc4b4 70%, #ffa99a 100%);
+}
+.board.frenzy:not(.boss) {
   box-shadow:
     0 0 0 4px #ff8fb6,
     0 0 0 8px var(--gold),
     0 8px 30px #e0567a55;
 }
 
-.board.golden .side,
-.board.golden .side:hover:not([aria-disabled='true']) {
+.board.golden:not(.in-3d) .side,
+.board.golden:not(.in-3d) .side:hover:not([aria-disabled='true']) {
   background: linear-gradient(155deg, #fff7d1 0%, var(--gold) 48%, var(--sun) 100%);
   box-shadow:
     0 0 0 5px var(--gold-deep),
@@ -62,6 +65,12 @@
   background: var(--paper);
 }
 
+/* The 3D pond draws its own golden rafts and sparks; only the coin floats over them. */
+.board.pond.in-3d .side::before,
+.board.pond.in-3d .side::after {
+  content: none;
+}
+
 /* The coin on each golden pad says what a first-try answer is worth. Its number is drawn as
    decoration, so the pad's spoken name stays exactly the sum written on it. */
 .coin::before {
@@ -73,8 +82,9 @@
   top: -16px;
   display: grid;
   place-items: center;
-  width: 50px;
-  height: 50px;
+  --coin: 50px;
+  width: var(--coin);
+  height: var(--coin);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #fff6c2 0%, var(--gold) 45%, var(--sun) 100%);
   box-shadow:
@@ -99,6 +109,11 @@
   inset-inline-end: -12px;
   rotate: 10deg;
 }
+/* Over the 3D rafts the coin floats just above the sum, never on top of a number. */
+.board.pond.in-3d .side .coin {
+  inset-inline: calc(50% - var(--coin) / 2) auto;
+  top: calc(var(--coin) * -0.8);
+}
 .side.eaten .coin,
 .side.snatched .coin {
   opacity: 0;
@@ -115,9 +130,8 @@
 
 @media (max-width: 640px) {
   .coin {
+    --coin: 40px;
     top: -14px;
-    width: 40px;
-    height: 40px;
     font-size: 14px;
   }
   .side:first-child .coin {
