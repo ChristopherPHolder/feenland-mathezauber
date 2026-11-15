@@ -113,7 +113,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
                 >{{ i.t(game.play) }}<app-icon kind="arrow"
               /></a>
               <a class="levels-link" routerLink="/games" [fragment]="game.chapter.id"
-                >{{ i.t('allLevels') }} · {{ i.t('levelsLabel', { n: game.levels }) }}</a
+                >{{ i.t('allLevelsCount', { n: game.levels }) }}<app-icon kind="arrow" /></a
               >
             </div>
           </li>
