@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { App } from './app';
 import { routes } from './app.routes';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
@@ -10,6 +11,14 @@ describe('Feenland navigation', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+  });
+  it('marks only the current page in the header, for screen readers too', async () => {
+    const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl('/games');
+    await fixture.whenStable();
+    const current = [...fixture.nativeElement.querySelectorAll('nav a[aria-current="page"]')];
+    expect(current.map((link: HTMLAnchorElement) => link.getAttribute('href'))).toEqual(['/games']);
+    expect(current[0].classList).toContain('active');
   });
   it('starts with real zero counts and recommends the first open game', async () => {
     const h = await RouterTestingHarness.create('/');
