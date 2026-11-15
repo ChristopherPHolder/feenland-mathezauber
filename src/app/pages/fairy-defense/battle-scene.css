@@ -1,4 +1,6 @@
 .battlefield {
+  /* The HUD measures the scene, not the screen: a sideways phone has a narrow scene too. */
+  container: battlefield / inline-size;
   position: relative;
   height: clamp(300px, 42vw, 480px);
   isolation: isolate;
@@ -576,12 +578,13 @@
   }
 }
 
-/* A narrow phone with a streak chip has no room for "Wave 1 of 20": a short "1 / 20" keeps the
-   chip on one line, clear of the thinking ring below it. Screen readers still get the label. */
+/* A narrow scene (an upright or sideways phone) with a streak chip has no room for "Wave 1 of
+   20": a short "1 / 20" keeps the chip on one line, clear of the thinking ring below it. Screen
+   readers still get the label. */
 .wave-short {
   display: none;
 }
-@media (max-width: 480px) {
+@container battlefield (max-width: 520px) {
   .battle-hud {
     left: 8px;
     right: 8px;
