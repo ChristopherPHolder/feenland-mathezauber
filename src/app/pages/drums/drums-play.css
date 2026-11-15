@@ -1,0 +1,358 @@
+/* The forest board with its overlays, and the prompt, answers and help beside or under it. */
+.board {
+  position: relative;
+  min-height: 0;
+  border-radius: var(--radius-panel);
+  background: radial-gradient(circle at 50% 30%, #3a2f7a, var(--night) 75%);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  container-type: size;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+}
+.chart-inset {
+  position: absolute;
+  top: 3%;
+  left: 3%;
+  width: clamp(76px, 22cqw, 150px);
+  opacity: 0.92;
+  pointer-events: none;
+  transition: width 0.3s ease;
+}
+.chart-inset.grown {
+  width: clamp(130px, 38cqw, 260px);
+  opacity: 1;
+}
+.banner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(70cqw, 420px);
+  translate: -50% -50%;
+  padding: clamp(10px, 3cqh, 20px) clamp(14px, 4cqw, 26px);
+  border-radius: 22px;
+  border: 3px solid var(--gold-deep);
+  background: linear-gradient(180deg, var(--paper), var(--warm-ground));
+  box-shadow:
+    0 6px 0 #8a5a00,
+    0 12px 28px #0006;
+  text-align: center;
+}
+.banner h2 {
+  margin: 0;
+  font-size: clamp(22px, 7cqmin, 38px);
+  color: var(--amber-ink);
+}
+.banner p {
+  margin: 4px 0 0;
+  line-height: 1.35;
+  font-size: clamp(15px, 4cqmin, 19px);
+}
+.board.solo .banner h2 {
+  color: var(--pink-deep);
+}
+.verse-done {
+  font-weight: 600;
+  color: var(--success-strong);
+}
+.verse-done span {
+  display: block;
+  font-weight: 400;
+  color: var(--muted);
+}
+.skip {
+  position: absolute;
+  right: 3%;
+  bottom: 4%;
+  width: auto;
+  min-height: 44px;
+  padding: 8px 16px;
+}
+.gain-pop {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  translate: -50% 0;
+  font-size: clamp(24px, 8cqmin, 40px);
+  font-weight: 600;
+  color: var(--gold);
+  text-shadow:
+    0 2px 0 #8a5a00,
+    0 0 12px #0008;
+  pointer-events: none;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.4vw, 12px);
+  min-width: 0;
+  padding: clamp(10px, 2vw, 18px);
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+}
+.prompt {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  min-height: 3.4em;
+  padding-right: 64px;
+}
+.step-name {
+  margin: 0;
+  color: var(--violet);
+  font-weight: 600;
+  font-size: clamp(15px, 1.8vw, 18px);
+}
+.sequence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15em 0.55em;
+  margin: 0;
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.sequence span:not(:last-child)::after {
+  content: ',';
+  color: var(--muted);
+}
+.sequence .unknown {
+  min-width: 1.6em;
+  padding: 0 0.2em;
+  border-radius: 10px;
+  background: var(--gold);
+  text-align: center;
+}
+/* Four beats, lit one by one from the music's clock: the beat without sound. */
+.beat-dots {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  translate: 0 -50%;
+  display: grid;
+  grid-template-columns: repeat(2, 20px);
+  gap: 6px;
+}
+.beat-dots.off {
+  display: none;
+}
+.beat-dots span {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ddd5f5;
+}
+.beat-dots[data-beat='0'] span:nth-child(1),
+.beat-dots[data-beat='1'] span:nth-child(2),
+.beat-dots[data-beat='2'] span:nth-child(3),
+.beat-dots[data-beat='3'] span:nth-child(4) {
+  background: var(--pink);
+}
+.beat-dots[data-beat='0'] span:nth-child(1) {
+  box-shadow: 0 0 0 3px #e0458b55;
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(8px, 1.4vw, 12px);
+}
+.answers:has(> .answer:nth-child(3):last-child) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.answer {
+  position: relative;
+  min-height: clamp(64px, 11dvh, 112px);
+  border: 0;
+  border-radius: var(--radius-tile);
+  background: var(--pink);
+  color: var(--paper);
+  font: 600 clamp(28px, 5vw, 46px) var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  box-shadow:
+    0 6px 0 #7d0e3b,
+    inset 0 3px 0 #ffffff40;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s,
+    opacity 0.2s;
+  text-shadow: 0 1px 0 #0003;
+}
+.answer:nth-child(2) {
+  background: var(--lagoon);
+  box-shadow:
+    0 6px 0 #17465a,
+    inset 0 3px 0 #ffffff40;
+}
+.answer:nth-child(3) {
+  background: var(--violet);
+  box-shadow:
+    0 6px 0 #4b2c78,
+    inset 0 3px 0 #ffffff40;
+}
+.answer:nth-child(4) {
+  background: var(--success-strong);
+  box-shadow:
+    0 6px 0 #1d4223,
+    inset 0 3px 0 #ffffff40;
+}
+.answer:active:not([aria-disabled='true']) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #0006;
+}
+.answer[aria-disabled='true'] {
+  cursor: default;
+}
+.answer.out {
+  background: #d6d1e4;
+  color: #4c4766;
+  box-shadow: none;
+  text-shadow: none;
+}
+.answer.right {
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow:
+    0 6px 0 #8a5a00,
+    0 0 0 4px var(--paper);
+  text-shadow: none;
+}
+.key {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+.answer:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.status {
+  min-height: 1.5em;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.help {
+  display: grid;
+  gap: 6px;
+}
+.help p {
+  margin: 0;
+}
+.step-hint {
+  font-weight: 600;
+  color: var(--amber-ink);
+}
+.rule-card {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+  line-height: 1.45;
+}
+.rule-card strong {
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--amber-ink);
+}
+.keys-help {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+@media (hover: none) {
+  .keys-help {
+    display: none;
+  }
+}
+
+/* Sideways the answers sit in one row. */
+@media (orientation: landscape) {
+  .answers,
+  .answers:has(> .answer:nth-child(3):last-child) {
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    grid-auto-flow: column;
+  }
+  .answer {
+    min-height: clamp(60px, 15dvh, 110px);
+    font-size: clamp(24px, 3.4vw, 42px);
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .controls {
+    padding: 10px;
+    gap: 6px;
+  }
+  .sequence {
+    font-size: 26px;
+  }
+  .prompt {
+    min-height: 0;
+  }
+}
+
+.pause-dialog {
+  width: min(92vw, 380px);
+  padding: 22px;
+  border: 0;
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+}
+.pause-dialog::backdrop {
+  background: var(--scrim);
+}
+.pause-dialog h2 {
+  margin: 0 0 4px;
+}
+.pause-dialog .button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gain-pop {
+    animation: gain-pop 0.9s ease-out both;
+  }
+  .banner {
+    animation: banner-in 0.35s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+}
+@keyframes gain-pop {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+}
+@keyframes banner-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+:host-context(.calm-motion) .gain-pop,
+:host-context(.calm-motion) .banner {
+  animation: none;
+}
+:host-context(.calm-motion) .chart-inset,
+:host-context(.calm-motion) .answer {
+  transition: none;
+}

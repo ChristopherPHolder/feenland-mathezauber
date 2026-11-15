@@ -1,0 +1,84 @@
+<section class="panel intro" aria-labelledby="drum-intro-title">
+  <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+    @for (link of levelLinks; track link.stage) {
+      <a
+        class="level-pill"
+        [routerLink]="link.route"
+        [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+        [attr.aria-label]="
+          t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
+        "
+        >{{ link.position }}</a
+      >
+    }
+  </nav>
+  <div class="intro-grid">
+    <div class="intro-art"><app-drum-path [frame]="preview()" /></div>
+    <div class="intro-copy">
+      <h2 id="drum-intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
+      <p>{{ t('story') }} {{ t('storyTap') }}</p>
+      <div class="trick-card">
+        <h3>{{ t('trickTitle') }}</h3>
+        <p>{{ i.t($any(levelKey(stage().stage) + 'Help')) }}</p>
+        <p class="example">{{ stage().example }}</p>
+      </div>
+      @if (best() > 0) {
+        <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+      }
+    </div>
+  </div>
+  <fieldset class="tempo" aria-describedby="drum-tempo-help drum-tempo-access">
+    <legend>{{ t('tempoTitle') }}</legend>
+    <p id="drum-tempo-help">{{ t('tempoHelp') }}</p>
+    <div class="tempo-options">
+      @for (option of tempos; track option.id) {
+        <label class="tempo-choice" [class.selected]="tempo() === option.id">
+          <input
+            type="radio"
+            name="drum-tempo"
+            [value]="option.id"
+            [checked]="tempo() === option.id"
+            (change)="tempo.set(option.id)"
+          />
+          <span class="beat-art" [attr.data-tempo]="option.id" aria-hidden="true">
+            @for (dot of [0, 1, 2, 3]; track dot) {
+              <span class="dot"></span>
+            }
+          </span>
+          <strong>{{ tempoLabel(option.id) }}</strong>
+          <span>{{
+            option.id === 'free' ? t('tempoFreeHelp') : t('tempoSeconds', { n: seconds(option.id) })
+          }}</span>
+        </label>
+      }
+    </div>
+    <p id="drum-tempo-access" class="tempo-note">{{ t('tempoAccess') }}</p>
+  </fieldset>
+  @if (tempo() !== 'free') {
+    <app-drum-calibration />
+  }
+  @if (gallery().length) {
+    <section class="gallery" aria-labelledby="drum-gallery-title">
+      <h3 id="drum-gallery-title">{{ t('gallery') }}</h3>
+      <p>{{ t('galleryHelp') }}</p>
+      <ul>
+        @for (item of gallery(); track item.id) {
+          <li>
+            <app-drum-chart
+              [rows]="item.rows"
+              [lit]="item.picture.cells"
+              [compact]="true"
+              [label]="item.name"
+            />
+            <span>{{ item.name }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  <div class="start-dock">
+    <button class="button primary" type="button" (click)="start.emit()">
+      {{ t('start') }}<app-icon kind="arrow" />
+    </button>
+  </div>
+</section>

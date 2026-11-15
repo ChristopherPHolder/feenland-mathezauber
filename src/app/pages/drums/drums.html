@@ -1,0 +1,190 @@
+<section class="game" [class.playing]="started() && !result()" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    anchor="mushroom-drums"
+    [sound]="sounds.enabled"
+    (soundToggle)="toggleSound()"
+  >
+    @if (started() && !result()) {
+      <button class="pause-button" type="button" [attr.aria-label]="t('pause')" (click)="pause()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+      </button>
+    }
+  </app-game-header>
+
+  @if (!started()) {
+    <app-drum-intro
+      [stage]="stage()"
+      [preview]="frame()"
+      [tempo]="tempo()"
+      (tempoChange)="selectTempo($event)"
+      (start)="begin()"
+    />
+  } @else if (result(); as result) {
+    <app-drum-outcome
+      [result]="result"
+      [rows]="rows()"
+      [next]="nextLink()"
+      (again)="begin()"
+      (celebrate)="celebrate()"
+    />
+  } @else {
+    <div class="hud">
+      <ol class="verses" [attr.aria-label]="t('versesLabel', { n: verse() + 1, total: 4 })">
+        @for (slot of verseSlots; track slot) {
+          <li
+            class="verse-pill"
+            [class.done]="slot < verse()"
+            [class.current]="slot === verse()"
+            [class.solo]="slot === 3"
+            [attr.aria-current]="slot === verse() ? 'step' : null"
+          >
+            @if (slot === 3) {
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 18V6l10-2v12" />
+                <circle cx="6.5" cy="18" r="2.5" />
+                <circle cx="16.5" cy="16" r="2.5" />
+              </svg>
+            } @else {
+              {{ slot + 1 }}
+            }
+          </li>
+        }
+      </ol>
+      @if (drumCount(); as count) {
+        <p class="drum-count">{{ t('drumCount', { n: count.n, total: count.total }) }}</p>
+      }
+      <p class="points" [class.bump]="tapped()?.right">
+        <span>{{ t('points') }}</span>
+        <strong>{{ i.format(points()) }}</strong>
+      </p>
+      <p class="band" role="img" [attr.aria-label]="t('bandLabel', { n: layers() })">
+        @for (slot of bandSlots; track slot.layer) {
+          <span
+            class="band-dot"
+            [class.on]="slot.index < layers()"
+            [attr.data-layer]="slot.layer"
+          ></span>
+        }
+      </p>
+    </div>
+
+    <div class="play-area">
+      <section
+        class="board"
+        [class.full-band]="layers() === 5"
+        [class.solo]="verse() === 3"
+        [attr.aria-label]="t('boardLabel')"
+      >
+        <app-three-stage class="scene" [world]="loadWorld" [state]="frame()">
+          <app-drum-path [frame]="frame()" />
+        </app-three-stage>
+        <app-drum-chart
+          class="chart-inset"
+          aria-hidden="true"
+          [class.grown]="!!banner()"
+          [rows]="rows()"
+          [lit]="chart().lit"
+          [faded]="chart().faded"
+          [mark]="chart().mark"
+          [compact]="!banner()"
+        />
+        @if (banner(); as banner) {
+          <div class="banner">
+            @if (banner.done; as done) {
+              <p class="verse-done">
+                {{ t('verseDone', { n: done.verse }) }}
+                <span>{{ t('verseScore', { first: done.first, total: done.total }) }}</span>
+              </p>
+            }
+            <h2>{{ banner.title }}</h2>
+            <p>{{ banner.help }}</p>
+          </div>
+        }
+        @if (tapped()?.right && play()?.stats?.gain; as gain) {
+          @for (pop of [play()!.stats.hits]; track pop) {
+            <span class="gain-pop" aria-hidden="true">+{{ i.format(gain) }}</span>
+          }
+        }
+        @if (canSkip()) {
+          <button class="button secondary skip" type="button" (click)="skipIntro()">
+            {{ t('skip') }}<app-icon kind="arrow" />
+          </button>
+        }
+      </section>
+
+      <div class="controls">
+        <div class="prompt">
+          @if (prompt(); as prompt) {
+            <p class="step-name">{{ prompt.step }}</p>
+            <p class="sequence" aria-hidden="true">
+              @for (part of prompt.parts; track $index) {
+                <span [class.unknown]="part === '?'">{{
+                  part === '?' ? '?' : i.format(+part)
+                }}</span>
+              }
+            </p>
+          }
+          <span class="beat-dots" #beatDots data-beat="-1" aria-hidden="true" [class.off]="!timed()"
+            ><span></span><span></span><span></span><span></span
+          ></span>
+        </div>
+        <div class="answers" role="group" [attr.aria-label]="t('answersLabel')">
+          @for (choice of choices(); track choice) {
+            <button
+              type="button"
+              class="answer"
+              [class.right]="tapped()?.right && tapped()?.value === choice"
+              [class.out]="wrongs().includes(choice) || greyed().includes(choice)"
+              [attr.aria-disabled]="
+                ask() === null || wrongs().includes(choice) || greyed().includes(choice)
+              "
+              (click)="choose(choice)"
+            >
+              <span class="key" aria-hidden="true">{{ $index + 1 }}</span>
+              {{ i.format(choice) }}
+            </button>
+          }
+        </div>
+        <p class="status" role="status" aria-live="polite" aria-atomic="true">{{ status() }}</p>
+        @if (help(); as help) {
+          <div class="help">
+            <p class="step-hint">{{ help.step }}</p>
+            @if (help.rule) {
+              <p class="rule-card">
+                <strong>{{ t('ruleLead') }}</strong> {{ help.rule }}
+              </p>
+            }
+          </div>
+        }
+        <app-drum-chart
+          class="chart-side"
+          [rows]="rows()"
+          [lit]="chart().lit"
+          [faded]="chart().faded"
+          [mark]="chart().mark"
+          [label]="chartLabel()"
+        />
+        <p class="keys-help">{{ t('keysHelp') }}</p>
+      </div>
+    </div>
+
+    <dialog
+      #pauseDialog
+      class="pause-dialog"
+      aria-labelledby="drum-pause-title"
+      (cancel)="dialogCancel($event)"
+    >
+      <h2 id="drum-pause-title">{{ t('paused') }}</h2>
+      <p>{{ t('pausedHelp') }}</p>
+      <button class="button primary" type="button" autofocus (click)="resume()">
+        {{ t('resume') }}<app-icon kind="play" />
+      </button>
+      <button class="button secondary" type="button" (click)="restart()">{{ t('restart') }}</button>
+      <button class="button secondary" type="button" (click)="toIntro()">
+        {{ t('allLevels') }}
+      </button>
+    </dialog>
+  }
+</section>

@@ -465,6 +465,14 @@ main.focused-game {
   --loader-star: var(--violet);
   --loader-dot: var(--success);
 }
+.is-route-tone[data-tone='drums'] {
+  --loader-ground: radial-gradient(circle at 50% 35%, #3a2f7a, #17123a 75%);
+  --loader-orb: #2c2560;
+  --loader-star: var(--gold);
+  --loader-dot: #ff7ab8;
+  --loader-ink: var(--cream);
+  --loader-pill: #17123acc;
+}
 .is-route-tone[data-tone='wall'] {
   --loader-ground: linear-gradient(var(--wall-sky), var(--ground) 55%, var(--wall-grass));
   --loader-star: var(--sun);

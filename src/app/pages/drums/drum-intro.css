@@ -1,0 +1,233 @@
+:host {
+  display: block;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow-panel);
+}
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(6 * 46px + 5 * 8px);
+  margin: 0 auto 16px;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--violet);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--warm-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 340px) 1fr;
+  align-items: center;
+  gap: clamp(14px, 3vw, 24px);
+}
+.intro-art {
+  aspect-ratio: 500 / 280;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  width: 100%;
+  max-width: 340px;
+  margin: auto;
+  background: #17123a;
+}
+h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  margin: 0 0 8px;
+}
+.intro-copy p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.trick-card {
+  margin: 14px 0 6px;
+  padding: 12px 18px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-card h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.trick-card .example {
+  font-size: clamp(20px, 2.6vw, 26px);
+  font-weight: 600;
+  color: var(--violet);
+  font-variant-numeric: tabular-nums;
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+.tempo {
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.tempo legend {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 0;
+}
+.tempo-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 10px;
+}
+.tempo-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.tempo-choice:hover {
+  background: var(--ground);
+}
+.tempo-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.tempo-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.tempo-choice input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--success-strong);
+}
+.tempo-choice strong {
+  font-size: 18px;
+}
+.tempo-choice span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+/* A little row of beat dots: none glow in free play, more glow the quicker the tempo. */
+.beat-art {
+  display: flex;
+  gap: 6px;
+  padding: 6px 0 2px;
+}
+.beat-art .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d8d0f2;
+}
+.beat-art[data-tempo='slow'] .dot:nth-child(1),
+.beat-art[data-tempo='medium'] .dot:nth-child(odd),
+.beat-art[data-tempo='quick'] .dot {
+  background: var(--pink);
+}
+.tempo-note {
+  color: var(--muted);
+  font-size: 15px;
+}
+.gallery {
+  margin-top: 18px;
+}
+.gallery h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.gallery p {
+  margin: 4px 0 10px;
+  color: var(--muted);
+}
+.gallery ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 110px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gallery li {
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.start-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 8px;
+  padding: 16px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 24px);
+}
+.start-dock .button {
+  margin: 0 auto;
+  max-width: 360px;
+}
+
+@media (max-width: 700px) {
+  .intro-grid {
+    grid-template-columns: 1fr;
+  }
+  .level-pill {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  .level-strip {
+    gap: 6px;
+    max-width: calc(6 * 44px + 5 * 6px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tempo-choice.selected .beat-art[data-tempo='slow'] .dot:nth-child(1),
+  .tempo-choice.selected .beat-art[data-tempo='medium'] .dot:nth-child(odd),
+  .tempo-choice.selected .beat-art[data-tempo='quick'] .dot {
+    animation: beat 0.8s ease-in-out infinite alternate;
+  }
+  .beat-art[data-tempo='quick'] .dot {
+    animation-duration: 0.5s;
+  }
+}
+@keyframes beat {
+  to {
+    transform: scale(1.35);
+  }
+}
+:host-context(.calm-motion) .beat-art .dot {
+  animation: none;
+}
