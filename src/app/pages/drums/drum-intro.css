@@ -237,6 +237,9 @@ h2 {
   .tempo legend {
     font-size: 17px;
   }
+  .start-dock {
+    padding-top: 10px;
+  }
   .level-pill {
     width: 44px;
     height: 44px;
