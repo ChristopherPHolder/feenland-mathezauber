@@ -76,6 +76,15 @@ describe('Wave 1 playable integration', () => {
     expect(localStorage.getItem('feenland.result')).toBeNull();
     expect(localStorage.getItem('feenland.castle-campaign.v1')).toContain('results');
     expect(element.textContent).toContain('Next wave');
+    // Two first tries: all three stars and four gems, saved as the wave's best.
+    expect(element.querySelector('app-wave-reward [role=img]')?.getAttribute('aria-label')).toBe(
+      '3 of 3 stars',
+    );
+    expect(element.textContent).toContain('4 gems in the pouch');
+    expect(localStorage.getItem('feenland.castle-campaign.v1')).toContain('"stars":3');
+    expect(element.querySelector('app-wave-path button')?.getAttribute('aria-label')).toContain(
+      '3 of 3 stars',
+    );
   });
   it('pauses a pending cast and resumes its remaining transition only once', () => {
     const { fixture, element, click } = setup();

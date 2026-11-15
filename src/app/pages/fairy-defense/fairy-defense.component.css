@@ -76,6 +76,46 @@
 .outcome:focus {
   outline: none;
 }
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 12px;
+  margin-top: 14px;
+}
+.story-panel .outcome-actions .button {
+  margin: 0;
+}
+.outcome app-wave-reward {
+  margin: -4px 0 8px;
+}
+/* A phone on its side: the card keeps the reward and the buttons, and drops the small print. */
+@media (max-height: 500px) {
+  .outcome-curtain {
+    align-items: flex-start;
+    padding-top: 12px;
+  }
+  .outcome.story-panel {
+    padding: 14px 24px 6px;
+  }
+  .outcome.story-panel h2 {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+  .outcome.story-panel p {
+    margin: 4px 0;
+  }
+  .outcome .rule-copy,
+  .outcome .outcome-line {
+    display: none;
+  }
+  .outcome-actions {
+    margin-top: 8px;
+  }
+  .outcome .exit-link {
+    margin-top: 2px;
+  }
+}
 .exit-link {
   display: block;
   margin-top: 16px;

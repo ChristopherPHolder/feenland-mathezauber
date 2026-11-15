@@ -503,6 +503,7 @@
 /* Before a wave starts nothing in the scene is a control or a clue: no pause button, and the
    monster's badge and steps do not peek out from behind the intro card. */
 .intro .battle-hud,
+.has-overlay .battle-hud,
 .intro .number-badge,
 .intro .steps {
   display: none;
