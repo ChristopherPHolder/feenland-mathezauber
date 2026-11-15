@@ -499,56 +499,9 @@
   min-height: 44px;
   padding: 10px 0;
 }
-.practice-settings {
-  background: var(--cream);
-  color: var(--ink);
-  padding: 12px 28px 20px;
-  border-top: 1px solid #e6dfc8;
-}
-.practice-settings summary {
-  cursor: pointer;
-  min-height: 44px;
-  line-height: 1.5;
-  padding: 10px 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-.practice-settings select {
-  display: block;
-  width: 100%;
-  max-width: 700px;
-  min-height: 48px;
-  font: inherit;
-  padding: 8px;
-  margin: 12px 0;
-  color: var(--ink);
-  background: var(--paper);
-}
-.practice-options {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.practice-options fieldset {
-  border: 1px solid var(--muted);
-  border-radius: var(--radius-chip);
-  padding: 12px 20px;
-}
-.practice-options label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 48px;
-}
-.practice-options input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--pink);
-}
 @media (max-width: 600px) {
   .level-picker,
-  .level-switch,
-  .practice-settings {
+  .level-switch {
     padding-inline: 16px;
   }
   .level-cards {

@@ -106,7 +106,16 @@ const en = {
   cheerBrilliant: 'Brilliant spell!',
   cheerShield: 'Shield broken!',
   paceHelp:
-    'With Steady or Quick, a glowing ring burns down. When it runs out, the monster takes one step closer. Relaxed has no timer, and pause stops the ring.',
+    'A glowing ring burns down. When it runs out, the monster takes one step closer. Pause stops the ring.',
+  paceCalm: 'No timer. Take all the time you need.',
+  settingsNumbers: 'Numbers',
+  numbersTen: 'Making ten',
+  numbersThirty: 'Up to 30',
+  numbersHundred: 'Up to 100',
+  settingsSpeed: 'Monster speed',
+  easyDetail: 'Dots help you',
+  mediumDetail: 'Hint if stuck',
+  hardDetail: 'Trickier sums',
 };
 type GameMessages = { readonly [K in keyof typeof en]: string };
 export const gameMessages: Record<Locale, GameMessages> = {
@@ -218,7 +227,16 @@ export const gameMessages: Record<Locale, GameMessages> = {
     cheerBrilliant: 'Super Zauber!',
     cheerShield: 'Schild zerbrochen!',
     paceHelp:
-      'Bei Ruhig oder Schnell brennt ein leuchtender Ring herunter. Ist er leer, kommt das Monster einen Schritt näher. Entspannt hat keine Uhr, und Pause hält den Ring an.',
+      'Ein leuchtender Ring brennt herunter. Ist er leer, kommt das Monster einen Schritt näher. Pause hält den Ring an.',
+    paceCalm: 'Keine Uhr. Lass dir so viel Zeit, wie du brauchst.',
+    settingsNumbers: 'Zahlen',
+    numbersTen: 'Ergänzen auf 10',
+    numbersThirty: 'Bis 30',
+    numbersHundred: 'Bis 100',
+    settingsSpeed: 'Monster-Tempo',
+    easyDetail: 'Punkte helfen dir',
+    mediumDetail: 'Tipp, wenn du feststeckst',
+    hardDetail: 'Kniffligere Aufgaben',
   },
   es: {
     continueWave: 'Continuar · Oleada {n}',
@@ -327,7 +345,16 @@ export const gameMessages: Record<Locale, GameMessages> = {
     cheerBrilliant: '¡Hechizo genial!',
     cheerShield: '¡Escudo roto!',
     paceHelp:
-      'Con Normal o Rápido, un anillo brillante se va consumiendo. Cuando se acaba, el monstruo da un paso más. Tranquilo no tiene reloj, y la pausa detiene el anillo.',
+      'Un anillo brillante se va consumiendo. Cuando se acaba, el monstruo da un paso más. La pausa detiene el anillo.',
+    paceCalm: 'Sin reloj. Tómate todo el tiempo que necesites.',
+    settingsNumbers: 'Números',
+    numbersTen: 'Completar 10',
+    numbersThirty: 'Hasta 30',
+    numbersHundred: 'Hasta 100',
+    settingsSpeed: 'Velocidad del monstruo',
+    easyDetail: 'Los puntos te ayudan',
+    mediumDetail: 'Pista si te atascas',
+    hardDetail: 'Cuentas más difíciles',
   },
   fr: {
     continueWave: 'Continuer · Vague {n}',
@@ -436,7 +463,16 @@ export const gameMessages: Record<Locale, GameMessages> = {
     cheerBrilliant: 'Super sort !',
     cheerShield: 'Bouclier brisé !',
     paceHelp:
-      'En mode Normal ou Rapide, un anneau lumineux se consume. Quand il est vide, le monstre fait un pas de plus. Détendu n’a pas de minuteur, et la pause arrête l’anneau.',
+      'Un anneau lumineux se consume. Quand il est vide, le monstre fait un pas de plus. La pause arrête l’anneau.',
+    paceCalm: 'Pas de chrono. Prends tout ton temps.',
+    settingsNumbers: 'Nombres',
+    numbersTen: 'Compléter 10',
+    numbersThirty: 'Jusqu’à 30',
+    numbersHundred: 'Jusqu’à 100',
+    settingsSpeed: 'Vitesse du monstre',
+    easyDetail: 'Des points t’aident',
+    mediumDetail: 'Un indice si tu bloques',
+    hardDetail: 'Calculs plus durs',
   },
 };
 export type GameMessageKey = keyof GameMessages;
