@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
 import { LocaleService } from '../../core/locale';
+import { openRoute } from '../../testing/route-harness';
 describe('Home game cards', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -20,21 +20,21 @@ describe('Home game cards', () => {
         pace: 'steady',
       }),
     );
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     const card = h.routeNativeElement?.querySelector('[data-game="number-walls"]');
     const i = TestBed.inject(LocaleService);
     expect(card?.textContent).toContain(i.t('chapterStars', { n: 4, total: 33 }));
     expect(card?.textContent).toContain(i.t('allLevelsCount', { n: 11 }));
   });
   it('counts catalog levels for the other games', async () => {
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     const card = h.routeNativeElement?.querySelector('[data-game="compare-crocodile"]');
     expect(card?.textContent).toContain(
       TestBed.inject(LocaleService).t('chapterStars', { n: 0, total: 51 }),
     );
   });
   it('offers one "All games" button, not a second link beside the games heading', async () => {
-    const h = await RouterTestingHarness.create('/');
+    const h = await openRoute('/');
     const toHub = [...(h.routeNativeElement?.querySelectorAll('a') ?? [])].filter(
       (link) => link.getAttribute('href') === '/games',
     );

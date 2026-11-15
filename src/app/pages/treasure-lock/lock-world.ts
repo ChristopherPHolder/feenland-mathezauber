@@ -19,13 +19,15 @@ import {
   TorusGeometry,
 } from 'three';
 import { TextLabel } from '../../shared/three/labels';
-import { easeOut, EventCounter, shake, smooth } from '../../shared/three/motion';
+import { bounce, easeOut, EventCounter, shake, smooth } from '../../shared/three/motion';
 import { disposeTree, Stage } from '../../shared/three/stage';
 import { StateWorld } from '../../shared/three/three-stage';
 import { dialDegrees, dialNumbers, labelStep, LockFrame } from './lock-frame';
 
 const RING = 3.2;
 const HOP_TIME = 0.45;
+/** How long the opening chest jumps and glows, and Pip twirls, in seconds. */
+const CHEER_TIME = 1.2;
 
 interface Hop {
   from: number;
@@ -97,6 +99,9 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
   private lidOpen = 0;
   private prickedAt = -10;
   private gemAt = -10;
+  private openedAt = -10;
+  /** A warm light inside the chest that flares as the lid flies open. */
+  private readonly treasureLight = new PointLight('#ffcc33', 0, 6);
   private readonly coins: Coin[] = [];
   private readonly hops = new EventCounter();
   private readonly pricks = new EventCounter();
@@ -196,7 +201,8 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
       new MeshBasicMaterial({ map: this.plateLabel.texture, transparent: true }),
     );
     plate.position.set(0, 0.42, 0.51);
-    this.chest.add(body, band, this.lid, plate);
+    this.treasureLight.position.set(0, 1.1, 0);
+    this.chest.add(body, band, this.lid, plate, this.treasureLight);
     this.chest.position.set(0, 0, 0.35);
     this.sign = new Sprite(new SpriteMaterial({ map: this.signLabel.texture, transparent: true }));
     this.sign.scale.set(1.3, 0.93, 1);
@@ -221,7 +227,10 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
     if (this.hops.take(frame.hops) && !this.hop) this.shown = frame.value;
     if (this.pricks.take(frame.pricks)) this.prickedAt = this.elapsed;
     if (this.gems.take(frame.gems)) this.gemAt = this.elapsed;
-    if (frame.opened && !previous?.opened) this.burst(frame.big);
+    if (frame.opened && !previous?.opened) {
+      this.openedAt = this.elapsed;
+      this.burst(frame.big);
+    }
     if (this.gem && frame.gem === null) this.gem.visible = false;
     this.pipLabel.update(String(frame.value));
     this.plateLabel.update(String(frame.target));
@@ -265,7 +274,12 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
     const [x, z] = ringPoint(value, frame.max);
     const bob = calm ? 0 : Math.sin(t * 3) * 0.06;
     const jolt = shake(t, this.prickedAt, 0.5, 0.12);
-    this.pip.position.set(x + jolt, 0.55 + lift + bob, z);
+    // When a chest opens, Pip jumps for joy and twirls once.
+    const cheer = (t - this.openedAt) / CHEER_TIME;
+    const cheering = cheer >= 0 && cheer < 1 && !calm;
+    const joy = cheering ? Math.sin(cheer * Math.PI) * 0.5 : 0;
+    this.pip.position.set(x + jolt, 0.55 + lift + bob + joy, z);
+    this.pip.rotation.y = cheering ? smooth(cheer) * Math.PI * 2 : 0;
     // Pip's number tag sits on the inside of the ring, clear of the printed numbers outside.
     this.pipTag.position.set((-x / RING) * 0.95, 0.35, (-z / RING) * 0.95);
     const flap = calm ? 0.3 : Math.sin(t * (this.hop ? 40 : 18)) * 0.6;
@@ -290,6 +304,12 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
     const target = frame.opened ? 1 : 0;
     this.lidOpen += (target - this.lidOpen) * Math.min(1, dt * 8);
     this.lid.rotation.x = -easeOut(this.lidOpen) * 1.25;
+    // The chest jumps as the lock clicks, lands with a bounce, and glows from inside.
+    const rise = cheer < 0.12 ? easeOut(cheer / 0.12) : 1 - bounce((cheer - 0.12) / 0.48);
+    const leap = cheering && cheer < 0.6 ? rise : 0;
+    this.chest.position.y = leap * 0.6;
+    const flare = cheer >= 0 && cheer < 1 ? 16 * (1 - cheer) ** 2 : 0;
+    this.treasureLight.intensity = frame.opened ? Math.max(2.5, flare) : 0;
     this.sign.position.y = 2.1 + easeOut(this.lidOpen) * 0.5 + (calm ? 0 : Math.sin(t * 2) * 0.05);
     this.crystal.rotation.y += dt * (calm ? 0 : 1.5);
     for (const coin of this.coins) {
@@ -303,15 +323,15 @@ export class LockWorld extends Stage implements StateWorld<LockFrame> {
   }
 
   private burst(big: boolean) {
-    const count = big ? 22 : 12;
+    const count = big ? 36 : 24;
     for (let index = 0; index < count; index++) {
       const mesh = new Mesh(this.coinGeometry, this.coinMaterial);
       mesh.position.set(0, 1.1, 0.35);
       const angle = (index / count) * Math.PI * 2;
-      const speed = 1.2 + (index % 3) * 0.5;
+      const speed = 1.3 + (index % 3) * 0.6;
       this.coins.push({
         mesh,
-        velocity: [Math.cos(angle) * speed, 4 + (index % 4) * 0.6, Math.sin(angle) * speed],
+        velocity: [Math.cos(angle) * speed, 4.6 + (index % 4) * 0.7, Math.sin(angle) * speed],
         spin: 6 + index,
       });
       this.scene.add(mesh);
