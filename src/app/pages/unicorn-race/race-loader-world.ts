@@ -42,7 +42,13 @@ const SPARKLES = 6;
 /** Seconds of gallop run before the first frame, so Lumi is mid-stride the moment she shows. */
 const PRIME_SECONDS = 1.1;
 /** What the picture must hold: the pony, the ribbon behind her and a little room round both. */
-const FRAME_HEIGHT = 3;
+const FRAME_HEIGHT = 2.8;
+/**
+ * The loader's "Loading…" pill sits just below the middle of the box, so Lumi runs in the band
+ * above it: the scene fits into this share of the height, centred at `SHARE_MIDDLE` from the top.
+ */
+const SHARE = 0.47;
+const SHARE_MIDDLE = 0.29;
 const LOOK_Y = 1.15;
 /** A wide box shows the whole ribbon; a tall phone crops its faded end and centres on Lumi. */
 const WIDE = { width: 5, x: -0.4 };
@@ -136,12 +142,19 @@ export class RaceLoaderWorld extends Stage implements StateWorld<null> {
   protected override layout(aspect: number) {
     const camera = this.camera;
     camera.aspect = aspect;
-    camera.updateProjectionMatrix();
+    camera.setViewOffset(
+      this.width,
+      this.height,
+      0,
+      (0.5 - SHARE_MIDDLE) * this.height,
+      this.width,
+      this.height,
+    );
     const halfTan = Math.tan((camera.fov * Math.PI) / 360);
     const wide = Math.max(0, Math.min(1, (aspect - 0.5) / 0.9));
     const width = NARROW.width + (WIDE.width - NARROW.width) * wide;
     const lookX = NARROW.x + (WIDE.x - NARROW.x) * wide;
-    const distance = Math.max(FRAME_HEIGHT / 2 / halfTan, width / 2 / (halfTan * aspect));
+    const distance = Math.max(FRAME_HEIGHT / SHARE / 2 / halfTan, width / 2 / (halfTan * aspect));
     // A little above and in front, the way a spectator at the rail would see her.
     camera.position.set(lookX + distance * 0.12, LOOK_Y + distance * 0.24, distance);
     camera.lookAt(lookX, LOOK_Y - 0.05, 0);
