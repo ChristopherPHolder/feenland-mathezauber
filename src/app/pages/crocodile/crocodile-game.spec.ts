@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { routes } from '../../app.routes';
 import { emptyProgress } from '../../core/catalog';
@@ -13,6 +12,7 @@ import { CrocodileGame } from './crocodile-game';
 import { crocodileTranslations } from './crocodile-messages';
 import { evaluate } from './comparison.fixture';
 import { SnackKind, snackPoints } from './crocodile-score';
+import { navigate, openRoute } from '../../testing/route-harness';
 
 const labels = {
   '>': 'Greater than. The crocodile eats the left side.',
@@ -131,7 +131,9 @@ describe('the hungry crocodile game', () => {
         pick(element, wrong[0]);
         fixture.detectChanges();
         const instruction = () => element.querySelector('.instruction')!.textContent!;
-        expect(instruction()).toContain('Try again');
+        // A real space after "Try again!", so the inline phone-landscape card and screen readers
+        // never run it into the rule.
+        expect(instruction()).toMatch(/Try again! \S/);
         // Level 1 starts with Kiki's rule, whatever the right answer is.
         expect(instruction()).toContain(crocodileTranslations.en.ruleBigger);
         expect(element.querySelector('app-rule-hint .picture')).not.toBeNull();
@@ -286,7 +288,7 @@ describe('the hungry crocodile game', () => {
     expect(element.querySelector('.points-float')?.textContent).toBe(
       `+${snackPoints(kind, 1) + 20}`,
     );
-    expect(element.querySelector('.instruction')!.textContent).toContain('Shoo, heron!');
+    expect(element.querySelector('.instruction')!.textContent).toMatch(/points! Shoo, heron!/);
     expect(element.querySelector('app-heron.shooed')).not.toBeNull();
     vi.advanceTimersByTime(1400);
     fixture.detectChanges();
@@ -428,7 +430,7 @@ describe('crocodile navigation', () => {
   });
   afterEach(() => TestBed.resetTestingModule());
   it('lists seventeen open levels and sends unknown deep links home', async () => {
-    const h = await RouterTestingHarness.create('/games#compare-crocodile');
+    const h = await openRoute('/games#compare-crocodile');
     expect(
       h.routeNativeElement?.querySelectorAll('#compare-crocodile a[href^="/adventure/crocodile-"]')
         .length,
@@ -436,9 +438,9 @@ describe('crocodile navigation', () => {
     expect(h.routeNativeElement?.querySelector('#compare-crocodile')?.textContent).toContain(
       TestBed.inject(LocaleService).t('crocodileChapter'),
     );
-    await h.navigateByUrl('/adventure/crocodile-18');
+    await navigate(h, '/adventure/crocodile-18');
     expect(TestBed.inject(Router).url).toBe('/');
-    await h.navigateByUrl('/adventure/crocodile-1');
+    await navigate(h, '/adventure/crocodile-1');
     expect(TestBed.inject(Router).url).toBe('/adventure/crocodile-1');
     expect(h.routeNativeElement?.textContent).toContain(crocodileTranslations.en.start);
   });
@@ -461,11 +463,11 @@ describe('crocodile navigation', () => {
         stars: 2,
       }),
     );
-    const h = await RouterTestingHarness.create('/complete/crocodile-1');
+    const h = await openRoute('/complete/crocodile-1');
     expect(h.routeNativeElement?.querySelector('a.button.primary')?.getAttribute('href')).toBe(
       '/adventure/crocodile-2',
     );
-    await h.navigateByUrl('/adventure/crocodile-2');
+    await navigate(h, '/adventure/crocodile-2');
     expect(TestBed.inject(Router).url).toBe('/adventure/crocodile-2');
   });
 });

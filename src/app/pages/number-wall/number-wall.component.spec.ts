@@ -260,6 +260,29 @@ describe('Number wall game', () => {
     expect(element.querySelector('.troll')).toBeTruthy();
   });
 
+  it('draws no rule picture when the hint asks for the other brick first', () => {
+    const { fixture, element, click, status } = setup();
+    click('Level 3');
+    fixture.componentInstance['feedback'].set({ kind: 'hint', hint: { kind: 'fillOther' } });
+    fixture.detectChanges();
+    expect(status()).toBe('Fill the other glowing brick first.');
+    // The add-the-two-below picture would contradict the words, so the status shows only the text.
+    expect(element.querySelector('.status .hint-wall')).toBeNull();
+    expect(element.querySelector('app-wall-scene')?.classList).toContain('is-hinting');
+  });
+
+  it('says one gem, not one gems, for a wall worth a single gem', () => {
+    const { fixture, click, status } = setup();
+    click('Level 3');
+    const won = { kind: 'built', perfect: false, fast: false } as const;
+    fixture.componentInstance['feedback'].set({ ...won, gems: 1 });
+    fixture.detectChanges();
+    expect(status()).toBe('Wall built! +1 gem!');
+    fixture.componentInstance['feedback'].set({ ...won, gems: 2 });
+    fixture.detectChanges();
+    expect(status()).toBe('Wall built! +2 gems!');
+  });
+
   it('gives a gentle retry, then the rule as a picture, and never gives the answer away', () => {
     localStorage.setItem(
       'feenland.number-wall.v1',
@@ -293,7 +316,7 @@ describe('Number wall game', () => {
     expect(openBricks()).toHaveLength(1);
     typeNumber(answer);
     expect(element.querySelector('app-wall-scene')?.classList).not.toContain('is-hinting');
-    expect(status()).toMatch(/^Wall built! \+\d gems!/);
+    expect(status()).toMatch(/^Wall built! \+\d gems?!/);
     // The prize card shows the gem won and the one missed for mistakes, still to win next time.
     const rows = [...element.querySelectorAll('app-wall-reward .row')];
     expect(rows[0]?.textContent).toContain('Wall built');

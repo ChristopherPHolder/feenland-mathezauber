@@ -1,0 +1,62 @@
+<h2 id="castle-settings-title">{{ i.t('gameSettings') }}</h2>
+<div class="panels">
+  @if (waves()) {
+    <fieldset class="panel numbers">
+      <legend>{{ t('settingsNumbers') }}</legend>
+      <div class="chips">
+        @for (option of ranges; track option.value) {
+          <button
+            type="button"
+            class="chip"
+            [attr.data-range]="option.value"
+            [attr.aria-pressed]="range() === option.value"
+            (click)="range.set(option.value)"
+          >
+            <span class="chip-sum" aria-hidden="true">{{ parts(option.label)[1] }}</span>
+            <strong>{{ t(option.name) }}</strong>
+          </button>
+        }
+      </div>
+    </fieldset>
+  }
+  <fieldset class="panel">
+    <legend>{{ i.t('difficulty') }}</legend>
+    <div class="chips">
+      @for (option of difficulties; track option.value) {
+        <button
+          type="button"
+          class="chip"
+          [attr.data-difficulty]="option.value"
+          [attr.aria-pressed]="options().difficulty === option.value"
+          (click)="chooseDifficulty(option.value)"
+        >
+          <span class="chip-picture" aria-hidden="true">{{ option.picture }}</span>
+          <strong>{{ i.t(option.value) }}</strong>
+          <span class="chip-detail">{{ t(option.detail) }}</span>
+        </button>
+      }
+    </div>
+  </fieldset>
+  <fieldset class="panel" aria-describedby="castle-pace-help">
+    <legend>{{ t('settingsSpeed') }}</legend>
+    <div class="chips">
+      @for (option of paces; track option.value) {
+        @let label = parts(option.value);
+        <button
+          type="button"
+          class="chip"
+          [attr.data-pace]="option.value"
+          [attr.aria-pressed]="options().pace === option.value"
+          (click)="choosePace(option.value)"
+        >
+          <span class="chip-picture" aria-hidden="true">{{ option.picture }}</span>
+          <strong>{{ label[0] }}</strong>
+          @if (label[1]) {
+            <span class="chip-detail">{{ label[1] }}</span>
+          }
+        </button>
+      }
+    </div>
+    <p class="help" id="castle-pace-help">{{ t(timed() ? 'paceHelp' : 'paceCalm') }}</p>
+  </fieldset>
+</div>
