@@ -163,11 +163,13 @@ export class HatcheryLoaderWorld extends Stage implements StateWorld<null> {
 
   protected override layout(aspect: number) {
     this.camera.aspect = aspect;
-    // Keep the nest, the egg and the sparkles above it in frame: about 2.1 units tall, 1.85 wide.
+    // Keep the nest, the egg and the sparkles above it (about 1.6 units tall) in the top half,
+    // with room round them, so the loading label just below the middle stays clear.
     const tan = Math.tan((this.camera.fov * Math.PI) / 360);
-    const distance = Math.max(2.1 / (2 * tan), 1.85 / (2 * tan * aspect));
-    this.camera.position.set(0, 0.62 + distance * 0.3, distance);
-    this.camera.lookAt(0, 0.62, 0);
+    const distance = Math.max(3.3 / (2 * tan), 2.1 / (2 * tan * aspect));
+    const lift = 2 * distance * tan * 0.22;
+    this.camera.position.set(0, 0.62 + distance * 0.3 - lift, distance);
+    this.camera.lookAt(0, 0.62 - lift, 0);
     this.camera.updateProjectionMatrix();
   }
 
