@@ -15,7 +15,8 @@
   </div>
   <div class="battle-hud">
     <div class="wave">
-      <span>{{ stageLabel() || t('wave', { n: battle().wave.number }) }}</span>
+      <span class="wave-label">{{ stageLabel() || t('wave', { n: battle().wave.number }) }}</span>
+      <span class="wave-short" aria-hidden="true">{{ shortLabel() }}</span>
       <div
         class="encounter-track"
         [attr.aria-label]="
