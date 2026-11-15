@@ -46,6 +46,8 @@ import {
   whereabouts,
 } from './star-levels';
 import { starText, StarMessageKey } from './star-messages';
+import { StarDemo } from './star-demo';
+import { countGuidedCatch, GUIDED_CATCHES, guidedCatches, IDLE_GUIDE } from './star-guide';
 import { StarPicture } from './star-picture';
 import { StarReward } from './star-reward';
 import { StarScores } from './star-scores';
@@ -77,6 +79,8 @@ interface Round {
   readonly catches: number;
   readonly goldens: number;
   readonly bounces: number;
+  /** Nova has moved since this star appeared: the hop moves on to Catch!. */
+  readonly moved: boolean;
   readonly drained: number;
   readonly completes: number;
 }
@@ -97,10 +101,19 @@ const BIG_STEP = 1 / 10;
 
 @Component({
   selector: 'app-star-catcher',
-  imports: [RouterLink, Icon, GameHeader, ThreeStage, StarBridge, StarPicture, StarReward],
+  imports: [
+    RouterLink,
+    Icon,
+    GameHeader,
+    ThreeStage,
+    StarBridge,
+    StarDemo,
+    StarPicture,
+    StarReward,
+  ],
   providers: [StarSounds],
   templateUrl: './star-catcher.html',
-  styleUrls: ['./star-catcher.css', './star-catcher-play.css'],
+  styleUrls: ['./star-catcher.css', './star-catcher-play.css', './star-catcher-guide.css'],
   host: { '(document:visibilitychange)': 'visibilityChanged()' },
 })
 export class StarCatcher {
@@ -149,6 +162,19 @@ export class StarCatcher {
   protected readonly status = signal<Status | null>(null);
   protected readonly saveFailed = signal(false);
   protected readonly newBest = signal(false);
+  /** The first few catches on a device, and any wait of 6 s, show what to tap next. */
+  private readonly learning = signal(guidedCatches() < GUIDED_CATCHES);
+  private readonly idle = signal(false);
+  /** The "how to play" film is open in its dialog: the star holds still. */
+  protected readonly howToOpen = signal(false);
+  /** The bridge the intro film shows: the level's own, or 0 to 100 for the mystery bridge. */
+  protected readonly demoMax = computed(() => this.stage().max || 100);
+  /** What hops next: Nova's handle, then Catch!, or the answer buttons. Never one answer. */
+  protected readonly guide = computed<'handle' | 'catch' | 'options' | null>(() => {
+    if (!(this.learning() || this.idle()) || !this.falling() || this.howToOpen()) return null;
+    if (this.item().kind !== 'place') return 'options';
+    return this.round().moved ? 'catch' : 'handle';
+  });
 
   protected readonly item = computed(() => {
     const round = this.round();
@@ -294,19 +320,6 @@ export class StarCatcher {
       completes: round.completes,
     };
   });
-  /** A still picture of the level for the intro: Nova in the middle, the sky so far. */
-  protected readonly preview = computed<StarFrame>(() => ({
-    ...this.frame(),
-    net: 0.5,
-    fall: 0.3,
-    hover: true,
-    label: '?',
-    kind: 'place',
-    pair: null,
-    landed: [],
-    lit: this.collection().includes(this.stage().constellation) ? 99 : 0,
-    complete: this.collection().includes(this.stage().constellation),
-  }));
   protected readonly loadWorld: WorldLoader<StarFrame> = () =>
     import('./star-world').then((m) => m.StarWorld);
 
@@ -318,6 +331,7 @@ export class StarCatcher {
   private fallen = 0;
   private fallFrom = 0;
   private dragging = false;
+  private idleTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
     effect(() => {
@@ -325,6 +339,7 @@ export class StarCatcher {
     });
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.timer);
+      clearTimeout(this.idleTimer);
       clearInterval(this.tick);
     });
   }
@@ -358,6 +373,7 @@ export class StarCatcher {
     this.started.set(true);
     this.sounds.play('start');
     this.startFall(true);
+    this.restartIdle();
     this.focusControl();
   }
 
@@ -368,7 +384,8 @@ export class StarCatcher {
   protected setNet(value: number) {
     if (!this.falling() && this.round().phase !== 'bounced') return;
     const net = Math.max(0, Math.min(1, value));
-    this.round.update((round) => ({ ...round, net, cue: null }));
+    this.round.update((round) => ({ ...round, net, cue: null, moved: true }));
+    this.restartIdle();
   }
 
   protected pointerDown(event: PointerEvent) {
@@ -497,6 +514,9 @@ export class StarCatcher {
       cue: null,
     });
     this.hatchery.warm();
+    if (this.learning()) this.learning.set(countGuidedCatch() < GUIDED_CATCHES);
+    this.idle.set(false);
+    clearTimeout(this.idleTimer);
     const extras: StarMessageKey[] = [];
     if (streak === COMET_STREAK) extras.push('cometLit');
     this.status.set(
@@ -512,6 +532,7 @@ export class StarCatcher {
 
   /** A miss keeps the same star: it bounces off the rim and floats back up. */
   private missed(direction: 'further' | 'back' | null, tried?: number) {
+    this.restartIdle();
     this.round.update((round) => ({
       ...round,
       phase: 'bounced',
@@ -546,6 +567,7 @@ export class StarCatcher {
         wrong: [],
         fall: 0,
         golden: false,
+        moved: false,
         phase: 'falling',
       });
       if (index === this.count()) {
@@ -556,6 +578,7 @@ export class StarCatcher {
         this.sounds.play('appear');
       }
       this.startFall(true);
+      this.restartIdle();
       this.focusControl();
       return;
     }
@@ -613,8 +636,28 @@ export class StarCatcher {
     this.tick = undefined;
   }
 
+  /** Opens the "how to play" film; the falling star waits until it is closed. */
+  protected openHowTo(dialog: HTMLDialogElement) {
+    this.howToOpen.set(true);
+    this.stopFall();
+    dialog.showModal();
+  }
+
+  protected howToClosed() {
+    this.howToOpen.set(false);
+    if (this.timed() && this.falling() && this.round().fall < 1) this.startFall(false);
+    this.restartIdle();
+  }
+
+  /** After a quiet 6 s the hop comes back to show what to tap next. */
+  private restartIdle() {
+    clearTimeout(this.idleTimer);
+    this.idle.set(false);
+    this.idleTimer = setTimeout(() => this.idle.set(true), IDLE_GUIDE);
+  }
+
   protected visibilityChanged() {
-    if (!this.timed() || !this.started() || this.finished()) return;
+    if (!this.timed() || !this.started() || this.finished() || this.howToOpen()) return;
     if (this.document.hidden) this.stopFall();
     else if (this.round().phase !== 'caught' && this.round().fall < 1) this.startFall(false);
   }
@@ -696,6 +739,7 @@ export class StarCatcher {
       bounces: 0,
       drained: 0,
       completes: 0,
+      moved: false,
     };
   }
 }

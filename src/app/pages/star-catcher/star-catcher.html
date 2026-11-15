@@ -23,10 +23,10 @@
         }
       </nav>
       <div class="intro-grid">
-        <div class="intro-art"><app-star-bridge [frame]="preview()" /></div>
+        <div class="intro-demo"><app-star-demo [max]="demoMax()" /></div>
         <div class="intro-copy">
           <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
-          <p>{{ t('story') }} {{ t('storyGoal') }}</p>
+          <p class="goal-short">{{ t('goalShort') }}</p>
           <div class="trick-card">
             <h3>{{ t('trickTitle') }}</h3>
             <p>{{ t(stage().trick) }}</p>
@@ -35,6 +35,33 @@
           @if (best() > 0) {
             <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
           }
+          <fieldset class="pace" aria-describedby="pace-help">
+            <legend>{{ t('paceTitle') }}</legend>
+            <p id="pace-help">{{ t('paceHelp') }}</p>
+            <div class="pace-options">
+              @for (option of paces; track option.id) {
+                <label class="pace-choice" [class.selected]="pace() === option.id">
+                  <input
+                    type="radio"
+                    name="star-pace"
+                    [value]="option.id"
+                    [checked]="pace() === option.id"
+                    (change)="selectPace(option.id)"
+                  />
+                  <span class="pace-art" [attr.data-pace]="option.id" aria-hidden="true">
+                    <span class="pace-star"></span>
+                  </span>
+                  <strong>{{ t(option.label) }}</strong>
+                  <span>{{
+                    option.id === 'off'
+                      ? t('paceHover')
+                      : t('paceSeconds', { n: paceSeconds(option.id) })
+                  }}</span>
+                </label>
+              }
+            </div>
+            <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+          </fieldset>
         </div>
       </div>
       <section class="collection" aria-labelledby="collection-title">
@@ -56,33 +83,6 @@
           }
         </ul>
       </section>
-      <fieldset class="pace" aria-describedby="pace-help">
-        <legend>{{ t('paceTitle') }}</legend>
-        <p id="pace-help">{{ t('paceHelp') }}</p>
-        <div class="pace-options">
-          @for (option of paces; track option.id) {
-            <label class="pace-choice" [class.selected]="pace() === option.id">
-              <input
-                type="radio"
-                name="star-pace"
-                [value]="option.id"
-                [checked]="pace() === option.id"
-                (change)="selectPace(option.id)"
-              />
-              <span class="pace-art" [attr.data-pace]="option.id" aria-hidden="true">
-                <span class="pace-star"></span>
-              </span>
-              <strong>{{ t(option.label) }}</strong>
-              <span>{{
-                option.id === 'off'
-                  ? t('paceHover')
-                  : t('paceSeconds', { n: paceSeconds(option.id) })
-              }}</span>
-            </label>
-          }
-        </div>
-        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
-      </fieldset>
       <div class="start-dock">
         <button class="button primary" type="button" (click)="play()">
           {{ t('start') }}<app-icon kind="arrow" />
@@ -177,7 +177,25 @@
           <strong>+{{ stardustLeft() }}</strong>
         </p>
       }
+      <button
+        type="button"
+        class="how-to"
+        [attr.aria-label]="t('howTo')"
+        [title]="t('howTo')"
+        (click)="openHowTo(howTo)"
+      >
+        ?
+      </button>
     </div>
+    <dialog #howTo class="how-to-dialog" aria-labelledby="how-to-title" (close)="howToClosed()">
+      <h2 id="how-to-title">{{ t('howTo') }}</h2>
+      @if (howToOpen()) {
+        <app-star-demo [max]="demoMax()" />
+      }
+      <form method="dialog">
+        <button class="button primary" type="submit">{{ t('close') }}</button>
+      </form>
+    </dialog>
     <div class="play-area" [class.is-finale]="finale()">
       <section class="board" [attr.aria-label]="t('boardLabel')">
         <app-three-stage class="scene" [world]="loadWorld" [state]="frame()">
@@ -196,6 +214,7 @@
           >
             <span
               class="handle"
+              [class.is-hop]="guide() === 'handle'"
               role="slider"
               tabindex="0"
               [style.left.%]="round().net * 100"
@@ -222,6 +241,17 @@
             {{ t(cue) }}
           </p>
         }
+        @if (help(); as help) {
+          <div class="tip" [class.is-right]="round().net < 0.5">
+            <span class="help-nova" aria-hidden="true"></span>
+            <p>
+              <strong>{{ t('hintLead') }}</strong> {{ help.text }}
+              @for (extra of help.extras; track extra) {
+                <span class="help-extra">{{ extra }}</span>
+              }
+            </p>
+          </div>
+        }
       </section>
       <div class="controls">
         <div class="question">
@@ -240,13 +270,13 @@
           @case ('place') {
             <button
               class="button primary catch"
+              [class.is-hop]="guide() === 'catch'"
               type="button"
               [disabled]="!falling()"
               (click)="catchStar()"
             >
               {{ t('catch') }}
             </button>
-            <p class="drag-help">{{ t('dragHelp') }}</p>
           }
           @case ('landed') {
             <div class="options" role="group" [attr.aria-label]="t('askLanded')">
@@ -254,6 +284,7 @@
                 <button
                   type="button"
                   class="option"
+                  [class.is-hop]="guide() === 'options' && !round().wrong.includes(value)"
                   [disabled]="round().wrong.includes(value) || !falling()"
                   (click)="pickLanded(value)"
                 >
@@ -268,6 +299,7 @@
                 <button
                   type="button"
                   class="option star-option"
+                  [class.is-hop]="guide() === 'options' && !round().wrong.includes($index)"
                   [disabled]="round().wrong.includes($index) || !falling()"
                   (click)="pickPair($index)"
                 >
@@ -282,20 +314,9 @@
             </div>
           }
         }
-        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+        <p class="status sr-only" role="status" aria-live="polite" aria-atomic="true">
           {{ statusText() }}
         </p>
-        @if (help(); as help) {
-          <div class="help-card">
-            <span class="help-nova" aria-hidden="true"></span>
-            <p>
-              <strong>{{ t('hintLead') }}</strong> {{ help.text }}
-              @for (extra of help.extras; track extra) {
-                <span class="help-extra">{{ extra }}</span>
-              }
-            </p>
-          </div>
-        }
         <div class="picture-card">
           <app-star-picture
             [id]="stage().constellation"

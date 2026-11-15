@@ -1,0 +1,270 @@
+/* What helps a child play without reading: the film on the level card, the ? button and its
+   dialog, Nova's tip bubble over the sky, and the hop that says what to tap next. Also how the
+   intro fits on one phone screen. */
+.intro-demo {
+  width: 100%;
+}
+.goal-short {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* The hop: a gold halo and a little jump on what to tap next. */
+.is-hop {
+  box-shadow:
+    0 0 0 4px var(--gold),
+    0 0 18px 4px #ffd23f99;
+}
+.handle.is-hop {
+  border-color: var(--gold);
+  border-style: solid;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .is-hop {
+    animation: hop 1.1s ease-in-out infinite;
+  }
+  .handle.is-hop {
+    animation-name: handle-hop;
+  }
+}
+:host-context(.calm-motion) .is-hop {
+  animation: none;
+}
+@keyframes hop {
+  0%,
+  60%,
+  100% {
+    translate: 0 0;
+  }
+  30% {
+    translate: 0 -6px;
+  }
+}
+/* The handle is centred with its own translate, so it hops with a scale instead. */
+@keyframes handle-hop {
+  0%,
+  60%,
+  100% {
+    scale: 1;
+  }
+  30% {
+    scale: 1.12;
+  }
+}
+
+/* ? opens the film again at any time */
+.how-to {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  border: 2px solid var(--violet);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--violet);
+  font: 600 24px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+  cursor: pointer;
+}
+.how-to:hover {
+  background: var(--ground);
+}
+.how-to:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.how-to-dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px;
+  border: 0;
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  text-align: center;
+}
+.how-to-dialog::backdrop {
+  background: #0b1440b3;
+}
+.how-to-dialog h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+}
+.how-to-dialog form {
+  margin-top: 14px;
+}
+.how-to-dialog .button {
+  margin: 0 auto;
+}
+
+/* Nova's tip floats over the sky, on the side away from Nova, so nothing below moves. */
+.tip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  max-width: min(48%, 380px);
+  padding: 10px 12px;
+  border-radius: 18px 18px 18px 4px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  font-size: 15px;
+  line-height: 1.4;
+  z-index: 3;
+}
+.tip.is-right {
+  left: auto;
+  right: 10px;
+  border-radius: 18px 18px 4px 18px;
+}
+.tip p {
+  margin: 0;
+}
+
+/* Phones: the intro fits one screen — the film, one line of goal, the trick, small pictures. */
+@media (max-width: 700px) {
+  .intro {
+    padding: 14px;
+  }
+  .intro .level-strip {
+    margin-bottom: 10px;
+  }
+  .intro-grid {
+    gap: 8px;
+  }
+  /* The header already names the level; the heading stays for screen readers. */
+  .intro h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .goal-short {
+    display: none;
+  }
+  .level-pill {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    font-size: 16px;
+  }
+  .intro .level-strip {
+    max-width: calc(6 * 38px + 5 * 6px);
+  }
+  .intro p {
+    margin: 4px 0;
+  }
+  .trick-card {
+    margin: 6px 0 0;
+    padding: 8px 12px;
+  }
+  .trick-card p {
+    margin: 2px 0;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+  .trick-card .example {
+    font-size: 18px;
+  }
+  .collection {
+    margin-top: 10px;
+  }
+  .collection h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .collection ul {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 2px;
+    padding: 6px;
+  }
+  .collection li {
+    padding: 2px;
+  }
+  .picture-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .pace {
+    margin-top: 10px;
+  }
+  .pace legend {
+    font-size: 17px;
+  }
+  #pace-help,
+  .pace-rule,
+  .pace-choice > span:last-child {
+    display: none;
+  }
+  .pace-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .pace-choice {
+    padding: 8px 4px;
+  }
+  .pace-choice strong {
+    font-size: 14px;
+  }
+  .pace-choice input {
+    top: 4px;
+    right: 4px;
+    width: 14px;
+    height: 14px;
+  }
+  .start-dock {
+    padding-top: 10px;
+  }
+  .tip {
+    max-width: 58%;
+    font-size: 14px;
+  }
+  /* On a narrow board the tip says more than the cue, and both would overlap. */
+  .board:has(.tip) .cue {
+    display: none;
+  }
+}
+
+/* The collection is one strip of small pictures on every screen. */
+.collection ul {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
+}
+.collection app-star-picture {
+  width: min(100%, 52px);
+}
+.picture-name {
+  font-size: 13px;
+}
+
+/* Shorter screens (an iPad held sideways): the film's caption already says the goal, and the
+   pace pictures carry their own seconds, so the explaining lines go. */
+@media (max-height: 900px) {
+  .goal-short,
+  #pace-help,
+  .pace-rule {
+    display: none;
+  }
+  .intro .level-strip {
+    margin-bottom: 8px;
+  }
+  .intro-grid {
+    align-items: start;
+  }
+}
+@media (max-width: 700px) {
+  .intro {
+    padding-bottom: 0;
+  }
+}

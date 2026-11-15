@@ -209,7 +209,11 @@ export class Drums {
     const target = mushrooms[index];
     let first = index;
     while (first > 0 && !mushrooms[first].fresh) first--;
-    const shown = mushrooms.slice(Math.max(first, index - 3), index).map((m) => m.value);
+    // Only the numbers Pom has reached show, so the demo hops are not given away early.
+    const reached = play.hop ? play.hop.to : play.at;
+    const shown = mushrooms
+      .slice(Math.max(first, index - 3), Math.min(index, reached + 1))
+      .map((m) => m.value);
     const before = !!target.before;
     const parts = before ? ['?', ...shown.reverse().map(String)] : [...shown.map(String), '?'];
     const step = before ? -target.step : target.step;
