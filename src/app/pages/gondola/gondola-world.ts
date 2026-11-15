@@ -265,7 +265,20 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     const previous = this.frame;
     this.frame = frame;
     const layout = sceneLayout(frame);
-    if (frame.turn !== this.turn || !previous || previous.representation !== frame.representation || previous.tarp !== frame.tarp) {
+    // A new turn, a swapped sum ("Swap the groups"), "Show the bunnies" or the tarp: lay it out again.
+    const reshaped =
+      !previous ||
+      previous.kind !== frame.kind ||
+      previous.tens !== frame.tens ||
+      previous.cabin !== frame.cabin ||
+      previous.groupTens !== frame.groupTens ||
+      previous.group !== frame.group;
+    if (
+      frame.turn !== this.turn ||
+      reshaped ||
+      previous.representation !== frame.representation ||
+      previous.tarp !== frame.tarp
+    ) {
       // A new turn (or a mounted world): lay it out as it stands, without replaying anything.
       const animate = previous !== undefined && frame.turn !== this.turn;
       this.turn = frame.turn;
@@ -683,6 +696,7 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
         for (const entity of this.rack) entity.cabin.setFresh(true);
         this.departUp([...this.rack, main], 1.6);
         this.rack = [];
+        this.rackFrame.visible = false;
         main.cabin.setTag('10', TAG_SCREEN);
       });
     }
@@ -746,6 +760,7 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       for (const entity of this.rack) entity.cabin.setFresh(true);
       this.departUp([...this.rack, express], 1.7);
       this.rack = [];
+      this.rackFrame.visible = false;
     });
   }
 
@@ -1007,7 +1022,7 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       } else index++;
     }
     this.moveCabins(t, calm);
-    this.moveRiders(t, calm);
+    this.moveRiders(dt, t, calm);
     this.moveGoat(t, calm, frame);
     this.moveParticles(dt, t);
     this.moveWeather(dt, t, calm, frame);
@@ -1075,7 +1090,7 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     return out.copy(points[points.length - 1]);
   }
 
-  private moveRiders(t: number, calm: boolean) {
+  private moveRiders(dt: number, t: number, calm: boolean) {
     const cheer = t - this.cheerAt;
     const shiver = t - this.shiverAt;
     for (const rider of [...this.riders]) {
@@ -1118,6 +1133,13 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
             if ('cabin' in rider.home) this.seat(rider, rider.home.cabin, rider.home.seat);
           }
         }
+      }
+      // Standing riders slide to their spot when the split handle opens or closes the gap.
+      if (!rider.hop && 'spot' in rider.home && bunny.root.parent === this.scene) {
+        const spot = rider.home.spot;
+        const rate = Math.min(1, dt * 12);
+        bunny.root.position.x += (spot.x - bunny.root.position.x) * rate;
+        bunny.root.position.z += (spot.z - bunny.root.position.z) * rate;
       }
       // Ears bounce while hopping and when cheering; riders cheer from the windows.
       const ears = hop && t >= hop.start ? Math.sin((t - hop.start) * 18) * 0.35 : 0;

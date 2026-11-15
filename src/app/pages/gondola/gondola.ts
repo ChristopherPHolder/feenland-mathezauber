@@ -114,8 +114,12 @@ interface Status {
 }
 
 const PACE_KEY = 'feenland.gondola-pace.v1';
-/** The group hops in and the cabin rides off before step 2. */
-const MOVE_DELAY = 1500;
+/**
+ * The group hops in and the full cabin rides off before step 2. In 3D the scene needs the time
+ * for the rest to board the next cabin, so the child reads "10 and 3" before answering.
+ */
+const MOVE_DELAY_3D = 2800;
+const MOVE_DELAY_FLAT = 900;
 /** The bunnies show for a moment before the snow tarp comes down. */
 const TARP_DELAY = 1400;
 const SOLVE_DELAY = 2800;
@@ -302,6 +306,7 @@ export class Gondola {
 
   private readonly outcome = viewChild<ElementRef<HTMLElement>>('outcome');
   private readonly splitControl = viewChild<GondolaSplit>('splitter');
+  private readonly sceneStage = viewChild<ThreeStage<GondolaFrame>>('scene');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private timer?: ReturnType<typeof setTimeout>;
   private tarpTimer?: ReturnType<typeof setTimeout>;
@@ -572,7 +577,7 @@ export class Gondola {
       );
       this.status.set({ key: this.item().kind === 'add' ? 'askAdd' : 'askSub' });
       this.focusAnswer();
-    }, MOVE_DELAY);
+    }, this.sceneStage()?.ready() ? MOVE_DELAY_3D : MOVE_DELAY_FLAT);
   }
 
   protected typeDigit(digit: number) {

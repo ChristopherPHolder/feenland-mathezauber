@@ -27,7 +27,9 @@
         }
       </nav>
       <div class="intro-grid">
-        <div class="intro-art"><app-gondola-platform [frame]="introFrame()" /></div>
+        <app-three-stage class="intro-art" [world]="loadWorld" [state]="introFrame()">
+            <app-gondola-platform [frame]="introFrame()" />
+          </app-three-stage>
         <div class="intro-copy">
           <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
           <p>{{ t('story') }} {{ t('storyAll') }}</p>
@@ -110,7 +112,9 @@
       tabindex="-1"
       [attr.aria-label]="t('done')"
     >
-      <div class="outcome-art"><app-gondola-platform [frame]="outcomeFrame()" /></div>
+      <app-three-stage class="outcome-art" [world]="loadWorld" [state]="outcomeFrame()">
+          <app-gondola-platform [frame]="outcomeFrame()" />
+        </app-three-stage>
       <div class="outcome-copy">
         <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
         <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
