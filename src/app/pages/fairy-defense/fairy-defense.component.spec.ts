@@ -311,6 +311,9 @@ describe('Wave 1 playable integration', () => {
     expect(element.querySelector('.wave-path')).toBeNull();
     expect(element.querySelector('.spell-bar')).toBeTruthy();
     expect(element.textContent).toContain('Stage 5 / 30');
+    const line = element.querySelector('.training-position')?.textContent?.trim() ?? '';
+    expect(line.length).toBeGreaterThan(0);
+    expect(line).not.toMatch(/Stage|up to|·/);
     click('Pause');
     click('Choose a wave');
     fixture.detectChanges();
