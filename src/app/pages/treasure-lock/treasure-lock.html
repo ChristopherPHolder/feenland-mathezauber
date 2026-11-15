@@ -184,6 +184,14 @@
         <app-three-stage class="dial-stage" [world]="loadWorld" [state]="frame()">
           <app-lock-dial [frame]="frame()" />
         </app-three-stage>
+        @if (reward(); as reward) {
+          <app-lock-reward
+            [kind]="reward.kind"
+            [keys]="reward.keys"
+            [cheer]="reward.cheer"
+            [coins]="reward.coins"
+          />
+        }
       </section>
       <div class="controls">
         <div class="goal">

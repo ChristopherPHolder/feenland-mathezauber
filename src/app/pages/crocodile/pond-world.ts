@@ -387,9 +387,13 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
   }
 
   private placeRaft(raft: Raft, anchor: Anchor, snap: boolean) {
-    const cx = anchor.x + anchor.w / 2;
-    const cy = anchor.y + anchor.h / 2;
     const sizes = this.tileSizes(raft, anchor);
+    // A sum that fills its pad leans to the outer edge, which opens clear water between the two.
+    const outward = raft.tokens.length === 1 ? 0 : raft.side === 'left' ? -1 : 1;
+    const lean =
+      outward * Math.min(anchor.w * 0.07, Math.max(0, (anchor.w * 0.94 - sizes.total) / 2));
+    const cx = anchor.x + anchor.w / 2 + lean;
+    const cy = anchor.y + anchor.h / 2;
     const lift = 0.05;
     const tileCenter = this.ground(
       cx,
@@ -443,7 +447,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       return { widths, gap, total: widths.reduce((a, b) => a + b, 0) + gap * (widths.length - 1) };
     };
     let sizes = measure(height);
-    const room = anchor.w * 0.9;
+    // A sum keeps clear water on both sides, so on a narrow phone the two sums (and the golden
+    // frames around their tiles) never run together into one long row of numbers.
+    const room = anchor.w * (plain ? 0.9 : 0.8);
     if (sizes.total > room) {
       height *= room / sizes.total;
       sizes = measure(height);

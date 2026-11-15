@@ -23,6 +23,7 @@ import { HatcheryStore } from '../hatchery/hatchery-store';
 import { LockDial } from './lock-dial';
 import { LockFrame } from './lock-frame';
 import { lockText, LockMessageKey } from './lock-messages';
+import { LockReward, RewardKind } from './lock-reward';
 import {
   cast,
   chestCoins,
@@ -59,6 +60,8 @@ interface Round {
   /** Golden keys won per opened lock. */
   readonly keys: readonly number[];
   readonly score: number;
+  /** Coins the last opened chest paid, for the reward card. */
+  readonly gain: number;
   readonly streak: number;
   readonly gemTaken: boolean;
   readonly crystal: 'none' | 'shining' | 'faded';
@@ -76,7 +79,7 @@ const OPEN_DELAY = 2600;
 
 @Component({
   selector: 'app-treasure-lock',
-  imports: [RouterLink, Icon, GameHeader, ThreeStage, LockDial],
+  imports: [RouterLink, Icon, GameHeader, ThreeStage, LockDial, LockReward],
   providers: [LockSounds],
   templateUrl: './treasure-lock.html',
   styleUrls: ['./treasure-lock.css', './treasure-lock-play.css'],
@@ -153,6 +156,31 @@ export class TreasureLock {
   protected readonly showHint = computed(() => {
     const round = this.round();
     return round.phase === 'ready' && round.hops.length >= this.lock().par + 2;
+  });
+  /** What the reward card over the dial shows while a chest stands open. */
+  protected readonly reward = computed(() => {
+    const round = this.round();
+    if (round.phase !== 'opened') return null;
+    const keys = round.keys.at(-1) ?? 1;
+    const kind: RewardKind = this.big()
+      ? 'big'
+      : this.status() === 'fever'
+        ? 'fever'
+        : keys === 3
+          ? 'perfect'
+          : 'opened';
+    const cheers = {
+      big: 'rewardBig',
+      fever: 'rewardFever',
+      perfect: 'rewardPerfect',
+      opened: 'rewardOpened',
+    } as const;
+    return {
+      kind,
+      keys,
+      cheer: this.t(cheers[kind]),
+      coins: this.t('rewardCoins', { n: this.i.format(round.gain) }),
+    };
   });
   protected readonly pathText = computed(() =>
     [this.lock().start, ...this.round().trail.map(spellText)].join(' '),
@@ -313,10 +341,11 @@ export class TreasureLock {
       keys: [...round.keys, stars],
       streak,
       score: round.score + coins,
+      gain: coins,
     });
     this.hatchery.warm();
     this.status.set(streak === FEVER_STREAK ? 'fever' : 'opened');
-    this.sounds.play(streak === FEVER_STREAK ? 'fever' : stars === 3 ? 'perfect' : 'open');
+    this.sounds.reward(streak === FEVER_STREAK ? 'fever' : stars === 3 ? 'perfect' : 'open', stars);
     this.timer = setTimeout(() => this.advance(), OPEN_DELAY);
   }
 
@@ -469,6 +498,7 @@ export class TreasureLock {
       trail: [],
       keys: [],
       score: 0,
+      gain: 0,
       streak: 0,
       gemTaken: false,
       crystal: 'none',
