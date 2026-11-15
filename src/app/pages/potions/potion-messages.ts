@@ -47,6 +47,8 @@ const en = {
   notEnough: 'Not enough in {a} to take {b} away.',
   cannotShare: '{a} can’t be shared into {b} equal parts.',
   fizzle: 'Fizz! That potion is {n}, but the cauldron needs {target}. Olli pours it back.',
+  deadEnd:
+    'Fizz! These bottles can’t make {target} anymore. Olli pours the last mix back. Try another mix!',
   brewedPerfect: 'Bubble, bubble! The potion is ready. Three stars!',
   brewed: 'The potion is ready! Brew without a fizz for three stars.',
   moon: 'No undo needed: a moon drop! 10 extra coins.',
@@ -145,6 +147,8 @@ const de: Messages = {
   notEnough: 'In {a} ist nicht genug, um {b} wegzunehmen.',
   cannotShare: '{a} lässt sich nicht in {b} gleiche Teile teilen.',
   fizzle: 'Zisch! Der Trank ist {n}, aber der Kessel braucht {target}. Olli gießt ihn zurück.',
+  deadEnd:
+    'Zisch! Mit diesen Flaschen kannst du {target} nicht mehr brauen. Olli gießt die letzte Mischung zurück. Versuche eine andere Mischung!',
   brewedPerfect: 'Blubb, blubb! Der Trank ist fertig. Drei Sterne!',
   brewed: 'Der Trank ist fertig! Ohne Zischen gibt es drei Sterne.',
   moon: 'Ohne Rückgängig: ein Mondtropfen! 10 Münzen extra.',
@@ -240,6 +244,8 @@ const es: Messages = {
   notEnough: 'En {a} no hay bastante para quitar {b}.',
   cannotShare: '{a} no se puede repartir en {b} partes iguales.',
   fizzle: '¡Fsss! La poción es {n}, pero el caldero necesita {target}. Olli la devuelve.',
+  deadEnd:
+    '¡Fsss! Estas botellas ya no pueden formar {target}. Olli deshace la última mezcla. ¡Prueba otra mezcla!',
   brewedPerfect: '¡Glu, glu! La poción está lista. ¡Tres estrellas!',
   brewed: '¡La poción está lista! Sin fsss hay tres estrellas.',
   moon: 'Sin deshacer: ¡una gota de luna! 10 monedas más.',
@@ -335,6 +341,8 @@ const fr: Messages = {
   notEnough: 'Il n’y a pas assez dans {a} pour enlever {b}.',
   cannotShare: '{a} ne se partage pas en {b} parts égales.',
   fizzle: 'Pschitt ! La potion fait {n}, mais le chaudron veut {target}. Olli la reverse.',
+  deadEnd:
+    'Pschitt ! Ces fioles ne permettent plus de faire {target}. Olli annule le dernier mélange. Essaie un autre mélange !',
   brewedPerfect: 'Blop, blop ! La potion est prête. Trois étoiles !',
   brewed: 'La potion est prête ! Sans pschitt, c’est trois étoiles.',
   moon: 'Sans annuler : une goutte de lune ! 10 pièces de plus.',

@@ -43,6 +43,7 @@ import {
   parsePotionPace,
   ROUND_LENGTH,
   roundStars,
+  solve,
   TOTAL_STAGES,
 } from './potion-puzzles';
 import { PotionCoach } from './potion-coach';
@@ -390,8 +391,13 @@ export class Potions {
       mixes: round.mixes + 1,
     };
     const values = { a: step.a, op: this.sign(op), b: step.b, r: result };
-    const outcome =
-      updated.bottles.length > 1 ? 'mixed' : result === potion.target ? 'brewed' : 'fizzle';
+    const recipe = solve(
+      updated.bottles.map((bottle) => bottle.value),
+      potion.target,
+      potion.ops,
+      potion.max,
+    );
+    const outcome = recipe === null ? 'fizzle' : updated.bottles.length > 1 ? 'mixed' : 'brewed';
     this.lastMix.set({ a: step.a, op, b: step.b, r: result, outcome });
     if (outcome === 'mixed') {
       this.round.set(updated);
@@ -405,7 +411,7 @@ export class Potions {
     }
   }
 
-  /** The last bottle is not the potion: it fizzes, and Olli pours the last mix back. */
+  /** A mix leaves no recipe for the target: Olli pours it back to the last solvable shelf. */
   private fizzle(round: Round, result: number) {
     this.round.set({
       ...round,
@@ -413,7 +419,10 @@ export class Potions {
       fizzles: round.fizzles + 1,
       fizzleCount: round.fizzleCount + 1,
     });
-    this.status.set({ key: 'fizzle', values: { n: result, target: this.potion().target } });
+    this.status.set({
+      key: round.bottles.length > 1 ? 'deadEnd' : 'fizzle',
+      values: { n: result, target: this.potion().target },
+    });
     this.sounds.play('fizzle');
     this.timer = setTimeout(() => {
       this.round.update((r) => ({
