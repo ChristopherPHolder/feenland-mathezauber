@@ -178,8 +178,34 @@ h1 span {
 .levels-link {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   min-height: 44px;
   font-weight: 600;
+}
+.levels-link app-icon {
+  width: 18px;
+  height: 18px;
+}
+/* An odd game out takes the whole row, actions beside the copy, so no half-empty row is left. */
+@media (min-width: 701px) {
+  .game-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    grid-template-columns: auto minmax(0, 1fr) minmax(240px, 0.6fr);
+    align-items: center;
+  }
+  .game-card:last-child:nth-child(odd) .game-actions {
+    grid-column: 3;
+    grid-row: 1;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 0;
+  }
+  .game-card:last-child:nth-child(odd) .game-link {
+    flex-basis: auto;
+  }
+  .game-card:last-child:nth-child(odd) .levels-link {
+    align-self: center;
+  }
 }
 
 /* Journey */

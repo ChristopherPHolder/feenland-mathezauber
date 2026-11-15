@@ -24,7 +24,7 @@ describe('Home game cards', () => {
     const card = h.routeNativeElement?.querySelector('[data-game="number-walls"]');
     const i = TestBed.inject(LocaleService);
     expect(card?.textContent).toContain(i.t('chapterStars', { n: 4, total: 33 }));
-    expect(card?.textContent).toContain(i.t('levelsLabel', { n: 11 }));
+    expect(card?.textContent).toContain(i.t('allLevelsCount', { n: 11 }));
   });
   it('counts catalog levels for the other games', async () => {
     const h = await RouterTestingHarness.create('/');
