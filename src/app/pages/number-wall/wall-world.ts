@@ -111,7 +111,9 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
 
   private aspect = 1;
   private restDistance = 12;
+  private lookX = 0;
   private lookY = 2;
+  private readonly probe = new PerspectiveCamera(FOV, 1, 0.1, 200);
   private rectsDirty = true;
   private lastRects = '';
 
@@ -207,8 +209,9 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
 
   setState(frame: WallFrame) {
     const t = this.elapsed;
-    if (frame.build !== this.build) this.restack(frame, t);
+    // The frame goes in first: restacking frames the camera on this wall's rows, not the last.
     this.frame = frame;
+    if (frame.build !== this.build) this.restack(frame, t);
 
     if (this.placed.take(frame.placed) && frame.justFilled) {
       const key = keyOf(frame.justFilled);
@@ -313,8 +316,10 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
   }
 
   /**
-   * Fits the wall and its towers into the scene box. In narrow boxes the towers may crop, but
-   * the wall itself always fills most of the box so its numbers stay readable on a phone.
+   * Fits the wall into the scene box as big as it goes, from where the camera really projects
+   * it: the top brick's back edge, the plinth's front corners and the troll beside the wall all
+   * stay inside. Roomy boxes back off a little so the towers join in; a tall phone box gets the
+   * wall close up instead of a band of sky and grass.
    */
   private frameCamera() {
     const castle = this.castle;
@@ -323,38 +328,94 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
     const towerX = castle?.towerX ?? half + 1.95;
     const towerTop = castle?.towerTop ?? 3.2;
     const wallTop = BRICK.base + rows * BRICK.rise;
-    const tanV = Math.tan((FOV * Math.PI) / 360);
-    const tanH = tanV * this.aspect;
-    const contentTop = towerTop + 1.9;
-    const fullHeight = (contentTop + 0.4) / 2 / tanV;
-    const fullWidth = (towerX + 1) / tanH;
-    // Headroom above the top brick: the camera looks down on the wall, so its top face needs room.
-    const wallHeight = (wallTop + 1.8) / 2 / tanV;
-    // Leaves room beside the wall for the troll when he bonks it.
-    const wallWidth = (half + 0.9) / tanH;
-    const full = Math.max(fullHeight, fullWidth);
-    const wall = Math.max(wallHeight, wallWidth);
-    // Small boxes (a phone held sideways) zoom in on the wall; roomy ones show the towers too.
-    const room = 1.06 + 0.12 * clamp01((this.height - 190) / 260);
-    this.restDistance = Math.min(full, wall * room);
-    // Look at the middle of what fits; on tight framings favour the wall over the roofs.
-    const shownHalf = this.restDistance * tanV;
-    this.lookY = Math.max(shownHalf - 0.5, Math.min(contentTop / 2, wallTop / 2 + 0.35));
-    this.lookY = Math.min(this.lookY, contentTop / 2);
+    const front = BRICK.d / 2 + 0.2;
+    // The troll bonks the wall from the right: that side keeps room for all of him, the left
+    // only the plinth, and the camera looks at the middle of the two.
+    const left = half + 0.3;
+    const right = half + 1.4;
+    this.lookX = (right - left) / 2;
+    const wall = [
+      ...[-1, 1].flatMap((x) => [
+        new Vector3(x * (half + 0.25), 0, front),
+        new Vector3(x * half, BRICK.base + BRICK.h, BRICK.d / 2),
+        new Vector3((x * BRICK.w) / 2, wallTop + 0.05, -BRICK.d / 2),
+      ]),
+      new Vector3(-left, 0, front),
+      new Vector3(right, 0, 0.8),
+      new Vector3(right, 2.6, 0.3),
+    ];
+    const whole = [
+      ...wall,
+      ...[-1, 1].flatMap((x) => [
+        new Vector3(x * (towerX + 0.9) + this.lookX, 0, 0),
+        new Vector3(x * (towerX + 0.9) + this.lookX, towerTop + 1.6, 0),
+      ]),
+    ];
+    const tight = this.fitCamera(wall, 0.94);
+    const full = this.fitCamera(whole, 0.97);
+    // Roomy boxes (an iPad) may back off a touch for the towers; small ones keep the wall close.
+    const room = 1 + 0.08 * clamp01((this.height - 320) / 300);
+    this.restDistance = Math.min(full, tight * room);
+    this.lookY = this.centreOn(wall, this.restDistance);
     this.placeCamera(this.camera, 0, 1);
     this.camera.aspect = this.aspect;
     this.camera.updateProjectionMatrix();
     this.rectsDirty = true;
   }
 
+  /** The nearest camera distance at which every point lies within `margin` of the box edges. */
+  private fitCamera(points: readonly Vector3[], margin: number): number {
+    let near = 2;
+    let far = 90;
+    for (let step = 0; step < 22; step++) {
+      const distance = (near + far) / 2;
+      const lookY = this.centreOn(points, distance);
+      const { minX, maxX, minY, maxY } = this.project(points, distance, lookY);
+      const fits = Math.max(-minX, maxX) <= margin && (maxY - minY) / 2 <= margin;
+      if (fits) far = distance;
+      else near = distance;
+    }
+    return far;
+  }
+
+  /** The height to look at so the points sit in the middle of the box from this distance. */
+  private centreOn(points: readonly Vector3[], distance: number): number {
+    const tanV = Math.tan((FOV * Math.PI) / 360);
+    let lookY = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+    for (let step = 0; step < 4; step++) {
+      const { minY, maxY } = this.project(points, distance, lookY);
+      lookY += ((minY + maxY) / 2) * distance * tanV;
+    }
+    return lookY;
+  }
+
+  private project(points: readonly Vector3[], distance: number, lookY: number) {
+    const probe = this.probe;
+    probe.aspect = this.aspect;
+    probe.position.set(this.lookX, lookY + distance * Math.sin(PITCH), distance * Math.cos(PITCH));
+    probe.lookAt(this.lookX, lookY, 0);
+    probe.updateProjectionMatrix();
+    probe.updateMatrixWorld();
+    const at = new Vector3();
+    const box = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+    for (const point of points) {
+      at.copy(point).project(probe);
+      box.minX = Math.min(box.minX, at.x);
+      box.maxX = Math.max(box.maxX, at.x);
+      box.minY = Math.min(box.minY, at.y);
+      box.maxY = Math.max(box.maxY, at.y);
+    }
+    return box;
+  }
+
   private placeCamera(camera: PerspectiveCamera, orbit: number, dolly: number, lift = 0) {
     const distance = this.restDistance * dolly;
     camera.position.set(
-      Math.sin(orbit) * distance * Math.cos(PITCH),
+      this.lookX + Math.sin(orbit) * distance * Math.cos(PITCH),
       this.lookY + distance * Math.sin(PITCH) + lift,
       Math.cos(orbit) * distance * Math.cos(PITCH),
     );
-    camera.lookAt(0, this.lookY + lift * 0.5, 0);
+    camera.lookAt(this.lookX, this.lookY + lift * 0.5, 0);
   }
 
   protected update(dt: number, t: number) {
@@ -384,7 +445,9 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
 
     const age = t - this.builtAt;
     const swoop = !calm && frame.built && age < SWOOP ? Math.sin((Math.PI * age) / SWOOP) : 0;
-    this.placeCamera(this.camera, swoop * 0.38, 1 - swoop * 0.14, swoop * 0.5);
+    // The wall already fills the box, so the victory swoop circles and eases back a touch
+    // instead of diving in: the top brick and the plinth stay in view.
+    this.placeCamera(this.camera, swoop * 0.38, 1 + swoop * 0.08, swoop * 0.25);
 
     if (this.rectsDirty) this.sendRects();
   }
