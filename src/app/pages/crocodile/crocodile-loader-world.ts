@@ -7,6 +7,7 @@ import {
   Object3D,
   RingGeometry,
   SphereGeometry,
+  Vector3,
 } from 'three';
 import { Stage } from '../../shared/three/stage';
 import type { StateWorld } from '../../shared/three/three-stage';
@@ -31,6 +32,19 @@ const RIPPLES = 3;
 const SNOUT_X = 0.75;
 const SNOUT_Z = 1.2;
 const DROPS = 5;
+/**
+ * The shared loader centres its "Loading…" pill a little below the middle, with its top about
+ * this many pixels under the centre line; the pond ends there, so the pill sits on clear ground.
+ */
+const PILL_CLEAR = 52;
+/** The bank all round, and the tip of Kiki's open snout: what must stay in view. */
+const FRAME_POINTS = [
+  ...Array.from({ length: 16 }, (_, index) => {
+    const angle = (index / 16) * Math.PI * 2;
+    return new Vector3(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(POND_RADIUS + 0.22);
+  }),
+  new Vector3(0.5, 1.2, 0.7),
+];
 
 /**
  * How far open Kiki's jaws are at `phase` seconds into a beat, 0 (shut) to 1 (wide): she opens
@@ -61,6 +75,7 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
   private readonly ripples: Mesh<RingGeometry, MeshBasicMaterial>[] = [];
   private readonly drops: Mesh[] = [];
   private readonly pads: Group[] = [];
+  private readonly probe = new Vector3();
   private readonly dropMaterial = new MeshBasicMaterial({ color: '#ffffff', transparent: true });
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
@@ -70,11 +85,11 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
 
     const pond = new Group();
     const bank = new Mesh(
-      new CircleGeometry(POND_RADIUS + 0.22, 40),
+      new CircleGeometry(POND_RADIUS + 0.22, 64),
       new MeshStandardMaterial({ color: '#7cc47f', roughness: 0.8 }),
     );
     const water = new Mesh(
-      new CircleGeometry(POND_RADIUS, 40),
+      new CircleGeometry(POND_RADIUS, 64),
       new MeshStandardMaterial({ color: '#8fd0ec', roughness: 0.35 }),
     );
     bank.rotation.x = water.rotation.x = -Math.PI / 2;
@@ -115,7 +130,7 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
     flower.scale.set(1, 0.6, 1);
     this.pads[0]!.add(flower);
 
-    const ring = new RingGeometry(0.9, 1, 40);
+    const ring = new RingGeometry(0.9, 1, 64);
     for (let i = 0; i < RIPPLES; i++) {
       const ripple = new Mesh(
         ring,
@@ -145,16 +160,41 @@ export class CrocodileLoaderWorld extends Stage implements StateWorld<null> {
   setState(_: null) {}
 
   protected override layout(aspect: number) {
+    this.camera.clearViewOffset();
     super.layout(aspect);
-    // Fit the whole pond, plus a little air, whichever way the screen is turned.
-    const halfV = Math.tan((this.camera.fov / 2) * DEG);
-    const halfH = halfV * aspect;
-    const across = (POND_RADIUS + 0.3) / halfH;
-    const tall = (POND_RADIUS * Math.sin(PITCH * DEG) + 1.4) / halfV;
-    const distance = Math.max(across, tall, 6);
-    this.camera.position.set(0, Math.sin(PITCH * DEG) * distance, Math.cos(PITCH * DEG) * distance);
-    this.camera.lookAt(0, 0.25, 0.35);
-    this.camera.updateMatrixWorld();
+    // As big as fits in the space above the loader's "Loading…" pill, its bank resting just
+    // above the pill.
+    const { width, height } = this;
+    const top = height * 0.06;
+    const floor = height / 2 + PILL_CLEAR;
+    const room = { x: width * 0.92, y: floor - top };
+    let distance = 4;
+    let box = this.aim(distance);
+    while ((box.right - box.left > room.x || box.bottom - box.top > room.y) && distance < 60) {
+      distance *= 1.03;
+      box = this.aim(distance);
+    }
+    const shift = box.bottom - floor;
+    this.camera.setViewOffset(width, height, 0, shift, width, height);
+  }
+
+  /** Puts the camera `distance` away and returns the pond's box on screen, in pixels. */
+  private aim(distance: number) {
+    const camera = this.camera;
+    camera.position.set(0, Math.sin(PITCH * DEG) * distance, Math.cos(PITCH * DEG) * distance);
+    camera.lookAt(0, 0.25, 0.35);
+    camera.updateMatrixWorld();
+    const box = { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity };
+    for (const point of FRAME_POINTS) {
+      const { x, y } = this.probe.copy(point).project(camera);
+      const px = ((x + 1) / 2) * this.width;
+      const py = ((1 - y) / 2) * this.height;
+      box.left = Math.min(box.left, px);
+      box.right = Math.max(box.right, px);
+      box.top = Math.min(box.top, py);
+      box.bottom = Math.max(box.bottom, py);
+    }
+    return box;
   }
 
   protected update(dt: number, t: number) {
