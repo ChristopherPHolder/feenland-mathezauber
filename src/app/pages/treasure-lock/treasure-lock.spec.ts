@@ -74,8 +74,8 @@ describe('the treasure lock game', () => {
     const fixture = setup('treasure-lock-4');
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain(en.nines);
-    expect(element.textContent).toContain('Level 4 of 7');
-    expect(element.querySelectorAll('.level-pill').length).toBe(7);
+    expect(element.textContent).toContain('Level 4 of 9');
+    expect(element.querySelectorAll('.level-pill').length).toBe(9);
     const warm = vi.spyOn(TestBed.inject(HatcheryStore), 'warm');
     start(fixture);
     expect(TestBed.inject(ProgressService).progress().explored).toContain('tens');
@@ -155,6 +155,92 @@ describe('the treasure lock game', () => {
     // 30 coins for three keys and 10 for the gem.
     expect((fixture.nativeElement as HTMLElement).querySelector('.coins strong')!.textContent).toBe(
       '40',
+    );
+  });
+
+  it('numbers a slotted-in level by its place and greys out halving on odd numbers', () => {
+    const fixture = setup('treasure-lock-8');
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Level 7 of 9');
+    expect(element.textContent).toContain(en.halving);
+    const pills = [...element.querySelectorAll<HTMLAnchorElement>('.level-pill')];
+    expect(pills.map((pill) => pill.textContent!.trim())).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+    ]);
+    expect(pills[6].getAttribute('href')).toBe('/adventure/treasure-lock-8');
+    expect(pills[6].getAttribute('aria-current')).toBe('page');
+    expect(pills[7].getAttribute('href')).toBe('/adventure/treasure-lock-7');
+    start(fixture);
+    expect([...element.querySelectorAll('.spell')].map((b) => b.textContent!.trim())).toEqual([
+      '÷2',
+      '−1',
+      '+1',
+    ]);
+    const lock: LockPuzzle = {
+      start: 40,
+      target: 9,
+      max: 50,
+      spells: internals(fixture).lock().spells,
+      thorns: [],
+      gem: null,
+      par: 3,
+    };
+    internals(fixture).round.update((round) => ({
+      ...round,
+      locks: [lock, ...round.locks.slice(1)],
+    }));
+    fixture.detectChanges();
+    expect(element.querySelector('.halve-note')).toBeNull();
+    spellButton(fixture, '÷2').click();
+    spellButton(fixture, '÷2').click();
+    spellButton(fixture, '÷2').click();
+    fixture.detectChanges();
+    expect(internals(fixture).round().value).toBe(5);
+    const halve = spellButton(fixture, '÷2');
+    expect(halve.disabled).toBe(true);
+    expect(element.querySelector('.halve-note')!.textContent).toContain('5 is odd');
+    expect(halve.getAttribute('aria-describedby')).toBe('halve-note');
+    expect(halve.title).toContain('5 is odd');
+    spellButton(fixture, '−1').click();
+    fixture.detectChanges();
+    expect(element.querySelector('.halve-note')).toBeNull();
+    expect(spellButton(fixture, '÷2').disabled).toBe(false);
+  });
+
+  it('plays the double-and-halve level to the end and offers no next level', () => {
+    const fixture = setup('treasure-lock-9');
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Level 9 of 9');
+    start(fixture);
+    for (let chest = 0; chest < 6; chest++) {
+      solve(fixture);
+      vi.advanceTimersByTime(600);
+      element.querySelector<HTMLButtonElement>('.lock-actions .primary')!.click();
+      fixture.detectChanges();
+    }
+    expect(element.querySelector('.outcome h2')!.textContent).toContain(en.perfectRound);
+    expect(element.querySelector('.outcome a.primary')).toBeNull();
+  });
+
+  it('sends the slotted-in halving level on to the treasure master', () => {
+    const fixture = setup('treasure-lock-8');
+    start(fixture);
+    const element = fixture.nativeElement as HTMLElement;
+    for (let chest = 0; chest < 6; chest++) {
+      solve(fixture);
+      element.querySelector<HTMLButtonElement>('.lock-actions .primary')!.click();
+      fixture.detectChanges();
+    }
+    expect(element.querySelector('.outcome a.primary')!.getAttribute('href')).toBe(
+      '/adventure/treasure-lock-7',
     );
   });
 

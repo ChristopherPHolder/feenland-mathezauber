@@ -93,9 +93,12 @@
     justify-content: space-between;
     gap: 8px;
   }
+  /* Fifteen snacks and the counter share one row: the snacks shrink so it never runs off a phone. */
   .snacks {
+    flex: 1 1 auto;
     flex-wrap: nowrap;
     gap: 4px;
+    min-width: 0;
   }
   .score,
   .combo {
@@ -162,6 +165,9 @@
     flex: none;
     font-size: 21px;
   }
+  .word {
+    font-size: 16px;
+  }
   .slot {
     min-height: 96px;
   }
@@ -204,11 +210,12 @@
     font-size: 28px;
   }
   .snacks li {
-    width: 18px;
+    flex: 0 1 18px;
+    min-width: 8px;
     height: 14px;
   }
   .snacks li.boss {
-    width: 24px;
+    flex-basis: 24px;
     height: 17px;
   }
   .snack-count {

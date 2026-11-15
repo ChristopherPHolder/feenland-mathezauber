@@ -15,8 +15,12 @@ export type ComparisonSkill =
   | 'twoSides100'
   | 'easyTimes'
   | 'times'
-  | 'times100';
-export type ComparisonGroup = 'crocNumbers' | 'crocWorkOut' | 'crocHundred' | 'crocTimes';
+  | 'times100'
+  | 'halves'
+  | 'share'
+  | 'timesOrShare';
+export type ComparisonGroup =
+  'crocNumbers' | 'crocWorkOut' | 'crocHundred' | 'crocTimes' | 'crocShare';
 export interface ComparisonStage {
   /** The number in the level id `crocodile-<n>`; saved progress uses it, so never change it. */
   readonly stage: number;
@@ -24,7 +28,7 @@ export interface ComparisonStage {
   readonly position: number;
   readonly group: ComparisonGroup;
   readonly skill: ComparisonSkill;
-  readonly max: 10 | 20 | 30 | 100 | 1000;
+  readonly max: 10 | 20 | 30 | 40 | 100 | 1000;
   readonly example: string;
   /** Snacks in a round: quick looks get more of them, so every round lasts two to four minutes. */
   readonly snacks: number;
@@ -120,6 +124,30 @@ export const comparisonStages: readonly ComparisonStage[] = (
       example: '6 × 7 ○ 8 × 5',
       snacks: 10,
     },
+    {
+      stage: 15,
+      group: 'crocShare',
+      skill: 'halves',
+      max: 40,
+      example: '½ of 16 ○ 7',
+      snacks: 12,
+    },
+    {
+      stage: 16,
+      group: 'crocShare',
+      skill: 'share',
+      max: 100,
+      example: '30 ÷ 5 ○ 7',
+      snacks: 10,
+    },
+    {
+      stage: 17,
+      group: 'crocShare',
+      skill: 'timesOrShare',
+      max: 100,
+      example: '4 × 3 ○ 24 ÷ 2',
+      snacks: 10,
+    },
   ] as const
 ).map((stage, index) => ({ ...stage, position: index + 1 }));
 export const TOTAL_STAGES = comparisonStages.length;
@@ -157,6 +185,19 @@ const pick = <T>(random: Random, items: readonly T[]): T => items[int(random, 0,
 function number(value: number): Side {
   return { text: String(value), value };
 }
+/** How a halving side starts in `Side.text`; the screen swaps "of" for the child's language. */
+const HALF_OF = '½ of ';
+/**
+ * Puts a side or a level example into the child's language: "½ of 16" becomes "½ von 16", and ÷
+ * becomes the division sign the child's school writes (German and French use `:`).
+ */
+export function localSide(text: string, of: string, divide = '÷'): string {
+  return text.replaceAll(HALF_OF, `½ ${of} `).replaceAll(' ÷ ', ` ${divide} `);
+}
+/** Half of an even number up to 40: "½ of 16". */
+function half(value: number): Side {
+  return { text: `${HALF_OF}${value * 2}`, value };
+}
 function sum(random: Random, value: number): Side {
   const a = int(random, 1, value - 1);
   return { text: `${a} + ${value - a}`, value };
@@ -188,6 +229,30 @@ function product(
   if (!factors.length) return number(value);
   const a = pick(random, factors);
   return { text: `${a} × ${value / a}`, value };
+}
+/**
+ * A sharing fact that is a times-table fact backwards, so it always shares out exactly: 30 ÷ 5
+ * from 5 × 6. Sharing by 2 may go up to 40 ÷ 2, the halves the child met one level earlier.
+ * Values with none (0, 1, or too big to share) stay plain numbers.
+ */
+function quotient(
+  random: Random,
+  value: number,
+  divisors: readonly number[] = [2, 3, 4, 5, 6, 7, 8, 9, 10],
+): Side {
+  const fits = divisors.filter(
+    (d) => value >= 2 && (value <= 10 || (d === 2 && value <= 20)) && value * d <= 100,
+  );
+  if (!fits.length) return number(value);
+  const d = pick(random, fits);
+  return { text: `${value * d} ÷ ${d}`, value };
+}
+/** A times or a sharing fact for `value`, whichever exists; a plain number when neither does. */
+function tableFact(random: Random, value: number): Side {
+  const facts = [product(random, value), quotient(random, value)].filter((fact) =>
+    fact.text.includes(' '),
+  );
+  return facts.length ? pick(random, facts) : number(value);
 }
 function side(random: Random, skill: ComparisonSkill, position: 'left' | 'right', value: number) {
   switch (skill) {
@@ -234,21 +299,40 @@ function side(random: Random, skill: ComparisonSkill, position: 'left' | 'right'
     case 'times':
     case 'times100':
       return position === 'left' || random() < 0.6 ? product(random, value) : number(value);
+    case 'halves':
+      return position === 'left' ? half(value) : number(value);
+    case 'share':
+      return position === 'left' ? quotient(random, value, [2, 5, 10]) : number(value);
+    case 'timesOrShare':
+      return position === 'left' || random() < 0.6 ? tableFact(random, value) : number(value);
     default:
       return number(value);
   }
 }
+/**
+ * The biggest plain number a sharing level puts beside a side. Its sums use numbers up to 100, but
+ * what they share out to stays small, so a partner up to 100 would give the answer away.
+ */
+const PARTNER_TOP: Partial<Record<ComparisonSkill, number>> = {
+  halves: 24,
+  share: 12,
+  timesOrShare: 24,
+};
 /** A partner for `value` that is close enough to need real looking, never a giveaway. */
 function partner(random: Random, config: ComparisonStage, value: number, bigger: boolean): number {
+  const top = PARTNER_TOP[config.skill] ?? config.max;
   const low = bigger ? value + 1 : 0;
-  const high = bigger ? config.max : value - 1;
+  const high = bigger ? top : value - 1;
   if (low > high) return -1;
   const choices: number[] = [];
   const close = bigger
     ? Math.min(high, value + int(random, 1, 3))
     : Math.max(low, value - int(random, 1, 3));
   choices.push(close, close, int(random, low, high));
-  if (config.max >= 100) {
+  if (config.skill === 'halves' && bigger && value >= 2)
+    // The trap of forgetting to halve: ½ of 16 ○ 10 looks like 16 against 10, but 8 is smaller.
+    choices.push(int(random, value + 1, value * 2 - 1));
+  if (top >= 100) {
     // The digit swap a child falls for: 47 and 74, or 408 and 480.
     const hundreds = Math.floor(value / 100) * 100;
     const rest = value % 100;
@@ -283,6 +367,9 @@ function question(
     easyTimes: [4, 100],
     times: [4, 30],
     times100: [4, 100],
+    halves: [2, 20],
+    share: [2, 10],
+    timesOrShare: [4, 20],
   }[config.skill];
   const leftValue = int(random, low, high);
   const rightValue =
@@ -296,6 +383,15 @@ function question(
     config.skill === 'times' || config.skill === 'times100' || config.skill === 'easyTimes';
   if (timesSkill && (!left.text.includes('×') || left.text === right.text)) return undefined;
   if (config.skill === 'twoSides100' && (!left.text.includes(' ') || !right.text.includes(' ')))
+    return undefined;
+  if (config.skill === 'share' && !left.text.includes('÷')) return undefined;
+  // Every snack in the mixed level has a sharing fact, on one side or both.
+  if (
+    config.skill === 'timesOrShare' &&
+    (!left.text.includes(' ') ||
+      !`${left.text}${right.text}`.includes('÷') ||
+      left.text === right.text)
+  )
     return undefined;
   return { left, right, answer: compare(left.value, right.value) };
 }

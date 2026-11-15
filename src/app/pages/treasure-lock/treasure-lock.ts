@@ -33,7 +33,9 @@ import {
   LOCK_PACES,
   LockPace,
   LockPuzzle,
+  lockPosition,
   lockStage,
+  lockStages,
   lockStars,
   parseLockPace,
   ROUND_LENGTH,
@@ -41,6 +43,7 @@ import {
   Spell,
   spellText,
   TOTAL_STAGES,
+  unsplittable,
 } from './lock-puzzles';
 import { LockScores } from './lock-scores';
 import { LockSounds } from './lock-sounds';
@@ -99,15 +102,17 @@ export class TreasureLock {
     () => lockStage(this.params()?.get('id')) ?? lockStage('treasure-lock-1')!,
   );
   protected readonly levelId = computed(() => `treasure-lock-${this.stage().stage}`);
-  protected readonly levelLinks = Array.from({ length: TOTAL_STAGES }, (_, index) => ({
-    stage: index + 1,
-    route: ['/adventure', `treasure-lock-${index + 1}`],
+  /** The level's place in the list, which is the number the child sees. */
+  protected readonly position = computed(() => lockPosition(this.stage()));
+  protected readonly levelLinks = lockStages.map((stage, index) => ({
+    stage: stage.stage,
+    position: index + 1,
+    route: ['/adventure', `treasure-lock-${stage.stage}`],
   }));
-  protected readonly nextLink = computed(() =>
-    this.stage().stage < TOTAL_STAGES
-      ? ['/adventure', `treasure-lock-${this.stage().stage + 1}`]
-      : null,
-  );
+  protected readonly nextLink = computed(() => {
+    const next = lockStages[this.position()];
+    return next ? ['/adventure', `treasure-lock-${next.stage}`] : null;
+  });
 
   protected readonly round = linkedSignal<Round>(() => this.fresh());
   protected readonly started = linkedSignal<boolean>(() => {
@@ -138,6 +143,12 @@ export class TreasureLock {
   protected readonly stars = computed(() => roundStars(this.round().keys));
   protected readonly keysWon = computed(() => this.round().keys.reduce((sum, n) => sum + n, 0));
   protected readonly best = computed(() => this.scores.best()[this.levelId()] ?? 0);
+  /** Pip sits on an odd number and the lock has a halving spell: say why ÷2 is greyed out. */
+  protected readonly halveNote = computed(() => {
+    const round = this.round();
+    const halving = this.lock().spells.find((spell) => unsplittable(round.value, spell));
+    return halving && round.phase === 'ready' ? this.t('cannotHalve', { n: round.value }) : '';
+  });
   /** After a few extra hops Pip reminds the child of the level's trick, never of the answer. */
   protected readonly showHint = computed(() => {
     const round = this.round();
@@ -195,6 +206,12 @@ export class TreasureLock {
   protected spellText = spellText;
   protected canCast(spell: Spell) {
     return cast(this.round().value, spell, this.lock().max) !== null;
+  }
+  /** Why a spell is greyed out, for its tooltip. */
+  protected blockedText(spell: Spell) {
+    if (this.canCast(spell)) return '';
+    const value = this.round().value;
+    return unsplittable(value, spell) ? this.t('cannotHalve', { n: value }) : this.t('tooFar');
   }
   protected paceSeconds(pace: LockPace) {
     return hourglassSeconds(pace, Math.round((this.stage().par[0] + this.stage().par[1]) / 2));

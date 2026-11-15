@@ -50,13 +50,14 @@ describe('Games hub', () => {
         'castleAdding',
         'castleTakeAway',
         'castleTimes',
+        'castleSharing',
         'castleMixed',
       ].map((key) => i.t(key as never)),
     );
     expect(tabs('friends-of-ten')[0]!.querySelector('.topic-meta')?.textContent?.trim()).toBe(
       i.t('topicLevel'),
     );
-    expect(tabs('compare-crocodile')).toHaveLength(4);
+    expect(tabs('compare-crocodile')).toHaveLength(5);
     expect(tabs('number-walls')).toHaveLength(3);
     expect(tabs('unicorn-race')).toHaveLength(5);
     for (const game of ['friends-of-ten', 'compare-crocodile', 'number-walls', 'unicorn-race']) {
@@ -82,13 +83,18 @@ describe('Games hub', () => {
       new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
     );
     h.detectChanges();
+    expect(tabs('compare-crocodile')[4]!.getAttribute('aria-selected')).toBe('true');
+    tabs('compare-crocodile')[4]!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+    );
+    h.detectChanges();
     expect(tabs('compare-crocodile')[0]!.getAttribute('aria-selected')).toBe('true');
     expect(document.activeElement).toBe(tabs('compare-crocodile')[0]);
     tabs('compare-crocodile')[0]!.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
     );
     h.detectChanges();
-    expect(tabs('compare-crocodile')[3]!.getAttribute('aria-selected')).toBe('true');
+    expect(tabs('compare-crocodile')[4]!.getAttribute('aria-selected')).toBe('true');
   });
   it('opens the topic of a level a link points at', async () => {
     const h = await RouterTestingHarness.create('/games#crocodile-7');

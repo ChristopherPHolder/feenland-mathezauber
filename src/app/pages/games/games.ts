@@ -13,13 +13,14 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Chapter, Level, levelStars, WORLD_CATALOG, World } from '../../core/catalog';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
+import { localQuestion } from '../../core/practice';
 import { Emblem } from '../../shared/emblem';
 import { Icon } from '../../shared/icon';
 import { StarRating } from '../../shared/star-rating';
 import { CampaignStore } from '../fairy-defense/campaign';
 import { TOTAL_WAVES } from '../fairy-defense/waves';
-import { comparisonStage } from '../crocodile/comparison';
-import { raceStage } from '../unicorn-race/race-questions';
+import { comparisonStage, localSide } from '../crocodile/comparison';
+import { raceStage, raceSumText } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
 import { lockStage } from '../treasure-lock/lock-puzzles';
 import { LockScores } from '../treasure-lock/lock-scores';
@@ -252,13 +253,14 @@ export class Games {
   }
   /** The worked example a level shows on its card, when the game defines one. */
   private example(level: Level) {
-    return (
-      level.practice?.example ??
-      comparisonStage(level.id)?.example ??
-      raceStage(level.id)?.example ??
-      lockStage(level.id)?.example ??
-      ''
-    );
+    const divide = this.i.t('divide');
+    const castle = level.practice?.example;
+    if (castle) return localQuestion(castle, { halfOf: this.i.t('halfOf'), divide });
+    const race = raceStage(level.id)?.example;
+    if (race) return raceSumText(race, (n) => this.i.t('raceHalfOf', { n }), divide);
+    const crocodile = comparisonStage(level.id)?.example;
+    if (crocodile) return localSide(crocodile, this.i.t('crocHalfOf'), divide);
+    return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {
     return `wallLevel${level}` as MessageKey;

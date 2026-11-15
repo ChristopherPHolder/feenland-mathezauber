@@ -38,6 +38,30 @@ import { RuleHint } from './rule-hints';
             <circle cx="92" cy="46" r="4" />
           </svg>
         }
+        @case ('ruleHalf') {
+          <svg viewBox="0 0 96 56" class="halves">
+            <circle cx="16" cy="42" r="6" />
+            <circle cx="31" cy="42" r="6" />
+            <circle cx="23.5" cy="28" r="6" />
+            <path d="M48 6 V52" class="arrow" stroke-dasharray="5 6" />
+            <circle cx="65" cy="42" r="6" />
+            <circle cx="80" cy="42" r="6" />
+            <circle cx="72.5" cy="28" r="6" />
+          </svg>
+        }
+        @case ('ruleShare') {
+          <svg viewBox="0 0 96 56" class="groups">
+            <rect x="4" y="12" width="24" height="40" rx="10" class="line" />
+            <circle cx="16" cy="23" r="5.5" />
+            <circle cx="16" cy="40" r="5.5" />
+            <rect x="36" y="12" width="24" height="40" rx="10" class="line" />
+            <circle cx="48" cy="23" r="5.5" />
+            <circle cx="48" cy="40" r="5.5" />
+            <rect x="68" y="12" width="24" height="40" rx="10" class="line" />
+            <circle cx="80" cy="23" r="5.5" />
+            <circle cx="80" cy="40" r="5.5" />
+          </svg>
+        }
         @case ('ruleTens') {
           <svg viewBox="0 0 34 56" class="pile">
             <rect x="4" y="6" width="9" height="44" rx="3" class="ten" />
@@ -102,7 +126,9 @@ import { RuleHint } from './rule-hints';
       width: 24px;
     }
     .steps,
-    .hops {
+    .hops,
+    .halves,
+    .groups {
       width: 100%;
     }
     .ten {

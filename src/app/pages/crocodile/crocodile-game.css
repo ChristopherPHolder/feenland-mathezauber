@@ -288,6 +288,12 @@ app-game-header {
 .operator.minus {
   background: var(--sky-soft);
 }
+/* The small word in a halving snack, "½ of 16", sits between the tiles like a sign. */
+.word {
+  font-size: clamp(20px, 2.6vw, 28px);
+  font-weight: 600;
+  line-height: 1;
+}
 .winner .tile {
   box-shadow:
     0 5px 0 #b9dcc1,

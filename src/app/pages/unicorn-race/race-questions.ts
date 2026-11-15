@@ -16,6 +16,9 @@ export type RaceSkill =
   | 'missingFactor'
   | 'missingAddend'
   | 'hardTimes'
+  | 'halves'
+  | 'shareEasy'
+  | 'shareHard'
   | 'mixed';
 /** How a race is run: against three friends, chasing one thief, or beating your own shadow. */
 export type RaceMode = 'race' | 'chase' | 'shadow';
@@ -30,6 +33,11 @@ export interface RaceTrack {
   readonly example: string;
   /** Track units at the middle heat; heats scale it. */
   readonly length: number;
+  /**
+   * Eases the rivals and the shadow's par for maths that is slower to answer than the rest of
+   * its cup, so the race stays a coin flip at Normal. 1 when left out.
+   */
+  readonly ease?: number;
 }
 export type HeatNumber = 1 | 2 | 3 | 4 | 5 | 6;
 export const heatNumbers: readonly HeatNumber[] = [1, 2, 3, 4, 5, 6];
@@ -88,7 +96,28 @@ export interface RaceStage {
 }
 /** Track numbers are saved with results, so a track keeps its number when the list grows. */
 export type RaceLevel =
-  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19;
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 8
+  | 9
+  | 10
+  | 11
+  | 12
+  | 13
+  | 14
+  | 15
+  | 16
+  | 17
+  | 18
+  | 19
+  | 20
+  | 21
+  | 22;
 export interface RaceQuestion {
   readonly text: string;
   readonly answer: number;
@@ -98,7 +127,8 @@ export interface RaceQuestion {
 export const CHOICES = 4;
 /**
  * Every track in play order, easiest first, cup by cup. Tracks 1 to 15 are the original five
- * cups; 16 to 19 filled the gaps: bonds to ten, crossing ten, the big times tables and carrying.
+ * cups; 16 to 19 filled the gaps: bonds to ten, crossing ten, the big times tables and carrying;
+ * 20 to 22 brought halving and sharing.
  */
 export const raceTracks: readonly RaceTrack[] = [
   { stage: 16, cup: 'meadow', skill: 'bonds10', example: '6 + ? = 10', length: 200 },
@@ -106,16 +136,20 @@ export const raceTracks: readonly RaceTrack[] = [
   { stage: 2, cup: 'meadow', skill: 'minus10', example: '9 − 4', length: 200 },
   { stage: 3, cup: 'meadow', skill: 'plusMinus20', example: '15 − 7', length: 210 },
   { stage: 4, cup: 'sky', skill: 'doubles', example: '7 + 7', length: 220 },
+  { stage: 20, cup: 'sky', skill: 'halves', example: 'half of 18', length: 220 },
   { stage: 17, cup: 'sky', skill: 'crossTen', example: '8 + 5', length: 220 },
   { stage: 5, cup: 'sky', skill: 'plusMinus100', example: '48 + 30', length: 220 },
   { stage: 6, cup: 'sky', skill: 'twoDigit', example: '34 + 25', length: 220 },
   { stage: 7, cup: 'star', skill: 'easyTimes', example: '5 × 4', length: 230 },
   { stage: 8, cup: 'star', skill: 'times34', example: '4 × 6', length: 230 },
+  { stage: 21, cup: 'star', skill: 'shareEasy', example: '35 ÷ 5', length: 230 },
   { stage: 9, cup: 'star', skill: 'missingFactor', example: '5 × ? = 20', length: 230 },
   { stage: 18, cup: 'star', skill: 'times6789', example: '7 × 8', length: 230 },
   { stage: 10, cup: 'castle', skill: 'missingAddend', example: '7 + ? = 12', length: 240 },
   { stage: 11, cup: 'castle', skill: 'hardTimes', example: '7 × 3', length: 240 },
   { stage: 19, cup: 'castle', skill: 'twoDigitCarry', example: '37 + 25', length: 240 },
+  // Sharing by 3 to 9 takes a child about a sixth longer than the castle's other sums.
+  { stage: 22, cup: 'castle', skill: 'shareHard', example: '42 ÷ 6', length: 220, ease: 0.9 },
   { stage: 12, cup: 'castle', skill: 'mixed', example: '6 × 4', length: 250 },
   { stage: 13, cup: 'rainbow', skill: 'mixed', example: '8 × 3', length: 250 },
   { stage: 14, cup: 'rainbow', skill: 'mixed', example: '56 − 8', length: 250 },
@@ -125,6 +159,7 @@ export const raceTracks: readonly RaceTrack[] = [
 export function stageFor(track: RaceTrack, heat: HeatNumber): RaceStage {
   const config = heats.find((entry) => entry.heat === heat) ?? heats[0];
   const length = Math.round(track.length * config.scale);
+  const ease = track.ease ?? 1;
   return {
     stage: track.stage,
     heat,
@@ -133,11 +168,11 @@ export function stageFor(track: RaceTrack, heat: HeatNumber): RaceStage {
     skill: track.skill,
     example: track.example,
     length,
-    rivals: config.rivals,
+    rivals: config.rivals * ease,
     headStart: config.headStart ?? 0,
     sky: config.sky,
     ...(config.mode === 'shadow'
-      ? { parMs: Math.round(length * PAR_PER_UNIT[track.cup]) * 1000 }
+      ? { parMs: Math.round((length * PAR_PER_UNIT[track.cup]) / ease) * 1000 }
       : {}),
     ...(config.final ? { final: true } : {}),
   };
@@ -177,6 +212,15 @@ export const raceLevelEntries: readonly Level[] = raceTracks.map((config) => ({
   format: 'unicorn-race',
   group: cupGroup[config.cup],
 }));
+/** Halves are written in words, so the screen shows them in the child's language. */
+const HALF_OF = /^half of (\d+)/;
+/**
+ * The question or example as shown: `half of 18` becomes `halfOf('18')`, and ÷ becomes the
+ * division sign the child's school writes (German and French use `:`).
+ */
+export function raceSumText(text: string, halfOf: (n: string) => string, divide = '÷'): string {
+  return text.replace(HALF_OF, (_, n: string) => halfOf(n)).replace('÷', divide);
+}
 export function raceTrack(id: string | null | undefined): RaceTrack | undefined {
   const match = /^unicorn-race-(\d{1,2})$/.exec(id ?? '');
   return match ? raceTracks.find((track) => track.stage === Number(match[1])) : undefined;
@@ -324,6 +368,28 @@ function missingAddend(random: Random): Fact {
   const b = int(random, 1, 9 - a / 10) * 10;
   return { text: `${a} + ? = ${a + b}`, answer: b };
 }
+/**
+ * Halving up to 100: the undoing of doubles to 20, whole tens like half of 70, and two-digit
+ * numbers whose tens and ones halve on their own (half of 48) or whose tens are odd (half of 34).
+ */
+function halves(random: Random): Fact {
+  const roll = random();
+  const half =
+    roll < 0.35
+      ? int(random, 2, 10)
+      : roll < 0.65
+        ? int(random, 2, 10) * 5
+        : roll < 0.85
+          ? int(random, 1, 4) * 10 + int(random, 1, 4)
+          : int(random, 11, 19);
+  return { text: `half of ${half * 2}`, answer: half };
+}
+/** Sharing undoes a times table: 35 ÷ 5. Every division comes out whole. */
+function share(random: Random, rows: readonly number[]): Fact {
+  const divisor = pick(random, rows);
+  const answer = int(random, 2, 10);
+  return { text: `${divisor * answer} ÷ ${divisor}`, answer };
+}
 function fact(random: Random, skill: RaceSkill): Fact {
   switch (skill) {
     case 'bonds10':
@@ -357,6 +423,12 @@ function fact(random: Random, skill: RaceSkill): Fact {
     case 'hardTimes':
       // Neither factor comes from the easy 2, 5 or 10 rows.
       return times(random, [3, 4, 6, 7, 8, 9], 30, [3, 4, 6, 7, 8, 9]);
+    case 'halves':
+      return halves(random);
+    case 'shareEasy':
+      return share(random, [2, 5, 10]);
+    case 'shareHard':
+      return share(random, [3, 4, 5, 6, 7, 8, 9]);
     case 'mixed': {
       const roll = random();
       if (roll < 0.4) return times(random, [2, 3, 4, 5, 6, 7, 8, 9, 10], 30);
@@ -377,9 +449,13 @@ function distractors(random: Random, answer: number, skill: RaceSkill): number[]
     skill === 'hardTimes' ||
     skill === 'mixed'
       ? [1, -1, 2, -2, 10, -10, 5, -5]
-      : skill === 'plusMinus100' || skill === 'twoDigit' || skill === 'twoDigitCarry'
-        ? [10, -10, 1, -1, 2, -2, 20, -20]
-        : [1, -1, 2, -2, 3, -3, 10, -10];
+      : skill === 'shareEasy' || skill === 'shareHard'
+        ? [1, -1, 2, -2, 3, -3]
+        : skill === 'halves'
+          ? [1, -1, 2, -2, 5, -5, 10, -10]
+          : skill === 'plusMinus100' || skill === 'twoDigit' || skill === 'twoDigitCarry'
+            ? [10, -10, 1, -1, 2, -2, 20, -20]
+            : [1, -1, 2, -2, 3, -3, 10, -10];
   const swapped = Number(String(answer).split('').reverse().join(''));
   // A digit swap only fools anyone for two-digit answers that are not whole tens.
   if (swapped !== answer && swapped >= 10 && answer % 10 !== 0) candidates.add(swapped);
