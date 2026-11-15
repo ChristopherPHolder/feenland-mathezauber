@@ -112,6 +112,44 @@ describe('Wave 1 playable integration', () => {
     expect(ring()?.getAttribute('aria-valuetext')).toBe('20 seconds left');
     expect(element.querySelector('.hearts')?.getAttribute('aria-label')).toContain('3');
   });
+  it('pops a bubble over the battlefield for a fizzled spell and a lost heart, without the answer', () => {
+    const { fixture, element, click } = setup();
+    click('Play');
+    const bubble = () => element.querySelector('app-slip-callout')?.textContent?.trim();
+    click('Cast spell 5');
+    expect(bubble()).toBeUndefined();
+    vi.advanceTimersByTime(600);
+    fixture.detectChanges();
+    expect(bubble()).toBe('Fizzle! Try another spell.');
+    expect(element.querySelector('app-slip-callout')?.getAttribute('aria-hidden')).toBe('true');
+    vi.advanceTimersByTime(2000);
+    fixture.detectChanges();
+    expect(bubble()).toBeUndefined();
+    click('Cast spell 5');
+    vi.advanceTimersByTime(1300);
+    fixture.detectChanges();
+    click('Cast spell 5');
+    vi.advanceTimersByTime(600);
+    fixture.detectChanges();
+    expect(bubble()).toBe('Ouch! The castle lost a heart.');
+    expect(bubble()).not.toMatch(/\d/);
+    vi.advanceTimersByTime(800);
+    fixture.detectChanges();
+    expect(bubble()).toBe('Ouch! The castle lost a heart.');
+    click('Cast spell 1');
+    expect(bubble()).toBeUndefined();
+  });
+  it('cheers a right spell with a bubble over the battlefield', () => {
+    const { fixture, element, click } = setup();
+    click('Play');
+    click('Cast spell 1');
+    vi.advanceTimersByTime(600);
+    fixture.detectChanges();
+    expect(element.querySelector('app-slip-callout')?.classList).toContain('is-cheer');
+    expect(element.querySelector('app-slip-callout')?.textContent?.trim()).toMatch(
+      /^(Yes! A new friend!|Sparkly magic!|Brilliant spell!)$/,
+    );
+  });
   it('shows no ring at the relaxed pace, however long the child thinks', () => {
     const { fixture, element, click } = setup();
     click('Play');

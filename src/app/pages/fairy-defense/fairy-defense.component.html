@@ -70,6 +70,14 @@
         [valueText]="t('timeLeft', { n: thinkingTime() })"
       />
     }
+    @if (playing() && slip(); as shown) {
+      @for (bubble of [shown]; track bubble.id) {
+        <app-slip-callout
+          [kind]="bubble.kind"
+          [text]="t(calloutText[bubble.kind][bubble.id % calloutText[bubble.kind].length])"
+        />
+      }
+    }
     @if (battle().phase === 'lost' || battle().phase === 'complete') {
       <div class="outcome-curtain">
         <section

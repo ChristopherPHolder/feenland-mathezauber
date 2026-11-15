@@ -37,6 +37,7 @@ import { GameHeader } from '../../shared/game-header';
 import { Icon } from '../../shared/icon';
 import { advance, Battle, cast, freshBattle, resolveSpell, revealHint, timeOut } from './battle';
 import { FuseTimer } from './fuse-timer';
+import { SlipCallout, SlipKind } from './slip-callout';
 import { GameAudio } from './game-audio';
 import { gameText, GameMessageKey } from './game-messages';
 import { AudioSettings, PlaytestStore } from './playtest-store';
@@ -53,6 +54,7 @@ import { AudioSettings, PlaytestStore } from './playtest-store';
     GameHeader,
     WaveReward,
     FuseTimer,
+    SlipCallout,
   ],
   providers: [GameAudio],
   templateUrl: './fairy-defense.component.html',
@@ -95,6 +97,17 @@ export class FairyDefenseComponent {
     this.settingsModel().pace === 'quick' ? 20 : 45,
   );
   protected readonly thinkingTime = signal(45);
+  /** What each bubble says; a right spell rotates through a few cheers so they stay fresh. */
+  protected readonly calloutText: Record<SlipKind, readonly GameMessageKey[]> = {
+    wrong: ['slipWrong'],
+    time: ['slipTime'],
+    heart: ['slipHeart'],
+    cheer: ['cheerFriend', 'cheerSparkle', 'cheerBrilliant'],
+    shield: ['cheerShield'],
+  };
+  /** The bubble over the battlefield after a spell; the id restarts its pop for a new one. */
+  protected readonly slip = signal<{ kind: SlipKind; id: number } | null>(null);
+  private slipTimer?: ReturnType<typeof setTimeout>;
   /** The last slip was the ring running out, not a wrong spell. */
   private readonly timedOut = signal(false);
   /** How close the thinking timer is to running out, for the scene: 0 without a timer. */
@@ -242,6 +255,7 @@ export class FairyDefenseComponent {
     });
     inject(DestroyRef).onDestroy(() => {
       this.clearTurn();
+      clearTimeout(this.slipTimer);
       this.dialog().close();
     });
   }
@@ -252,6 +266,7 @@ export class FairyDefenseComponent {
     if (!this.training() && (number < 1 || number > TOTAL_WAVES || !Number.isInteger(number)))
       return;
     this.clearTurn();
+    this.showSlip(null);
     this.instructionOverride.set(null);
     this.timedOut.set(false);
     const training = this.training();
@@ -291,6 +306,7 @@ export class FairyDefenseComponent {
     if (next === this.battle()) return;
     this.instructionOverride.set(null);
     this.timedOut.set(false);
+    this.showSlip(null);
     this.battle.set(next);
     this.fullExplanation.set(false);
     this.audio.effect('cast');
@@ -323,6 +339,14 @@ export class FairyDefenseComponent {
           : 'wrong',
     );
     this.audio.speak(this.message());
+    if (resolved.phase === 'transforming')
+      this.showSlip(
+        resolved.wave.boss && resolved.encounter < resolved.wave.encounters.length - 1
+          ? 'shield'
+          : 'cheer',
+      );
+    else if (resolved.phase !== 'lost')
+      this.showSlip(resolved.damaged ? 'heart' : this.timedOut() ? 'time' : 'wrong');
     if (resolved.phase === 'lost') {
       this.focusOutcome();
       return;
@@ -351,6 +375,12 @@ export class FairyDefenseComponent {
       // A run-out ring holds a little longer, so the child sees the monster's step.
       resolved.phase === 'transforming' ? 2100 : this.timedOut() ? 1400 : 750,
     );
+  }
+  private showSlip(kind: SlipKind | null) {
+    clearTimeout(this.slipTimer);
+    this.slip.set(kind ? { kind, id: (this.slip()?.id ?? 0) + 1 } : null);
+    if (kind)
+      this.slipTimer = setTimeout(() => this.slip.set(null), kind === 'heart' ? 2600 : 1900);
   }
   protected help(full = false) {
     if (this.battle().phase !== 'ready') return;
