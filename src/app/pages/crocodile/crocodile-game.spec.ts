@@ -275,6 +275,8 @@ describe('the hungry crocodile game', () => {
     const heron = element.querySelector<HTMLElement>('app-heron.flying')!;
     expect(heron).not.toBeNull();
     expect(heron.style.getPropertyValue('--flight')).toBe('15000ms');
+    // While it races, nothing about the heron points at the right side.
+    expect(heron.matches('.to-left, .to-right, .to-center')).toBe(false);
     vi.advanceTimersByTime(15000);
     fixture.detectChanges();
     expect(element.querySelector('.instruction')!.textContent).toContain('snatched');

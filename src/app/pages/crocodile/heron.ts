@@ -2,8 +2,9 @@ import { Component, input } from '@angular/core';
 export type HeronTarget = 'left' | 'right' | 'center';
 export type HeronState = 'flying' | 'stole' | 'shooed';
 /**
- * The greedy heron that races Kiki for a snack. In the pond it flies in from the top right
- * toward its target over `duration` milliseconds; elsewhere it just flaps in place.
+ * The greedy heron that races Kiki for a snack. In the pond it flies in from the top right to
+ * the middle over `duration` milliseconds, whatever its target, so it never points at the right
+ * side; only when it wins does it swoop on the snack. Elsewhere it just flaps in place.
  */
 @Component({
   selector: 'app-heron',
@@ -24,9 +25,9 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
     '[class.stole]': "state() === 'stole'",
     '[class.shooed]': "state() === 'shooed'",
     '[class.paused]': 'paused()',
-    '[class.to-left]': "target() === 'left'",
-    '[class.to-right]': "target() === 'right'",
-    '[class.to-center]': "target() === 'center'",
+    '[class.to-left]': "target() === 'left' && state() !== 'flying'",
+    '[class.to-right]': "target() === 'right' && state() !== 'flying'",
+    '[class.to-center]': "target() === 'center' && state() !== 'flying'",
     '[style.--flight.ms]': 'duration()',
     'aria-hidden': 'true',
   },
@@ -46,14 +47,8 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
       animation-timing-function: linear;
       animation-fill-mode: forwards;
     }
-    :host(.flying.to-left) {
-      animation: fly-left var(--flight, 8000ms);
-    }
-    :host(.flying.to-right) {
-      animation: fly-right var(--flight, 8000ms);
-    }
-    :host(.flying.to-center) {
-      animation: fly-center var(--flight, 8000ms);
+    :host(.flying) {
+      animation: fly-in var(--flight, 8000ms);
     }
     :host(.paused) {
       animation-play-state: paused;
@@ -126,27 +121,7 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
         transform: rotate(-12deg);
       }
     }
-    @keyframes fly-left {
-      from {
-        left: 100%;
-        top: -6%;
-      }
-      to {
-        left: 4%;
-        top: -4%;
-      }
-    }
-    @keyframes fly-right {
-      from {
-        left: 100%;
-        top: -6%;
-      }
-      to {
-        left: 62%;
-        top: -4%;
-      }
-    }
-    @keyframes fly-center {
+    @keyframes fly-in {
       from {
         left: 100%;
         top: -6%;
@@ -158,8 +133,8 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
     }
     @keyframes snatch-left {
       0% {
-        left: 4%;
-        top: -4%;
+        left: 34%;
+        top: -6%;
       }
       30% {
         left: 6%;
@@ -172,8 +147,8 @@ export type HeronState = 'flying' | 'stole' | 'shooed';
     }
     @keyframes snatch-right {
       0% {
-        left: 62%;
-        top: -4%;
+        left: 34%;
+        top: -6%;
       }
       30% {
         left: 64%;
