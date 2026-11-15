@@ -1,0 +1,297 @@
+/* What helps a child play without reading: the ? button, the mix line, Olli's hint bubble, and the
+   bounce that says which buttons to tap next. Also how a round fits on one screen. */
+.help {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-left: auto;
+  border: 2px solid var(--violet);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--violet);
+  font: 600 26px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+  cursor: pointer;
+}
+.help:hover {
+  background: var(--ground);
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.big-badge {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  margin: 0;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+/* Olli whispers the trick in a speech bubble over the cauldron, so nothing below moves. */
+.hint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 10px 14px;
+  border-radius: 18px 18px 18px 4px;
+  background: var(--paper);
+  box-shadow: var(--shadow-float);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* The mix line: [first bottle] [spell] [second bottle] = [result], and the cauldron's number. */
+.mix-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 52px;
+  padding: 4px 8px;
+  border-radius: var(--radius-chip);
+  background: var(--ground);
+}
+.slot {
+  display: grid;
+  place-items: center;
+  min-width: 46px;
+  height: 44px;
+  padding: 0 6px;
+  border: 2px dashed #8f84b8;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.slot.op {
+  min-width: 40px;
+  border-radius: 50%;
+}
+.slot.filled {
+  border: 2px solid var(--violet);
+  background: var(--paper);
+}
+.equals {
+  font-size: 24px;
+  font-weight: 600;
+}
+.mix-line[data-outcome='mixed'] .slot.r {
+  border-color: var(--success-strong);
+  background: var(--success-ground);
+}
+.mix-line[data-outcome='fizzle'] .slot.r {
+  border-color: var(--pink-deep);
+  background: #ffe1ea;
+  text-decoration: line-through 3px var(--pink-deep);
+}
+.mix-line[data-outcome='brewed'] .slot.r {
+  border-color: var(--success-strong);
+  background: var(--success-ground);
+}
+.target-chip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  padding: 2px 12px 2px 8px;
+  border-radius: var(--radius-chip);
+  background: var(--gold);
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.target-chip svg {
+  width: 26px;
+  height: 26px;
+  fill: var(--ink);
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.target-chip.match {
+  box-shadow:
+    0 0 0 3px var(--paper),
+    0 0 0 6px var(--success-strong);
+}
+.potion-actions .button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* "Tap one of these": a gold halo, and a little hop while motion is welcome. */
+[data-guide='bottle'] .bottle:not([disabled]) .bottle-body,
+[data-guide='second'] .bottle:not([disabled], .picked) .bottle-body {
+  border-color: var(--gold-deep);
+  box-shadow:
+    0 0 0 4px var(--sun),
+    0 5px 0 #4b2c7833;
+}
+[data-guide='spell'] .spell {
+  box-shadow:
+    0 5px 0 #4b2c78,
+    0 0 0 4px var(--sun);
+}
+.slot.next {
+  border-color: var(--gold-deep);
+  background: var(--warm-ground);
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-guide='bottle'] .bottle:not([disabled]),
+  [data-guide='second'] .bottle:not([disabled], .picked),
+  [data-guide='spell'] .spell {
+    animation: tap-me 1.6s ease-in-out infinite;
+  }
+  .slot.next {
+    animation: slot-pulse 1.6s ease-in-out infinite;
+  }
+  .bottle:nth-child(3),
+  .spell:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  .bottle:nth-child(4),
+  .spell:nth-child(4) {
+    animation-delay: 0.24s;
+  }
+  .bottle:nth-child(5),
+  .spell:nth-child(5) {
+    animation-delay: 0.36s;
+  }
+}
+@keyframes tap-me {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  70% {
+    transform: translateY(-9px);
+  }
+  80% {
+    transform: translateY(0);
+  }
+  88% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes slot-pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+:host-context(.calm-motion) [data-guide] .bottle,
+:host-context(.calm-motion) [data-guide] .spell,
+:host-context(.calm-motion) .slot.next {
+  animation: none;
+}
+
+/* A round fits on one screen: the cauldron takes whatever height the controls leave. The page
+   body is padded by the notch and home bar on a home-screen iPhone, so leave that room too. */
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - var(--safe-y));
+}
+@media (max-width: 860px) {
+  :host:has(.game.playing) {
+    padding-bottom: 12px;
+  }
+  .game.playing {
+    min-height: calc(100dvh - 28px - var(--safe-y));
+    gap: 10px;
+  }
+  .playing .play-area {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .playing .board {
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 150px;
+    aspect-ratio: auto;
+  }
+  .playing .controls {
+    flex: none;
+  }
+}
+@media (max-width: 520px) {
+  .playing .controls {
+    gap: 8px;
+    padding: 12px;
+  }
+  .slot {
+    min-width: 40px;
+    height: 40px;
+    font-size: 21px;
+  }
+  .slot.op {
+    min-width: 36px;
+  }
+  .target-chip {
+    font-size: 24px;
+  }
+  .mix-line {
+    gap: 4px;
+    min-height: 48px;
+  }
+  .potion-actions .button {
+    min-height: 46px;
+    font-size: 16px;
+  }
+  .help {
+    width: 44px;
+    height: 44px;
+  }
+}
+/* A phone keeps the six cauldrons, the coins and the ? button on one row. */
+.cauldron-slot {
+  min-width: 0;
+}
+@media (max-width: 520px) {
+  .hud {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .cauldrons {
+    gap: 4px;
+  }
+  .mini-star {
+    width: 10px;
+    height: 10px;
+  }
+  .coins {
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+  }
+  .coins::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: inset 0 0 0 3px var(--sun);
+  }
+  .coins span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

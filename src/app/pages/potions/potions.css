@@ -62,11 +62,113 @@
 }
 .intro-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 320px) 1fr;
+  grid-template-columns: minmax(260px, 320px) 1fr;
   align-items: center;
   gap: 24px;
 }
-.intro-art,
+.intro-demo {
+  padding: 14px 10px 10px;
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 2px #e4ddf7;
+}
+.intro p {
+  margin: 0;
+  line-height: 1.4;
+}
+.goal-short {
+  font-size: 19px;
+  font-weight: 600;
+}
+.trick-card {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+.trick-head span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.trick-card .example {
+  font-size: 22px;
+  color: var(--violet);
+}
+.trick-card .trick {
+  font-size: 15px;
+}
+.pace {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.pace legend {
+  padding: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.pace-help {
+  color: var(--muted);
+  font-size: 14px;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 76px;
+  padding: 6px 4px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+}
+.pace-choice strong {
+  font-size: 15px;
+}
+.pace-choice span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.pace-picture {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pace-picture .sand {
+  fill: var(--sun);
+  stroke: var(--amber-ink);
+  stroke-width: 1;
+}
+.pace-picture .cross {
+  stroke: var(--pink-deep);
+  stroke-width: 2.4;
+}
 .outcome-art {
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-surface);
@@ -78,57 +180,6 @@
 .intro h2 {
   font-size: clamp(24px, 3vw, 32px);
   margin: 0 0 8px;
-}
-.intro p {
-  margin: 8px 0;
-  line-height: 1.5;
-}
-.trick-card {
-  margin: 14px 0 6px;
-  padding: 14px 18px;
-  border-radius: var(--radius-surface);
-  background: var(--warm-ground);
-  border: 2px solid var(--sun);
-}
-.trick-card h3 {
-  margin: 0;
-  font-size: 15px;
-  color: var(--amber-ink);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.trick-card .example {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--violet);
-}
-.pace {
-  margin: 18px 0 0;
-  padding: 0;
-  border: 0;
-}
-.pace legend {
-  font-size: 20px;
-  font-weight: 600;
-  padding: 0;
-}
-.pace-options {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-.pace-choice {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 14px 8px;
-  border: 2px solid var(--lagoon);
-  border-radius: var(--radius-surface);
-  background: var(--paper);
-  cursor: pointer;
-  text-align: center;
 }
 .pace-choice:hover {
   background: var(--ground);
@@ -143,22 +194,12 @@
 }
 .pace-choice input {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 6px;
+  right: 6px;
   margin: 0;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   accent-color: var(--success-strong);
-}
-.pace-choice strong {
-  font-size: 18px;
-}
-.pace-choice span {
-  font-size: 14px;
-  line-height: 1.4;
-}
-.pace-rule {
-  color: var(--muted);
 }
 .start-dock {
   position: sticky;
@@ -240,28 +281,78 @@
   .outcome {
     grid-template-columns: 1fr;
   }
-  .intro-art,
+  :host {
+    padding-bottom: 12px;
+  }
+  .intro-grid {
+    gap: 10px;
+  }
+  .intro-demo {
+    padding: 10px 8px 6px;
+  }
+  .start-dock {
+    margin-top: 0;
+    padding-top: 12px;
+  }
+  .intro-demo {
+    order: 2;
+  }
+  .intro-copy {
+    display: contents;
+  }
+  /* The header already names the level. */
+  .intro h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .goal-short {
+    order: 1;
+    text-align: center;
+  }
+  .trick-card {
+    order: 3;
+    margin: 0;
+  }
+  .best-line {
+    order: 4;
+  }
+  .pace {
+    order: 5;
+  }
+  .pace-help,
+  .pace-choice span {
+    display: none;
+  }
+  .pace-choice {
+    min-height: 62px;
+  }
   .outcome-art {
     max-width: 240px;
   }
-  /* Nine levels wrap into two even rows (5 + 4) so no pill pokes past the panel on a phone. */
+  /* Seven levels fit on one row of a phone. */
   .level-strip {
-    gap: 6px;
-    max-width: calc(5 * 44px + 4 * 6px);
+    flex-wrap: nowrap;
+    gap: 5px;
+    margin-bottom: 12px;
     padding: 0;
   }
   .level-pill {
-    width: 44px;
-    height: 44px;
-    min-height: 44px;
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
     padding: 0;
-    font-size: 18px;
+    font-size: 17px;
   }
-  .pace-options {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .trick-card .trick {
+    display: none;
   }
   .panel {
-    padding: 18px;
+    padding: 14px 16px;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
