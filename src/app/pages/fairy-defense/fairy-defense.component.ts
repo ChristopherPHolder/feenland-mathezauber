@@ -1,6 +1,14 @@
 import { HatcheryStore } from '../hatchery/hatchery-store';
 import { form, FormField } from '@angular/forms/signals';
-import { Difficulty, Pace, PracticeConfig, practiceLevels } from '../../core/practice';
+import {
+  Difficulty,
+  localQuestion,
+  Pace,
+  PracticeConfig,
+  practiceLevels,
+} from '../../core/practice';
+import type { Level } from '../../core/catalog';
+import type { MessageKey } from '../../core/messages';
 import { practiceBattle, practiceSpells, withCampaignMath } from './practice-battle';
 import { WavePathComponent } from './wave-path/wave-path.component';
 import { CampaignStore } from './campaign';
@@ -55,6 +63,16 @@ export class FairyDefenseComponent {
   readonly practiceConfig = input<PracticeConfig>();
   protected readonly mathRange = signal('30');
   protected readonly stages = practiceLevels;
+  /** The stage cards in their topics, in path order: Tens and ones, Adding, … */
+  protected readonly stageTopics = practiceLevels.reduce<
+    { readonly group: MessageKey; readonly levels: Level[] }[]
+  >((topics, level) => {
+    const group = level.group ?? 'practicePath';
+    const last = topics.at(-1);
+    if (last?.group === group) last.levels.push(level);
+    else topics.push({ group, levels: [level] });
+    return topics;
+  }, []);
   protected readonly chosenStage = signal('');
   protected readonly training = computed(
     () =>
@@ -73,9 +91,14 @@ export class FairyDefenseComponent {
     const question = this.encounter()?.question;
     return question ? practiceSpells(question.answer) : this.battle().wave.spells;
   });
-  protected readonly equation = computed(
-    () => this.encounter()?.question?.text ?? `${this.encounter().energy} + ? = 10`,
-  );
+  protected readonly equation = computed(() => {
+    const question = this.encounter()?.question;
+    return question ? this.question(question.text) : `${this.encounter().energy} + ? = 10`;
+  });
+  /** "Half of" and the division sign in the child's language. */
+  protected question(text: string): string {
+    return localQuestion(text, { halfOf: this.i.t('halfOf'), divide: this.i.t('divide') });
+  }
 
   protected readonly i = inject(LocaleService);
   protected readonly campaign = inject(CampaignStore);

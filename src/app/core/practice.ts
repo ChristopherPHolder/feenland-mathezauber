@@ -12,7 +12,10 @@ export type Skill =
   | 'startingNumber'
   | 'mixed'
   | 'times'
-  | 'missingFactor';
+  | 'missingFactor'
+  | 'halves'
+  | 'division'
+  | 'timesSharing';
 export interface PracticeConfig {
   /** The level id progress is saved under; stable even when stages are reordered. */
   readonly id?: string;
@@ -30,6 +33,12 @@ export interface Question {
   readonly text: string;
   readonly answer: number;
 }
+/** How a halving question starts: "Half of 14 = □". `localQuestion` translates it. */
+export const HALF_OF = 'Half of';
+/** Question text in the child's language: "Half of" and the division sign as their school writes it. */
+export function localQuestion(text: string, words: { halfOf: string; divide: string }): string {
+  return text.replace(HALF_OF, words.halfOf).replace('÷', words.divide);
+}
 /** Questions per castle stage: about two minutes of battle at a steady pace. */
 export const STAGE_QUESTIONS = 10;
 interface StageDefinition {
@@ -43,7 +52,12 @@ interface StageDefinition {
   readonly title?: MessageKey;
 }
 export type CastleGroup =
-  'castleNumbers' | 'castleAdding' | 'castleTakeAway' | 'castleTimes' | 'castleMixed';
+  | 'castleNumbers'
+  | 'castleAdding'
+  | 'castleTakeAway'
+  | 'castleTimes'
+  | 'castleSharing'
+  | 'castleMixed';
 /**
  * The castle's stages from easiest to hardest, in topic groups. Ids 1 to 11 are the original
  * path to 30; later ids were added when the path grew to 100 and the times tables.
@@ -95,6 +109,43 @@ const stages: readonly StageDefinition[] = [
   },
   { key: 11, group: 'castleTimes', skill: 'missingFactor', max: 30, example: '3 × □ = 12' },
   { key: 23, group: 'castleTimes', skill: 'missingFactor', max: 100, example: '6 × □ = 42' },
+  { key: 25, group: 'castleSharing', skill: 'halves', max: 20, example: `${HALF_OF} 14 = □` },
+  { key: 26, group: 'castleSharing', skill: 'halves', max: 100, example: `${HALF_OF} 48 = □` },
+  {
+    key: 27,
+    group: 'castleSharing',
+    skill: 'division',
+    max: 100,
+    example: '35 ÷ 5 = □',
+    rows: [2, 5, 10],
+    title: 'shareEasyRows',
+  },
+  {
+    key: 28,
+    group: 'castleSharing',
+    skill: 'division',
+    max: 100,
+    example: '12 ÷ 3 = □',
+    rows: [3, 4],
+    title: 'shareThreeFour',
+  },
+  {
+    key: 29,
+    group: 'castleSharing',
+    skill: 'division',
+    max: 100,
+    example: '56 ÷ 8 = □',
+    rows: [6, 7, 8, 9],
+    title: 'shareBigRows',
+  },
+  {
+    key: 30,
+    group: 'castleSharing',
+    skill: 'timesSharing',
+    max: 100,
+    example: '42 ÷ 6 = □',
+    rows: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+  },
   { key: 9, group: 'castleMixed', skill: 'mixed', max: 30, example: '7 + □ = 16' },
   { key: 24, group: 'castleMixed', skill: 'mixed', max: 100, example: '□ − 28 = 47' },
 ];
@@ -149,6 +200,14 @@ export function questionPool(config: PracticeConfig, difficulty: Difficulty): re
           ? rowQuestions(skill, config.rows, config.max, difficulty)
           : timesQuestions(skill, config.max, difficulty)),
       );
+      continue;
+    }
+    if (skill === 'halves') {
+      questions.push(...halfQuestions(config.max, difficulty));
+      continue;
+    }
+    if (skill === 'division' || skill === 'timesSharing') {
+      questions.push(...shareQuestions(skill, config.rows ?? [2, 5, 10], config.max, difficulty));
       continue;
     }
     const crossingOnly = skill === 'crossing' || skill === 'subCrossing';
@@ -212,6 +271,71 @@ function rowQuestions(
       const rowFirst = (row + other) % 2 === 0;
       questions.push(
         rowFirst ? timesQuestion(skill, row, other, true) : timesQuestion(skill, other, row, false),
+      );
+    }
+  return questions;
+}
+/**
+ * Halving only even numbers, so every answer is whole. Up to 20 every even number appears, and
+ * the reverse "Half of □ = 7" joins from medium. Up to 100 the halves are whole tens and
+ * two-digit numbers with both digits even (48 → 24), which need no regrouping; easy keeps to the
+ * even tens and numbers below 50, hard to the odd tens (30 → 15) and the bigger ones.
+ */
+function halfQuestions(max: number, difficulty: Difficulty): Question[] {
+  const half = (whole: number): Question => ({
+    text: `${HALF_OF} ${whole} = □`,
+    answer: whole / 2,
+  });
+  const questions: Question[] = [];
+  if (max <= 20) {
+    for (let whole = 2; whole <= max; whole += 2) {
+      if (difficulty === 'hard' && whole < 8) continue;
+      questions.push(half(whole));
+    }
+    for (let part = 1; part * 2 <= max; part++) {
+      if (
+        difficulty === 'easy' ||
+        (difficulty === 'medium' && part > 6) ||
+        (difficulty === 'hard' && part < 4)
+      )
+        continue;
+      questions.push({ text: `${HALF_OF} □ = ${part}`, answer: part * 2 });
+    }
+    return questions;
+  }
+  for (let whole = 10; whole <= max; whole += 2) {
+    const tens = Math.floor(whole / 10) % 10,
+      ones = whole % 10;
+    const wholeTen = ones === 0;
+    if (!wholeTen && (tens % 2 !== 0 || ones % 2 !== 0)) continue;
+    const oddTen = wholeTen && whole % 20 !== 0;
+    if (difficulty === 'easy' && (oddTen || (!wholeTen && whole > 50))) continue;
+    if (difficulty === 'hard' && (whole === 10 || (!oddTen && whole < 40))) continue;
+    questions.push(half(whole));
+  }
+  return questions;
+}
+/**
+ * Exact sharing in the chosen rows: 35 ÷ 5 = □, so the answer is the other factor and always
+ * whole. Easy keeps to the first half of each row, hard to its second half, like the table
+ * stages. Mixed with times, half the facts ask for the missing factor instead: □ × 6 = 42.
+ */
+function shareQuestions(
+  skill: Skill,
+  rows: readonly number[],
+  max: number,
+  difficulty: Difficulty,
+): Question[] {
+  const questions: Question[] = [];
+  for (const row of rows)
+    for (let other = 2; other <= 10 && row * other <= max; other++) {
+      if (difficulty === 'easy' && other > 6) continue;
+      if (difficulty === 'hard' && other < 5) continue;
+      const product = row * other;
+      questions.push(
+        skill === 'timesSharing' && (row + other) % 2 === 0
+          ? { text: `□ × ${row} = ${product}`, answer: other }
+          : { text: `${product} ÷ ${row} = □`, answer: other },
       );
     }
   return questions;

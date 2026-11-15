@@ -50,6 +50,7 @@ describe('Games hub', () => {
         'castleAdding',
         'castleTakeAway',
         'castleTimes',
+        'castleSharing',
         'castleMixed',
       ].map((key) => i.t(key as never)),
     );

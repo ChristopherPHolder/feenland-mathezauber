@@ -43,7 +43,7 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^practice-30-(?:[1-9]|1[0-9]|2[0-4])$/.test(segments[1].path)
+      /^practice-30-(?:[1-9]|[12][0-9]|30)$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   createRound,
+  HALF_OF,
+  localQuestion,
   practiceConfig,
   practiceLevels,
   questionPool,
@@ -8,8 +10,8 @@ import {
 } from './practice';
 const stage = (key: number) => practiceConfig(`practice-30-${key}`)!;
 describe('practice progression', () => {
-  it('offers twenty-four selectable stages with valid equations at every difficulty', () => {
-    expect(practiceLevels).toHaveLength(24);
+  it('offers thirty selectable stages with valid equations at every difficulty', () => {
+    expect(practiceLevels).toHaveLength(30);
     expect(practiceLevels.map((level) => level.practice!.stage)).toEqual(
       practiceLevels.map((_, index) => index + 1),
     );
@@ -19,11 +21,14 @@ describe('practice progression', () => {
         const pool = questionPool(config, difficulty);
         expect(pool.length).toBeGreaterThanOrEqual(STAGE_QUESTIONS);
         for (const question of pool) {
-          const equation = question.text.replace('□', String(question.answer));
+          expect(Number.isInteger(question.answer)).toBe(true);
+          const equation = question.text
+            .replace('□', String(question.answer))
+            .replace(/^Half of (\d+)/, (_, whole: string) => `${whole} ÷ 2`);
           const values = equation.match(/\d+/g)!.map(Number);
           expect(values.every((n) => n >= 0 && n <= config.max)).toBe(true);
           const [left, right] = equation.split(' = ');
-          const [a, b] = left!.split(/ [＋+−×] /).map(Number);
+          const [a, b] = left!.split(/ [＋+−×÷] /).map(Number);
           const result =
             b === undefined
               ? a
@@ -31,7 +36,9 @@ describe('practice progression', () => {
                 ? a! - b
                 : left!.includes('×')
                   ? a! * b
-                  : a! + b;
+                  : left!.includes('÷')
+                    ? a! / b
+                    : a! + b;
           const [c, d] = right!.split(' + ').map(Number);
           expect(result).toBe(d === undefined ? c : c! + d);
         }
@@ -101,5 +108,78 @@ describe('practice progression', () => {
         expect(q.answer).toBeGreaterThanOrEqual(1);
         expect(q.answer).toBeLessThanOrEqual(9);
       }
+  });
+  it('puts the sharing stages after the times tables, keys 25 to 30', () => {
+    const groups = practiceLevels.map((level) => level.group);
+    const sharing = practiceLevels.filter((level) => level.group === 'castleSharing');
+    expect(sharing.map((level) => level.id)).toEqual(
+      [25, 26, 27, 28, 29, 30].map((key) => `practice-30-${key}`),
+    );
+    expect(groups.lastIndexOf('castleTimes')).toBeLessThan(groups.indexOf('castleSharing'));
+    expect(groups.lastIndexOf('castleSharing')).toBeLessThan(groups.indexOf('castleMixed'));
+  });
+  it('halves only even numbers, so every half is whole', () => {
+    for (const [key, max] of [
+      [25, 20],
+      [26, 100],
+    ] as const)
+      for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+        const pool = questionPool(stage(key), difficulty);
+        for (const q of pool) {
+          expect(q.text.startsWith(HALF_OF)).toBe(true);
+          const [given] = q.text.match(/\d+/g)!.map(Number);
+          const whole = q.text.includes('□ =') ? q.answer : given!;
+          const half = q.text.includes('□ =') ? given! : q.answer;
+          expect(whole % 2).toBe(0);
+          expect(whole).toBeLessThanOrEqual(max);
+          expect(half * 2).toBe(whole);
+          if (max === 100) {
+            // Whole tens, or two even digits like 48: no regrouping needed.
+            const tens = Math.floor(whole / 10) % 10;
+            expect(whole % 10 === 0 || (tens % 2 === 0 && (whole % 10) % 2 === 0)).toBe(true);
+          }
+        }
+        expect(pool.length).toBeGreaterThanOrEqual(10);
+      }
+    expect(questionPool(stage(26), 'easy').map((q) => q.text)).toContain(`${HALF_OF} 48 = □`);
+    expect(questionPool(stage(26), 'hard').map((q) => q.text)).toContain(`${HALF_OF} 70 = □`);
+  });
+  it('shares exactly, only in the chosen rows, easy small and hard big', () => {
+    for (const [key, rows] of [
+      [27, [2, 5, 10]],
+      [28, [3, 4]],
+      [29, [6, 7, 8, 9]],
+    ] as const)
+      for (const difficulty of ['easy', 'medium', 'hard'] as const)
+        for (const q of questionPool(stage(key), difficulty)) {
+          const [whole, row] = q.text.match(/\d+/g)!.map(Number);
+          expect(q.text).toBe(`${whole} ÷ ${row} = □`);
+          expect((rows as readonly number[]).includes(row!)).toBe(true);
+          expect(q.answer * row!).toBe(whole);
+          expect(q.answer).toBeGreaterThanOrEqual(difficulty === 'hard' ? 5 : 2);
+          expect(q.answer).toBeLessThanOrEqual(difficulty === 'easy' ? 6 : 10);
+          expect(whole).toBeLessThanOrEqual(100);
+        }
+  });
+  it('mixes missing factors with sharing in the last sharing stage', () => {
+    for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+      const pool = questionPool(stage(30), difficulty);
+      const kinds = new Set(pool.map((q) => (q.text.includes('÷') ? 'share' : 'times')));
+      expect(kinds).toEqual(new Set(['share', 'times']));
+      for (const q of pool) {
+        const [a, b] = q.text.match(/\d+/g)!.map(Number);
+        if (q.text.includes('÷')) expect(q.answer * b!).toBe(a);
+        else {
+          expect(q.text.startsWith('□ × ')).toBe(true);
+          expect(q.answer * a!).toBe(b);
+        }
+      }
+    }
+  });
+  it('writes halving and sharing in the child’s language', () => {
+    const de = { halfOf: 'Die Hälfte von', divide: ':' };
+    expect(localQuestion(`${HALF_OF} 14 = □`, de)).toBe('Die Hälfte von 14 = □');
+    expect(localQuestion('35 ÷ 5 = □', de)).toBe('35 : 5 = □');
+    expect(localQuestion('3 × 4 = □', de)).toBe('3 × 4 = □');
   });
 });

@@ -42,7 +42,7 @@
             <p>{{ t('briefing') }}</p>
           }
           @if (training(); as config) {
-            <p class="intro-example">{{ config.example }}</p>
+            <p class="intro-example">{{ question(config.example) }}</p>
           } @else {
             <p class="rule-copy">{{ mathRange() === '10' ? t('rules') : i.t('mixedMathHelp') }}</p>
           }
@@ -174,37 +174,52 @@
     @if (!practiceConfig()) {
       <section class="level-picker" aria-labelledby="level-picker-title">
         <h2 id="level-picker-title">{{ i.t('chooseGame') }}</h2>
-        <div class="level-cards" role="radiogroup" aria-labelledby="level-picker-title">
-          <label class="level-card" [class.selected]="chosenStage() === ''">
-            <input
-              type="radio"
-              name="level"
-              value=""
-              [checked]="chosenStage() === ''"
-              (click)="chooseStage('')"
-            />
-            <span class="level-emblem" aria-hidden="true">🏰</span>
-            <span class="level-name">{{ t('title') }}</span>
-            <span class="level-detail">{{ t('playtest') }}</span>
-          </label>
-          @for (level of stages; track level.id) {
-            <label class="level-card" [class.selected]="chosenStage() === level.id">
+        <fieldset class="level-topic">
+          <legend>
+            <h3 class="level-topic-name">{{ i.t('castleWaveTopic') }}</h3>
+          </legend>
+          <div class="level-cards">
+            <label class="level-card" [class.selected]="chosenStage() === ''">
               <input
                 type="radio"
                 name="level"
-                [value]="level.id"
-                [checked]="chosenStage() === level.id"
-                (click)="chooseStage(level.id)"
+                value=""
+                [checked]="chosenStage() === ''"
+                (click)="chooseStage('')"
               />
-              <span class="level-number"
-                ><span class="sr-only">{{ i.t('stage') }} </span>{{ level.practice!.stage }}</span
-              >
-              <span class="level-example">{{ level.practice!.example }}</span>
-              <span class="level-name">{{ i.t(level.title) }}</span>
-              <span class="level-detail">{{ i.t('upTo') }} {{ level.practice!.max }}</span>
+              <span class="level-emblem" aria-hidden="true">🏰</span>
+              <span class="level-name">{{ t('title') }}</span>
+              <span class="level-detail">{{ t('playtest') }}</span>
             </label>
-          }
-        </div>
+          </div>
+        </fieldset>
+        @for (topic of stageTopics; track topic.group) {
+          <fieldset class="level-topic">
+            <legend>
+              <h3 class="level-topic-name">{{ i.t(topic.group) }}</h3>
+            </legend>
+            <div class="level-cards">
+              @for (level of topic.levels; track level.id) {
+                <label class="level-card" [class.selected]="chosenStage() === level.id">
+                  <input
+                    type="radio"
+                    name="level"
+                    [value]="level.id"
+                    [checked]="chosenStage() === level.id"
+                    (click)="chooseStage(level.id)"
+                  />
+                  <span class="level-number"
+                    ><span class="sr-only">{{ i.t('stage') }} </span
+                    >{{ level.practice!.stage }}</span
+                  >
+                  <span class="level-example">{{ question(level.practice!.example) }}</span>
+                  <span class="level-name">{{ i.t(level.title) }}</span>
+                  <span class="level-detail">{{ i.t('upTo') }} {{ level.practice!.max }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+        }
       </section>
     } @else {
       <p class="level-switch">

@@ -332,6 +332,24 @@
   line-height: 1.3;
   margin: 0 0 14px;
 }
+.level-topic {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+.level-topic + .level-topic {
+  margin-top: 20px;
+}
+.level-topic legend {
+  padding: 0;
+}
+.level-topic-name {
+  margin: 0 0 8px;
+  font-size: 17px;
+  line-height: 1.3;
+  color: var(--moss-ink);
+}
 .level-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
