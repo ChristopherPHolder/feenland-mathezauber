@@ -19,7 +19,7 @@ import { Icon } from '../../shared/icon';
 import { StarRating } from '../../shared/star-rating';
 import { CampaignStore } from '../fairy-defense/campaign';
 import { TOTAL_WAVES } from '../fairy-defense/waves';
-import { comparisonStage } from '../crocodile/comparison';
+import { comparisonStage, localSide } from '../crocodile/comparison';
 import { raceStage, raceSumText } from '../unicorn-race/race-questions';
 import { CrocodileScores } from '../crocodile/crocodile-scores';
 import { lockStage } from '../treasure-lock/lock-puzzles';
@@ -258,7 +258,9 @@ export class Games {
     if (castle) return localQuestion(castle, { halfOf: this.i.t('halfOf'), divide });
     const race = raceStage(level.id)?.example;
     if (race) return raceSumText(race, (n) => this.i.t('raceHalfOf', { n }), divide);
-    return comparisonStage(level.id)?.example ?? lockStage(level.id)?.example ?? '';
+    const crocodile = comparisonStage(level.id)?.example;
+    if (crocodile) return localSide(crocodile, this.i.t('crocHalfOf'), divide);
+    return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {
     return `wallLevel${level}` as MessageKey;

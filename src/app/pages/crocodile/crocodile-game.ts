@@ -27,6 +27,7 @@ import {
   nextComparisonStage,
   createComparisonRound,
   isMastered,
+  localSide,
   ROUND_LENGTH,
   roundStars,
   Side,
@@ -73,6 +74,10 @@ type Banner = 'comboOn' | 'frenzy' | 'goldenSnack' | 'bossSnack' | 'heronComing'
 const CHOMP_DELAY = 1400;
 const BANNER_DELAY = 1800;
 const BOSS_EXTRA = 3000;
+interface SideToken {
+  readonly text: string;
+  readonly kind: 'operator' | 'word' | 'tile';
+}
 @Component({
   selector: 'app-crocodile-game',
   imports: [
@@ -142,9 +147,18 @@ export class CrocodileGame {
   protected readonly pose = computed(
     () => this.round().chosen ?? (this.round().phase === 'ready' ? this.peek() : null),
   );
-  protected readonly question = computed(
-    () => this.round().questions[Math.min(this.round().index, this.roundLength() - 1)],
-  );
+  /** The snack on screen, in the child's language: a halving side reads "½ von 16" and a sharing side "30 : 5" in German. */
+  protected readonly question = computed((): ComparisonQuestion => {
+    const { left, right, answer } =
+      this.round().questions[Math.min(this.round().index, this.roundLength() - 1)];
+    const of = this.i.t('crocHalfOf');
+    const divide = this.i.t('divide');
+    return {
+      left: { ...left, text: localSide(left.text, of, divide) },
+      right: { ...right, text: localSide(right.text, of, divide) },
+      answer,
+    };
+  });
   protected readonly snacks = computed(() =>
     Array.from({ length: this.roundLength() }, (_, index) => index),
   );
@@ -245,8 +259,13 @@ export class CrocodileGame {
   protected helpKey(stage: number) {
     return `crocodile${stage}Help` as MessageKey;
   }
-  protected tokens(side: Side): readonly string[] {
-    return side.text.split(' ');
+  /** Number tiles, round plus and minus signs, and the small word in "½ of 16". */
+  protected tokens(side: Side): readonly SideToken[] {
+    return side.text.split(' ').map((text, index, all) => ({
+      text,
+      kind:
+        text === '+' || text === '−' ? 'operator' : index === 1 && all[0] === '½' ? 'word' : 'tile',
+    }));
   }
   protected label(choice: Comparison) {
     return this.t(choice === '>' ? 'eatsLeft' : choice === '<' ? 'eatsRight' : 'full');

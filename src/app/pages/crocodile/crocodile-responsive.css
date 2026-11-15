@@ -162,6 +162,9 @@
     flex: none;
     font-size: 21px;
   }
+  .word {
+    font-size: 16px;
+  }
   .slot {
     min-height: 96px;
   }
