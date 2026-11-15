@@ -121,6 +121,8 @@ describe('Wave 1 playable integration', () => {
     vi.advanceTimersByTime(600);
     fixture.detectChanges();
     expect(bubble()).toBe('Fizzle! Try another spell.');
+    const fizzled = element.querySelector('app-spell-bar .spell.fizzled');
+    expect(fizzled?.getAttribute('aria-label')).toBe('Cast spell 5');
     expect(element.querySelector('app-slip-callout')?.getAttribute('aria-hidden')).toBe('true');
     vi.advanceTimersByTime(2000);
     fixture.detectChanges();
