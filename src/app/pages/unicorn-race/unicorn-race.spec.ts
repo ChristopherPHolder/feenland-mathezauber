@@ -106,7 +106,7 @@ describe('Unicorn race game', () => {
       chooseHeat,
     };
   }
-  it('shows the intro with the pace choice and all nineteen races open in five cups', () => {
+  it('shows the intro with the pace choice and all twenty-two races open in five cups', () => {
     const { element } = setup();
     expect(element.querySelector('h1')?.textContent).toContain('Unicorn Rainbow Race');
     const chips = [...element.querySelectorAll('.pace:not(.wardrobe) .chip')];
@@ -121,7 +121,9 @@ describe('Unicorn race game', () => {
       '🌈 Rainbow Cup',
     ]);
     const cards = [...element.querySelectorAll<HTMLAnchorElement>('.level-card')];
-    expect(cards).toHaveLength(19);
+    expect(cards).toHaveLength(22);
+    // Halves are worded in the child's language on the track card.
+    expect(cards[5].textContent).toContain('half of 18 = ?');
     // Daisy dell (bonds to ten) comes first; race 1 is the second card.
     expect(cards[1].getAttribute('aria-current')).toBe('page');
     expect(cards[1].textContent).toContain('Race 2');
@@ -137,7 +139,8 @@ describe('Unicorn race game', () => {
       'Night chase',
       'Cup final',
     ]);
-    expect(cards[18].getAttribute('href')).toBe('/adventure/unicorn-race-15');
+    expect(cards[21].getAttribute('href')).toBe('/adventure/unicorn-race-15');
+    expect(cards[5].getAttribute('href')).toBe('/adventure/unicorn-race-20');
     expect(element.textContent).toContain('0 of 5 cups complete');
     // Keepsakes stay locked until a whole cup is finished.
     expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(5);
@@ -404,6 +407,7 @@ describe('Unicorn race game', () => {
     const { element, status, start } = setup('de');
     expect(element.querySelector('h1')?.textContent).toContain('Einhorn-Regenbogenrennen');
     expect(element.textContent).toContain('Blumenwiese');
+    expect(element.textContent).toContain('die Hälfte von 18 = ?');
     start('Rennen starten');
     expect(status()).toContain('Du bist auf Platz 1');
   });

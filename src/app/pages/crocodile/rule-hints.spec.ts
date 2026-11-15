@@ -18,6 +18,14 @@ describe('Kiki’s rule hints', () => {
     expect(ruleHint('times100', true, 1)).toBe('ruleTimes');
     expect(ruleHint('twoSides100', true, 1)).toBe('ruleWorkOut');
   });
+  it('gives halving and sharing their own rule first, and times in the mixed level', () => {
+    expect(ruleHint('halves', true, 1)).toBe('ruleHalf');
+    expect(ruleHint('halves', true, 2)).toBe('ruleBigger');
+    expect(ruleHint('share', true, 1)).toBe('ruleShare');
+    expect(ruleHint('timesOrShare', true, 1)).toBe('ruleShare');
+    expect(ruleHint('timesOrShare', true, 2)).toBe('ruleTimes');
+    expect(ruleHint('timesOrShare', true, 3)).toBe('ruleBigger');
+  });
   it('treats a plain pair in the mixed level like two-digit numbers', () => {
     expect(ruleHint('mixed', false, 2)).toBe('ruleTens');
   });

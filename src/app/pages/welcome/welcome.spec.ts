@@ -30,7 +30,7 @@ describe('Home game cards', () => {
     const h = await RouterTestingHarness.create('/');
     const card = h.routeNativeElement?.querySelector('[data-game="compare-crocodile"]');
     expect(card?.textContent).toContain(
-      TestBed.inject(LocaleService).t('chapterStars', { n: 0, total: 42 }),
+      TestBed.inject(LocaleService).t('chapterStars', { n: 0, total: 51 }),
     );
   });
   it('offers one "All games" button, not a second link beside the games heading', async () => {

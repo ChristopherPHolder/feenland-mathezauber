@@ -261,6 +261,10 @@
   background: var(--pink);
   box-shadow: 0 5px 0 #7d0e3b;
 }
+.spell[data-op='÷'] {
+  background: var(--success-strong);
+  box-shadow: 0 5px 0 #1d4122;
+}
 .spell:active:not([disabled]) {
   transform: translateY(4px);
   box-shadow: 0 1px 0 #4b2c78;
@@ -276,6 +280,12 @@
 .hourglass-off:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
+}
+.halve-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.4;
 }
 .lock-actions .button {
   width: 100%;
@@ -299,7 +309,8 @@
   .goal {
     order: 0;
   }
-  .spells {
+  .spells,
+  .halve-note {
     order: 1;
   }
   .status {

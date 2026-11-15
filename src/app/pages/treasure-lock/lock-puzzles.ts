@@ -1,9 +1,9 @@
 import type { Level } from '../../core/catalog';
 import type { MessageKey } from '../../core/messages';
 
-/** A hop spell: Pip jumps along the dial by adding, taking away or doubling. */
+/** A hop spell: Pip jumps along the dial by adding, taking away, doubling or halving. */
 export interface Spell {
-  readonly op: '+' | '−' | '×';
+  readonly op: '+' | '−' | '×' | '÷';
   readonly n: number;
 }
 
@@ -27,14 +27,47 @@ export interface LockStage {
   readonly fits?: (target: number) => boolean;
 }
 
-export type LockTrick = 'fives' | 'partitions' | 'tens' | 'nines' | 'back' | 'doubles' | 'mixed';
+export type LockTrick =
+  | 'fives'
+  | 'partitions'
+  | 'tens'
+  | 'nines'
+  | 'back'
+  | 'doubles'
+  | 'halving'
+  | 'mixed'
+  | 'doubleHalve';
 
 export const ROUND_LENGTH = 6;
 
 const plus = (n: number): Spell => ({ op: '+', n });
 const minus = (n: number): Spell => ({ op: '−', n });
 const times = (n: number): Spell => ({ op: '×', n });
+const half: Spell = { op: '÷', n: 2 };
 const ones = (target: number) => target % 10;
+
+/**
+ * Targets that halving gets to in fewer hops than the other spells can, on an empty dial.
+ * Halving levels keep to these, so ÷2 is always part of the best way.
+ */
+function halvingHelps(start: number, max: number, spells: readonly Spell[]) {
+  let helps: readonly boolean[] | undefined;
+  return (target: number) => {
+    helps ??= (() => {
+      const all = hopDistances(start, max, spells);
+      const without = hopDistances(
+        start,
+        max,
+        spells.filter((spell) => spell.op !== '÷'),
+      );
+      return all.map((hops, value) => hops >= 0 && (without[value] < 0 || without[value] > hops));
+    })();
+    return helps[target] ?? false;
+  };
+}
+
+const halvingBackSpells = [half, minus(1), plus(1)];
+const doubleHalveSpells = [times(2), half, plus(10), minus(1)];
 
 export const lockStages: readonly LockStage[] = [
   {
@@ -107,6 +140,18 @@ export const lockStages: readonly LockStage[] = [
     fits: (target) => target >= 6,
   },
   {
+    stage: 8,
+    group: 'lockDoubles',
+    trick: 'halving',
+    example: '40 ÷2 ÷2 → 10',
+    max: 50,
+    start: 40,
+    spells: halvingBackSpells,
+    par: [2, 4],
+    thorns: 0,
+    fits: halvingHelps(40, 50, halvingBackSpells),
+  },
+  {
     stage: 7,
     group: 'lockDoubles',
     trick: 'mixed',
@@ -116,6 +161,18 @@ export const lockStages: readonly LockStage[] = [
     spells: [plus(10), times(2), plus(1), minus(1)],
     par: [4, 6],
     thorns: 2,
+  },
+  {
+    stage: 9,
+    group: 'lockDoubles',
+    trick: 'doubleHalve',
+    example: '40 ×2 +10 ÷2 → 45',
+    max: 100,
+    start: 40,
+    spells: doubleHalveSpells,
+    par: [3, 6],
+    thorns: 2,
+    fits: halvingHelps(40, 100, doubleHalveSpells),
   },
 ];
 
@@ -131,18 +188,38 @@ export const lockLevels: readonly Level[] = lockStages.map((stage) => ({
 }));
 
 export function lockStage(id: string | null | undefined): LockStage | undefined {
-  const match = /^treasure-lock-(\d)$/.exec(id ?? '');
+  const match = /^treasure-lock-([1-9]\d*)$/.exec(id ?? '');
   return match ? lockStages.find((stage) => stage.stage === Number(match[1])) : undefined;
+}
+
+/**
+ * Where a level sits in the list, counting from 1. Ids keep their stage number for saved
+ * progress, but new levels are slotted in by difficulty, so the number a child sees is this.
+ */
+export function lockPosition(stage: LockStage): number {
+  return lockStages.indexOf(stage) + 1;
 }
 
 export function spellText(spell: Spell): string {
   return `${spell.op}${spell.n}`;
 }
 
-/** Where a hop lands, or null when it would leave the dial. */
+/** Whether a spell cannot work on this number at all: an odd number cannot be halved. */
+export function unsplittable(value: number, spell: Spell): boolean {
+  return spell.op === '÷' && value % spell.n !== 0;
+}
+
+/** Where a hop lands, or null when it would leave the dial or the number cannot be split. */
 export function cast(value: number, spell: Spell, max: number): number | null {
+  if (unsplittable(value, spell)) return null;
   const next =
-    spell.op === '+' ? value + spell.n : spell.op === '−' ? value - spell.n : value * spell.n;
+    spell.op === '+'
+      ? value + spell.n
+      : spell.op === '−'
+        ? value - spell.n
+        : spell.op === '×'
+          ? value * spell.n
+          : value / spell.n;
   return next < 0 || next > max ? null : next;
 }
 

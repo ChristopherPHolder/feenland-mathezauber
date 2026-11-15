@@ -55,7 +55,7 @@ describe('the hungry crocodile game', () => {
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain(crocodileTranslations.en.trick);
-    expect(element.textContent).toContain('Level 2 of 14');
+    expect(element.textContent).toContain('Level 2 of 17');
     element.querySelector<HTMLButtonElement>('.intro button')!.click();
     fixture.detectChanges();
     expect(TestBed.inject(ProgressService).progress().explored).toContain('numbers');
@@ -396,6 +396,23 @@ describe('the hungry crocodile game', () => {
     expect(element.querySelector('.slot-sign')?.textContent?.trim()).toBe(question.answer);
     expect(element.querySelector('.points-float')?.textContent).toBe('+10');
   });
+  it('shows a halving snack in the child’s language, with the word between the tiles', () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { paramMap: of(convertToParamMap({ id: 'crocodile-15' })) },
+    });
+    TestBed.inject(LocaleService).select('de');
+    const fixture = TestBed.createComponent(CrocodileGame);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.intro button')!.click();
+    fixture.detectChanges();
+    const left = element.querySelector('[data-side="left"]')!;
+    expect(left.querySelector('.side-text')?.textContent?.trim()).toMatch(/^½ von \d+$/);
+    expect(
+      [...left.querySelectorAll('.expression > span')].map((token) => token.className),
+    ).toEqual(['tile', 'word', 'tile']);
+    expect(left.querySelector('.word')?.textContent).toBe('von');
+  });
   it('has identical crocodile message keys for every language', () => {
     for (const locale of Object.keys(crocodileTranslations) as Locale[])
       expect(Object.keys(crocodileTranslations[locale]).sort()).toEqual(
@@ -410,16 +427,16 @@ describe('crocodile navigation', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
   afterEach(() => TestBed.resetTestingModule());
-  it('lists fourteen open levels and sends unknown deep links home', async () => {
+  it('lists seventeen open levels and sends unknown deep links home', async () => {
     const h = await RouterTestingHarness.create('/games#compare-crocodile');
     expect(
       h.routeNativeElement?.querySelectorAll('#compare-crocodile a[href^="/adventure/crocodile-"]')
         .length,
-    ).toBe(14);
+    ).toBe(17);
     expect(h.routeNativeElement?.querySelector('#compare-crocodile')?.textContent).toContain(
       TestBed.inject(LocaleService).t('crocodileChapter'),
     );
-    await h.navigateByUrl('/adventure/crocodile-15');
+    await h.navigateByUrl('/adventure/crocodile-18');
     expect(TestBed.inject(Router).url).toBe('/');
     await h.navigateByUrl('/adventure/crocodile-1');
     expect(TestBed.inject(Router).url).toBe('/adventure/crocodile-1');

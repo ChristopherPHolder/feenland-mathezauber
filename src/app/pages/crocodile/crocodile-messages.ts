@@ -37,6 +37,10 @@ const en = {
   ruleWorkOut: 'Work out each side on its own first. Then feed Kiki the bigger side.',
   ruleTimes:
     'Work out each times fact first: count in equal steps. Then feed Kiki the bigger side.',
+  ruleHalf:
+    'Half means two equal parts. Which number plus the same number again makes the big one? Then feed Kiki the bigger side.',
+  ruleShare:
+    'Sharing is the times table backwards: how many times does the small number fit into the big one? Then feed Kiki the bigger side.',
   snacks: '{n} of {total} snacks',
   streak: '{n} in a row!',
   done: 'Round complete!',
@@ -128,6 +132,10 @@ const de: Messages = {
   ruleWorkOut: 'Rechne zuerst jede Seite für sich aus. Dann füttere Kiki mit der größeren Seite.',
   ruleTimes:
     'Rechne zuerst jede Malaufgabe aus: Zähl in gleich großen Schritten. Dann füttere Kiki mit der größeren Seite.',
+  ruleHalf:
+    'Die Hälfte heißt: zwei gleich große Teile. Welche Zahl und noch einmal dieselbe Zahl ergeben die große Zahl? Dann füttere Kiki mit der größeren Seite.',
+  ruleShare:
+    'Teilen ist das Einmaleins rückwärts: Wie oft passt die kleine Zahl in die große? Dann füttere Kiki mit der größeren Seite.',
   snacks: '{n} von {total} Häppchen',
   streak: '{n} am Stück!',
   done: 'Runde geschafft!',
@@ -216,6 +224,10 @@ const es: Messages = {
   ruleWorkOut: 'Calcula primero cada lado por separado. Luego dale a Kiki el lado más grande.',
   ruleTimes:
     'Calcula primero cada multiplicación: cuenta en saltos iguales. Luego dale a Kiki el lado más grande.',
+  ruleHalf:
+    'La mitad son dos partes iguales. ¿Qué número más ese mismo número da el grande? Luego dale a Kiki el lado más grande.',
+  ruleShare:
+    'Repartir es la tabla de multiplicar al revés: ¿cuántas veces cabe el número pequeño en el grande? Luego dale a Kiki el lado más grande.',
   snacks: '{n} de {total} bocados',
   streak: '¡{n} seguidos!',
   done: '¡Ronda completada!',
@@ -305,6 +317,10 @@ const fr: Messages = {
   ruleWorkOut: 'Calcule d’abord chaque côté tout seul. Puis donne à Kiki le côté le plus grand.',
   ruleTimes:
     'Calcule d’abord chaque multiplication : compte par bonds égaux. Puis donne à Kiki le côté le plus grand.',
+  ruleHalf:
+    'La moitié, ce sont deux parts égales. Quel nombre plus ce même nombre donne le grand ? Puis donne à Kiki le côté le plus grand.',
+  ruleShare:
+    'Partager, c’est la table de multiplication à l’envers : combien de fois le petit nombre tient-il dans le grand ? Puis donne à Kiki le côté le plus grand.',
   snacks: '{n} collations sur {total}',
   streak: '{n} d’affilée !',
   done: 'Manche terminée !',
