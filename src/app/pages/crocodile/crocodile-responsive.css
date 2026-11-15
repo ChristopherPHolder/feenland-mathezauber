@@ -1,7 +1,13 @@
 /* While a round is on, phones and tablets give the pond the whole screen and keep the answers
-   pinned at the bottom, where a thumb rests. */
+   pinned at the bottom, where a thumb rests. The page body is padded by the notch and the home
+   bar (on a home-screen app they are large), so the round leaves that room too: otherwise the
+   answers sit below the screen and the child has to scroll past the pond to reach them. */
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - var(--safe-y));
+}
 .game.playing {
-  min-height: calc(100dvh - 48px);
+  min-height: calc(100dvh - 48px - var(--safe-y));
 }
 .playing .board {
   flex: 1 1 auto;
@@ -74,7 +80,7 @@
     gap: 12px;
   }
   .game.playing {
-    min-height: calc(100dvh - 36px);
+    min-height: calc(100dvh - 36px - var(--safe-y));
   }
   .panel {
     padding: 20px 16px;
@@ -280,7 +286,7 @@
     gap: 12px;
   }
   .game.playing {
-    min-height: calc(100dvh - 28px);
+    min-height: calc(100dvh - 28px - var(--safe-y));
   }
   .board {
     padding: 20px 20px 14px;
@@ -310,7 +316,7 @@
     grid-template-rows: auto auto minmax(0, 1fr);
     gap: 6px 12px;
     max-width: none;
-    min-height: calc(100dvh - 16px);
+    min-height: calc(100dvh - 16px - var(--safe-y));
   }
   .game.playing > * {
     grid-column: 1;
