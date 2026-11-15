@@ -12,14 +12,16 @@ import {
 } from '@angular/core';
 import { LocaleService } from '../../core/locale';
 import { Icon } from '../../shared/icon';
+import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 import { Battle, gemsFor } from './battle';
+import { castleFrame, CastleFrame } from './castle-frame';
 import { GemPouch } from './gem-pouch';
 import { gameText, GameMessageKey } from './game-messages';
 @Component({
   selector: 'app-battle-scene',
-  imports: [NgOptimizedImage, Icon, EggChip, GemPouch],
+  imports: [NgOptimizedImage, Icon, EggChip, GemPouch, ThreeStage],
   templateUrl: './battle-scene.html',
-  styleUrls: ['./battle-scene.css', './battle-fx.css'],
+  styleUrls: ['./battle-scene.css', './battle-fx.css', './battle-scene-3d.css'],
   host: { '[class.fit]': 'fit()' },
 })
 export class BattleScene {
@@ -29,6 +31,8 @@ export class BattleScene {
   readonly started = input(false);
   readonly fit = input(false);
   readonly stageLabel = input('');
+  /** How close the thinking timer is to running out: 0 (no hurry) to 1 (time is up). */
+  readonly pressure = input(0);
   protected readonly i = inject(LocaleService);
   protected readonly sprite = computed(() => {
     switch (this.encounter().appearance) {
@@ -74,6 +78,17 @@ export class BattleScene {
       gem.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
     });
   }
+  /** The 3D battlefield loads on demand, so Three.js stays out of the first download. */
+  protected readonly loadWorld: WorldLoader<CastleFrame> = () =>
+    import('./castle-world').then((module) => module.CastleWorld);
+  protected readonly frame = computed(() =>
+    castleFrame(this.battle(), {
+      started: this.started(),
+      paused: this.paused(),
+      badge: this.encounter().question ? '?' : this.i.format(this.encounter().energy),
+      pressure: this.pressure(),
+    }),
+  );
   protected t(key: GameMessageKey, values: Record<string, number> = {}) {
     return gameText(this.i.locale(), key, values);
   }
