@@ -63,6 +63,8 @@ const FRENZY_SPARKS = ['#ffe27a', '#ff9fc0', '#ffb36b'] as const;
 const NO_GLOW = new Color('#000000');
 const STEAL_SECONDS = 1.3;
 const SHOO_SECONDS = 0.8;
+/** How long Kiki's "no thanks" lasts after a wrong pick. */
+const WRONG_SECONDS = 1.1;
 
 type Side = 'left' | 'right';
 interface Anchor {
@@ -615,7 +617,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     raft.pad.position.lerp(raft.padHome, 0.25);
     raft.pad.position.y = bob * 0.5 - (1 - grow) * 0.2;
     const wobbleAge = t - raft.wobbleAt;
-    const wobble = wobbleAge < 0.7 ? Math.sin(wobbleAge * 26) * 0.2 * (1 - wobbleAge / 0.7) : 0;
+    const wobble = wobbleAge < 0.9 ? Math.sin(wobbleAge * 22) * 0.28 * (1 - wobbleAge / 0.9) : 0;
     raft.pad.rotation.set(wobble * 0.4, raft.side === 'left' ? 0.6 : -2.4, wobble * 0.3);
 
     const eaten =
@@ -723,6 +725,14 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       const toward = this.heron.root.position.clone().sub(kiki.root.position);
       yawTarget = Math.atan2(toward.x, Math.max(0.2, toward.z));
     }
+    // A wrong pick: she glances at the side she was offered, then shakes her head, no thanks.
+    const wrongAge = t - this.wrongAt;
+    const refusing = wrongAge < WRONG_SECONDS && frame?.phase === 'ready';
+    const refused = refusing ? this.raftFor(this.wrongSide) : null;
+    if (refused) {
+      const toward = refused.padHome.clone().sub(this.kikiHome);
+      yawTarget = Math.atan2(toward.x, toward.z) * 0.45;
+    }
     this.kikiYaw = approach(this.kikiYaw, yawTarget, chomping ? 14 : 7, dt);
 
     // Lunge: surge toward the chosen pad, snap, chew, drift home.
@@ -752,15 +762,23 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       if (chomping && this.chompSide === '=') {
         // Both sides the same: mouth shut, a happy hop and a smile.
         rise = Math.sin(clamp01(chompAge / 0.6) * Math.PI) * 0.45 * this.kikiScale;
-      } else if (facing && frame?.phase === 'ready') {
+      } else if (facing && frame?.phase === 'ready' && !refusing) {
         jaw = 0.5;
       }
     }
     if (frame?.phase === 'stolen') jaw = 0.25;
     kiki.jaw = approach(kiki.jaw, jaw, chomping ? 40 : 10, dt);
 
-    const wrongAge = t - this.wrongAt;
-    const shake = wrongAge < 0.65 ? Math.sin(wrongAge * 30) * 0.32 * (1 - wrongAge / 0.65) : 0;
+    // The head shake carries meaning, so calm motion keeps it.
+    const shake = refusing
+      ? Math.sin(wrongAge * 20) * 0.42 * (1 - smooth(wrongAge / WRONG_SECONDS))
+      : 0;
+    kiki.puzzled = approach(
+      kiki.puzzled,
+      refusing && wrongAge < WRONG_SECONDS - 0.25 ? 1 : 0,
+      refusing ? 14 : 5,
+      dt,
+    );
     const bob = calm ? 0 : Math.sin(t * 1.8) * 0.03 * this.kikiScale;
     const idleYaw = calm || facing ? 0 : Math.sin(t * 0.6) * 0.12;
     const target = this.kikiHome.clone().add(this.kikiLunge);
@@ -772,7 +790,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       rise > 0 ? -0.25 * (rise / (0.45 * this.kikiScale)) : -lungeAmount * 0.08;
     const glowing = (frame?.combo ?? 1) >= 3;
     kiki.glow = approach(kiki.glow, glowing ? 1 : 0, 3, dt);
-    const look = this.wrongSide && wrongAge < 0.65 ? 0 : facing ? 0 : Math.sin(t * 0.5) * 0.6;
+    const look = refusing ? 0 : facing ? 0 : Math.sin(t * 0.5) * 0.6;
     kiki.animate(t, dt, calm, lungeAmount, calm ? 0 : look);
 
     // A wake of ripples while she swims out and back.

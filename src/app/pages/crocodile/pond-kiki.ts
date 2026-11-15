@@ -63,6 +63,8 @@ export class Kiki {
   jaw = 0;
   /** 0 to 1: a gold glow during a feeding frenzy. */
   glow = 0;
+  /** 0 to 1: "Hmm, no thanks" after a wrong pick: eyes half shut, no smile, head tilted. */
+  puzzled = 0;
 
   constructor() {
     const sphere = new SphereGeometry(1, 20, 14);
@@ -197,16 +199,26 @@ export class Kiki {
     this.nextBlink -= dt;
     const blinking = this.nextBlink < 0.14;
     if (this.nextBlink < 0) this.nextBlink = 2.4 + ((t * 7.31) % 2.2);
+    const squint = blinking ? 0 : this.puzzled;
     for (const lid of this.lids) {
-      lid.scale.set(blinking ? 0.15 : 0.145, blinking ? 0.13 : 0.04, blinking ? 0.15 : 0.11);
-      lid.position.set(0, blinking ? 0.06 : 0.12, blinking ? 0.05 : -0.05);
+      lid.scale.set(
+        blinking ? 0.15 : 0.145 + squint * 0.005,
+        blinking ? 0.13 : 0.04 + squint * 0.06,
+        blinking ? 0.15 : 0.11 + squint * 0.03,
+      );
+      lid.position.set(
+        0,
+        blinking ? 0.06 : 0.12 - squint * 0.03,
+        blinking ? 0.05 : -0.05 + squint * 0.06,
+      );
     }
+    this.head.rotation.z = this.puzzled * 0.24;
     for (const pupil of this.pupils) pupil.position.x = look * 0.03;
 
     const open = this.jaw;
     this.upperJaw.rotation.x = -open * 0.62;
     this.lowerJaw.rotation.x = open * 0.28;
-    this.smile.visible = open < 0.08;
+    this.smile.visible = open < 0.08 && this.puzzled < 0.35;
     for (const cheek of this.cheeks) cheek.visible = open < 0.5;
 
     this.skin.emissive.copy(GOLD_GLOW).multiplyScalar(this.glow * (0.32 + 0.12 * Math.sin(t * 8)));
