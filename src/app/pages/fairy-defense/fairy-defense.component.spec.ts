@@ -158,6 +158,16 @@ describe('Wave 1 playable integration', () => {
     expect(short?.textContent?.trim()).toBe('1 / 20');
     expect(short?.getAttribute('aria-hidden')).toBe('true');
   });
+  it('announces the wave in a bubble as it starts, and gets out of the way', () => {
+    const { fixture, element, click } = setup();
+    click('Play');
+    const bubble = () => element.querySelector('app-slip-callout');
+    expect(bubble()?.textContent?.trim()).toBe('Wave 1! Here they come!');
+    expect(bubble()?.classList).toContain('is-go');
+    vi.advanceTimersByTime(2000);
+    fixture.detectChanges();
+    expect(bubble()).toBeNull();
+  });
   it('shows no ring at the relaxed pace, however long the child thinks', () => {
     const { fixture, element, click } = setup();
     click('Play');
