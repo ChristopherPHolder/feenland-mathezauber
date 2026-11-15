@@ -81,6 +81,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/treasure-lock/treasure-lock').then((m) => m.TreasureLock),
   },
   {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^potion-[1-7]$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    loadComponent: () => import('./pages/potions/potions').then((m) => m.Potions),
+  },
+  {
     path: 'adventure/number-wall',
     data: { focusedGame: true },
     loadComponent: () =>
