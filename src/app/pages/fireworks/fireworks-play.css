@@ -61,6 +61,27 @@
     0 0 0 2px var(--paper),
     0 0 0 4px var(--gold-deep);
 }
+.help {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--violet);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--violet);
+  font: 600 22px var(--font-sans);
+  cursor: pointer;
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+/* What to tap next: the whole pad (never one key) or Next rocket gets a gold halo. */
+.pad.is-guided,
+.next.is-guided {
+  border-radius: var(--radius-tile);
+  box-shadow: 0 0 0 4px var(--gold);
+}
 .points {
   display: flex;
   align-items: baseline;
@@ -416,6 +437,15 @@
   .firework-name {
     font-size: 13px;
   }
+  .ways-help {
+    display: none;
+  }
+  .way {
+    min-height: 44px;
+  }
+  .next {
+    margin-top: 6px;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -435,6 +465,26 @@
 /* The fuse burns down in every motion setting: it is the look time, not decoration. */
 .fuse.is-burning {
   animation: burn var(--look) linear forwards;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pad.is-guided,
+  .next.is-guided {
+    animation: hop 1.2s ease-in-out infinite;
+  }
+}
+@keyframes hop {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}
+:host-context(.calm-motion) .pad.is-guided,
+:host-context(.calm-motion) .next.is-guided {
+  animation: none;
 }
 @keyframes burn {
   to {

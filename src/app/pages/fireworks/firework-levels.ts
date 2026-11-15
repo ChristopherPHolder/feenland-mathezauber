@@ -566,9 +566,7 @@ function withExtra(side: Local, n: number): Local {
   const base = asOne(n <= 6 ? side : rows(n));
   // Below a dice face, clear of it, so it reads as "one more" and not as part of the face.
   const at =
-    n <= 6
-      ? { x: 0, y: Math.min(...base.points.map((p) => p.y)) - 1.4 }
-      : rows(n + 1).points[n];
+    n <= 6 ? { x: 0, y: Math.min(...base.points.map((p) => p.y)) - 1.4 } : rows(n + 1).points[n];
   // The extra spark is its own group, so the outlines show the double and the one more.
   return { ...base, points: [...base.points, { ...at, group: 1 }], groups: 2 };
 }

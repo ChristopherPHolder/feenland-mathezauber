@@ -39,7 +39,7 @@ p {
   font-weight: 600;
 }
 
-/* Intro */
+/* Intro: the film shows how to play, so there is nothing to read past before Start. */
 .intro {
   max-width: 1080px;
   width: 100%;
@@ -50,22 +50,23 @@ p {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  margin: 0 auto 16px;
+  gap: 6px;
+  margin: 0 auto 12px;
   padding: 0;
 }
 .level-pill {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  min-height: 46px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
   padding: 0;
   border-radius: 50%;
   border: 2px solid var(--violet);
   background: var(--paper);
   color: var(--ink);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   text-decoration: none;
 }
@@ -79,78 +80,66 @@ p {
 }
 .intro-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  align-items: center;
-  gap: 16px;
+  gap: 12px;
+  align-items: start;
 }
-.intro-art {
-  aspect-ratio: 4 / 3;
-  width: 100%;
-  max-width: 460px;
-  margin: auto;
-  border-radius: var(--radius-surface);
-  overflow: hidden;
-}
-.intro h2 {
-  font-size: clamp(24px, 3vw, 32px);
-  margin: 0 0 8px;
-}
-.intro p {
-  margin: 8px 0;
-  line-height: 1.5;
-}
-.intro .how {
-  font-weight: 600;
+.intro-side {
+  display: grid;
+  gap: 12px;
 }
 .trick-card {
-  margin: 14px 0 6px;
-  padding: 14px 18px;
+  padding: 10px 14px;
   border-radius: var(--radius-surface);
   background: var(--warm-ground);
   border: 2px solid var(--sun);
 }
 .trick-card h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--amber-ink);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 .trick-card p {
-  font-size: 18px;
+  margin: 2px 0 0;
+  font-size: 17px;
+  line-height: 1.35;
 }
 
-/* The look pace: three illustrated cards */
+/* The look pace: three picture tiles in a row */
 .pace {
-  margin: 18px 0 0;
+  margin: 0;
   padding: 0;
   border: 0;
+  min-width: 0;
 }
 .pace legend {
-  font-size: 20px;
-  font-weight: 600;
   padding: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.pace-help {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--muted);
 }
 .pace-options {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 .pace-choice {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-areas:
-    'glow name'
-    'glow time'
-    'glow free';
-  align-items: center;
-  column-gap: 14px;
-  padding: 12px 40px 12px 14px;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  padding: 8px 4px;
   border: 2px solid var(--lagoon);
   border-radius: var(--radius-surface);
   background: var(--paper);
   cursor: pointer;
+  text-align: center;
 }
 .pace-choice:hover {
   background: var(--ground);
@@ -161,21 +150,20 @@ p {
 }
 .pace-choice:focus-within {
   outline: 3px solid var(--focus);
-  outline-offset: 4px;
+  outline-offset: 3px;
 }
 .pace-choice input {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 6px;
+  right: 6px;
   margin: 0;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   accent-color: var(--success-strong);
 }
 .pace-glow {
-  grid-area: glow;
-  width: 52px;
-  height: 52px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background:
     radial-gradient(circle, #fff6c8 0 12%, #ffd45c 22%, #ffd45c55 46%, transparent 70%), #1d1640;
@@ -188,46 +176,48 @@ p {
   background: radial-gradient(circle, #fff 0 8%, #ff9ccf 16%, transparent 40%), #1d1640;
 }
 .pace-choice strong {
-  grid-area: name;
-  font-size: 19px;
+  font-size: 16px;
+  line-height: 1.2;
 }
-.pace-choice > span:not(.pace-glow, .pace-free) {
-  grid-area: time;
-  font-size: 15px;
+.pace-time {
+  font-size: 14px;
 }
 .pace-free {
-  grid-area: free;
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.2;
   color: var(--success-strong);
   font-weight: 600;
 }
-.pace-rule {
-  color: var(--muted);
-}
 
-/* The firework book */
+/* The firework book: one strip of small shapes, under Start: it shows, it asks nothing */
 .book {
-  margin-top: 18px;
+  margin-top: 8px;
 }
 .book h3 {
-  margin: 0;
-  font-size: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 6px;
+  font-size: 18px;
 }
-.book p {
-  margin: 4px 0 10px;
+.book h3 span {
+  font-size: 14px;
+  font-weight: 400;
   color: var(--muted);
 }
 .book ul {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .book li {
   aspect-ratio: 1;
-  border-radius: var(--radius-chip);
+  max-width: 52px;
+  border-radius: 8px;
   background: #241d4f;
   border: 2px solid #3c3274;
 }
@@ -246,42 +236,69 @@ p {
 .book path {
   fill: none;
   stroke: #ffe27a;
-  stroke-width: 6;
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .book li.current:not(.found) path {
   stroke: #8f84b8;
-  stroke-dasharray: 2 8;
+  stroke-dasharray: 2 10;
 }
 .book text {
   fill: #8f84b8;
-  font: 600 44px var(--font-sans);
+  font: 600 50px var(--font-sans);
   text-anchor: middle;
 }
 .start-dock {
   position: sticky;
   bottom: 0;
   z-index: 2;
-  margin-top: 8px;
-  padding: 16px 0 calc(8px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(#fffdf500, var(--cream) 24px);
+  margin-top: 4px;
+  padding: 12px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 18px);
 }
 .start-dock .button {
   margin: 0 auto;
   max-width: 360px;
 }
-
+/* Phones and short screens: everything to decide fits above Start. */
+@media (max-width: 480px), (max-height: 520px) {
+  .panel.intro {
+    padding: 12px;
+  }
+  .level-strip {
+    gap: 4px 6px;
+    margin-bottom: 8px;
+  }
+  .level-pill {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
+  .trick-card h3 {
+    display: inline;
+    margin-right: 6px;
+  }
+  .trick-card p {
+    display: inline;
+    font-size: 16px;
+  }
+  .pace-help {
+    display: none;
+  }
+  .pace-glow {
+    width: 30px;
+    height: 30px;
+  }
+  .start-dock {
+    padding-top: 8px;
+  }
+}
 @container intro (inline-size > 640px) {
   .intro-grid {
-    grid-template-columns: minmax(240px, 0.9fr) 1fr;
-    gap: 24px;
-  }
-  .pace-options {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .book ul {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
   }
 }
 
