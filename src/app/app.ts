@@ -17,17 +17,22 @@ import { Icon } from './shared/icon';
           <span class="brand-name">Feenland <span>Mathezauber</span></span>
         </a>
         <nav [attr.aria-label]="i.t('home')">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+          <a
+            routerLink="/"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="{ exact: true }"
             ><app-icon kind="home" /><span>{{ i.t('home') }}</span></a
-          ><a routerLink="/games" routerLinkActive="active"
+          ><a routerLink="/games" routerLinkActive="active" ariaCurrentWhenActive="page"
             ><app-icon kind="grid" /><span>{{ i.t('games') }}</span></a
-          ><a routerLink="/hatchery" routerLinkActive="active"
+          ><a routerLink="/hatchery" routerLinkActive="active" ariaCurrentWhenActive="page"
             ><app-icon kind="egg" /><span>{{ i.t('dragons') }}</span></a
           ><a
             class="settings-link"
             routerLink="/settings"
             [queryParams]="{ returnTo: settingsReturnTarget() }"
             routerLinkActive="active"
+            ariaCurrentWhenActive="page"
             ><app-icon kind="gear" /><span>{{ i.t('settings') }}</span></a
           >
         </nav>
