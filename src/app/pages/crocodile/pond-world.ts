@@ -2,6 +2,7 @@ import {
   AdditiveBlending,
   CanvasTexture,
   Color,
+  CylinderGeometry,
   Fog,
   Group,
   Mesh,
@@ -37,6 +38,7 @@ import {
   HeronModel,
   makeBigFish,
   makeFish,
+  makeGoldenPad,
   makeLilyPad,
   makeReeds,
 } from './pond-life';
@@ -52,7 +54,12 @@ const WATER = {
   golden: new Color('#9fd8e2'),
   boss: new Color('#5f9fd6'),
 };
-const FRENZY_GLOW = new Color('#4a3500');
+const FRENZY_GLOW = new Color('#5a2410');
+/** A feeding frenzy turns the sky and water to sunset, like the 2D pond. */
+const SKY = new Color('#cfeaf7');
+const SUNSET_SKY = new Color('#ffcdb8');
+const SUNSET_WATER = new Color('#ffa486');
+const FRENZY_SPARKS = ['#ffe27a', '#ff9fc0', '#ffb36b'] as const;
 const NO_GLOW = new Color('#000000');
 const STEAL_SECONDS = 1.3;
 const SHOO_SECONDS = 0.8;
@@ -75,7 +82,14 @@ interface Token {
 interface Raft {
   readonly side: Side;
   readonly pad: Group;
+  readonly green: Group;
+  readonly gold: Group;
+  /** A warm glow on the water under a golden pad. */
+  readonly halo: Mesh<PlaneGeometry, MeshBasicMaterial>;
+  /** Two twinkling stars on the corners of golden tiles, like the 2D pad's sparkles. */
+  readonly stars: readonly Sprite[];
   readonly tiles: Group;
+  nextSpark: number;
   tokens: Token[];
   text: string;
   home: Vector3;
@@ -91,7 +105,7 @@ interface Burst {
   life: number;
   size: number;
   readonly opacity: number;
-  kind: 'drop' | 'ring' | 'spark';
+  kind: 'drop' | 'ring' | 'spark' | 'coin';
 }
 
 /**
@@ -150,6 +164,17 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     opacity: 0.9,
   });
   private readonly sparkTexture = sparkTexture();
+  private readonly glowTexture = glowTexture();
+  private readonly coinGeometry = new CylinderGeometry(1, 1, 0.22, 20);
+  private readonly coinMaterial = new MeshStandardMaterial({
+    color: '#ffc93c',
+    metalness: 0.5,
+    roughness: 0.3,
+    emissive: '#b8740a',
+    emissiveIntensity: 0.9,
+  });
+  private golden = 0;
+  private sunset = 0;
   private nextRipple = 0;
   private nextSpark = 0;
 
@@ -251,6 +276,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       this.chompAt = this.elapsed;
       this.chompSide = frame.chosen;
       if (frame.chosen === '=') this.sparkle(this.kikiHome, this.kikiScale * 1.2, 14);
+      if (frame.kind === 'golden') this.goldRush(frame.chosen);
     }
     if (frame.heron?.state !== previous?.heron?.state || frame.snack !== previous?.snack)
       this.heronChanged(frame);
@@ -382,6 +408,12 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       token.back.visible = !token.operator;
       x += width + sizes.gap;
     });
+    const half = (sizes.total / 2) * unit;
+    const top = (sizes.height / 2) * unit;
+    const starSize = Math.min(sizes.height * 0.42, 40) * unit;
+    raft.stars[0]!.position.set(half - starSize * 0.15, top - starSize * 0.1, 0.02);
+    raft.stars[1]!.position.set(-half + starSize * 0.2, -top + starSize * 0.25, 0.02);
+    for (const star of raft.stars) star.userData['size'] = starSize;
     raft.padHome = this.ground(cx, cy + sizes.height * 0.18);
     raft.padRadius = anchor.w * 0.46 * this.perPixel(raft.padHome);
     raft.pad.scale.set(
@@ -458,13 +490,60 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
   // ---------------------------------------------------------------- sides
 
   private makeRaft(side: Side): Raft {
-    const pad = makeLilyPad();
+    const pad = new Group();
+    const green = makeLilyPad();
+    const gold = makeGoldenPad();
+    gold.visible = false;
+    // The question's pads float a little above the waves, so the water never washes over them
+    // (on a sunset-pink frenzy pond a half-sunk leaf turns muddy).
+    green.position.y = 0.04;
+    gold.position.y = 0.06;
+    const halo = new Mesh(
+      this.tileGeometry,
+      new MeshBasicMaterial({
+        map: this.glowTexture,
+        color: '#ffcf4a',
+        blending: AdditiveBlending,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        fog: false,
+      }),
+    );
+    halo.rotation.x = -Math.PI / 2;
+    halo.position.y = 0.02;
+    halo.renderOrder = 2;
+    halo.scale.setScalar(3.4);
+    halo.visible = false;
+    pad.add(halo, green, gold);
     const tiles = new Group();
+    const stars = [0, 1].map(() => {
+      const star = new Sprite(
+        new SpriteMaterial({
+          map: this.sparkTexture,
+          color: '#fff4c2',
+          blending: AdditiveBlending,
+          depthTest: false,
+          depthWrite: false,
+          transparent: true,
+          fog: false,
+        }),
+      );
+      star.renderOrder = 12;
+      star.visible = false;
+      tiles.add(star);
+      return star;
+    });
     this.scene.add(pad, tiles);
     return {
       side,
       pad,
+      green,
+      gold,
+      halo,
+      stars,
       tiles,
+      nextSpark: 0,
       tokens: [],
       text: '',
       home: new Vector3(),
@@ -486,14 +565,14 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       (token.back.material as MeshBasicMaterial).dispose();
     }
     const golden = kind === 'golden';
-    const border = golden ? '#f4b740' : kind === 'boss' ? '#1f5fa8' : '#d6e8db';
+    const border = golden ? '#e09a00' : kind === 'boss' ? '#1f5fa8' : '#d6e8db';
     raft.tokens = text.split(' ').map((value) => {
       const operator = value === '+' || value === '−' || value === '×';
       const chars = [...value].length;
       const aspect = operator ? 1 : Math.max(0.8, 0.28 + 0.31 * chars);
       const label = new TextLabel(value, {
         ink: INK,
-        fill: operator ? (value === '−' ? '#9fd6f2' : '#f4b740') : golden ? '#fff3c4' : '#ffffff',
+        fill: operator ? (value === '−' ? '#9fd6f2' : '#f4b740') : golden ? '#fff6d2' : '#ffffff',
         border: operator ? undefined : border,
         width: Math.round(192 * aspect),
         height: 192,
@@ -511,7 +590,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       const back = new Mesh(
         this.tileGeometry,
         new MeshBasicMaterial({
-          color: golden ? '#e2a82e' : '#b9d6c2',
+          color: golden ? '#c98a00' : '#b9d6c2',
           transparent: true,
           opacity: 0.95,
           fog: false,
@@ -568,19 +647,48 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     raft.tiles.rotateZ(wobble * 0.5);
     raft.pad.visible = true;
 
-    const golden = frame?.kind === 'golden' && frame.phase === 'ready';
-    if (golden && !calm && t > this.nextSpark) {
-      this.nextSpark = t + 0.12;
-      const spot = raft.home
+    this.animateGolden(raft, t, calm, frame, eaten ? chompAge : -1);
+  }
+
+  /**
+   * A golden snack: the pad turns to polished gold with a warm glow on the water, the tiles get a
+   * gold frame with two twinkling stars, and sparkles drift up while it waits. Calm motion keeps
+   * the gold, the glow and the stars, and only drops the twinkle and the drifting sparkles.
+   */
+  private animateGolden(
+    raft: Raft,
+    t: number,
+    calm: boolean,
+    frame: PondFrame | null,
+    eatenAge: number,
+  ) {
+    const golden = frame?.kind === 'golden';
+    raft.gold.visible = golden;
+    raft.green.visible = !golden;
+    const ready = golden && frame.phase === 'ready';
+    const offset = raft.side === 'left' ? 0 : 1.7;
+    const pulse = calm ? 0.5 : 0.5 + 0.5 * Math.sin(t * 3 + offset);
+    raft.halo.visible = golden;
+    raft.halo.material.opacity = golden ? (0.55 + 0.3 * pulse) * (eatenAge >= 0 ? 0.4 : 1) : 0;
+    raft.stars.forEach((star, index) => {
+      star.visible = ready;
+      const size = (star.userData['size'] as number | undefined) ?? 0.3;
+      const twinkle = calm ? 1 : 0.65 + 0.45 * Math.abs(Math.sin(t * 2.2 + index * 1.6 + offset));
+      star.scale.setScalar(size * twinkle);
+      star.material.rotation = calm ? 0 : t * 0.6 * (index ? -1 : 1);
+    });
+    if (ready && !calm && t > raft.nextSpark) {
+      raft.nextSpark = t + 0.16;
+      const spot = raft.padHome
         .clone()
         .add(
           new Vector3(
-            (Math.random() - 0.5) * raft.padRadius * 1.6,
-            (Math.random() - 0.3) * raft.padRadius * 0.5,
-            0,
+            (Math.random() - 0.5) * raft.padRadius * 1.8,
+            raft.padRadius * (0.1 + Math.random() * 0.3),
+            (Math.random() - 0.5) * raft.padRadius * 1.2,
           ),
         );
-      this.spark(spot, raft.padRadius * 0.16, 0.7);
+      this.spark(spot, raft.padRadius * 0.22, 0.9);
     }
   }
 
@@ -767,10 +875,16 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
 
   private animateWater(t: number, calm: boolean, frame: PondFrame | null) {
     const kind = frame?.kind ?? 'plain';
+    const frenzy = (frame?.combo ?? 1) >= 3 && kind !== 'boss';
+    // The sunset fades in and out over about a second; the colour itself is not motion, so calm
+    // motion keeps it.
+    this.sunset += ((frenzy ? 1 : 0) - this.sunset) * 0.05;
     this.waterColor.lerp(WATER[kind], 0.04);
-    this.water.material.color.copy(this.waterColor);
-    const frenzy = (frame?.combo ?? 1) >= 3;
+    this.water.material.color.copy(this.waterColor).lerp(SUNSET_WATER, this.sunset * 0.9);
     this.water.material.emissive.lerp(frenzy ? FRENZY_GLOW : NO_GLOW, 0.05);
+    const sky = this.scene.background;
+    if (sky instanceof Color) sky.copy(SKY).lerp(SUNSET_SKY, this.sunset);
+    if (this.scene.fog) this.scene.fog.color.copy(SKY).lerp(SUNSET_SKY, this.sunset);
     if (!calm) {
       const position = this.water.geometry.attributes['position']!;
       const array = position.array as Float32Array;
@@ -809,7 +923,12 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
               (Math.random() - 0.4) * this.viewWidth * 0.8,
             ),
           );
-        this.spark(spot, this.viewWidth * 0.025, 0.8);
+        this.spark(
+          spot,
+          this.viewWidth * 0.03,
+          0.9,
+          FRENZY_SPARKS[Math.floor(Math.random() * FRENZY_SPARKS.length)],
+        );
       }
     }
   }
@@ -904,11 +1023,11 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     this.addBurst(mesh, new Vector3(), life, size, 'ring');
   }
 
-  private spark(at: Vector3, size: number, life: number) {
+  private spark(at: Vector3, size: number, life: number, color = '#ffe27a') {
     const sprite = new Sprite(
       new SpriteMaterial({
         map: this.sparkTexture,
-        color: '#ffe27a',
+        color,
         blending: AdditiveBlending,
         depthWrite: false,
         transparent: true,
@@ -916,6 +1035,37 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     );
     sprite.position.copy(at);
     this.addBurst(sprite, new Vector3(0, size * 0.8, 0), life, size, 'spark');
+  }
+
+  /**
+   * A golden snack eaten: gold coins pop up out of the pad and tumble, with a ring of sparkles
+   * round Kiki. Calm motion keeps only the sparkle ring.
+   */
+  private goldRush(chosen: Comparison) {
+    const raft = this.raftFor(chosen);
+    const from = raft ? raft.padHome : this.kikiHome;
+    const size = raft ? raft.padRadius : this.kikiScale;
+    this.sparkle(this.kikiHome, this.kikiScale * 1.1, 16);
+    if (this.calm) return;
+    for (let i = 0; i < 9; i++) {
+      const angle = (i / 9) * Math.PI * 2 + Math.random() * 0.5;
+      const coin = new Mesh(this.coinGeometry, this.coinMaterial);
+      coin.position.copy(from).setY(0.15);
+      coin.rotation.set(Math.random() * 3, Math.random() * 3, Math.PI / 2);
+      coin.castShadow = true;
+      const speed = size * (0.9 + Math.random() * 0.8);
+      this.addBurst(
+        coin,
+        new Vector3(
+          Math.cos(angle) * speed,
+          size * (3.4 + Math.random() * 1.2),
+          Math.sin(angle) * speed,
+        ),
+        1.1,
+        size * 0.1,
+        'coin',
+      );
+    }
   }
 
   private sparkle(at: Vector3, radius: number, count: number) {
@@ -956,7 +1106,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     const [burst] = this.bursts.splice(index, 1);
     if (!burst) return;
     this.scene.remove(burst.mesh);
-    if (burst.kind !== 'drop')
+    if (burst.kind !== 'drop' && burst.kind !== 'coin')
       (burst.mesh.material as MeshBasicMaterial | SpriteMaterial).dispose();
   }
 
@@ -972,6 +1122,13 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       if (burst.kind === 'ring') {
         burst.mesh.scale.setScalar(burst.size * (0.3 + easeOut(age) * 1.2));
         material.opacity = burst.opacity * (1 - age);
+      } else if (burst.kind === 'coin') {
+        burst.velocity.y -= 9.8 * burst.size * 5 * dt;
+        burst.mesh.position.addScaledVector(burst.velocity, dt);
+        burst.mesh.rotation.x += dt * 9;
+        burst.mesh.rotation.y += dt * 4;
+        if (age > 0.75) burst.mesh.scale.setScalar(burst.size * (1 - (age - 0.75) * 4));
+        if (burst.mesh.position.y < 0) burst.life = 0;
       } else if (burst.kind === 'drop') {
         burst.velocity.y -= 9.8 * burst.size * 12 * dt;
         burst.mesh.position.addScaledVector(burst.velocity, dt);
@@ -1019,5 +1176,19 @@ function sparkTexture(): CanvasTexture {
   c.quadraticCurveTo(28, 36, 0, 32);
   c.quadraticCurveTo(28, 28, 32, 0);
   c.fill();
+  return new CanvasTexture(canvas);
+}
+
+/** A soft round glow, for the warm light under a golden pad. */
+function glowTexture(): CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  const c = canvas.getContext('2d')!;
+  const glow = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+  glow.addColorStop(0, 'rgba(255,236,160,1)');
+  glow.addColorStop(0.45, 'rgba(255,200,80,0.55)');
+  glow.addColorStop(1, 'rgba(255,180,40,0)');
+  c.fillStyle = glow;
+  c.fillRect(0, 0, 64, 64);
   return new CanvasTexture(canvas);
 }
