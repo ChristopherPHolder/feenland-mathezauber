@@ -3,7 +3,9 @@
   [class.paused]="paused()"
   [class.intro]="!started()"
   [class.has-overlay]="!started() || battle().phase === 'lost' || battle().phase === 'complete'"
+  [class.is-3d]="world.ready()"
 >
+  <app-three-stage #world class="world" [world]="loadWorld" [state]="frame()" />
   <img class="forest" ngSrc="/images/fairy-defense/forest.webp" fill priority alt="" />
   <div class="scene-shade" aria-hidden="true"></div>
   <div class="fireflies" aria-hidden="true">
