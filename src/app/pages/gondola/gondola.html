@@ -250,8 +250,8 @@
           </p>
           <p class="sum">
             {{ sum() }} =
-            <span class="unknown" [class.solved]="round().phase === 'solved'">{{
-              round().phase === 'solved' ? shape().answer : '?'
+            <span class="unknown" [class.solved]="round().phase === 'solved'" [class.typing]="!!round().typed">{{
+              round().phase === 'solved' ? shape().answer : round().typed || '?'
             }}</span>
           </p>
           <p class="step">
@@ -262,7 +262,13 @@
             }}
           </p>
         </div>
-        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+        <p
+          class="status"
+          [class.is-scene]="status()?.key?.startsWith('scene')"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {{ statusText() }}
         </p>
 

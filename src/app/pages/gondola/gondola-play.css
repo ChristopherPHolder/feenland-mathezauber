@@ -183,6 +183,9 @@
   box-shadow: var(--shadow-panel);
   container-type: inline-size;
 }
+.controls > * {
+  flex-shrink: 0;
+}
 .question p {
   margin: 0;
 }
@@ -205,6 +208,10 @@
   background: var(--paper);
   border: 3px dashed #9bb3cc;
   text-align: center;
+}
+.unknown.typing {
+  border-style: solid;
+  border-color: var(--sky-deep);
 }
 .unknown.solved {
   border: 3px solid var(--success);
@@ -417,8 +424,44 @@
     min-height: 0;
     font-size: 15px;
   }
+  /* The long "what stands where" sentence is for screen readers here; the scene shows it. */
+  .status.is-scene {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .choice {
     min-height: 52px;
+  }
+  /* The cabins in the scene already show the split; the controls keep only what is tapped. */
+  .answer-zone app-gondola-cherry.record,
+  .express-note {
+    display: none;
+  }
+  .split-zone,
+  .answer-zone {
+    gap: 6px;
+  }
+  .hop,
+  .next {
+    min-height: 44px;
+    padding-block: 6px;
+  }
+  .taps {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(30px, 1fr);
+    grid-template-columns: none;
+    gap: 4px;
+  }
+  .tap-button,
+  .trick {
+    min-height: 44px;
+  }
+  .sum {
+    font-size: 26px;
   }
 }
 /* Upright phones: a little less chrome so the station keeps its room. */
@@ -436,7 +479,30 @@
     min-height: 2.6em;
     font-size: 16px;
   }
+  /* The step line says what to do; the long scene sentence stays for screen readers. */
+  .status.is-scene {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .choice {
     font-size: 26px;
+  }
+  .answer-zone app-gondola-cherry.record {
+    max-width: 84px;
+  }
+  .step {
+    font-size: 15px;
+  }
+  .controls {
+    gap: 8px;
+  }
+  .split-zone,
+  .answer-zone {
+    gap: 8px;
   }
 }

@@ -162,9 +162,7 @@ export class GondolaCherry {
  */
 @Component({
   selector: 'app-gondola-keypad',
-  template: `<p class="display" aria-live="off">
-      <span class="sr-only">{{ answerLabel() }}: </span>{{ value() || '?' }}
-    </p>
+  template: `<p class="display sr-only" aria-live="polite">{{ answerLabel() }}: {{ value() || '?' }}</p>
     <div class="keys" role="group" [attr.aria-label]="padLabel()">
       @for (digit of digits; track digit) {
         <button type="button" class="key" [disabled]="disabled()" (click)="digit$.emit(digit)">
