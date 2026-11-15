@@ -211,6 +211,7 @@
     }
   }
   @if (!started()) {
+    <app-castle-settings [waves]="!training()" [(range)]="mathRange" [(options)]="settingsModel" />
     @if (!practiceConfig()) {
       <section class="level-picker" aria-labelledby="level-picker-title">
         <h2 id="level-picker-title">{{ i.t('chooseGame') }}</h2>
@@ -266,45 +267,6 @@
         <a routerLink="/games" fragment="friends-of-ten">{{ i.t('chooseLevel') }}</a>
       </p>
     }
-    <details class="practice-settings">
-      <summary>{{ i.t('gameSettings') }}</summary>
-      @if (!training()) {
-        <label for="campaign-math">{{ i.t('mathComplexity') }}</label>
-        <select
-          id="campaign-math"
-          [value]="mathRange()"
-          #rangeSelect
-          (change)="mathRange.set(rangeSelect.value)"
-        >
-          <option value="10">{{ i.t('mathTen') }}</option>
-          <option value="30">{{ i.t('mathThirty') }}</option>
-          <option value="100">{{ i.t('mathHundred') }}</option>
-        </select>
-      }
-      <div class="practice-options">
-        <fieldset>
-          <legend>{{ i.t('difficulty') }}</legend>
-          @for (option of difficulties; track option) {
-            <label
-              ><input type="radio" [value]="option" [formField]="settings.difficulty" />{{
-                i.t(option)
-              }}</label
-            >
-          }
-        </fieldset>
-        <fieldset>
-          <legend>{{ i.t('pace') }}</legend>
-          @for (option of paces; track option) {
-            <label
-              ><input type="radio" [value]="option" [formField]="settings.pace" />{{
-                i.t(option)
-              }}</label
-            >
-          }
-        </fieldset>
-      </div>
-      <p>{{ t('paceHelp') }}</p>
-    </details>
   }
   @if (!started() || battle().phase === 'lost' || battle().phase === 'complete') {
     <div class="game-foot">

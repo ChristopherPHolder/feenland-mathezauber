@@ -97,11 +97,12 @@ describe('tower defense math progression', () => {
     const fixture = TestBed.createComponent(FairyDefenseComponent);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    const select = element.querySelector<HTMLSelectElement>('#campaign-math')!;
-    expect(select.value).toBe('30');
-    select.value = '100';
-    select.dispatchEvent(new Event('change'));
+    const pressed = () =>
+      element.querySelector('[data-range][aria-pressed="true"]')?.getAttribute('data-range');
+    expect(pressed()).toBe('30');
+    element.querySelector<HTMLButtonElement>('[data-range="100"]')!.click();
     fixture.detectChanges();
+    expect(pressed()).toBe('100');
     expect(localStorage.getItem('feenland.campaign-math')).toBe('100');
     element.querySelector<HTMLButtonElement>('.start-curtain button')!.click();
     fixture.detectChanges();
@@ -127,8 +128,9 @@ describe('tower defense math progression', () => {
     const restored = TestBed.createComponent(FairyDefenseComponent);
     restored.detectChanges();
     expect(
-      (restored.nativeElement as HTMLElement).querySelector<HTMLSelectElement>('#campaign-math')!
-        .value,
+      (restored.nativeElement as HTMLElement)
+        .querySelector('[data-range][aria-pressed="true"]')
+        ?.getAttribute('data-range'),
     ).toBe('100');
   });
   it('records a completed subtraction stage without changing the making-ten campaign', () => {
@@ -141,7 +143,9 @@ describe('tower defense math progression', () => {
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain(`Stage 15 / ${practiceLevels.length}`);
-    expect(element.querySelector<HTMLInputElement>('input[value="hard"]')!.checked).toBe(true);
+    expect(element.querySelector('[data-difficulty="hard"]')?.getAttribute('aria-pressed')).toBe(
+      'true',
+    );
     element.querySelector<HTMLButtonElement>('.start-curtain button')!.click();
     fixture.detectChanges();
     for (let n = 0; n < STAGE_QUESTIONS; n++) {
