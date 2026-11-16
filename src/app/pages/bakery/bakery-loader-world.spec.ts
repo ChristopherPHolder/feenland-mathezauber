@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { cookiePop, FILL_SECONDS } from './bakery-loader-world';
 
 describe('bakery loader motion', () => {

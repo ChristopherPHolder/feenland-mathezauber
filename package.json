@@ -2,38 +2,46 @@
   "name": "fun-math",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "start": "vp dev",
+    "build": "vp build",
+    "preview": "vp build && vp preview",
+    "test": "vp test",
+    "typecheck": "tsc -p tsconfig.spec.json --noEmit",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
     "tokens": "node scripts/build-tokens.mjs",
-    "test": "ng test",
-    "deploy": "wrangler deploy",
-    "preview": "npm run build && wrangler dev"
+    "deploy": "vp build && wrangler deploy"
   },
   "private": true,
+  "type": "module",
   "packageManager": "npm@11.19.0",
   "dependencies": {
-    "@angular/common": "^22.2.0",
-    "@angular/compiler": "^22.2.0",
-    "@angular/core": "^22.2.0",
-    "@angular/forms": "^22.2.0",
-    "@angular/platform-browser": "^22.2.0",
-    "@angular/router": "^22.2.0",
+    "@angular/common": "22.3.0-next.4",
+    "@angular/compiler": "22.3.0-next.4",
+    "@angular/core": "22.3.0-next.4",
+    "@angular/forms": "22.3.0-next.4",
+    "@angular/platform-browser": "22.3.0-next.4",
+    "@angular/router": "22.3.0-next.4",
     "@types/three": "^0.187.0",
     "rxjs": "~7.8.0",
     "three": "^0.187.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/build": "^22.2.3",
-    "@angular/cli": "^22.2.3",
-    "@angular/compiler-cli": "^22.2.0",
+    "@angular/compiler-cli": "22.3.0-next.4",
+    "@cloudflare/vite-plugin": "^1.69.1",
+    "@push-based/vite-plugin-ngp": "0.3.0",
     "@types/node": "^24.19.2",
     "jsdom": "^30.0.0",
-    "prettier": "^3.8.1",
-    "typescript": "~6.0.2",
-    "vitest": "^5.0.0",
-    "wrangler": "^4.151.1"
+    "typescript": "~6.0.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
+    "vite-plus": "1.6.0",
+    "wrangler": "^4.160.0"
+  },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0"
+  },
+  "engines": {
+    "node": ">=26"
   }
 }

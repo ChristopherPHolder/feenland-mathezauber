@@ -1,8 +1,8 @@
 # Design tokens
 
 `tokens.json` is the single source for the app's colours, spacing, radii, shadows and type. The
-Angular build does not read it directly: `npm run tokens` compiles it to `src/tokens.css`, which
-`angular.json` loads before `styles.css`. Both files are committed, so a checkout builds without
+build does not read it directly: `npm run tokens` compiles it to `src/tokens.css`, which
+`index.html` loads before `styles.css`. Both files are committed, so a checkout builds without
 running the script, and `src/design-tokens.spec.ts` fails when the generated file is stale, when a
 stylesheet reads a custom property no token defines, or when a stylesheet repeats a token colour
 as a literal.
@@ -11,7 +11,7 @@ as a literal.
 
 1. Edit `design/tokens.json`. Every token has a `usage` note saying where it appears; keep it true.
 2. Run `npm run tokens`.
-3. Run `npm test -- --watch=false` and commit both files.
+3. Run `npm test` and commit both files.
 
 ## Adding a token
 

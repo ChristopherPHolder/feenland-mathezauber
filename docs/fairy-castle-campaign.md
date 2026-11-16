@@ -40,7 +40,7 @@ Requested help and automatic help after mistakes are both tracked. Retries reset
 
 ```sh
 npm ci
-npm start -- --host 127.0.0.1 --port 4301
+npm start -- --host 127.0.0.1 --port 4301 --strictPort
 ```
 
 Open <http://127.0.0.1:4301/adventure/defend-fairy-castle>, or choose Number Kingdom → Friends of Ten → Defend the castle. To test a phone on the same network, use `--host 0.0.0.0` and your computer's local network address.
@@ -53,7 +53,7 @@ Active gameplay fits one tablet screen in portrait and landscape. A height-aware
 
 ```sh
 npm run build
-npm test -- --watch=false
+npm test
 npm install --prefix /tmp/feenland-browser-check playwright @axe-core/playwright
 NODE_PATH=/tmp/feenland-browser-check/node_modules node scripts/verify-fairy-campaign.cjs
 ```

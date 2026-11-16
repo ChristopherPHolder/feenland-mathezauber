@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import { GameAudio } from './game-audio';
 import { PlaytestStore } from './playtest-store';
 class Utterance {

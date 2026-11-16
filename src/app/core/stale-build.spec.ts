@@ -1,7 +1,7 @@
 import { ErrorHandler } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import { isMissingChunk, reloadFresh, StaleBuildErrorHandler } from './stale-build';
 
 function fakeDocument(href = 'https://feen.example/adventure/unicorn-race-1', onLine = true) {

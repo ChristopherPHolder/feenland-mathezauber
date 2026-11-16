@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { bloomGlow, LOOP_SECONDS, rocketPhase } from './firework-loader-world';
 
 describe('firework loader motion', () => {
