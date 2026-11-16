@@ -18,4 +18,4 @@ Language selection follows the later #3/#8 requirement: Settings only. Placehold
 
 Actual mathematical gameplay, scoring, accounts, cloud sync and sound generation remain outside these tickets. The next product feature would be an interactive Missing Number challenge; navigation previews do not claim to assess learning.
 
-See [verification](verification.md), [architecture](architecture/expanding-world.md) and [design](../DESIGN.md) for the implemented rules and evidence.
+See [verification](verification.md), [architecture](../architecture/expanding-world.md) and [design](../../DESIGN.md) for the implemented rules and evidence.
