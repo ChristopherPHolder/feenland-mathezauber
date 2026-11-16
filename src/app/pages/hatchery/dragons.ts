@@ -1,5 +1,6 @@
 /**
- * The dragon hatchery: one egg at a time, warmed by every right answer in any game.
+ * The dragon hatchery: one egg at a time, warmed by every right answer in any game. Once every
+ * dragon has hatched, right answers help one dragon at a time evolve into its next form instead.
  * Pure state and rules live here so the store, the page and the tests share them.
  */
 export type DragonElement = 'fire' | 'water' | 'leaf' | 'star' | 'cloud' | 'rainbow';
@@ -128,7 +129,24 @@ export interface Hatchery {
   readonly favorite: string | null;
   /** Right answers given across every game, ever. */
   readonly answers: number;
+  /** Each dragon's form, by id, as an index into `STAGES`. Missing means the baby form. */
+  readonly stages: Readonly<Record<string, number>>;
+  /**
+   * Once the book is complete: the dragon that right answers help evolve, or null when every
+   * dragon is in its final form.
+   */
+  readonly raising: string | null;
+  /** Right answers given to the dragon being raised since it last evolved. */
+  readonly growth: number;
 }
+
+/**
+ * The forms every dragon evolves through once the dragon book is complete. Each form has its
+ * own body and name; `grand` is the final form.
+ */
+export const STAGES = ['baby', 'young', 'grand'] as const;
+export type DragonStage = (typeof STAGES)[number];
+export const GRAND = STAGES.length - 1;
 
 /**
  * Right answers an egg needs. The first one hatches after about two games so the idea
@@ -159,16 +177,71 @@ export function freshHatchery(random: Random): Hatchery {
     hatches: 0,
     favorite: null,
     answers: 0,
+    stages: {},
+    raising: null,
+    growth: 0,
   };
 }
 
-export function isReady(state: Hatchery): boolean {
-  return state.warmth >= warmthNeeded(state.hatches);
+/** Every dragon, starlight ones included, has hatched: from now on dragons evolve instead. */
+export function bookComplete(state: Hatchery): boolean {
+  return DRAGONS.every((dragon) => state.hatched.includes(dragon.id));
 }
 
-/** A right answer warms the egg; once it is ready, it waits to be hatched. */
+export function stageOf(state: Hatchery, id: string): number {
+  return state.stages[id] ?? 0;
+}
+
+/**
+ * Right answers a dragon needs to evolve out of a form: about three games for the first
+ * evolution, five for the final one. A dragon in its final form needs nothing more.
+ */
+export function growthNeeded(stage: number): number {
+  return [30, 50][stage] ?? 0;
+}
+
+/** The answers the dragon being raised needs to evolve; 0 when every dragon is in its final form. */
+export function growthTarget(state: Hatchery): number {
+  return state.raising ? growthNeeded(stageOf(state, state.raising)) : 0;
+}
+
+/**
+ * Who evolves next: the preferred dragon while it can still evolve, otherwise the least evolved
+ * one, first in book order. Null once every dragon is in its final form.
+ */
+export function nextToRaise(state: Hatchery, prefer?: string | null): string | null {
+  const growable = DRAGONS.filter(
+    (dragon) => state.hatched.includes(dragon.id) && stageOf(state, dragon.id) < GRAND,
+  );
+  if (prefer && growable.some((dragon) => dragon.id === prefer)) return prefer;
+  if (!growable.length) return null;
+  const youngest = Math.min(...growable.map((dragon) => stageOf(state, dragon.id)));
+  return growable.find((dragon) => stageOf(state, dragon.id) === youngest)!.id;
+}
+
+/** The egg is warm enough to hatch. Once the book is complete there are no more eggs. */
+export function isReady(state: Hatchery): boolean {
+  return !bookComplete(state) && state.warmth >= warmthNeeded(state.hatches);
+}
+
+/** The dragon being raised has had enough right answers to evolve. */
+export function canEvolve(state: Hatchery): boolean {
+  const needed = growthTarget(state);
+  return bookComplete(state) && needed > 0 && state.growth >= needed;
+}
+
+/**
+ * A right answer warms the egg; once it is ready, it waits to be hatched. With the book
+ * complete, it brings the dragon being raised closer to its next form instead.
+ */
 export function warm(state: Hatchery, amount = 1): Hatchery {
   const step = Math.max(0, Math.floor(amount));
+  if (bookComplete(state))
+    return {
+      ...state,
+      growth: Math.min(growthTarget(state), state.growth + step),
+      answers: state.answers + step,
+    };
   return {
     ...state,
     warmth: Math.min(warmthNeeded(state.hatches), state.warmth + step),
@@ -188,22 +261,51 @@ export function hatch(state: Hatchery, random: Random): HatchResult | undefined 
   if (!dragon || !isReady(state)) return undefined;
   const isNew = !state.hatched.includes(dragon.id);
   const hatched = isNew ? [...state.hatched, dragon.id] : state.hatched;
-  return {
-    dragon,
-    isNew,
-    state: {
-      ...state,
-      hatched,
-      hatches: state.hatches + 1,
-      warmth: 0,
-      favorite: state.favorite ?? dragon.id,
-      egg: nextEgg(hatched, random),
-    },
+  const next: Hatchery = {
+    ...state,
+    hatched,
+    hatches: state.hatches + 1,
+    warmth: 0,
+    favorite: state.favorite ?? dragon.id,
+    egg: nextEgg(hatched, random),
   };
+  // The last egg completes the book: the favourite is the first dragon to evolve.
+  const raising = bookComplete(next) ? nextToRaise(next, next.favorite) : null;
+  return { dragon, isNew, state: { ...next, raising, growth: 0 } };
+}
+
+export interface EvolveResult {
+  readonly state: Hatchery;
+  readonly dragon: Dragon;
+  /** The form the dragon has just evolved into. */
+  readonly stage: number;
+}
+
+/**
+ * The dragon being raised evolves into its next form; one that reaches its final form hands
+ * over to the next dragon.
+ */
+export function evolve(state: Hatchery): EvolveResult | undefined {
+  const dragon = dragonById(state.raising);
+  if (!dragon || !canEvolve(state)) return undefined;
+  const stage = stageOf(state, dragon.id) + 1;
+  const grown: Hatchery = { ...state, stages: { ...state.stages, [dragon.id]: stage }, growth: 0 };
+  return { dragon, stage, state: { ...grown, raising: nextToRaise(grown, dragon.id) } };
 }
 
 export function chooseFavorite(state: Hatchery, id: string): Hatchery {
   return state.hatched.includes(id) ? { ...state, favorite: id } : state;
+}
+
+/** Picks the dragon to evolve next. Answers already given carry over, up to what it needs. */
+export function chooseRaising(state: Hatchery, id: string): Hatchery {
+  if (!bookComplete(state) || !state.hatched.includes(id) || stageOf(state, id) >= GRAND)
+    return state;
+  return {
+    ...state,
+    raising: id,
+    growth: Math.min(state.growth, growthNeeded(stageOf(state, id))),
+  };
 }
 
 /** Starlight dragons appear in the book once every everyday dragon is found. */
@@ -235,13 +337,29 @@ export function parseHatchery(value: unknown, random: Random): Hatchery {
     typeof raw['favorite'] === 'string' && hatched.includes(raw['favorite'])
       ? raw['favorite']
       : (hatched[0] ?? null);
-  return {
+  const stages: Record<string, number> = {};
+  const savedStages = raw['stages'];
+  if (savedStages && typeof savedStages === 'object')
+    for (const [id, stage] of Object.entries(savedStages))
+      if (hatched.includes(id) && count(stage)) stages[id] = Math.min(GRAND, count(stage));
+  const warmth = Math.min(count(raw['warmth']), warmthNeeded(hatches));
+  const base: Hatchery = {
     version: 1,
     egg,
-    warmth: Math.min(count(raw['warmth']), warmthNeeded(hatches)),
+    warmth,
     hatched,
     hatches,
     favorite,
     answers: count(raw['answers']),
+    stages,
+    raising: null,
+    growth: 0,
   };
+  if (!bookComplete(base)) return base;
+  const saved = typeof raw['raising'] === 'string' ? raw['raising'] : null;
+  const raising = nextToRaise(base, saved ?? favorite);
+  // A save from before dragons could evolve passes its egg's warmth on to the first dragon.
+  const growth = 'growth' in raw ? count(raw['growth']) : warmth;
+  const grown = { ...base, raising };
+  return { ...grown, growth: Math.min(growth, growthTarget(grown)) };
 }

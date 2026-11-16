@@ -33,15 +33,23 @@ export interface NestFrame {
   /** The egg in the nest, or a dragon sitting in it. */
   readonly view: 'egg' | 'dragon';
   readonly egg: Dragon;
-  /** How warm the egg is, from 0 to 1. */
+  /** How warm the egg is, or how close the dragon is to growing, from 0 to 1. */
   readonly warmth: number;
+  /** The egg is ready to hatch, or the dragon ready to grow. */
   readonly ready: boolean;
-  /** Taps given to a ready egg: each one cracks it a little more. */
+  /** Taps given to a ready egg or dragon: each one cracks the egg a little more. */
   readonly cracks: number;
   readonly dragon: Dragon | null;
+  /** The dragon's form, from 0 (the hatchling) to 2 (its final form). */
+  readonly stage: number;
   /** Counts hatches this visit; a new one plays the hatching instead of just showing the dragon. */
   readonly hatches: number;
+  /** Counts evolutions this visit; a new one plays the change into the next form. */
+  readonly growths: number;
 }
+
+/** How long the old dragon spins and glows before the grown-up one bursts out. */
+const GROW_SPIN = 1.1;
 
 interface Spark {
   readonly mesh: Mesh;
@@ -66,9 +74,13 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
   private readonly floaters: Mesh[] = [];
   private egg?: EggModel;
   private dragon?: DragonModel;
+  /** The dragon spinning and glowing as it changes into its next form. */
+  private outgoing?: DragonModel;
   private frame?: NestFrame;
   private shakeAt = -10;
   private hatchAt = -10;
+  private growAt = -10;
+  private hopAt = -10;
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { shadows: true, fov: 34 });
@@ -124,9 +136,21 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
     const dragon = frame.dragon;
     if (!dragon) return;
     const hatching = !!previous && frame.hatches > previous.hatches;
-    if (this.dragon?.dragon.id === dragon.id && !hatching) return;
+    if (previous && frame.growths > previous.growths && this.dragon) {
+      this.growUp(dragon, frame.stage);
+      return;
+    }
+    if (this.dragon?.dragon.id === dragon.id && this.dragon.stage === frame.stage && !hatching) {
+      if (previous && frame.cracks > previous.cracks) {
+        // A tap on a dragon ready to grow: it wriggles and sparkles a little more each time.
+        this.shakeAt = this.elapsed;
+        this.dragon.cheer(this.elapsed);
+        this.burst(new Vector3(0, 1, 0.2), 8 + frame.cracks * 4, ['#ffe27a', dragon.accent], 1.2);
+      }
+      return;
+    }
     this.clearDragon();
-    this.dragon = new DragonModel(dragon);
+    this.dragon = new DragonModel(dragon, frame.stage);
     this.holder.add(this.dragon.root);
     if (hatching && this.egg) {
       this.hatchAt = this.elapsed;
@@ -138,6 +162,21 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
       this.dragon.root.scale.setScalar(0.78);
       this.dragon.cheer(this.elapsed);
     }
+  }
+
+  /**
+   * The dragon spins faster and faster, glowing white, then its next form bursts out in a
+   * shower of sparkles. Calm motion skips the spin and only swaps it with a burst.
+   */
+  private growUp(dragon: Dragon, stage: number) {
+    this.clearOutgoing();
+    this.outgoing = this.dragon;
+    this.dragon = new DragonModel(dragon, stage);
+    this.dragon.root.visible = false;
+    this.dragon.root.scale.setScalar(0.78);
+    this.holder.add(this.dragon.root);
+    this.growAt = this.elapsed;
+    this.burst(new Vector3(0, 0.9, 0), 12, ['#fffefc', '#ffe27a'], 0.8);
   }
 
   /** The dragon in the nest does a happy hop. */
@@ -161,7 +200,15 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
     this.egg = undefined;
   }
 
+  private clearOutgoing() {
+    if (!this.outgoing) return;
+    this.holder.remove(this.outgoing.root);
+    this.disposeTree(this.outgoing.root);
+    this.outgoing = undefined;
+  }
+
   private clearDragon() {
+    this.clearOutgoing();
     if (!this.dragon) return;
     this.holder.remove(this.dragon.root);
     this.disposeTree(this.dragon.root);
@@ -267,12 +314,23 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
   protected override update(dt: number, now: number) {
     const frame = this.frame;
     const calm = this.calm;
-    const warmth = frame?.view === 'egg' ? frame.warmth : 0;
-    const ready = frame?.view === 'egg' && frame.ready;
-    // Warmth glows from under the egg; a ready egg glows strongest and pulses.
+    const warmth = frame?.warmth ?? 0;
+    const ready = !!frame?.ready;
+    // Warmth glows from under the egg or the growing dragon; ready glows strongest and pulses.
     const pulse = ready && !calm ? 0.75 + Math.sin(now * 4) * 0.25 : 1;
-    this.glow.intensity = (0.2 + warmth * 1.4) * pulse * (frame?.view === 'egg' ? 1 : 0.2);
+    this.glow.intensity = (0.2 + warmth * 1.4) * pulse * (frame?.view === 'egg' ? 1 : 0.6);
     (this.ember.material as MeshBasicMaterial).opacity = (0.05 + warmth * 0.3) * pulse;
+    if (frame?.view === 'dragon' && this.dragon && !this.outgoing) {
+      const since = now - this.shakeAt;
+      this.dragon.root.rotation.z =
+        since < 0.5 ? Math.sin(since * 30) * 0.08 * (1 - since / 0.5) : 0;
+      // A dragon ready to grow hops now and then, as if it cannot wait.
+      if (ready && !calm && now - this.hopAt > 2.6) {
+        this.hopAt = now;
+        this.dragon.cheer(now);
+      }
+    }
+    this.updateGrowing(now, calm);
     if (this.egg) {
       const since = now - this.shakeAt;
       const shake = since < 0.5 ? Math.sin(since * 40) * 0.18 * (1 - since / 0.5) : 0;
@@ -310,6 +368,7 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
       }
     }
     this.dragon?.update(now, true, calm);
+    this.outgoing?.update(now, true, calm);
     for (const [index, fly] of this.floaters.entries()) {
       fly.visible = !calm;
       const angle = now * (0.3 + index * 0.05) + index;
@@ -334,13 +393,49 @@ export class HatcheryWorld extends Stage implements StateWorld<NestFrame> {
       (spark.mesh.material as MeshBasicMaterial).opacity = 1 - age / spark.life;
     }
   }
+
+  private updateGrowing(now: number, calm: boolean) {
+    const since = now - this.growAt;
+    const spin = calm ? 0 : GROW_SPIN;
+    if (this.outgoing) {
+      if (since < spin) {
+        const t = since / spin;
+        this.outgoing.root.rotation.y = t * t * 14;
+        this.outgoing.root.traverse((object) => {
+          if (!(object instanceof Mesh)) return;
+          const material = object.material as MeshStandardMaterial;
+          material.emissive?.set('#fffef0');
+          if (material.emissive) material.emissiveIntensity = t * 0.9;
+        });
+        return;
+      }
+      this.clearOutgoing();
+      if (this.dragon) {
+        this.dragon.root.visible = true;
+        this.dragon.cheer(now);
+      }
+      this.burst(new Vector3(0, 1.1, 0), 46, [...RAINBOW, '#ffe27a'], 2.8);
+    }
+    const grow = (since - spin) / 0.7;
+    if (this.dragon && grow >= 0 && grow < 1) {
+      // Out it pops, wobbling into its new shape.
+      const elastic = 1 - Math.cos(grow * Math.PI * 2.5) * (1 - grow) * 0.35;
+      this.dragon.root.scale.setScalar(0.78 * elastic);
+    } else if (this.dragon && grow >= 1 && grow < 1.2) {
+      this.dragon.root.scale.setScalar(0.78);
+    }
+  }
 }
 
 /**
  * Renders each dragon once into a small picture for the dragon book and the home screen,
  * then drops the GL context again.
  */
-export function renderPortraits(dragons: readonly Dragon[], size = 256): Record<string, string> {
+export function renderPortraits(
+  dragons: readonly Dragon[],
+  stageOf: (dragon: Dragon) => number = () => 0,
+  size = 256,
+): Record<string, string> {
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -365,8 +460,12 @@ export function renderPortraits(dragons: readonly Dragon[], size = 256): Record<
   camera.lookAt(0, 0.85, 0);
   const pictures: Record<string, string> = {};
   for (const dragon of dragons) {
-    const model = new DragonModel(dragon);
+    const stage = stageOf(dragon);
+    const model = new DragonModel(dragon, stage);
     model.root.rotation.y = -0.35;
+    // Taller forms are framed further out, so their heads and wings stay in the picture.
+    model.root.scale.setScalar([1, 0.88, 0.74][stage] ?? 1);
+    model.root.position.y = [0, 0.04, 0.12][stage] ?? 0;
     model.update(0.2, false);
     scene.add(model.root);
     renderer.render(scene, camera);

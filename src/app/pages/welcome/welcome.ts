@@ -9,6 +9,8 @@ import { Emblem, Icon } from '@feenland/ui';
 import { levels as wallLevels } from '../number-wall/number-wall';
 import { NumberWallStore } from '../number-wall/number-wall-store';
 import { DragonPortraits } from '../hatchery/dragon-portraits';
+import { DragonFace } from '../hatchery/dragon-face';
+import { STAGES } from '../hatchery/dragons';
 import { EggIcon } from '../hatchery/egg-icon';
 import { HatcheryStore } from '../hatchery/hatchery-store';
 import { hatcheryText } from '../hatchery/hatchery-messages';
@@ -27,7 +29,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
 };
 @Component({
   selector: 'app-welcome',
-  imports: [RouterLink, NgOptimizedImage, Icon, Emblem, EggIcon],
+  imports: [RouterLink, NgOptimizedImage, Icon, Emblem, EggIcon, DragonFace],
   template: ` <section class="home" aria-labelledby="welcome-title">
     <div class="hero">
       <div class="hero-copy">
@@ -60,28 +62,52 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
     </div>
     <a class="hatchery-card" routerLink="/hatchery" [class.is-ready]="hatchery.ready()">
       <span class="hatchery-art" aria-hidden="true">
-        @if (hatchery.favorite(); as dragon) {
+        @if (homeDragon(); as dragon) {
           @if (portraits.pictures()[dragon.id]; as picture) {
             <img [src]="picture" width="256" height="256" alt="" />
+          } @else if (hatchery.growing()) {
+            <app-dragon-face
+              class="hatchery-egg"
+              [dragon]="dragon"
+              [stage]="hatchery.stage(dragon)"
+            />
           }
         }
-        <app-egg-icon class="hatchery-egg" [dragon]="hatchery.egg()" [warmth]="eggWarmth()" />
+        @if (!hatchery.growing()) {
+          <app-egg-icon class="hatchery-egg" [dragon]="hatchery.egg()" [warmth]="eggWarmth()" />
+        }
       </span>
       <span class="hatchery-copy">
-        <strong>{{ h('homeTitle') }}</strong>
-        <span>{{
-          hatchery.ready()
-            ? h('homeReady')
-            : h('warmth', {
-                n: i.format(hatchery.hatchery().warmth),
-                total: i.format(hatchery.needed()),
-              })
-        }}</span>
-        <small>{{
-          hatchery.favorite()
-            ? h('homeFavorite', { name: hatchery.name(hatchery.favorite()!) })
-            : h('homeNoDragon')
-        }}</small>
+        @if (!hatchery.growing()) {
+          <strong>{{ h('homeTitle') }}</strong>
+          <span>{{
+            hatchery.ready()
+              ? h('homeReady')
+              : h('warmth', {
+                  n: i.format(hatchery.progress()),
+                  total: i.format(hatchery.needed()),
+                })
+          }}</span>
+          <small>{{
+            hatchery.favorite()
+              ? h('homeFavorite', { name: hatchery.name(hatchery.favorite()!) })
+              : h('homeNoDragon')
+          }}</small>
+        } @else if (hatchery.raising(); as dragon) {
+          <strong>{{ h('growTitle', { name: hatchery.name(dragon) }) }}</strong>
+          <span>{{
+            hatchery.ready()
+              ? h('growReadyTitle', { name: hatchery.name(dragon) })
+              : h('growth', {
+                  n: i.format(hatchery.progress()),
+                  total: i.format(hatchery.needed()),
+                })
+          }}</span>
+          <small>{{ h(stages[hatchery.stage(dragon)]) }}</small>
+        } @else {
+          <strong>{{ h('allGrand') }}</strong>
+          <small>{{ h('allGrandHelp') }}</small>
+        }
       </span>
       <span class="hatchery-go">{{ h('homeAction') }}<ui-icon kind="arrow" /></span>
     </a>
@@ -148,8 +174,13 @@ export class Welcome {
   protected readonly p = inject(ProgressService);
   protected readonly hatchery = inject(HatcheryStore);
   protected readonly portraits = inject(DragonPortraits);
-  protected readonly eggWarmth = computed(
-    () => this.hatchery.hatchery().warmth / this.hatchery.needed(),
+  protected readonly eggWarmth = computed(() => this.hatchery.progress() / this.hatchery.needed());
+  protected readonly stages = STAGES;
+  /** The favourite waits on Home; once the book is complete, the dragon growing up does. */
+  protected readonly homeDragon = computed(() =>
+    this.hatchery.growing()
+      ? (this.hatchery.raising() ?? this.hatchery.favorite())
+      : this.hatchery.favorite(),
   );
   constructor() {
     if (this.hatchery.favorite()) this.portraits.load();

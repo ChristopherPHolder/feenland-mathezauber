@@ -1,19 +1,36 @@
 import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
+import { DragonFace } from './dragon-face';
 import { EggIcon } from './egg-icon';
 import { HatcheryStore } from './hatchery-store';
 import { hatcheryText } from './hatchery-messages';
 
 /**
  * The dragon egg in every game's header: it fills up and glows with each right answer, and
- * shines once it is ready to hatch. A tap opens the hatchery at any warmth level.
+ * shines once it is ready to hatch. Once every dragon has hatched, it shows the dragon growing
+ * up inside a ring that fills instead. A tap opens the hatchery at any time.
  */
 @Component({
   selector: 'app-egg-chip',
-  imports: [EggIcon, RouterLink],
+  imports: [DragonFace, EggIcon, RouterLink],
   template: `<a class="chip" routerLink="/hatchery" [attr.aria-label]="label()">
-      <app-egg-icon [dragon]="store.egg()" [warmth]="warmth()" />
+      @if (dragon(); as dragon) {
+        <svg class="ring" viewBox="0 0 46 46" aria-hidden="true">
+          <circle cx="23" cy="23" r="21" pathLength="100" />
+          <circle
+            class="ring-fill"
+            cx="23"
+            cy="23"
+            r="21"
+            pathLength="100"
+            [attr.stroke-dasharray]="fill() * 100 + ' 100'"
+          />
+        </svg>
+        <app-dragon-face [dragon]="dragon" [stage]="store.stage(dragon)" />
+      } @else {
+        <app-egg-icon [dragon]="store.egg()" [warmth]="fill()" />
+      }
       @if (warming()) {
         <span class="plus" aria-hidden="true">+1</span>
       }
@@ -48,6 +65,25 @@ import { hatcheryText } from './hatchery-messages';
         0 0 0 3px var(--sun),
         0 0 16px #ffb35c;
       animation: ready-rock 2.4s ease-in-out infinite;
+    }
+    .ring {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+      fill: none;
+      stroke: #3fae5c33;
+      stroke-width: 3;
+    }
+    .ring-fill {
+      stroke: #3fae5c;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.6s ease;
+    }
+    app-dragon-face {
+      position: relative;
+      font-size: 15px;
     }
     .plus {
       position: absolute;
@@ -111,15 +147,34 @@ import { hatcheryText } from './hatchery-messages';
 export class EggChip {
   protected readonly store = inject(HatcheryStore);
   private readonly i = inject(LocaleService);
-  protected readonly warmth = computed(() => this.store.hatchery().warmth / this.store.needed());
+  protected readonly fill = computed(() =>
+    this.store.needed() ? this.store.progress() / this.store.needed() : 1,
+  );
+  /** With the book complete: the dragon growing up, or the favourite once all are grand. */
+  protected readonly dragon = computed(() =>
+    this.store.growing() ? (this.store.raising() ?? this.store.favorite()) : undefined,
+  );
   protected readonly label = computed(() => {
-    const progress = this.store.ready()
-      ? hatcheryText(this.i.locale(), 'eggChipReady')
-      : hatcheryText(this.i.locale(), 'eggChip', {
-          n: this.store.hatchery().warmth,
-          total: this.store.needed(),
-        });
-    return `${hatcheryText(this.i.locale(), 'title')}. ${progress}`;
+    const locale = this.i.locale();
+    const raising = this.store.raising();
+    const name = raising ? this.store.name(raising) : '';
+    const progress = !this.store.growing()
+      ? this.store.ready()
+        ? hatcheryText(locale, 'eggChipReady')
+        : hatcheryText(locale, 'eggChip', {
+            n: this.store.progress(),
+            total: this.store.needed(),
+          })
+      : !raising
+        ? hatcheryText(locale, 'allGrandChip')
+        : this.store.ready()
+          ? hatcheryText(locale, 'growChipReady', { name })
+          : hatcheryText(locale, 'growChip', {
+              name,
+              n: this.store.progress(),
+              total: this.store.needed(),
+            });
+    return `${hatcheryText(locale, 'title')}. ${progress}`;
   });
   protected readonly warming = signal(false);
   protected readonly announcement = signal('');
@@ -140,7 +195,16 @@ export class EggChip {
     effect(() => {
       // Say it once, when the egg becomes ready during this game.
       if (this.store.ready() && !wasReady)
-        untracked(() => this.announcement.set(hatcheryText(this.i.locale(), 'eggReadyAnnounce')));
+        untracked(() => {
+          const raising = this.store.raising();
+          this.announcement.set(
+            this.store.growing() && raising
+              ? hatcheryText(this.i.locale(), 'growReadyAnnounce', {
+                  name: this.store.name(raising),
+                })
+              : hatcheryText(this.i.locale(), 'eggReadyAnnounce'),
+          );
+        });
     });
     inject(DestroyRef).onDestroy(() => clearTimeout(this.timer));
   }

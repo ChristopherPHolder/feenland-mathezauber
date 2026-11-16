@@ -1,70 +1,105 @@
 <section class="hatchery" aria-labelledby="hatchery-title">
   <header class="intro">
     <h1 id="hatchery-title">{{ t('title') }}</h1>
-    <p>{{ t('intro') }}</p>
+    <p>{{ t(store.growing() ? 'growIntro' : 'intro') }}</p>
   </header>
 
   <div class="stage-row">
     <div
       #stage
       class="stage"
-      [class.is-ready]="view() === 'egg' && store.ready()"
-      [class.is-dragon]="view() !== 'egg'"
+      [class.is-ready]="view() === 'home' && store.ready()"
+      [class.is-dragon]="!!frame().dragon"
     >
       <app-three-stage class="nest" [world]="loadWorld" [state]="frame()">
         <div class="flat-nest" aria-hidden="true">
-          @if (view() !== 'egg' && shown(); as dragon) {
+          @if (frame().dragon; as dragon) {
             @if (portraits.pictures()[dragon.id]; as picture) {
               <img [src]="picture" width="256" height="256" alt="" />
             } @else {
-              <app-egg-icon class="flat-egg" [dragon]="dragon" [warmth]="1" />
+              <app-dragon-face class="flat-egg" [dragon]="dragon" [stage]="frame().stage" />
             }
           } @else {
-            <app-egg-icon class="flat-egg" [dragon]="store.egg()" [warmth]="warmth()" />
+            <app-egg-icon class="flat-egg" [dragon]="store.egg()" [warmth]="fill()" />
           }
         </div>
       </app-three-stage>
-      @if (view() === 'egg' && store.ready()) {
-        <button
-          class="egg-tap"
-          type="button"
-          [attr.aria-label]="t('crackLabel', { n: crackTaps - cracks() })"
-          (click)="tap()"
-        >
+      @if (view() === 'home' && store.ready()) {
+        <button class="egg-tap" type="button" [attr.aria-label]="tapLabel()" (click)="tap()">
           <span class="tap-hint" aria-hidden="true">{{ tapHint() }}</span>
         </button>
       }
     </div>
 
     <div class="panel">
-      @if (view() === 'egg') {
-        @if (store.ready()) {
+      @if (view() === 'home') {
+        @if (store.growing()) {
+          @if (homeDragon(); as dragon) {
+            @if (store.ready()) {
+              <h2>{{ t('growReadyTitle', { name: name(dragon) }) }}</h2>
+              <p>{{ tapHint() }}</p>
+              <ng-container *ngTemplateOutlet="pips" />
+            } @else if (store.raising()) {
+              <h2>{{ t('growTitle', { name: name(dragon) }) }}</h2>
+              <ng-container *ngTemplateOutlet="stageLine; context: { $implicit: dragon }" />
+              <div
+                class="meter"
+                role="progressbar"
+                [attr.aria-valuenow]="store.progress()"
+                aria-valuemin="0"
+                [attr.aria-valuemax]="store.needed()"
+                [attr.aria-valuetext]="
+                  t('growth', { n: n(store.progress()), total: n(store.needed()) })
+                "
+                [attr.aria-label]="t('growTitle', { name: name(dragon) })"
+              >
+                <app-dragon-face
+                  class="meter-egg"
+                  [dragon]="dragon"
+                  [stage]="store.stage(dragon)"
+                />
+                <div class="meter-track">
+                  <span class="meter-fill is-growth" [style.inline-size.%]="fill() * 100"></span>
+                </div>
+                <strong class="meter-text">{{
+                  t('growth', { n: n(store.progress()), total: n(store.needed()) })
+                }}</strong>
+              </div>
+              <p>{{ t('growHelp', { name: name(dragon) }) }}</p>
+              <a class="button primary" routerLink="/games"
+                >{{ t('growGo') }}<ui-icon kind="arrow"
+              /></a>
+            } @else {
+              <h2>{{ t('allGrand') }}</h2>
+              <p>{{ t('allGrandHelp') }}</p>
+              <a class="button primary" routerLink="/games"
+                >{{ t('warmGo') }}<ui-icon kind="arrow"
+              /></a>
+            }
+          }
+        } @else if (store.ready()) {
           <h2>{{ t('readyTitle') }}</h2>
           <p>{{ tapHint() }}</p>
-          <div class="crack-pips" aria-hidden="true">
-            @for (pip of [0, 1, 2]; track pip) {
-              <span [class.is-on]="pip < cracks()"></span>
-            }
-          </div>
+          <ng-container *ngTemplateOutlet="pips" />
         } @else {
           <h2>{{ t('homeTitle') }}</h2>
           <div
             class="meter"
             role="progressbar"
-            [attr.aria-valuenow]="store.hatchery().warmth"
+            [attr.aria-valuenow]="store.progress()"
             aria-valuemin="0"
             [attr.aria-valuemax]="store.needed()"
             [attr.aria-valuetext]="
-              t('warmth', { n: n(store.hatchery().warmth), total: n(store.needed()) })
+              t('warmth', { n: n(store.progress()), total: n(store.needed()) })
             "
             [attr.aria-label]="t('homeTitle')"
           >
-            <app-egg-icon class="meter-egg" [dragon]="store.egg()" [warmth]="warmth()" />
+            <app-egg-icon class="meter-egg" [dragon]="store.egg()" [warmth]="fill()" />
             <div class="meter-track">
-              <span class="meter-fill" [style.inline-size.%]="warmth() * 100"></span>
+              <span class="meter-fill" [style.inline-size.%]="fill() * 100"></span>
             </div>
             <strong class="meter-text">{{
-              t('warmth', { n: n(store.hatchery().warmth), total: n(store.needed()) })
+              t('warmth', { n: n(store.progress()), total: n(store.needed()) })
             }}</strong>
           </div>
           <p>{{ t('warmHelp') }}</p>
@@ -79,9 +114,36 @@
         @if (shown(); as dragon) {
           @if (view() === 'reveal') {
             <p class="badge">{{ t(isNew() ? 'newDragon' : 'oldFriend') }}</p>
+          } @else if (view() === 'grew') {
+            <p class="badge is-grew">{{ t('grewUp') }}</p>
           }
           <h2 #dragonHeading tabindex="-1">{{ name(dragon) }}</h2>
-          <p>{{ meet(dragon) }}</p>
+          @if (view() === 'grew') {
+            <p>{{ grewText() }}</p>
+          } @else {
+            <p>{{ meet(dragon) }}</p>
+          }
+          @if (view() === 'reveal' && store.growing()) {
+            <p class="note">{{ t('bookDone') }}</p>
+          }
+          @if (store.growing()) {
+            <ng-container *ngTemplateOutlet="stageLine; context: { $implicit: dragon }" />
+            @if (view() === 'dragon') {
+              @if (store.stage(dragon) >= grand) {
+                <p class="note">
+                  <span aria-hidden="true">🌟</span>{{ t('isGrand', { name: name(dragon) }) }}
+                </p>
+              } @else if (store.raising()?.id === dragon.id) {
+                <p class="note">
+                  <span aria-hidden="true">✨</span>{{ t('isRaising', { name: name(dragon) }) }}
+                </p>
+              } @else {
+                <button class="button secondary" type="button" (click)="raise(dragon)">
+                  <span aria-hidden="true">✨</span>{{ t('raise', { name: name(dragon) }) }}
+                </button>
+              }
+            }
+          }
           @if (store.hatchery().favorite === dragon.id) {
             <p class="favorite-note">
               <span aria-hidden="true">💖</span>{{ t('isFavorite', { name: name(dragon) }) }}
@@ -91,10 +153,21 @@
               <span aria-hidden="true">💖</span>{{ t('makeFavorite', { name: name(dragon) }) }}
             </button>
           }
-          <button class="button primary" type="button" (click)="backToEgg()">
-            <app-egg-icon [dragon]="store.egg()" [warmth]="warmth()" />{{
-              t(view() === 'reveal' ? 'nextEgg' : 'backToEgg')
-            }}
+          <button class="button primary" type="button" (click)="backHome()">
+            @if (store.growing()) {
+              @if (store.raising(); as next) {
+                <app-dragon-face [dragon]="next" [stage]="store.stage(next)" />
+                {{
+                  view() === 'reveal' ? t('startGrowing', { name: name(next) }) : t('backToNest')
+                }}
+              } @else {
+                {{ t('backToNest') }}
+              }
+            } @else {
+              <app-egg-icon [dragon]="store.egg()" [warmth]="fill()" />{{
+                t(view() === 'reveal' ? 'nextEgg' : 'backToEgg')
+              }}
+            }
           </button>
         }
       }
@@ -106,8 +179,11 @@
       <h2 id="book-title">{{ t('book') }}</h2>
       <p class="count">{{ t('bookCount', { n: n(found()), total: n(totalDragons) }) }}</p>
     </div>
-    @if (found()) {
+    @if (store.growing()) {
+      <p class="book-help">{{ t('bookHelpGrowing') }}</p>
+    } @else if (found()) {
       <p class="book-help">{{ t('chooseFavorite') }}</p>
+      <p class="book-help">{{ t('growHint') }}</p>
     }
     <ul class="book-grid">
       @for (dragon of dayDragons; track dragon.id) {
@@ -138,6 +214,7 @@
         class="dragon-card"
         type="button"
         [class.is-shown]="shown()?.id === dragon.id"
+        [class.is-raising]="store.growing() && store.raising()?.id === dragon.id"
         [attr.aria-pressed]="shown()?.id === dragon.id"
         [style.--card-tint]="dragon.shell"
         (click)="show(dragon)"
@@ -152,6 +229,15 @@
         @if (store.hatchery().favorite === dragon.id) {
           <span class="card-favorite"><span aria-hidden="true">💖</span>{{ t('favorite') }}</span>
         }
+        @if (store.growing()) {
+          <ng-container *ngTemplateOutlet="stageDotsTpl; context: { $implicit: dragon }" />
+          <span class="sr-only">{{ stageName(dragon) }}</span>
+          @if (store.raising()?.id === dragon.id) {
+            <span class="card-raising"
+              ><span aria-hidden="true">✨</span>{{ t('raisingTag') }}</span
+            >
+          }
+        }
       </button>
     } @else {
       <div class="dragon-card is-mystery">
@@ -160,4 +246,27 @@
       </div>
     }
   </li>
+</ng-template>
+
+<ng-template #pips>
+  <div class="crack-pips" aria-hidden="true">
+    @for (pip of [0, 1, 2]; track pip) {
+      <span [class.is-on]="pip < cracks()"></span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #stageLine let-dragon>
+  <p class="stage-line">
+    <ng-container *ngTemplateOutlet="stageDotsTpl; context: { $implicit: dragon }" />
+    {{ stageName(dragon) }}
+  </p>
+</ng-template>
+
+<ng-template #stageDotsTpl let-dragon>
+  <span class="stage-dots" aria-hidden="true">
+    @for (dot of stageDots; track dot) {
+      <span [class.is-on]="dot <= store.stage(dragon)"></span>
+    }
+  </span>
 </ng-template>

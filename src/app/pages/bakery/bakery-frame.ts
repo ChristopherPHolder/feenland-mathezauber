@@ -1,8 +1,18 @@
 import type { CutDir, TrayLook } from './bakery-levels';
 import type { OrderPhase } from './bakery-order';
 
-/** Who comes to the counter. A dragon is one the child hatched, as a cameo. */
+/**
+ * Who comes to the counter. A dragon is one the child hatched, as a cameo, written
+ * `dragon:<id>:<form>` so it comes in the form it has evolved into.
+ */
 export type Customer = 'fox' | 'rabbit' | 'hedgehog' | 'squirrel' | `dragon:${string}`;
+
+/** The dragon id and form of a dragon customer, or null for an animal. */
+export function dragonCustomer(customer: Customer): { id: string; stage: number } | null {
+  if (!customer.startsWith('dragon:')) return null;
+  const [id, stage] = customer.slice(7).split(':');
+  return { id, stage: Number(stage) || 0 };
+}
 
 export const ANIMALS: readonly Customer[] = ['fox', 'rabbit', 'hedgehog', 'squirrel'];
 

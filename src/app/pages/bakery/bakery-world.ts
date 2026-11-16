@@ -31,7 +31,7 @@ import type { StateWorld } from '../../shared/three/three-stage';
 import { DragonModel } from '../hatchery/dragon-model';
 import { dragonById, DAY_DRAGONS } from '../hatchery/dragons';
 import { Animal, AnimalKind, ball, Bruno, paint } from './bakery-characters';
-import { BakeryFrame, cookieColor } from './bakery-frame';
+import { BakeryFrame, cookieColor, dragonCustomer } from './bakery-frame';
 import { fitTray, trayGeometry, TrayGeometry, trayRegion, WIDE_BOARD } from './tray-geometry';
 
 const FOV = 36;
@@ -610,10 +610,12 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
       this.guestHolder.remove(this.guest.root);
       this.disposeObject(this.guest.root);
     }
-    if (frame.customer.startsWith('dragon:')) {
-      const dragon = dragonById(frame.customer.slice(7)) ?? DAY_DRAGONS[0];
-      const model = new DragonModel(dragon);
-      model.root.scale.setScalar(1.45);
+    const guest = dragonCustomer(frame.customer);
+    if (guest) {
+      const dragon = dragonById(guest.id) ?? DAY_DRAGONS[0];
+      const model = new DragonModel(dragon, guest.stage);
+      // Evolved forms are taller and wider, so they stand a little further into the counter.
+      model.root.scale.setScalar([1.45, 1.25, 1.05][guest.stage] ?? 1.45);
       this.guest = model;
     } else {
       this.guest = new Animal(frame.customer as AnimalKind);
@@ -954,7 +956,8 @@ export class BakeryWorld extends Stage implements StateWorld<BakeryFrame> {
       age >= 0 &&
       age < 1 &&
       this.nibbleAt > this.orderAt;
-    const id = frame.customer.startsWith('dragon:') ? frame.customer.slice(7) : DAY_DRAGONS[0].id;
+    // The nibbler is always the little baby form, whatever the customer has evolved into.
+    const id = dragonCustomer(frame.customer)?.id ?? DAY_DRAGONS[0].id;
     if (active && (!this.nibbler || this.nibblerKey !== id)) {
       if (this.nibbler) {
         this.nibbler.root.removeFromParent();
