@@ -4,17 +4,17 @@ Play through twenty turn-based waves focused on making ten. The castle has three
 
 ## Progression
 
-| Waves | Encounters | Learning support |
-| --- | --- | --- |
-| 1–4 | Two to four monsters using energies 5–9 | Ten-frame always visible; the first visit explains counting empty spaces |
-| 5 | Three-layer shield boss | Counting help on request or automatically after a mistake |
-| 6–9 | Four varied monsters per wave | Spells 1–5, optional counting help |
-| 10 | Four-layer shield boss | Reinforce the first five number pairs |
-| 11–12 | Four monsters per wave | Introduce spells 0–10, including zero; optional counting help |
-| 13–14 | Four monsters per wave | Shorter independent prompts; help remains available |
-| 15 | Four-layer shield boss | Mixed pairs across the complete range |
-| 16–19 | Four monsters per wave | Independent practice of every number pair |
-| 20 | Five-layer shield boss | Final mixed challenge and castle celebration |
+| Waves | Encounters                              | Learning support                                                         |
+| ----- | --------------------------------------- | ------------------------------------------------------------------------ |
+| 1–4   | Two to four monsters using energies 5–9 | Ten-frame always visible; the first visit explains counting empty spaces |
+| 5     | Three-layer shield boss                 | Counting help on request or automatically after a mistake                |
+| 6–9   | Four varied monsters per wave           | Spells 1–5, optional counting help                                       |
+| 10    | Four-layer shield boss                  | Reinforce the first five number pairs                                    |
+| 11–12 | Four monsters per wave                  | Introduce spells 0–10, including zero; optional counting help            |
+| 13–14 | Four monsters per wave                  | Shorter independent prompts; help remains available                      |
+| 15    | Four-layer shield boss                  | Mixed pairs across the complete range                                    |
+| 16–19 | Four monsters per wave                  | Independent practice of every number pair                                |
+| 20    | Five-layer shield boss                  | Final mixed challenge and castle celebration                             |
 
 Wave 1 stays 9 then 8. Other waves reshuffle their configured numbers on every start or retry. Only the active monster shows its number. A boss transforms only after its last shield breaks. Broken layers stay broken after heart loss, but losing all hearts resets the entire boss wave.
 

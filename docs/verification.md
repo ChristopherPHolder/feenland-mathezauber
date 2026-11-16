@@ -69,14 +69,12 @@
 - `viewport-fit=cover` and body safe-area padding cover standalone display insets; short portrait/landscape widths remain covered by the recorded matrix.
 - GitHub Actions deployment runs for each preceding delivery commit completed successfully. Each ticket is closed only after its implementation commit is pushed.
 
-
 ## Practice progression (2026-10-18)
 
 - Production build and all 39 Vitest tests pass, including exhaustive equation/range checks across nine stages and three difficulties. Original demo/navigation regressions use an explicit pre-practice catalog fixture.
 - Headless Chromium checked nine selectable levels at desktop and 375px phone width; no horizontal overflow.
 - Browser flow verified hard difficulty, quick pace, pause/resume, rejected wrong answers, an eight-question completion, saved practice receipt, and restored preferences. No browser runtime errors.
 - Axe reported zero violations on the level selector and practice setup. These checks do not assert full manual WCAG coverage.
-
 
 ## Integrated tower-defense stages (2026-10-18)
 
@@ -91,7 +89,6 @@ After fetching the newer main branch, connected the nine-stage progression to th
 - 80 tests pass across 17 files. New coverage generates 150 seeded rounds per level and checks every question's values, operands and answers stay in range and correct, that each round mixes greater, less and equal without repeats, that the six levels chain behind mastery, and that stars award three for a flawless round, two for up to two mistakes and one otherwise. Component tests play a flawless round by keyboard and touch, confirm a wrong pick shows help and counts one mistake per snack, verify three mistakes complete without mastery, reject locked deep links back to the chapter, and recommend the next crocodile level from the completion screen. Crocodile message keys are identical in en/de/es/fr.
 - Production build passes. The game stylesheet sits inside the 8 kB component style budget with the same size warning as the existing battle screens.
 - Browser check on the dev server: the chapter lists six levels with only the first open, the intro shows the trick with a crocodile eating the bigger of 3 and 8 and a full crocodile between 6 and 6, a wrong pick shakes the chosen crocodile and reveals comparison bars plus both results, and a correct pick seats the crocodile in the circle with its sign and reads the comparison aloud through the live region.
-
 
 ## Hungry Crocodile game loop — 25 October 2026
 
@@ -108,7 +105,6 @@ Turned the comparison rounds into a game: a living pond with ripples, bubbles an
 - Production Angular build passes (existing component CSS budget warnings remain).
 - Chrome browser checks cover English, German, Spanish and French at 320, 390 and 1280px: no horizontal overflow; axe WCAG 2 A/AA and 2.1 AA scans report zero violations on the intro and timed game.
 - Desktop and phone screenshots inspected; real browser clock checks confirm 15-second expiry, playable recovery, 25 seconds for calculation snacks, and turning the timer off.
-
 
 ### Remembered crocodile paces (2026-10-25)
 

@@ -81,13 +81,25 @@ export function crosses(item: GondolaItem) {
 }
 
 const singleAdds = () =>
-  range(2, 9).flatMap((a) => range(2, 9).filter((b) => a + b >= 11).map((b) => add(a, b)));
+  range(2, 9).flatMap((a) =>
+    range(2, 9)
+      .filter((b) => a + b >= 11)
+      .map((b) => add(a, b)),
+  );
 const teenSubs = (subtrahends: readonly number[]) =>
   range(11, 18).flatMap((a) => subtrahends.filter((b) => crossesDown(a, b)).map((b) => sub(a, b)));
 const bigUps = () =>
-  range(12, 89).flatMap((a) => range(2, 9).filter((b) => crossesUp(a, b)).map((b) => add(a, b)));
+  range(12, 89).flatMap((a) =>
+    range(2, 9)
+      .filter((b) => crossesUp(a, b))
+      .map((b) => add(a, b)),
+  );
 const bigDowns = () =>
-  range(21, 98).flatMap((a) => range(2, 9).filter((b) => crossesDown(a, b)).map((b) => sub(a, b)));
+  range(21, 98).flatMap((a) =>
+    range(2, 9)
+      .filter((b) => crossesDown(a, b))
+      .map((b) => sub(a, b)),
+  );
 const bigBigs = (min = 12) =>
   range(min, 79).flatMap((a) =>
     range(12, 69)
@@ -419,7 +431,10 @@ export function classifyAnswer(item: GondolaItem, move: Move, value: number): An
   const shape = shapeOf(item);
   if (value === shape.ten && move !== 'express') return 'stopAtTen';
   if (move === 'express' && value === shape.answer - 2 * expressMove(item).fix) return 'wrongWay';
-  if (item.kind === 'sub' && value === 10 * (shape.tens - shape.groupTens) + shape.group - shape.cabin)
+  if (
+    item.kind === 'sub' &&
+    value === 10 * (shape.tens - shape.groupTens) + shape.group - shape.cabin
+  )
     return 'keptTens';
   return 'other';
 }

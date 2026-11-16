@@ -11,8 +11,7 @@ import { MotionPreference } from './motion';
  */
 export function pageTransition({ transition, from, to }: ViewTransitionInfo) {
   const reduced =
-    inject(DOCUMENT).defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches ??
-    false;
+    inject(DOCUMENT).defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   if (inject(MotionPreference).calm() || reduced || leaf(from) === leaf(to)) {
     transition.skipTransition();
   }

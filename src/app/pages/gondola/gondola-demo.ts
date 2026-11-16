@@ -1,4 +1,12 @@
-import { afterNextRender, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { LocaleService } from '../../core/locale';
 import { gondolaText, GondolaMessageKey } from './gondola-messages';
 
@@ -37,9 +45,22 @@ const seatAt = (seat: number) => ({
       <rect class="deck" x="0" y="186" width="320" height="24" />
       <g class="next-cabin">
         <rect class="body" [attr.x]="cabin.x" [attr.y]="cabin.y" width="122" height="80" rx="18" />
-        <rect class="glass" [attr.x]="cabin.x + 6" [attr.y]="cabin.y + 10" width="110" height="62" rx="12" />
+        <rect
+          class="glass"
+          [attr.x]="cabin.x + 6"
+          [attr.y]="cabin.y + 10"
+          width="110"
+          height="62"
+          rx="12"
+        />
         @for (seat of seats; track seat.i) {
-          <circle class="seat" [class.is-second]="seat.i >= 5" [attr.cx]="seat.x" [attr.cy]="seat.y" r="8" />
+          <circle
+            class="seat"
+            [class.is-second]="seat.i >= 5"
+            [attr.cx]="seat.x"
+            [attr.cy]="seat.y"
+            r="8"
+          />
           @if (seat.i < rest()) {
             <g class="head" [attr.transform]="'translate(' + seat.x + ' ' + seat.y + ')'">
               <path d="M-4-4-5-15q1-2 3 0l1 10zM4-4l1-11q2-2 3 0l-2 11z" />
@@ -49,9 +70,22 @@ const seatAt = (seat: number) => ({
         }
       </g>
       <g class="ten-cabin">
-        <line class="hanger" [attr.x1]="cabin.x + 61" [attr.y1]="cabin.y - 22" [attr.x2]="cabin.x + 61" [attr.y2]="cabin.y" />
+        <line
+          class="hanger"
+          [attr.x1]="cabin.x + 61"
+          [attr.y1]="cabin.y - 22"
+          [attr.x2]="cabin.x + 61"
+          [attr.y2]="cabin.y"
+        />
         <rect class="body" [attr.x]="cabin.x" [attr.y]="cabin.y" width="122" height="80" rx="18" />
-        <rect class="glass" [attr.x]="cabin.x + 6" [attr.y]="cabin.y + 10" width="110" height="62" rx="12" />
+        <rect
+          class="glass"
+          [attr.x]="cabin.x + 6"
+          [attr.y]="cabin.y + 10"
+          width="110"
+          height="62"
+          rx="12"
+        />
         @for (seat of seats; track seat.i) {
           <circle
             class="seat"
@@ -61,14 +95,14 @@ const seatAt = (seat: number) => ({
             [attr.cy]="seat.y"
             r="8"
           />
-            <g
-              class="head"
-              [class.is-fresh]="seat.i >= cabinCount()"
-              [attr.transform]="'translate(' + seat.x + ' ' + seat.y + ')'"
-            >
-              <path d="M-4-4-5-15q1-2 3 0l1 10zM4-4l1-11q2-2 3 0l-2 11z" />
-              <circle r="6" />
-            </g>
+          <g
+            class="head"
+            [class.is-fresh]="seat.i >= cabinCount()"
+            [attr.transform]="'translate(' + seat.x + ' ' + seat.y + ')'"
+          >
+            <path d="M-4-4-5-15q1-2 3 0l1 10zM4-4l1-11q2-2 3 0l-2 11z" />
+            <circle r="6" />
+          </g>
         }
         <g class="tag">
           <rect [attr.x]="cabin.x + 40" [attr.y]="cabin.y - 34" width="42" height="26" rx="9" />
@@ -124,7 +158,9 @@ const seatAt = (seat: number) => ({
         </svg>
       </button>
     </div>
-    <p class="sr-only">{{ t('demoSummary', { a: cabinCount(), b: group(), n: fill(), r: rest() }) }}</p>
+    <p class="sr-only">
+      {{ t('demoSummary', { a: cabinCount(), b: group(), n: fill(), r: rest() }) }}
+    </p>
   `,
   styleUrl: './gondola-demo.css',
 })

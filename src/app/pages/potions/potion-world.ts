@@ -14,7 +14,7 @@ import {
 } from 'three';
 import { TextLabel } from '../../shared/three/labels';
 import { easeOutBack, EventCounter, shake, smooth } from '../../shared/three/motion';
-import { disposeTree, Stage } from '../../shared/three/stage';
+import { Stage } from '../../shared/three/stage';
 import { StateWorld } from '../../shared/three/three-stage';
 import { BREW_COLOR, bubble, buildCauldron, Cauldron, SURFACE_Y } from './potion-cauldron';
 import { FrameBottle, liquid, PotionFrame, shelfSpot } from './potion-frame';

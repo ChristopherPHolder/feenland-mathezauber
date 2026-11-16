@@ -8,8 +8,10 @@ const en = {
     'Gusti the goat runs the gondola up the snowy mountain, and every cabin holds exactly 10 bunnies.',
   storyAll: 'Fill the cabin to 10 first. The rest ride in the next cabin.',
   trickTitle: 'Today’s trick',
-  fill9: 'A cabin with 9 bunnies has one empty seat. One hops in, and the rest take the next cabin.',
-  fill8: 'A cabin with 8 has two empty seats. Two hop in to make 10, and the rest take the next cabin.',
+  fill9:
+    'A cabin with 9 bunnies has one empty seat. One hops in, and the rest take the next cabin.',
+  fill8:
+    'A cabin with 8 has two empty seats. Two hop in to make 10, and the rest take the next cabin.',
   fill76: 'Look at the empty seats: 7 needs 3 to make 10, and 6 needs 4.',
   fillAny:
     'Put the bigger group in the cabin, then fill it to 10. Swap the groups if the smaller one sits there.',
@@ -390,7 +392,8 @@ const es: Messages = {
   down: 'Bajando: manda primero los conejos sueltos para volver a 10, y luego saca el resto de la cabina llena.',
   downTake:
     'Otra forma: sácalos todos de la cabina llena y suma los sueltos. ¡Las dos formas valen!',
-  bigUp: 'El mismo truco, montaña más grande: llena la cabina hasta la siguiente decena y luego el resto.',
+  bigUp:
+    'El mismo truco, montaña más grande: llena la cabina hasta la siguiente decena y luego el resto.',
   bigDown:
     'Primero vuelve a la decena: manda los sueltos y luego saca el resto de una cabina llena.',
   bigBig: 'Manda primero las cabinas llenas y luego llena la cabina hasta la siguiente decena.',
@@ -447,8 +450,7 @@ const es: Messages = {
   askAdd: '¿Cuántos conejos subieron en total?',
   askSub: '¿Cuántos conejos quedan en la estación?',
   splitAdd: 'Arrastra el asa para que la cabina quede justo llena y toca ¡Arriba!',
-  splitSub:
-    'Arrastra el asa: los conejos sueltos van primero y el resto sale de una cabina llena.',
+  splitSub: 'Arrastra el asa: los conejos sueltos van primero y el resto sale de una cabina llena.',
   splitNumbers: '¿Cuántos completan la decena? Toca el número.',
   sliderAdd: 'Grupo que espera: ¿quién sube?',
   sliderSub: 'Conejos que bajan: ¿quién va primero?',
@@ -500,8 +502,7 @@ const es: Messages = {
   tryAgain: 'Todavía no. Mira las cabinas e inténtalo otra vez.',
   hintLead: 'Gusti te enseña un truco:',
   cardFill: 'Primero llena la cabina hasta 10 y luego el resto va en la siguiente.',
-  cardDown:
-    'Manda primero los sueltos para volver a 10 y luego saca el resto de la cabina llena.',
+  cardDown: 'Manda primero los sueltos para volver a 10 y luego saca el resto de la cabina llena.',
   cardTeen: '10 y {b} son {n}.',
   cardTens: '{a} y {b} son {n}.',
   cold: '¡Brrr! Llegó la nube de nieve y el chocolate se enfrió. ¡Los conejos siguen viajando!',
@@ -578,7 +579,8 @@ const fr: Messages = {
   down: 'En descendant : envoie d’abord les lapins libres pour revenir à 10, puis prends le reste dans la cabine pleine.',
   downTake:
     'Autre façon : prends-les tous dans la cabine pleine, puis ajoute les libres. Les deux sont justes !',
-  bigUp: 'Même astuce, plus grande montagne : remplis la cabine jusqu’à la dizaine suivante, puis le reste.',
+  bigUp:
+    'Même astuce, plus grande montagne : remplis la cabine jusqu’à la dizaine suivante, puis le reste.',
   bigDown:
     'D’abord revenir à la dizaine : envoie les lapins libres, puis le reste dans une cabine pleine.',
   bigBig: 'Envoie d’abord les cabines pleines, puis remplis la cabine jusqu’à la dizaine suivante.',
@@ -586,7 +588,8 @@ const fr: Messages = {
     'Ajouter 9 ? Envoie une cabine express pleine de 10, puis un lapin descend. Ou remplis la cabine comme d’habitude !',
   expressBig:
     'Enlever 9 ? Envoie une cabine pleine en bas, puis un lapin remonte. 19, c’est deux cabines et un qui revient.',
-  master: 'Toutes les astuces à la fois. Regarde d’abord les nombres, puis choisis ta façon préférée.',
+  master:
+    'Toutes les astuces à la fois. Regarde d’abord les nombres, puis choisis ta façon préférée.',
   villageTitle: 'Ton village au sommet',
   villageCount: '{n} bâtiments sur {total}',
   villageEmpty: 'Termine un niveau pour construire la première maison au sommet.',

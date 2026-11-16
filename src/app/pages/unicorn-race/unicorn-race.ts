@@ -34,7 +34,6 @@ import {
   paces,
   playerPlace,
   RaceState,
-  racer,
   RacerId,
   racerIds,
   raceStars,
@@ -44,7 +43,6 @@ import { raceText, RaceMessageKey } from './race-messages';
 import {
   cupTracks,
   HeatNumber,
-  heatNumbers,
   heats,
   RaceCup,
   raceCups,

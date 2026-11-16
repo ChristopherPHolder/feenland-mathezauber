@@ -28,11 +28,8 @@ jobs:
           node-version-file: .nvmrc
           cache: true
 
-      - name: Lint
-        run: vp lint
-
-      - name: Type-check specs
-        run: npm run typecheck
+      - name: Check formatting, lint and types
+        run: vp check --deny-warnings
 
       - name: Run tests
         run: vp test

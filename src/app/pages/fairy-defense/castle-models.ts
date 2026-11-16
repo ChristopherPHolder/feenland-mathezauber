@@ -293,7 +293,15 @@ function grassTexture(): CanvasTexture {
   for (let i = 0; i < 260; i++) {
     c.fillStyle = random() > 0.5 ? 'rgba(70,140,60,0.25)' : 'rgba(190,230,120,0.3)';
     c.beginPath();
-    c.ellipse(random() * 128, random() * 128, 2 + random() * 5, 1 + random() * 2, random() * 3, 0, 7);
+    c.ellipse(
+      random() * 128,
+      random() * 128,
+      2 + random() * 5,
+      1 + random() * 2,
+      random() * 3,
+      0,
+      7,
+    );
     c.fill();
   }
   const texture = new CanvasTexture(canvas);
@@ -394,10 +402,7 @@ export function buildGate(): Group {
     gate.add(block);
   }
   // Warm light glowing inside the arch, and a wooden door swung open.
-  const glow = new Mesh(
-    new PlaneGeometry(1.1, 1.7),
-    new MeshBasicMaterial({ color: '#ffe9a8' }),
-  );
+  const glow = new Mesh(new PlaneGeometry(1.1, 1.7), new MeshBasicMaterial({ color: '#ffe9a8' }));
   glow.position.set(0, 0.85, -0.2);
   const door = new Mesh(new PlaneGeometry(0.55, 1.5), lambert(COLOURS.wood));
   door.position.set(-0.5, 0.75, 0.25);
@@ -578,7 +583,8 @@ export class Sparks {
       this.position[p + 1] += this.velocity[p + 1] * dt;
       this.position[p + 2] += this.velocity[p + 2] * dt;
       const left = 1 - this.age[i] / this.life[i];
-      this.colour[i * 4 + 3] = this.alpha[i] * Math.min(1, left * 2.5) * Math.min(1, this.age[i] * 12 + 0.3);
+      this.colour[i * 4 + 3] =
+        this.alpha[i] * Math.min(1, left * 2.5) * Math.min(1, this.age[i] * 12 + 0.3);
     }
     this.points.geometry.getAttribute('position').needsUpdate = true;
     this.points.geometry.getAttribute('color').needsUpdate = true;

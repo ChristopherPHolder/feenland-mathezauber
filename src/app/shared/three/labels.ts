@@ -38,7 +38,7 @@ export class TextLabel {
     this.texture.minFilter = LinearFilter;
     this.update(text);
     // Repaint once Fredoka has loaded, in case the first paint used a fallback font.
-    document.fonts?.ready.then(() => this.paint());
+    void document.fonts?.ready.then(() => this.paint());
   }
 
   update(text: string) {

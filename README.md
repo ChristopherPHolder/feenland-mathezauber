@@ -12,15 +12,16 @@ Use Node.js 26 and npm. The toolchain is [Vite+](https://viteplus.dev) (`vp`): `
 npm ci
 npm start               # vp dev on http://localhost:4200
 npm test                # vp test (Vitest in jsdom)
-npm run typecheck       # type-checks the specs; vp build type-checks the app and its templates
-npm run build           # vp build into dist/
+npm run check           # vp check: oxfmt, oxlint and type errors in the app and the specs
+npm run fmt             # vp fmt: format the files in place
+npm run build           # vp build into dist/, which also type-checks the templates
 ```
 
 `vite.config.ts` holds the whole setup: the ngp plugin with the size budgets that used to live in `angular.json`, the Cloudflare plugin, and the `test`, `lint` and `fmt` settings. `index.html` sits at the project root and loads `src/main.ts`, `src/tokens.css` and `src/styles.css`. Files in `public/` are copied to the build as they are.
 
 ## Cloudflare deployment
 
-GitHub Actions lints, type-checks, tests and builds every pull request, and deploys the production Worker whenever a commit is pushed to `main`, including merged pull requests. Deployments are serialized to prevent overlapping uploads.
+GitHub Actions runs `vp check --deny-warnings`, the tests and a build for every pull request, and deploys the production Worker whenever a commit is pushed to `main`, including merged pull requests. Deployments are serialized to prevent overlapping uploads.
 
 Before the first automated deployment, add a repository Actions secret named `CLOUDFLARE_API_TOKEN` under [Settings → Secrets and variables → Actions](https://github.com/ChristopherPHolder/feenland-mathezauber/settings/secrets/actions). Create a Cloudflare API token using the **Edit Cloudflare Workers** template, scoped to the account in `wrangler.jsonc`, following [Cloudflare's GitHub Actions setup](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/). Local Wrangler login credentials are not available to GitHub Actions.
 

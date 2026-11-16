@@ -20,7 +20,11 @@ export type ComparisonSkill =
   | 'share'
   | 'timesOrShare';
 export type ComparisonGroup =
-  'crocNumbers' | 'crocWorkOut' | 'crocHundred' | 'crocTimes' | 'crocShare';
+  | 'crocNumbers'
+  | 'crocWorkOut'
+  | 'crocHundred'
+  | 'crocTimes'
+  | 'crocShare';
 export interface ComparisonStage {
   /** The number in the level id `crocodile-<n>`; saved progress uses it, so never change it. */
   readonly stage: number;

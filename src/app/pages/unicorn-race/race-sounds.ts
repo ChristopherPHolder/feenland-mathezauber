@@ -1,7 +1,14 @@
 import { DestroyRef, inject, Injectable } from '@angular/core';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
 export type RaceSound =
-  'count' | 'go' | 'gallop' | 'rainbow' | 'stumble' | 'overtake' | 'win' | 'finish';
+  | 'count'
+  | 'go'
+  | 'gallop'
+  | 'rainbow'
+  | 'stumble'
+  | 'overtake'
+  | 'win'
+  | 'finish';
 /** Component-scoped so leaving the race releases the audio context. Shares the effects preference. */
 @Injectable()
 export class RaceSounds {

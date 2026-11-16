@@ -63,7 +63,7 @@ describe('number wall generator', () => {
       expect(wall.missing).toHaveLength(1);
       level3Rows.add(wall.missing[0]!.row);
     }
-    expect([...level3Rows].sort()).toEqual([0, 1, 2]);
+    expect([...level3Rows].sort((a, b) => a - b)).toEqual([0, 1, 2]);
     for (const wall of samples(4)) {
       expect(wall.missing).toHaveLength(2);
       expect(wall.missing.some((brick) => brick.row === 0)).toBe(true);
@@ -87,7 +87,7 @@ describe('number wall generator', () => {
     expect(levels).toHaveLength(11);
     expect([...levels].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
     const rowCounts = levels.map((level) => rulesFor(level).rowCount);
-    expect(rowCounts).toEqual([...rowCounts].sort());
+    expect(rowCounts).toEqual([...rowCounts].sort((a, b) => a - b));
     expect(levelPosition(levels[0]!)).toBe(1);
     expect(levelAfter(levels.at(-1)!)).toBeUndefined();
     expect(levelAfter(5)).toBe(1);

@@ -195,7 +195,9 @@
 @media (prefers-reduced-motion: no-preference) {
   .handle,
   .finger {
-    transition: translate 0.9s ease-in-out, opacity 0.3s;
+    transition:
+      translate 0.9s ease-in-out,
+      opacity 0.3s;
   }
   .bunny {
     transition:
