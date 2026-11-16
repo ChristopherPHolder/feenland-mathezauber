@@ -12,7 +12,7 @@ import {
   Shape,
   SphereGeometry,
 } from 'three';
-import type { Dragon } from './dragons';
+import type { Dragon, DragonElement } from './dragons';
 
 export const RAINBOW = ['#ff6f91', '#ffb347', '#ffe066', '#7ddf9b', '#7cc7ff', '#b79bff'];
 const INK = '#2a2148';
@@ -88,6 +88,48 @@ function wingShape(): Shape {
   return shape;
 }
 
+/** Family proportions are presentation only; saved dragon identities never change. */
+const FORMS: Record<
+  DragonElement,
+  {
+    width: number;
+    height: number;
+    head: number;
+    headWidth: number;
+    headHeight: number;
+    wings: number;
+  }
+> = {
+  fire: { width: 1.12, height: 0.94, head: 1.17, headWidth: 1.12, headHeight: 0.88, wings: 1.15 },
+  water: { width: 0.8, height: 1.12, head: 1.28, headWidth: 0.88, headHeight: 1.06, wings: 0.95 },
+  leaf: { width: 0.91, height: 1, head: 1.19, headWidth: 0.95, headHeight: 0.94, wings: 1 },
+  star: { width: 0.77, height: 1.12, head: 1.28, headWidth: 0.89, headHeight: 1, wings: 1.05 },
+  cloud: { width: 1.22, height: 0.82, head: 1.08, headWidth: 1.18, headHeight: 0.88, wings: 1.1 },
+  rainbow: { width: 0.88, height: 1.06, head: 1.25, headWidth: 0.94, headHeight: 1.02, wings: 1.1 },
+};
+
+/** Wings define the silhouette even when the dragons are viewed without colour. */
+function elementalWing(element: DragonElement): Shape {
+  if (element === 'fire') return wingShape();
+  if (element === 'star') return starShape(0.48, 0.21);
+  const shape = new Shape();
+  shape.moveTo(0, 0);
+  if (element === 'leaf') {
+    shape.bezierCurveTo(0.05, 0.45, 0.5, 0.78, 0.88, 0.7);
+    shape.bezierCurveTo(0.8, 0.16, 0.43, -0.16, 0, 0);
+  } else {
+    // A broad aquatic fin, with three pointed rays.
+    shape.quadraticCurveTo(0.3, 0.3, 0.72, 0.4);
+    shape.lineTo(0.57, 0.12);
+    shape.lineTo(0.8, -0.02);
+    shape.lineTo(0.51, -0.12);
+    shape.lineTo(0.61, -0.36);
+    shape.quadraticCurveTo(0.12, -0.23, 0, 0);
+  }
+  shape.closePath();
+  return shape;
+}
+
 /**
  * A chubby baby dragon built from soft shapes: big head, big eyes, a round belly, little
  * wings and a tail whose tip shows its element. `update` animates breathing, blinking,
@@ -119,9 +161,10 @@ export class DragonModel {
     const cheek = paint(CHEEK, { roughness: 0.8, transparent: true, opacity: 0.75 });
 
     this.root.add(this.body);
+    const form = FORMS[dragon.element];
     // Body: a pear-shaped tummy with a lighter belly patch and little stripes.
-    this.body.add(ball(skin, 0.5, 0, 0.55, 0, [1.05, 1.08, 0.95]));
-    this.body.add(ball(belly, 0.36, 0, 0.5, 0.26, [1, 1.15, 0.62]));
+    this.body.add(ball(skin, 0.5, 0, 0.55, 0, [form.width, form.height, 0.95]));
+    this.body.add(ball(belly, 0.36, 0, 0.5, 0.26, [form.width * 0.95, form.height, 0.62]));
     for (const y of [0.32, 0.48, 0.64]) {
       const stripe = ball(
         paint(dragon.body, { roughness: 0.6 }),
@@ -129,7 +172,7 @@ export class DragonModel {
         0,
         y,
         0.48,
-        [4.2, 0.35, 0.6],
+        [4.2 * form.width, 0.35, 0.6],
         12,
       );
       stripe.castShadow = false;
@@ -144,7 +187,7 @@ export class DragonModel {
         this.body.add(claw);
       }
       const arm = new Mesh(new CapsuleGeometry(0.07, 0.16, 6, 12), skin);
-      arm.position.set(side * 0.36, 0.62, 0.24);
+      arm.position.set(side * 0.36 * form.width, 0.62, 0.24);
       arm.rotation.set(0.9, 0, side * -0.5);
       arm.castShadow = true;
       this.body.add(arm);
@@ -169,12 +212,26 @@ export class DragonModel {
           [0.6, 0.38, 0.12],
           [0.36, 0.0, 0.13],
         ].forEach(([x, y, r]) => hinge.add(ball(wing, r, side * x, y, -0.05)));
+      } else if (dragon.element === 'rainbow') {
+        RAINBOW.forEach((color, index) => {
+          const feather = ball(
+            paint(color),
+            0.14,
+            side * (0.27 + index * 0.085),
+            0.12 + index * 0.045,
+            0,
+            [0.55, 2.6 - index * 0.2, 0.25],
+          );
+          feather.rotation.z = side * (-0.4 - index * 0.18);
+          hinge.add(feather);
+        });
       } else {
         const membrane = new Mesh(
-          new ExtrudeGeometry(wingShape(), { depth: 0.03, bevelEnabled: false }),
+          new ExtrudeGeometry(elementalWing(dragon.element), { depth: 0.03, bevelEnabled: false }),
           wing,
         );
         membrane.scale.set(side * 0.9, 0.9, 1);
+        if (dragon.element === 'star') membrane.position.set(side * 0.42, 0.2, 0);
         membrane.rotation.y = side * -0.5;
         membrane.castShadow = true;
         hinge.add(membrane);
@@ -183,6 +240,7 @@ export class DragonModel {
         bone.rotation.z = side * -1.05;
         hinge.add(bone);
       }
+      hinge.scale.setScalar(form.wings);
       this.wings.push(hinge);
       this.body.add(hinge);
     }
@@ -208,7 +266,8 @@ export class DragonModel {
     this.buildTailTip(tip, accent, belly);
 
     // Head.
-    this.head.position.set(0, 1.22, 0.06);
+    this.head.position.set(0, form.head, 0.06);
+    this.head.scale.set(form.headWidth, form.headHeight, 1);
     this.body.add(this.head);
     this.head.add(ball(skin, 0.44, 0, 0, 0, [1.1, 1, 1]));
     this.head.add(ball(belly, 0.28, 0, -0.13, 0.3, [1.05, 0.72, 0.85]));
@@ -222,14 +281,18 @@ export class DragonModel {
       this.eyes.push(eye);
       this.head.add(eye);
       this.head.add(ball(cheek, 0.07, side * 0.3, -0.1, 0.3, [1, 0.6, 0.4], 12));
-      const horn = cone(accent, 0.07, 0.24);
-      horn.position.set(side * 0.2, 0.42, -0.05);
-      horn.rotation.set(-0.35, 0, side * -0.35);
-      this.head.add(horn);
-      const ear = cone(skin, 0.08, 0.18);
-      ear.position.set(side * 0.4, 0.22, -0.05);
-      ear.rotation.set(0, 0, side * -1.1);
-      this.head.add(ear);
+      if (dragon.element === 'fire' || dragon.element === 'star') {
+        const horn = cone(accent, 0.07, dragon.element === 'fire' ? 0.35 : 0.24);
+        horn.position.set(side * 0.2, 0.42, -0.05);
+        horn.rotation.set(-0.35, 0, side * -0.35);
+        this.head.add(horn);
+      }
+      if (dragon.element !== 'water' && dragon.element !== 'cloud') {
+        const ear = cone(skin, 0.08, 0.18);
+        ear.position.set(side * 0.4, 0.22, -0.05);
+        ear.rotation.set(0, 0, side * -1.1);
+        this.head.add(ear);
+      }
     }
     // A smile.
     const smile = new Mesh(new CapsuleGeometry(0.012, 0.12, 4, 6), ink);
@@ -237,6 +300,7 @@ export class DragonModel {
     smile.rotation.z = Math.PI / 2;
     this.head.add(smile);
     this.buildCrest(accent, belly);
+    this.buildFamilyFeatures(wing, belly, accent);
 
     if (dragon.starlight) {
       // Starlight dragons are sprinkled with tiny glowing stars.
@@ -256,6 +320,58 @@ export class DragonModel {
         this.root.add(speck);
         this.sparkles.push(speck);
       }
+    }
+  }
+
+  private buildFamilyFeatures(wing: Material, belly: Material, accent: Material) {
+    const { element } = this.dragon;
+    for (const side of [-1, 1]) {
+      if (element === 'water') {
+        // Axolotl-like gills make the swimmer unmistakable from the front.
+        for (let i = 0; i < 3; i++) {
+          const gill = ball(
+            wing,
+            0.09,
+            side * (0.46 + i * 0.045),
+            0.18 - i * 0.18,
+            0,
+            [2.3, 0.55, 0.4],
+          );
+          gill.rotation.z = side * (0.55 - i * 0.5);
+          this.head.add(gill);
+        }
+      } else if (element === 'leaf') {
+        for (let i = 0; i < 3; i++) {
+          const leaf = ball(
+            i % 2 ? accent : wing,
+            0.13,
+            side * (0.32 + i * 0.045),
+            -0.19 + i * 0.2,
+            0.02,
+            [0.65, 1.8, 0.25],
+          );
+          leaf.rotation.z = side * (-0.9 + i * 0.7);
+          this.head.add(leaf);
+        }
+      } else if (element === 'cloud') {
+        for (let i = 0; i < 4; i++) {
+          this.head.add(ball(belly, 0.15, side * (0.12 + i * 0.095), 0.36 - i * 0.13, -0.02));
+        }
+        this.body.add(ball(belly, 0.2, side * 0.43, 0.38, 0.12));
+      } else if (element === 'star') {
+        const cheekStar = star(accent, 0.14);
+        cheekStar.position.set(side * 0.42, 0.1, 0);
+        this.head.add(cheekStar);
+      }
+    }
+    if (element === 'rainbow') {
+      // A single tall unicorn horn and a six-colour mane.
+      const horn = cone(belly, 0.09, 0.43);
+      horn.position.set(0, 0.48, 0.13);
+      this.head.add(horn);
+      RAINBOW.forEach((color, index) => {
+        this.head.add(ball(paint(color), 0.1, -0.28, 0.39 - index * 0.13, 0.04, [0.85, 1.15, 1]));
+      });
     }
   }
 

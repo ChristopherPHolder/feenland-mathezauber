@@ -73,6 +73,43 @@ describe('dragon hatchery', () => {
     expect(chooseFavorite(state, 'ember').favorite).toBe('ember');
   });
 
+  it('preserves every legacy dragon and all progress when restoring and hatching', () => {
+    // Explicit historical IDs: deriving this fixture from DRAGONS would hide a rename.
+    const hatched = [
+      'ember',
+      'splash',
+      'fern',
+      'twinkle',
+      'puff',
+      'prism',
+      'ember-starlight',
+      'splash-starlight',
+      'fern-starlight',
+      'twinkle-starlight',
+      'puff-starlight',
+      'prism-starlight',
+    ];
+    for (const favorite of hatched) {
+      const saved: Hatchery = {
+        version: 1,
+        egg: 'fern-starlight',
+        warmth: 37,
+        hatched,
+        hatches: 19,
+        favorite,
+        answers: 1234,
+      };
+      const restored = parseHatchery(JSON.parse(JSON.stringify(saved)), first);
+      expect(restored).toEqual(saved);
+      const next = hatch(warm(restored, 13), first)!.state;
+      expect(next.hatched).toEqual(hatched);
+      expect(next.favorite).toBe(favorite);
+      expect(next.hatches).toBe(20);
+      expect(next.answers).toBe(1247);
+      expect(parseHatchery(JSON.parse(JSON.stringify(next)), first)).toEqual(next);
+    }
+  });
+
   it('recovers damaged or foreign saves safely', () => {
     expect(parseHatchery(null, first).hatched).toEqual([]);
     expect(parseHatchery({ version: 2, hatched: ['ember'] }, first).hatched).toEqual([]);
