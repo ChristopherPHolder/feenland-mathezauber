@@ -1,7 +1,7 @@
 const { chromium, webkit } = require('playwright');
 const assert = require('node:assert/strict');
 
-// Run against npm start, with Playwright available as for the other verify scripts.
+// Run against `vp dev`, with Playwright available as for the other verify scripts.
 // Geometry catches shifts following input too (CLS excludes recent user input).
 const baseUrl = process.env.CROCODILE_BASE_URL || 'http://127.0.0.1:4200';
 const selectors = ['.hud', '.snack-bar', '.board', '.sides', '.instruction', '.choices'];
