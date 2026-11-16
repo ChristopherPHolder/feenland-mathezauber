@@ -4,14 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "vp dev",
+    "dev": "vp dev",
     "build": "vp build",
     "preview": "vp build && vp preview",
-    "test": "vp test",
     "check": "vp check",
-    "fmt": "vp fmt",
-    "tokens": "node scripts/build-tokens.mjs",
-    "deploy": "vp build && wrangler deploy"
+    "test": "vp test",
+    "prepare": "vp config"
   },
   "dependencies": {
     "@angular/common": "22.3.0-next.4",
@@ -39,8 +37,21 @@
   "overrides": {
     "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0"
   },
-  "engines": {
-    "node": ">=26"
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "^11.19.0",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "^26.0.0",
+      "onFail": "error"
+    }
   },
-  "packageManager": "npm@11.19.0"
+  "allowScripts": {
+    "esbuild": true,
+    "workerd": true,
+    "fsevents": false
+  }
 }

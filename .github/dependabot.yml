@@ -1,0 +1,8 @@
+# Keeps the exact action versions in .github/workflows current, including voidzero-dev/setup-vp,
+# whose floating v1 tag no longer receives releases.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

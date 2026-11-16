@@ -16,8 +16,10 @@ export default defineConfig(({ mode }) => ({
   server: { port: 4200 },
   lint: {
     ignorePatterns: ['dist/**', '.agents/**', '.claude/**'],
+    jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
     options: { typeAware: true, typeCheck: true },
     rules: {
+      'vite-plus/prefer-vite-plus-imports': 'error',
       // Interface methods such as a loader world's `setState(_: null)` take a parameter they ignore.
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       // The 3D worlds copy a collection before looping over it on purpose: the loop body removes
@@ -55,5 +57,28 @@ export default defineConfig(({ mode }) => ({
     globals: true,
     include: ['src/**/*.spec.ts'],
     setupFiles: ['src/test-setup.ts'],
+  },
+  // The pre-commit hook in .vite-hooks runs `vp staged`, which formats and lints the staged files.
+  staged: {
+    '*': 'vp check --fix',
+  },
+  // `vp run <task>`. Tasks are cached: a rerun with unchanged inputs replays the last result.
+  run: {
+    tasks: {
+      // Compiles design/tokens.json into src/tokens.css.
+      tokens: 'node scripts/build-tokens.mjs',
+      // Everything CI checks before a pull request can merge.
+      ready: {
+        command: ['vp check --deny-warnings', 'vp test run', 'vp build'],
+        // The Cloudflare plugin writes .wrangler/ during the build; it is not an input of any step.
+        cache: { input: [{ auto: true }, '!.wrangler/**'] },
+      },
+      // Production deployment. Wrangler reads CLOUDFLARE_API_TOKEN, which Vite Task passes through.
+      deploy: {
+        command: 'wrangler deploy',
+        dependsOn: ['ready'],
+        cache: false,
+      },
+    },
   },
 }));
