@@ -2,10 +2,12 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 /**
- * Guards the design tokens: design/tokens.json is the source, src/tokens.css is generated from
- * it, and every stylesheet reads tokens through var() instead of repeating their values.
+ * Guards the design tokens: packages/ui/tokens.json is the source, styles/tokens.css is generated
+ * from it, and every stylesheet in the design system and the app reads tokens through var()
+ * instead of repeating their values.
  */
-const root = resolve(__dirname, '..');
+const root = resolve(__dirname, '../../..');
+const ui = 'packages/ui';
 
 interface Token {
   readonly name: string;
@@ -29,8 +31,8 @@ interface Tokens {
   };
 }
 
-const tokens: Tokens = JSON.parse(readFileSync(join(root, 'design/tokens.json'), 'utf8'));
-const generated = readFileSync(join(root, 'src/tokens.css'), 'utf8');
+const tokens: Tokens = JSON.parse(readFileSync(join(root, ui, 'tokens.json'), 'utf8'));
+const generated = readFileSync(join(root, ui, 'styles/tokens.css'), 'utf8');
 const firstTheme = tokens.color.themes[0].id;
 const valueOf = (token: Token) =>
   typeof token.value === 'string' ? token.value : token.value[firstTheme];
@@ -54,7 +56,11 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
   }
   return out;
 }
-const sources = sourceFiles(join(root, 'src')).map((path) => ({
+const sources = [
+  ...sourceFiles(join(root, 'src')),
+  ...sourceFiles(join(root, ui, 'src')),
+  ...sourceFiles(join(root, ui, 'styles')),
+].map((path) => ({
   path: path.slice(root.length + 1),
   text: readFileSync(path, 'utf8'),
 }));
@@ -66,9 +72,9 @@ describe('design tokens', () => {
     for (const name of names) expect(name).toMatch(/^[a-z0-9][a-z0-9-]*$/);
   });
 
-  it('generates src/tokens.css from design/tokens.json', () => {
+  it('generates styles/tokens.css from tokens.json', () => {
     expect(
-      generated.startsWith('/* Feenland Mathezauber — generated from design/tokens.json'),
+      generated.startsWith('/* Feenland Mathezauber — generated from packages/ui/tokens.json'),
     ).toBe(true);
     for (const token of allTokens) {
       expect(generated).toContain(`  --${token.name}: ${valueOf(token)};`);
@@ -109,7 +115,13 @@ describe('design tokens', () => {
   it('keeps token colours out of the stylesheets', () => {
     const colours = new Set(tokens.color.tokens.map((token) => valueOf(token).toLowerCase()));
     for (const { path, text } of sources) {
-      if (!path.endsWith('.css') && !path.startsWith('src/app/shared/')) continue;
+      // Inline component styles count too where colours tend to hide: shared and design-system code.
+      if (
+        !path.endsWith('.css') &&
+        !path.startsWith('src/app/shared/') &&
+        !path.startsWith(`${ui}/`)
+      )
+        continue;
       for (const match of text.matchAll(/#[0-9a-f]{6}(?![0-9a-f])/gi)) {
         if (colours.has(match[0].toLowerCase())) {
           throw new Error(`${path} repeats token colour ${match[0]}; use its var() instead`);

@@ -6,8 +6,7 @@ import { CompletionService } from '../../core/completion';
 import { findLevel, nextLevel, WORLD_CATALOG } from '../../core/catalog';
 import { ProgressService } from '../../core/progress';
 import { LocaleService } from '../../core/locale';
-import { Emblem } from '../../shared/emblem';
-import { Icon } from '../../shared/icon';
+import { Emblem, Icon } from '@feenland/ui';
 @Component({
   selector: 'app-completion',
   imports: [RouterLink, Icon, NgOptimizedImage, Emblem],

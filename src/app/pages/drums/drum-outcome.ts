@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { DrumChart } from './drum-chart';
 import { patternName } from './drum-intro';
 import { drumText, DrumMessageKey } from './drum-messages';

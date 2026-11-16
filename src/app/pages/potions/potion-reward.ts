@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 
 /** When the first star pops into the card, and the gap to the next one, in seconds. */
 const STAR_START = 0.35;
@@ -50,7 +50,7 @@ const SPARKLES = [
       <strong class="cheer">{{ cheer() }}</strong>
       <span class="stars">
         @for (slot of slots; track slot) {
-          <app-icon
+          <ui-icon
             kind="star"
             class="star"
             [class.won]="slot <= stars()"

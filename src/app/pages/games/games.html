@@ -16,7 +16,7 @@
             [style.--world-color]="game.world.color"
             [style.--world-ground]="game.world.ground"
             [attr.aria-current]="game.chapter.id === inView() ? 'location' : null"
-            ><app-emblem [id]="game.chapter.id" [fallback]="game.chapter.emblem" />{{
+            ><ui-emblem [id]="game.chapter.id" [fallback]="game.chapter.emblem" />{{
               i.t(game.chapter.title)
             }}</a
           >
@@ -37,12 +37,10 @@
       <!-- The world id keeps old /worlds/:id links landing on that world's first game. -->
       <span class="world-anchor" [id]="game.world.id" aria-hidden="true"></span>
       <header class="game-head">
-        <span class="game-emblem"
-          ><app-emblem [id]="chapter.id" [fallback]="chapter.emblem"
-        /></span>
+        <span class="game-emblem"><ui-emblem [id]="chapter.id" [fallback]="chapter.emblem" /></span>
         <div class="game-copy">
           <p class="world-name">
-            <app-emblem [id]="game.world.id" [fallback]="game.world.emblem" />{{
+            <ui-emblem [id]="game.world.id" [fallback]="game.world.emblem" />{{
               i.t(game.world.title)
             }}
           </p>
@@ -76,7 +74,7 @@
                     : i.t('topicLevels', { n: topic.cards.length })
                 }}
                 @if (topic.stars > 0) {
-                  · <app-icon kind="star" /><span class="sr-only">{{
+                  · <ui-icon kind="star" /><span class="sr-only">{{
                     i.t('topicStars', { n: topic.stars, total: topic.maxStars })
                   }}</span
                   ><span aria-hidden="true">{{ topic.stars }}/{{ topic.maxStars }}</span>
@@ -131,23 +129,26 @@
                     }
                   </span>
                   <span class="level-foot">
-                    <app-star-rating [stars]="card.stars" />
+                    <ui-star-rating
+                      [stars]="card.stars"
+                      [label]="i.t('starsOf', { n: card.stars })"
+                    />
                     @if (card.best > 0) {
                       <span class="level-state">{{ i.t('bestPoints', { n: card.best }) }}</span>
                     } @else if (card.state === 'mastered') {
                       <span class="level-state"
-                        ><app-icon kind="cup" />{{ i.t('masteryEarned') }}</span
+                        ><ui-icon kind="cup" />{{ i.t('masteryEarned') }}</span
                       >
                     } @else if (card.state === 'completed') {
                       <span class="level-state"
-                        ><app-icon kind="check" />{{ i.t('completedLabel') }}</span
+                        ><ui-icon kind="check" />{{ i.t('completedLabel') }}</span
                       >
                     }
                     @if (card.recommended) {
                       <span class="level-badge">{{ i.t('recommended') }}</span>
                     }
                   </span>
-                  <span class="level-go" aria-hidden="true"><app-icon kind="play" /></span>
+                  <span class="level-go" aria-hidden="true"><ui-icon kind="play" /></span>
                 </a>
               </li>
             }

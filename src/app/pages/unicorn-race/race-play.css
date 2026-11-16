@@ -248,11 +248,11 @@
   gap: 6px;
   color: var(--star-empty);
 }
-.star-row app-icon {
+.star-row ui-icon {
   width: 56px;
   height: 56px;
 }
-.star-row app-icon.earned {
+.star-row ui-icon.earned {
   color: var(--star-ink);
   fill: var(--star-fill);
   animation: star-in 0.5s ease-out backwards;
@@ -289,7 +289,7 @@
   color: var(--earth);
   fill: #e8c38f;
 }
-.cup-badge app-icon {
+.cup-badge ui-icon {
   width: 26px;
   height: 26px;
 }
@@ -334,7 +334,7 @@
   min-height: 52px;
   font-size: 17px;
 }
-.summary-actions app-icon {
+.summary-actions ui-icon {
   width: 22px;
   height: 22px;
 }
@@ -358,7 +358,7 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.link app-icon {
+.link ui-icon {
   width: 20px;
   height: 20px;
 }
@@ -407,7 +407,7 @@
     min-height: 70px;
     font-size: clamp(44px, 12vh, 112px);
   }
-  .star-row app-icon {
+  .star-row ui-icon {
     width: 64px;
     height: 64px;
   }
@@ -442,7 +442,7 @@
     padding: 10px 12px;
     gap: 4px;
   }
-  .star-row app-icon {
+  .star-row ui-icon {
     width: 30px;
     height: 30px;
   }

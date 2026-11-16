@@ -5,5 +5,10 @@
   "compilerOptions": {
     "types": ["vite-plus/test/globals", "node"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts", "src/test-setup.ts"]
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.spec.ts",
+    "packages/*/src/**/*.spec.ts",
+    "src/test-setup.ts"
+  ]
 }

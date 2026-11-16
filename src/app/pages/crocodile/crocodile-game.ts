@@ -18,7 +18,7 @@ import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
 import { GameHeader } from '../../shared/game-header';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import {
   Comparison,
   ComparisonQuestion,

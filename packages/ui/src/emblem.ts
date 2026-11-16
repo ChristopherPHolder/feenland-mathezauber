@@ -6,7 +6,7 @@ import { Component, input } from '@angular/core';
  * Sized in em: the emblem is 1.25 times the surrounding font size.
  */
 @Component({
-  selector: 'app-emblem',
+  selector: 'ui-emblem',
   template: `@switch (id()) {
     @case ('friends-of-ten') {
       <svg viewBox="0 0 64 64" aria-hidden="true">

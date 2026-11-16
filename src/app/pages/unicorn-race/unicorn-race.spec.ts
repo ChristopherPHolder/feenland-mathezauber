@@ -267,7 +267,7 @@ describe('Unicorn race game', () => {
     const summary = element.querySelector('.summary');
     expect(summary).toBeTruthy();
     expect(summary?.querySelector('h2')?.textContent).toContain('Lumi wins the race!');
-    expect(summary?.querySelectorAll('.star-row app-icon.earned')).toHaveLength(3);
+    expect(summary?.querySelectorAll('.star-row ui-icon.earned')).toHaveLength(3);
     expect(summary?.textContent).toContain('Gold cup');
     expect(summary?.textContent).toContain('Next heat');
     const progress = TestBed.inject(ProgressService).progress();

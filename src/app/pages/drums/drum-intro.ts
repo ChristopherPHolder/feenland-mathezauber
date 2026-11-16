@@ -2,7 +2,7 @@ import { Component, computed, inject, input, model, output } from '@angular/core
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { DrumCalibration } from './drum-calibration';
 import { DrumChart } from './drum-chart';
 import { drumText, DrumMessageKey } from './drum-messages';

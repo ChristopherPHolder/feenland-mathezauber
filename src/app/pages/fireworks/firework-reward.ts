@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { LocaleService } from '../../core/locale';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { Flick } from './firework-flick';
 import { fireworkText, FireworkMessageKey } from './firework-messages';
 import { BookShape, shapePath } from './firework-shapes';
@@ -24,7 +24,7 @@ const STAR_STEP = 0.3;
       <app-flick class="flick" pose="cheer" />
       <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
         @for (slot of slots; track slot) {
-          <app-icon
+          <ui-icon
             kind="star"
             class="star"
             [class.won]="slot <= stars()"

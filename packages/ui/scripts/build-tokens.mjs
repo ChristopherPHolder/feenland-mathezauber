@@ -1,21 +1,21 @@
-// Compiles design/tokens.json into src/tokens.css: the custom properties every stylesheet
+// Compiles packages/ui/tokens.json into packages/ui/styles/tokens.css: the custom properties every stylesheet
 // reads, the font stack, and the @font-face rules for the self-hosted Fredoka files.
-// Run `vp run tokens` after editing design/tokens.json; the spec in src/design-tokens.spec.ts
+// Run `vp run tokens` after editing tokens.json; the spec in packages/ui/src/tokens.spec.ts
 // fails when the generated file is stale.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const tokensPath = resolve(root, 'design/tokens.json');
-const outputPath = resolve(root, 'src/tokens.css');
+const tokensPath = resolve(root, 'tokens.json');
+const outputPath = resolve(root, 'styles/tokens.css');
 
 export function compileTokens(tokens) {
   const firstTheme = tokens.color.themes[0].id;
   const value = (token) =>
     typeof token.value === 'string' ? token.value : token.value[firstTheme];
   const lines = [
-    `/* ${tokens.name} — generated from design/tokens.json by vp run tokens. Do not edit. */`,
+    `/* ${tokens.name} — generated from packages/ui/tokens.json by vp run tokens. Do not edit. */`,
   ];
   for (const font of tokens.type.fonts) {
     lines.push(

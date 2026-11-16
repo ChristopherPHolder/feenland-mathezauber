@@ -1,15 +1,15 @@
 # Design tokens
 
 `tokens.json` is the single source for the app's colours, spacing, radii, shadows and type. The
-build does not read it directly: `vp run tokens` compiles it to `src/tokens.css`, which
-`index.html` loads before `styles.css`. Both files are committed, so a checkout builds without
-running the script, and `src/design-tokens.spec.ts` fails when the generated file is stale, when a
+build does not read it directly: `vp run tokens` compiles it to `styles/tokens.css`, which
+`index.html` loads before `styles/base.css` and the app's `src/styles.css`. Both files are committed, so a checkout builds without
+running the script, and `src/tokens.spec.ts` fails when the generated file is stale, when a
 stylesheet reads a custom property no token defines, or when a stylesheet repeats a token colour
 as a literal.
 
 ## Changing a value
 
-1. Edit `design/tokens.json`. Every token has a `usage` note saying where it appears; keep it true.
+1. Edit `tokens.json`. Every token has a `usage` note saying where it appears; keep it true.
 2. Run `vp run tokens` (or `npx vp run tokens` without the global `vp`).
 3. Run `vp test` and commit both files.
 

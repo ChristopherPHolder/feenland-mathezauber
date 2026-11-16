@@ -83,7 +83,7 @@
   margin: 10px auto 0;
   min-height: 56px;
 }
-.outcome > app-icon {
+.outcome > ui-icon {
   color: var(--bronze);
   width: 40px;
   height: 40px;

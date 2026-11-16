@@ -1,3 +1,5 @@
+import { TestBed } from '@angular/core/testing';
+import { Emblem } from '@feenland/ui';
 import {
   emptyProgress,
   entryLevel,
@@ -6,6 +8,7 @@ import {
   nextLevel,
   parseProgress,
   World,
+  WORLD_CATALOG,
   worlds,
 } from './catalog';
 import { detectLocale } from './locale';
@@ -81,5 +84,22 @@ describe('expanding-world foundations', () => {
     expect(detectLocale(['it-IT', 'de-AT', 'fr'])).toBe('de');
     expect(detectLocale(['es-MX'])).toBe('es');
     expect(detectLocale(['ja'])).toBe('en');
+  });
+});
+
+describe('catalog emblems', () => {
+  it('has a drawing for every game and world instead of its emoji', () => {
+    const catalog = TestBed.inject(WORLD_CATALOG);
+    const ids = catalog.flatMap((world) => [world.id, ...world.chapters.map((c) => c.id)]);
+    expect(ids.length).toBe(worlds.length + worlds.flatMap((w) => w.chapters).length);
+    for (const id of ids) {
+      const fixture = TestBed.createComponent(Emblem);
+      fixture.componentRef.setInput('id', id);
+      fixture.componentRef.setInput('fallback', '❓');
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('svg[aria-hidden="true"]'), id).not.toBeNull();
+      expect(el.textContent?.trim(), id).toBe('');
+    }
   });
 });

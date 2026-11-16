@@ -207,11 +207,11 @@
 .status.alert {
   background: var(--pink-ground);
 }
-.status app-icon {
+.status ui-icon {
   flex: none;
   color: var(--brick-filled);
 }
-.status.happy app-icon {
+.status.happy ui-icon {
   color: var(--star-ink);
 }
 /* The rule as a tiny wall: which two bricks go together, never what they make. */
@@ -287,7 +287,7 @@
   box-shadow: 0 4px 0 #b79aa6;
   cursor: default;
 }
-.key.check app-icon {
+.key.check ui-icon {
   width: 36px;
   height: 36px;
 }

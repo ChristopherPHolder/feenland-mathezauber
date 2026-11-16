@@ -166,7 +166,7 @@
   display: inline-flex;
   color: var(--star-empty);
 }
-.heat-cup app-icon {
+.heat-cup ui-icon {
   width: 18px;
   height: 18px;
 }
@@ -205,7 +205,7 @@
   margin: 16px auto 0;
   font-size: 20px;
 }
-.start app-icon {
+.start ui-icon {
   width: 24px;
   height: 24px;
 }
@@ -260,11 +260,11 @@
   gap: 1px;
   color: var(--star-empty);
 }
-.level-stars app-icon {
+.level-stars ui-icon {
   width: 20px;
   height: 20px;
 }
-.level-stars app-icon.earned {
+.level-stars ui-icon.earned {
   color: var(--star-ink);
   fill: var(--star-fill);
 }
@@ -397,7 +397,7 @@
   display: inline-flex;
   color: var(--star-empty);
 }
-.level-cup app-icon {
+.level-cup ui-icon {
   width: 24px;
   height: 24px;
 }
@@ -425,7 +425,7 @@
   color: var(--paper);
   box-shadow: var(--shadow-primary);
 }
-.level-go app-icon {
+.level-go ui-icon {
   width: 24px;
   height: 24px;
 }

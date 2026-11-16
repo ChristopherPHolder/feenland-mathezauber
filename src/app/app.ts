@@ -25,7 +25,7 @@ import { BootSplash } from './core/boot-splash';
 import { LocaleService } from './core/locale';
 import { ProgressService } from './core/progress';
 import { MotionPreference } from './core/motion';
-import { Icon } from './shared/icon';
+import { Icon } from '@feenland/ui';
 import { warmThree } from './shared/three/warm-three';
 @Component({
   selector: 'app-root',
@@ -43,18 +43,18 @@ import { warmThree } from './shared/three/warm-three';
             routerLinkActive="active"
             ariaCurrentWhenActive="page"
             [routerLinkActiveOptions]="{ exact: true }"
-            ><app-icon kind="home" /><span>{{ i.t('home') }}</span></a
+            ><ui-icon kind="home" /><span>{{ i.t('home') }}</span></a
           ><a routerLink="/games" routerLinkActive="active" ariaCurrentWhenActive="page"
-            ><app-icon kind="grid" /><span>{{ i.t('games') }}</span></a
+            ><ui-icon kind="grid" /><span>{{ i.t('games') }}</span></a
           ><a routerLink="/hatchery" routerLinkActive="active" ariaCurrentWhenActive="page"
-            ><app-icon kind="egg" /><span>{{ i.t('dragons') }}</span></a
+            ><ui-icon kind="egg" /><span>{{ i.t('dragons') }}</span></a
           ><a
             class="settings-link"
             routerLink="/settings"
             [queryParams]="{ returnTo: settingsReturnTarget() }"
             routerLinkActive="active"
             ariaCurrentWhenActive="page"
-            ><app-icon kind="gear" /><span>{{ i.t('settings') }}</span></a
+            ><ui-icon kind="gear" /><span>{{ i.t('settings') }}</span></a
           >
         </nav>
       </header>

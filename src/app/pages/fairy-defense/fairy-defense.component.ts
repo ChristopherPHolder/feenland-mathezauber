@@ -27,7 +27,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
 import { GameHeader } from '../../shared/game-header';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { advance, Battle, cast, freshBattle, resolveSpell, revealHint, timeOut } from './battle';
 import { CastleOptions, CastleSettings } from './castle-settings';
 import { FuseTimer } from './fuse-timer';

@@ -110,7 +110,7 @@ describe('Number wall game', () => {
     const pad = [...element.querySelectorAll<HTMLButtonElement>('.pad .key')];
     pad.find((key) => key.textContent?.trim() === '1')!.click();
     const before = status();
-    const back = element.querySelector<HTMLAnchorElement>('a.games-link')!;
+    const back = element.querySelector<HTMLAnchorElement>('ui-game-bar a.ui-pill')!;
     const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
     back.dispatchEvent(enter);
     expect(enter.defaultPrevented).toBe(false);
@@ -208,7 +208,7 @@ describe('Number wall game', () => {
     expect(reward('streak')).toBe('⚡8 Best streak');
     expect(reward('troll')).toBe('0 Knocked down');
     expect(element.querySelector('.summary-fairy img')).toBeTruthy();
-    expect(element.querySelectorAll('.star-row app-icon.earned')).toHaveLength(3);
+    expect(element.querySelectorAll('.star-row ui-icon.earned')).toHaveLength(3);
     const store = TestBed.inject(NumberWallStore);
     expect(store.rating(1)).toBe(3);
     expect(store.save()).toMatchObject({ gems: 24, bestStreak: 8 });

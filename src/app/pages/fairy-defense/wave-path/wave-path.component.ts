@@ -1,5 +1,5 @@
 import { Component, computed, inject, input, output } from '@angular/core';
-import { Icon } from '../../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { LocaleService } from '../../../core/locale';
 import { gameText, GameMessageKey } from '../game-messages';
 import { TOTAL_WAVES } from '../waves';
@@ -40,7 +40,7 @@ import { TOTAL_WAVES } from '../waves';
                 }
               </span>
             } @else {
-              <app-icon [kind]="done().has(wave) ? 'check' : wave % 5 === 0 ? 'cup' : 'gem'" />
+              <ui-icon [kind]="done().has(wave) ? 'check' : wave % 5 === 0 ? 'cup' : 'gem'" />
             }
           </button>
         </li>
@@ -90,7 +90,7 @@ import { TOTAL_WAVES } from '../waves';
     .wave-path button:hover {
       background: #fff1cb;
     }
-    .wave-path app-icon {
+    .wave-path ui-icon {
       width: 18px;
       height: 18px;
     }

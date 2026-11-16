@@ -55,7 +55,7 @@
                 <span class="heat-mode" aria-hidden="true">{{ modeEmblem(entry.mode) }}</span>
                 <span class="heat-name">{{ t(heatTitle(entry.heat)) }}</span>
                 <span [class]="'heat-cup ' + (heatCup(entry.heat) ?? 'none')"
-                  ><app-icon kind="cup" /><span class="sr-only">{{
+                  ><ui-icon kind="cup" /><span class="sr-only">{{
                     t(cupKey(heatCup(entry.heat)))
                   }}</span></span
                 >
@@ -66,7 +66,7 @@
             }
           </div>
           <button type="button" class="button primary start" (click)="start()">
-            <app-icon kind="play" />{{ t('start') }} · {{ t('heatLabel', { n: heat() }) }}
+            <ui-icon kind="play" />{{ t('start') }} · {{ t('heatLabel', { n: heat() }) }}
           </button>
         </div>
         <fieldset class="pace">
@@ -163,11 +163,11 @@
                           [attr.aria-label]="t('starsOn', { n: earned })"
                         >
                           @for (star of stars; track star) {
-                            <app-icon kind="star" [class.earned]="earned >= star" />
+                            <ui-icon kind="star" [class.earned]="earned >= star" />
                           }
                         </span>
                         <span [class]="'level-cup ' + (cup ?? 'none')">
-                          <app-icon kind="cup" /><span class="sr-only">{{ t(cupKey(cup)) }}</span>
+                          <ui-icon kind="cup" /><span class="sr-only">{{ t(cupKey(cup)) }}</span>
                         </span>
                         <span class="level-heats" aria-hidden="true">
                           @for (entry of heats; track entry.heat) {
@@ -175,7 +175,7 @@
                           }
                         </span>
                       </span>
-                      <span class="level-go" aria-hidden="true"><app-icon kind="arrow" /></span>
+                      <span class="level-go" aria-hidden="true"><ui-icon kind="arrow" /></span>
                     </a>
                   </li>
                 }
@@ -254,11 +254,11 @@
                 [attr.aria-label]="i.t('starsOf', { n: finishStars() })"
               >
                 @for (star of stars; track star) {
-                  <app-icon kind="star" [class.earned]="finishStars() >= star" [style.--i]="star" />
+                  <ui-icon kind="star" [class.earned]="finishStars() >= star" [style.--i]="star" />
                 }
               </div>
               <p [class]="'cup-badge ' + cupBadge()">
-                <app-icon kind="cup" /><span>{{ t(cupKey(cupBadge())) }}</span>
+                <ui-icon kind="cup" /><span>{{ t(cupKey(cupBadge())) }}</span>
               </p>
               <h2 id="summary-title">{{ t(outcomeKey()) }}</h2>
               <p class="summary-line">{{ summaryLine() }}</p>
@@ -284,15 +284,15 @@
             <div class="summary-actions">
               @if (nextHeat(); as upcoming) {
                 <button type="button" class="button primary" (click)="goOn()">
-                  {{ t('nextHeat') }} · {{ t(heatTitle(upcoming)) }}<app-icon kind="arrow" />
+                  {{ t('nextHeat') }} · {{ t(heatTitle(upcoming)) }}<ui-icon kind="arrow" />
                 </button>
               } @else if (nextLevel(); as upcoming) {
                 <button type="button" class="button primary" (click)="goTo(upcoming)">
-                  {{ t('nextRace') }} · {{ i.t(levelTitle(upcoming)) }}<app-icon kind="arrow" />
+                  {{ t('nextRace') }} · {{ i.t(levelTitle(upcoming)) }}<ui-icon kind="arrow" />
                 </button>
               } @else if (!saveFailed()) {
                 <button type="button" class="button primary" (click)="celebrate()">
-                  <app-icon kind="star" />{{ t('celebrate') }}
+                  <ui-icon kind="star" />{{ t('celebrate') }}
                 </button>
               }
               <button type="button" class="button secondary" (click)="playAgain()">
@@ -305,11 +305,11 @@
               </button>
               @if ((nextHeat() || nextLevel()) && !saveFailed()) {
                 <button type="button" class="link" (click)="celebrate()">
-                  <app-icon kind="star" />{{ t('celebrate') }}
+                  <ui-icon kind="star" />{{ t('celebrate') }}
                 </button>
               }
               <a class="link" routerLink="/games" [fragment]="levelId()"
-                ><app-icon kind="grid" />{{ i.t('allGames') }}</a
+                ><ui-icon kind="grid" />{{ i.t('allGames') }}</a
               >
             </div>
           </section>

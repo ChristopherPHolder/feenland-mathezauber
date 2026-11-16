@@ -14,9 +14,7 @@ import { Chapter, Level, levelStars, WORLD_CATALOG, World } from '../../core/cat
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
 import { localQuestion } from '../../core/practice';
-import { Emblem } from '../../shared/emblem';
-import { Icon } from '../../shared/icon';
-import { StarRating } from '../../shared/star-rating';
+import { Emblem, Icon, StarRating } from '@feenland/ui';
 import { CampaignStore } from '../fairy-defense/campaign';
 import { TOTAL_WAVES } from '../fairy-defense/waves';
 import { comparisonStage, localSide } from '../crocodile/comparison';
