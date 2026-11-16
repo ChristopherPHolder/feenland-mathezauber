@@ -68,3 +68,11 @@ npx -y modern-web-guidance@latest retrieve "<id>"
 ```
 
 Update it with `npx -y modern-web-guidance@latest update`.
+
+## Tooling
+
+- The toolchain is Vite+ (`vp`); there is no Angular CLI and no `angular.json`. Use `npm start` (`vp dev`), `npm test` (`vp test`), `npm run check` (`vp check`: format, lint and type errors) and `npm run build` (`vp build`).
+- `@push-based/vite-plugin-ngp` compiles Angular. Every `@angular/*` package must stay exactly at the version the plugin was built against (see `README.md`). Never bump Angular on its own.
+- Use Node.js 26.
+- Import test APIs from `vite-plus/test`, not `vitest`.
+- Run `npm run check` before committing. CI fails on formatting differences and lint warnings.

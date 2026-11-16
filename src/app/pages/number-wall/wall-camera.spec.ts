@@ -67,12 +67,14 @@ describe('Magic walls camera framing', () => {
         try {
           for (const point of points) {
             const projected = point.clone().project(camera);
-            expect(Math.abs(projected.x), `horizontal clipping of ${point.toArray()}`).toBeLessThan(
-              0.98,
-            );
-            expect(Math.abs(projected.y), `vertical clipping of ${point.toArray()}`).toBeLessThan(
-              0.98,
-            );
+            expect(
+              Math.abs(projected.x),
+              `horizontal clipping of ${point.toArray().join(', ')}`,
+            ).toBeLessThan(0.98);
+            expect(
+              Math.abs(projected.y),
+              `vertical clipping of ${point.toArray().join(', ')}`,
+            ).toBeLessThan(0.98);
           }
         } finally {
           disposeTree(castle.group);

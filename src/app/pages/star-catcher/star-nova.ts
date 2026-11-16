@@ -255,7 +255,15 @@ export function buildNova(): Nova {
 }
 
 export type GlowKind =
-  'star' | 'gold' | 'pink' | 'spark' | 'puff' | 'rays' | 'moon' | 'trail' | 'rainbow';
+  | 'star'
+  | 'gold'
+  | 'pink'
+  | 'spark'
+  | 'puff'
+  | 'rays'
+  | 'moon'
+  | 'trail'
+  | 'rainbow';
 
 const STAR_COLORS: Record<'star' | 'gold' | 'pink', readonly [string, string, string]> = {
   star: ['#ffffff', '#fff2a8', '#ffe066'],

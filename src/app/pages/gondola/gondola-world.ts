@@ -44,7 +44,11 @@ const SUMMIT = new Vector3(9.5, 9.6, -20);
 const BAY = new Vector3(1.6, 3.2, -1.05);
 const BAY_SCALE = 0.82;
 /** The way down to the valley, off to the front left. */
-const DOWN_WAY = [new Vector3(-0.3, 3.0, 1.6), new Vector3(-5.2, 2.0, 3.8), new Vector3(-14, 0.2, 7.5)];
+const DOWN_WAY = [
+  new Vector3(-0.3, 3.0, 1.6),
+  new Vector3(-5.2, 2.0, 3.8),
+  new Vector3(-14, 0.2, 7.5),
+];
 const DOWN_FROM_STATION = [new Vector3(-4.6, 2.6, 1.3), new Vector3(-14, 0.2, 7.5)];
 /** Cabins come in from the valley side, or from the right behind the queue. */
 const IN_FROM_VALLEY = [new Vector3(-7.5, 2.1, 3.0), new Vector3(-4.2, 2.7, 1.1)];
@@ -70,7 +74,7 @@ function groundHeight(x: number, z: number): number {
   h += Math.sin(x * 0.35 + z * 0.12) * 0.7 * Math.min(1, back / 6);
   h += Math.cos(x * 0.18 - z * 0.3) * 0.5 * Math.min(1, back / 8);
   // Ridges on both sides frame the cable's valley.
-  h += Math.max(0, Math.abs(x - 5 - (-z * 0.2)) - 8) * 0.55 * Math.min(1, back / 5);
+  h += Math.max(0, Math.abs(x - 5 - -z * 0.2) - 8) * 0.55 * Math.min(1, back / 5);
   // The summit plateau where the village stands.
   const summit = Math.hypot(x - SUMMIT.x, z - SUMMIT.z);
   if (summit < 7) h = h * smooth(summit / 7) + (SUMMIT.y - 2.2) * (1 - smooth(summit / 7));
@@ -210,12 +214,22 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
   private readonly rackFrame = new Group();
   private readonly cloud = new Group();
   private readonly cloudPuffs: Mesh[] = [];
-  private readonly cloudMaterial = new MeshStandardMaterial({ color: '#ffffff', roughness: 1, transparent: true, opacity: 0.95 });
+  private readonly cloudMaterial = new MeshStandardMaterial({
+    color: '#ffffff',
+    roughness: 1,
+    transparent: true,
+    opacity: 0.95,
+  });
   private cloudShare = 0;
   private readonly cocoa = new Group();
   private readonly mug: MeshStandardMaterial;
   private readonly steam: Mesh[] = [];
-  private readonly steamMaterial = new MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.5, roughness: 1 });
+  private readonly steamMaterial = new MeshStandardMaterial({
+    color: '#ffffff',
+    transparent: true,
+    opacity: 0.5,
+    roughness: 1,
+  });
   private readonly lanterns: { light: MeshStandardMaterial; glow: Sprite }[] = [];
   private readonly buildings: Group[] = [];
   private readonly snow: Points;
@@ -372,7 +386,8 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       this.up.push(entity);
     }
     // The rack: full cabins standing by. For taking away the first full cabin is at the station.
-    const racked = frame.kind === 'sub' && !layout.moved ? Math.max(0, layout.parked - 1) : layout.parked;
+    const racked =
+      frame.kind === 'sub' && !layout.moved ? Math.max(0, layout.parked - 1) : layout.parked;
     for (let index = 0; index < racked; index++) this.addRack(index, ridersInCompact);
 
     const tarp = frame.tarp;
@@ -391,7 +406,11 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
 
     if (frame.kind === 'add') {
       if (!layout.moved) {
-        const entity = stationCabin(layout.boarding ?? 0, CABIN_COLORS[colorBase % CABIN_COLORS.length], 0);
+        const entity = stationCabin(
+          layout.boarding ?? 0,
+          CABIN_COLORS[colorBase % CABIN_COLORS.length],
+          0,
+        );
         if (animate) this.arrive(entity, IN_FROM_VALLEY, 0);
         this.makeQueue(frame, layout.waiting, frame.vip);
         this.placeQueue(frame, true);
@@ -404,7 +423,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
         } else if (!solved) {
           stationCabin(remainder, CABIN_COLORS[(colorBase + 1) % CABIN_COLORS.length], 1);
         } else {
-          const entity = this.addCabin(CABIN_COLORS[(colorBase + 1) % CABIN_COLORS.length], UP_SCALE);
+          const entity = this.addCabin(
+            CABIN_COLORS[(colorBase + 1) % CABIN_COLORS.length],
+            UP_SCALE,
+          );
           entity.cabin.setTag(String(remainder), TAG_SCREEN);
           if (ridersInCompact) this.fillCabin(entity, remainder, false);
           this.up.push(entity);
@@ -437,7 +459,8 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     const total = this.up.length;
     this.up.forEach((entity, index) => {
       const spot = this.upSpot(index, total);
-      if (leaving.includes(entity)) this.send(entity, [CABLE_BEND, spot], duration, false, UP_SCALE);
+      if (leaving.includes(entity))
+        this.send(entity, [CABLE_BEND, spot], duration, false, UP_SCALE);
       else this.send(entity, [spot], duration);
     });
   }
@@ -518,7 +541,8 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
   private makeQueue(frame: GondolaFrame, count: number, vip: boolean) {
     this.queue = [];
     if (frame.representation === 'numbers') {
-      if (count > 0) this.queueSign = this.addSign(String(count), new Vector3(1.9, 0, QUEUE_Z), '#fff1cb');
+      if (count > 0)
+        this.queueSign = this.addSign(String(count), new Vector3(1.9, 0, QUEUE_Z), '#fff1cb');
       return;
     }
     for (let index = 0; index < count; index++) {
@@ -535,7 +559,11 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     this.queue.forEach((rider, index) => {
       if (!('spot' in rider.home)) return;
       const gap = frame.split > 0 && index >= frame.split ? SPLIT_GAP : 0;
-      const spot = rider.home.spot.set(QUEUE_X + index * QUEUE_STEP + gap, 0, QUEUE_Z + (index % 2) * 0.08);
+      const spot = rider.home.spot.set(
+        QUEUE_X + index * QUEUE_STEP + gap,
+        0,
+        QUEUE_Z + (index % 2) * 0.08,
+      );
       if (now && !rider.hop) {
         rider.bunny.root.position.copy(spot);
         rider.bunny.root.rotation.y = -0.25;
@@ -568,7 +596,9 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
         height: 120,
         radius: 0.4,
       });
-      const sprite = new Sprite(new SpriteMaterial({ map: label.texture, transparent: true, depthWrite: false }));
+      const sprite = new Sprite(
+        new SpriteMaterial({ map: label.texture, transparent: true, depthWrite: false }),
+      );
       sprite.scale.set(0.5, 0.375, 1);
       sprite.position.set(0, 1.25, 0);
       rider.bunny.root.add(sprite);
@@ -580,7 +610,13 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     const group = new Group();
     const wood = this.kit.mat('#8b5a2b', { roughness: 0.85 });
     group.add(this.kit.rod(wood, new Vector3(0, 0, 0), new Vector3(0, 0.95, 0), 0.05));
-    const label = new TextLabel(text, { fill, border: '#8b5a2b', width: 224, height: 160, radius: 0.25 });
+    const label = new TextLabel(text, {
+      fill,
+      border: '#8b5a2b',
+      width: 224,
+      height: 160,
+      radius: 0.25,
+    });
     const sprite = new Sprite(new SpriteMaterial({ map: label.texture, transparent: true }));
     sprite.scale.set(0.95, 0.68, 1);
     sprite.position.y = 1.2;
@@ -597,7 +633,8 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     sign.label.texture.dispose();
     sign.sprite.material.dispose();
     sign.group.traverse((object) => {
-      if (object instanceof Mesh && object.geometry instanceof CylinderGeometry) object.geometry.dispose();
+      if (object instanceof Mesh && object.geometry instanceof CylinderGeometry)
+        object.geometry.dispose();
     });
   }
 
@@ -627,7 +664,13 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
   }
 
   /** Sends a cabin along a path of points, from where it is now. */
-  private send(entity: CabinEntity, points: readonly Vector3[], duration: number, remove = false, scaleTo?: number) {
+  private send(
+    entity: CabinEntity,
+    points: readonly Vector3[],
+    duration: number,
+    remove = false,
+    scaleTo?: number,
+  ) {
     entity.route = {
       points: [entity.cabin.root.position.clone(), ...points],
       start: this.elapsed,
@@ -642,7 +685,12 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
   private arrive(entity: CabinEntity, from: readonly Vector3[], delay: number) {
     const target = entity.cabin.root.position.clone();
     entity.cabin.root.position.copy(from[0]);
-    entity.route = { points: [...from, target], start: this.elapsed + delay, duration: 0.9, remove: false };
+    entity.route = {
+      points: [...from, target],
+      start: this.elapsed + delay,
+      duration: 0.9,
+      remove: false,
+    };
     entity.swingAt = this.elapsed + delay;
   }
 
@@ -683,7 +731,9 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     this.queue = [];
     if (main) {
       firsts.forEach((rider, index) =>
-        showBunnies ? this.hopTo(rider, { cabin: main, seat: frame.cabin + index }, index * 0.05) : this.vanish(rider, index * 0.05),
+        showBunnies
+          ? this.hopTo(rider, { cabin: main, seat: frame.cabin + index }, index * 0.05)
+          : this.vanish(rider, index * 0.05),
       );
       this.door(main, 1, 0.6);
       this.later(0.75, () => {
@@ -708,12 +758,16 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       next.cabin.setDoor(0);
       next.doorTo = 0;
       next.cabin.setTarp(frame.tarp);
-      next.cabin.setTag(frame.representation === 'numbers' || frame.tarp ? String(layout.boarding ?? 0) : '');
+      next.cabin.setTag(
+        frame.representation === 'numbers' || frame.tarp ? String(layout.boarding ?? 0) : '',
+      );
       this.arrive(next, IN_FROM_VALLEY, 0);
       this.station = next;
       this.dress(frame);
       rest.forEach((rider, index) =>
-        showBunnies ? this.hopTo(rider, { cabin: next, seat: index }, 0.85 + index * 0.05) : this.vanish(rider, 0.85),
+        showBunnies
+          ? this.hopTo(rider, { cabin: next, seat: index }, 0.85 + index * 0.05)
+          : this.vanish(rider, 0.85),
       );
       this.door(next, 1, 1.5);
     });
@@ -738,7 +792,9 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     const boarders = this.queue;
     this.queue = [];
     boarders.forEach((rider, index) =>
-      showBunnies ? this.hopTo(rider, { cabin: express, seat: index }, 0.95 + index * 0.04) : this.vanish(rider, 0.9),
+      showBunnies
+        ? this.hopTo(rider, { cabin: express, seat: index }, 0.95 + index * 0.04)
+        : this.vanish(rider, 0.9),
     );
     if (this.queueSign) this.fadeSign(this.queueSign, 0.9);
     this.later(1.55, () => express.cabin.setTag('10'));
@@ -748,7 +804,12 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       express.doorAt = this.elapsed;
       hoppers.forEach((rider, index) => {
         this.scene.attach(rider.bunny.root);
-        this.hopTo(rider, { spot: new Vector3(QUEUE_X + 0.2 + index * 0.6, 0, QUEUE_Z + 0.2) }, index * 0.1, 0.9);
+        this.hopTo(
+          rider,
+          { spot: new Vector3(QUEUE_X + 0.2 + index * 0.6, 0, QUEUE_Z + 0.2) },
+          index * 0.1,
+          0.9,
+        );
       });
       this.markWavers(hoppers.length, -1, hoppers);
     });
@@ -789,14 +850,17 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     if (main) {
       this.door(main, 0, takeTen ? 0.7 : 1.4);
       const leavers = this.riders.filter(
-        (rider) => 'cabin' in rider.home && rider.home.cabin === main && rider.home.seat >= 10 - fromCabin,
+        (rider) =>
+          'cabin' in rider.home && rider.home.cabin === main && rider.home.seat >= 10 - fromCabin,
       );
       this.later(takeTen ? 0.95 : 1.6, () => {
         leavers.forEach((rider, index) => {
           this.scene.attach(rider.bunny.root);
           this.hopTo(rider, { cabin: down, seat: loose.length + index }, index * 0.05, 0.9);
         });
-        main.cabin.setTag(frame.representation === 'numbers' || frame.tarp ? String(layout.opened ?? 0) : '');
+        main.cabin.setTag(
+          frame.representation === 'numbers' || frame.tarp ? String(layout.opened ?? 0) : '',
+        );
         if (!showBunnies) main.shakeAt = this.elapsed;
       });
       this.door(main, 1, takeTen ? 1.6 : 2.3);
@@ -864,7 +928,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     const main = this.station;
     if (!main) return;
     const fill = frame.kind === 'add' ? 10 - frame.cabin : frame.cabin;
-    const door = this.temp.copy(STATION).add(this.temp2.set(0.2, -2.6, 1.0)).clone();
+    const door = this.temp
+      .copy(STATION)
+      .add(this.temp2.set(0.2, -2.6, 1.0))
+      .clone();
     this.queue.slice(0, frame.split).forEach((rider, index) => {
       const extra = index >= fill;
       rider.hop = {
@@ -885,7 +952,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
 
   private cheer(frame: GondolaFrame) {
     this.cheerAt = this.elapsed;
-    const at = this.temp.copy(STATION).add(this.temp2.set(0.5, 0, 0.5)).clone();
+    const at = this.temp
+      .copy(STATION)
+      .add(this.temp2.set(0.5, 0, 0.5))
+      .clone();
     this.confetti(at, frame.big ? 56 : 36);
     this.waveAt = this.elapsed;
     // Adding: the cabin with the rest rides up too, so both are up the mountain.
@@ -925,7 +995,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
 
   private puff(at: Vector3) {
     for (let index = 0; index < 8; index++) {
-      const mesh = new Mesh(this.puffGeometry, new MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.85 }));
+      const mesh = new Mesh(
+        this.puffGeometry,
+        new MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.85 }),
+      );
       const angle = (index / 8) * Math.PI * 2;
       mesh.position.copy(at).add(this.temp2.set(Math.cos(angle) * 0.2, 0.3, Math.sin(angle) * 0.2));
       this.particles.push({
@@ -945,13 +1018,20 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     const colors = ['#e0457b', '#ffd23f', '#3d8fe0', '#3fa65a', '#8a5cc7', '#ff9a3c'];
     for (let index = 0; index < count; index++) {
       const color = colors[index % colors.length];
-      const mesh = new Mesh(this.confettiGeometry, this.kit.mat(color, { emissive: color, emissiveIntensity: 0.3, side: DoubleSide }));
+      const mesh = new Mesh(
+        this.confettiGeometry,
+        this.kit.mat(color, { emissive: color, emissiveIntensity: 0.3, side: DoubleSide }),
+      );
       mesh.position.copy(at);
       const angle = (index / count) * Math.PI * 2;
       const speed = 1.6 + (index % 4) * 0.5;
       this.particles.push({
         mesh,
-        velocity: new Vector3(Math.cos(angle) * speed, 4.5 + (index % 5) * 0.5, Math.sin(angle) * speed * 0.6),
+        velocity: new Vector3(
+          Math.cos(angle) * speed,
+          4.5 + (index % 5) * 0.5,
+          Math.sin(angle) * speed * 0.6,
+        ),
         born: this.elapsed,
         life: 2.2,
         spin: 6 + (index % 7),
@@ -1015,7 +1095,7 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     if (!frame) return;
     const calm = this.calm;
     // Scripted steps whose time has come.
-    for (let index = 0; index < this.timers.length; ) {
+    for (let index = 0; index < this.timers.length;) {
       if (this.timers[index].at <= t) {
         const [timer] = this.timers.splice(index, 1);
         timer.run();
@@ -1051,7 +1131,8 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       }
       // A swing that dies away after starting and stopping, and a gentle sway on the cable.
       const since = t - entity.swingAt;
-      const swing = since >= 0 && since < 3 ? Math.sin(since * 5) * 0.12 * Math.exp(-since * 1.4) : 0;
+      const swing =
+        since >= 0 && since < 3 ? Math.sin(since * 5) * 0.12 * Math.exp(-since * 1.4) : 0;
       const sway = calm ? 0 : Math.sin(t * 0.9 + root.position.x) * 0.012;
       entity.cabin.body.rotation.z = swing + sway + shake(t, entity.shakeAt, 0.6, 0.08);
       const pulse = entity.pulse ? 1 + Math.max(0, Math.sin(t * 5)) * 0.06 : 1;
@@ -1059,7 +1140,8 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       // Doors slide over a third of a second; a jam rattles them half shut.
       const doorAge = (t - entity.doorAt) / 0.35;
       const from = entity.doorTo === 1 ? 0 : 1;
-      let shut = entity.doorAt < 0 ? entity.doorTo : from + (entity.doorTo - from) * smooth(doorAge);
+      let shut =
+        entity.doorAt < 0 ? entity.doorTo : from + (entity.doorTo - from) * smooth(doorAge);
       let rattle = 0;
       const jam = t - entity.jamAt;
       if (jam >= 0 && jam < 1.1) {
@@ -1078,12 +1160,17 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
   /** The point a share `u` of the way along a path of points. */
   private along(points: readonly Vector3[], u: number, out: Vector3) {
     let total = 0;
-    for (let index = 1; index < points.length; index++) total += points[index].distanceTo(points[index - 1]);
+    for (let index = 1; index < points.length; index++)
+      total += points[index].distanceTo(points[index - 1]);
     let left = u * total;
     for (let index = 1; index < points.length; index++) {
       const length = points[index].distanceTo(points[index - 1]);
       if (left <= length || index === points.length - 1) {
-        return out.lerpVectors(points[index - 1], points[index], length ? Math.min(1, left / length) : 1);
+        return out.lerpVectors(
+          points[index - 1],
+          points[index],
+          length ? Math.min(1, left / length) : 1,
+        );
       }
       left -= length;
     }
@@ -1107,7 +1194,9 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
           }
           const there = progress < 0.5 ? progress * 2 : 2 - progress * 2;
           bunny.root.position.lerpVectors(home, hop.bump, smooth(there));
-          bunny.root.position.y += Math.sin(progress * Math.PI * 2) ** 2 * hop.height * 0.5 + Math.sin(progress * Math.PI) * 0.2;
+          bunny.root.position.y +=
+            Math.sin(progress * Math.PI * 2) ** 2 * hop.height * 0.5 +
+            Math.sin(progress * Math.PI) * 0.2;
           if (progress >= 1) {
             rider.hop = null;
             bunny.root.position.copy(home);
@@ -1143,12 +1232,15 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       }
       // Ears bounce while hopping and when cheering; riders cheer from the windows.
       const ears = hop && t >= hop.start ? Math.sin((t - hop.start) * 18) * 0.35 : 0;
-      const idle = calm ? 0 : Math.sin(t * 2.2 + bunny.look.fur.length + rider.bunny.root.id) * 0.06;
+      const idle = calm
+        ? 0
+        : Math.sin(t * 2.2 + bunny.look.fur.length + rider.bunny.root.id) * 0.06;
       const happy = cheer >= 0 && cheer < 1.4 ? Math.sin(cheer * 14) * 0.3 * (1 - cheer / 1.4) : 0;
       bunny.ears[0].rotation.x = -0.22 + ears + idle + happy;
       bunny.ears[1].rotation.x = -0.22 - ears * 0.8 + idle * 0.7 + happy;
       if (!rider.hop) {
-        const jump = cheer >= 0 && cheer < 1.2 ? Math.abs(Math.sin(cheer * 9)) * 0.12 * (1 - cheer / 1.2) : 0;
+        const jump =
+          cheer >= 0 && cheer < 1.2 ? Math.abs(Math.sin(cheer * 9)) * 0.12 * (1 - cheer / 1.2) : 0;
         bunny.body.position.y = jump;
         bunny.body.position.x = shiver >= 0 && shiver < 1.6 ? Math.sin(shiver * 70) * 0.012 : 0;
       }
@@ -1186,7 +1278,9 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       goat.body.position.y = Math.abs(Math.sin(beat)) * 0.18;
       goat.body.rotation.y = Math.sin(beat / 2) * 0.4;
       goat.head.rotation.z = Math.sin(beat) * 0.25;
-      goat.legs.forEach((item, index) => (item.hip.rotation.x = Math.sin(beat + index * Math.PI) * 0.4));
+      goat.legs.forEach(
+        (item, index) => (item.hip.rotation.x = Math.sin(beat + index * Math.PI) * 0.4),
+      );
       leg.hip.rotation.x = -1.8;
       leg.hip.rotation.z = Math.sin(beat) * 0.4;
     } else if (shrug >= 0 && shrug < 1.1) {
@@ -1264,7 +1358,8 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     }
     positions.needsUpdate = true;
     for (const lantern of this.lanterns)
-      if (lantern.glow.visible) lantern.glow.material.opacity = calm ? 0.8 : 0.7 + Math.sin(t * 3 + lantern.glow.id) * 0.12;
+      if (lantern.glow.visible)
+        lantern.glow.material.opacity = calm ? 0.8 : 0.7 + Math.sin(t * 3 + lantern.glow.id) * 0.12;
   }
 
   // -------------------------------------------------------------------------------------------
@@ -1283,7 +1378,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       colors.push(mixed.r, mixed.g, mixed.b);
     }
     geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
-    const sky = new Mesh(geometry, new MeshBasicMaterial({ vertexColors: true, side: BackSide, fog: false }));
+    const sky = new Mesh(
+      geometry,
+      new MeshBasicMaterial({ vertexColors: true, side: BackSide, fog: false }),
+    );
     this.scene.add(sky);
     // Far peaks behind the mountain, pale blue in the haze.
     const peaks = new MeshStandardMaterial({ color: '#c9dcf0', roughness: 1, flatShading: true });
@@ -1324,30 +1422,57 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     }
     geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
     geometry.computeVertexNormals();
-    const ground = new Mesh(geometry, new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
+    const ground = new Mesh(
+      geometry,
+      new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }),
+    );
     ground.receiveShadow = true;
     this.scene.add(ground);
 
     // Pine trees with snow on their branches, scattered up the slopes but off the cable's line.
     const spots: [number, number, number][] = [];
     let seed = 7;
-    const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     for (let index = 0; index < 220 && spots.length < 90; index++) {
       const x = -24 + random() * 52;
       const z = -40 + random() * 36;
-      const cable = Math.abs(x - (CABLE_BEND.x + ((SUMMIT.x - CABLE_BEND.x) * (CABLE_BEND.z - z)) / (CABLE_BEND.z - SUMMIT.z)));
+      const cable = Math.abs(
+        x -
+          (CABLE_BEND.x +
+            ((SUMMIT.x - CABLE_BEND.x) * (CABLE_BEND.z - z)) / (CABLE_BEND.z - SUMMIT.z)),
+      );
       if (cable < 2.6 || (z > -4.5 && x > -7 && x < 9)) continue;
       if (Math.hypot(x - SUMMIT.x, z - SUMMIT.z) < 9.5) continue;
       spots.push([x, z, 0.8 + random() * 0.7]);
     }
     // A few big trees framing the station.
-    spots.push([-7.4, -1.5, 1.6], [-8.6, 1.2, 1.9], [8.8, -2.2, 1.5], [9.6, 0.6, 1.8], [-6.2, -4, 1.3]);
-    const trunk = new InstancedMesh(new CylinderGeometry(0.1, 0.14, 0.7, 6), this.kit.mat('#6b4426'), spots.length);
+    spots.push(
+      [-7.4, -1.5, 1.6],
+      [-8.6, 1.2, 1.9],
+      [8.8, -2.2, 1.5],
+      [9.6, 0.6, 1.8],
+      [-6.2, -4, 1.3],
+    );
+    const trunk = new InstancedMesh(
+      new CylinderGeometry(0.1, 0.14, 0.7, 6),
+      this.kit.mat('#6b4426'),
+      spots.length,
+    );
     const tiers = [0, 1, 2].map(
-      (tier) => new InstancedMesh(new ConeGeometry(0.95 - tier * 0.25, 1.1, 9), this.kit.mat(tier === 1 ? '#2f6b45' : '#285e3d'), spots.length),
+      (tier) =>
+        new InstancedMesh(
+          new ConeGeometry(0.95 - tier * 0.25, 1.1, 9),
+          this.kit.mat(tier === 1 ? '#2f6b45' : '#285e3d'),
+          spots.length,
+        ),
     );
     const caps = [0, 1, 2].map(
-      (tier) => new InstancedMesh(new ConeGeometry(0.72 - tier * 0.2, 0.45, 9), this.kit.mat('#ffffff', { roughness: 1 }), spots.length),
+      (tier) =>
+        new InstancedMesh(
+          new ConeGeometry(0.72 - tier * 0.2, 0.45, 9),
+          this.kit.mat('#ffffff', { roughness: 1 }),
+          spots.length,
+        ),
     );
     const matrix = new Matrix4();
     spots.forEach(([x, z, s], index) => {
@@ -1392,7 +1517,9 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     for (const x of [-3.4, 0.0]) {
       this.scene.add(kit.rod(beam, new Vector3(x, 0, -0.95), new Vector3(x, 4.1, -0.95), 0.12));
     }
-    this.scene.add(kit.rod(beam, new Vector3(-3.6, 4.0, -0.95), new Vector3(0.2, 4.0, -0.95), 0.13));
+    this.scene.add(
+      kit.rod(beam, new Vector3(-3.6, 4.0, -0.95), new Vector3(0.2, 4.0, -0.95), 0.13),
+    );
     const roof = new Mesh(new ConeGeometry(2.9, 0.9, 4), kit.mat('#b8423a', { roughness: 0.7 }));
     roof.rotation.y = Math.PI / 4;
     roof.scale.set(1, 1, 0.6);
@@ -1401,7 +1528,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     roofSnow.rotation.y = Math.PI / 4;
     roofSnow.scale.set(1, 1, 0.6);
     roofSnow.position.set(-1.7, 4.88, -0.95);
-    const wheel = new Mesh(new TorusGeometry(0.6, 0.07, 8, 28), kit.mat('#d94a3a', { metalness: 0.3, roughness: 0.5 }));
+    const wheel = new Mesh(
+      new TorusGeometry(0.6, 0.07, 8, 28),
+      kit.mat('#d94a3a', { metalness: 0.3, roughness: 0.5 }),
+    );
     wheel.rotation.x = Math.PI / 2;
     wheel.position.set(-1.7, 3.3, -0.65);
     this.scene.add(roof, roofSnow, wheel);
@@ -1419,8 +1549,19 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       const ground = groundHeight(top.x, top.z);
       const pylon = kit.mat('#7c8796', { metalness: 0.4, roughness: 0.5 });
       this.scene.add(
-        kit.rod(pylon, new Vector3(top.x, ground, top.z), new Vector3(top.x, top.y + 0.3, top.z), 0.16, 0.1),
-        kit.rod(pylon, new Vector3(top.x - 0.8, top.y + 0.3, top.z), new Vector3(top.x + 0.8, top.y + 0.3, top.z), 0.07),
+        kit.rod(
+          pylon,
+          new Vector3(top.x, ground, top.z),
+          new Vector3(top.x, top.y + 0.3, top.z),
+          0.16,
+          0.1,
+        ),
+        kit.rod(
+          pylon,
+          new Vector3(top.x - 0.8, top.y + 0.3, top.z),
+          new Vector3(top.x + 0.8, top.y + 0.3, top.z),
+          0.07,
+        ),
       );
     }
     // The rack behind the queue, where full cabins wait; it only shows when it holds some.
@@ -1437,7 +1578,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     this.scene.add(kit.rod(beam, new Vector3(-4.6, 0.6, -2.3), new Vector3(6.6, 0.6, -2.3), 0.04));
     // Snow banks at the deck's ends.
     const bank = kit.mat('#ffffff', { roughness: 1 });
-    this.scene.add(kit.blob(bank, 1.4, 0.45, 1.0, -6.4, 0.0, 1.0), kit.blob(bank, 1.6, 0.5, 1.2, 7.8, 0, 1.2));
+    this.scene.add(
+      kit.blob(bank, 1.4, 0.45, 1.0, -6.4, 0.0, 1.0),
+      kit.blob(bank, 1.6, 0.5, 1.2, 7.8, 0, 1.2),
+    );
   }
 
   private buildLanterns() {
@@ -1447,12 +1591,28 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       const x = along.x + 1.6 + Math.sin(index * 1.7) * 0.4;
       const z = along.z;
       const y = groundHeight(x, z);
-      const post = this.kit.rod(this.kit.mat('#3b3030'), new Vector3(x, y, z), new Vector3(x, y + 1.1, z), 0.05);
-      const light = new MeshStandardMaterial({ color: '#ffe9a8', emissive: '#ffb53d', emissiveIntensity: 0 });
+      const post = this.kit.rod(
+        this.kit.mat('#3b3030'),
+        new Vector3(x, y, z),
+        new Vector3(x, y + 1.1, z),
+        0.05,
+      );
+      const light = new MeshStandardMaterial({
+        color: '#ffe9a8',
+        emissive: '#ffb53d',
+        emissiveIntensity: 0,
+      });
       const lamp = new Mesh(this.kit.smallBall, light);
       lamp.scale.setScalar(0.17);
       lamp.position.set(x, y + 1.2, z);
-      const glow = new Sprite(new SpriteMaterial({ map: this.glow, blending: AdditiveBlending, transparent: true, depthWrite: false }));
+      const glow = new Sprite(
+        new SpriteMaterial({
+          map: this.glow,
+          blending: AdditiveBlending,
+          transparent: true,
+          depthWrite: false,
+        }),
+      );
       glow.scale.setScalar(1.0);
       glow.position.copy(lamp.position);
       glow.visible = false;
@@ -1485,7 +1645,15 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       const snowCap = new Mesh(new ConeGeometry(w * 0.7, h * 0.35, 4), kit.mat('#ffffff'));
       snowCap.rotation.y = Math.PI / 4;
       snowCap.position.y = h + h * 0.68;
-      const window = kit.blob(kit.mat('#ffe9a8', { emissive: '#ffb53d', emissiveIntensity: 0.8 }), 0.16, 0.18, 0.02, 0, h * 0.55, w * 0.52);
+      const window = kit.blob(
+        kit.mat('#ffe9a8', { emissive: '#ffb53d', emissiveIntensity: 0.8 }),
+        0.16,
+        0.18,
+        0.02,
+        0,
+        h * 0.55,
+        w * 0.52,
+      );
       group.add(body, top, snowCap, window);
     };
     // 1 ski hut
@@ -1493,7 +1661,12 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     // 2 snow-bunny statue
     {
       const group = at(-0.5, 3);
-      const statue = new Bunny(kit, { fur: '#ffffff', belly: '#ffffff', scarf: '#3d8fe0', hat: null });
+      const statue = new Bunny(kit, {
+        fur: '#ffffff',
+        belly: '#ffffff',
+        scarf: '#3d8fe0',
+        hat: null,
+      });
       statue.root.scale.setScalar(2.2);
       group.add(new Mesh(new CylinderGeometry(0.5, 0.6, 0.4, 12), kit.mat('#b9c6d6')), statue.root);
       statue.root.position.y = 0.4;
@@ -1501,7 +1674,10 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     // 3 ice rink
     {
       const group = at(2.5, 3);
-      const rink = new Mesh(new CylinderGeometry(1.4, 1.4, 0.06, 28), kit.mat('#bfe6ff', { roughness: 0.1, metalness: 0.2 }));
+      const rink = new Mesh(
+        new CylinderGeometry(1.4, 1.4, 0.06, 28),
+        kit.mat('#bfe6ff', { roughness: 0.1, metalness: 0.2 }),
+      );
       const rim = new Mesh(new TorusGeometry(1.4, 0.07, 6, 28), kit.mat('#e0457b'));
       rim.rotation.x = Math.PI / 2;
       group.add(rink, rim);
@@ -1518,7 +1694,15 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       );
       for (let index = 0; index < 8; index++) {
         const angle = (index / 8) * Math.PI * 2;
-        const seat = kit.blob(kit.mat(CABIN_COLORS[index % CABIN_COLORS.length]), 0.16, 0.16, 0.16, Math.cos(angle) * 1.3, 1.8 + Math.sin(angle) * 1.3, 0);
+        const seat = kit.blob(
+          kit.mat(CABIN_COLORS[index % CABIN_COLORS.length]),
+          0.16,
+          0.16,
+          0.16,
+          Math.cos(angle) * 1.3,
+          1.8 + Math.sin(angle) * 1.3,
+          0,
+        );
         group.add(seat);
       }
     }
@@ -1538,7 +1722,12 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
       const group = at(-2, -3);
       for (let index = 0; index < 4; index++)
         group.add(
-          kit.rod(kit.mat('#3b3030'), new Vector3(index * 0.6, 0, 0), new Vector3(index * 0.6, 1.2, 0), 0.03),
+          kit.rod(
+            kit.mat('#3b3030'),
+            new Vector3(index * 0.6, 0, 0),
+            new Vector3(index * 0.6, 1.2, 0),
+            0.03,
+          ),
           kit.blob(kit.mat(CABIN_COLORS[index]), 0.2, 0.13, 0.02, index * 0.6 + 0.2, 1.08, 0),
         );
     }
@@ -1563,14 +1752,27 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
         cone.position.y = 0.7 + tier * 0.6;
         group.add(cone);
       }
-      group.add(kit.blob(kit.mat(GOLD, { emissive: '#ffb800', emissiveIntensity: 0.8 }), 0.16, 0.16, 0.16, 0, 2.3, 0));
+      group.add(
+        kit.blob(
+          kit.mat(GOLD, { emissive: '#ffb800', emissiveIntensity: 0.8 }),
+          0.16,
+          0.16,
+          0.16,
+          0,
+          2.3,
+          0,
+        ),
+      );
     }
     // 11 observatory
     {
       const group = at(7, -2.5);
       const tower = new Mesh(new CylinderGeometry(0.7, 0.75, 1.1, 16), kit.mat('#e8eef5'));
       tower.position.y = 0.55;
-      const dome = new Mesh(new SphereGeometry(0.72, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), kit.mat('#9aa7b8', { metalness: 0.4 }));
+      const dome = new Mesh(
+        new SphereGeometry(0.72, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+        kit.mat('#9aa7b8', { metalness: 0.4 }),
+      );
       dome.position.y = 1.1;
       group.add(tower, dome);
     }
@@ -1633,7 +1835,7 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     const positions = new Float32Array(count * 3);
     const speeds = new Float32Array(count);
     let seed = 11;
-    const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     for (let index = 0; index < count; index++) {
       positions[index * 3] = -12 + random() * 26;
       positions[index * 3 + 1] = random() * 12;
@@ -1644,7 +1846,13 @@ export class GondolaWorld extends Stage implements StateWorld<GondolaFrame> {
     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
     const points = new Points(
       geometry,
-      new PointsMaterial({ size: 0.11, map: this.flake, transparent: true, depthWrite: false, opacity: 0.9 }),
+      new PointsMaterial({
+        size: 0.11,
+        map: this.flake,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.9,
+      }),
     );
     this.scene.add(points);
     return { points, speeds };
@@ -1691,4 +1899,3 @@ const FRAME_TALL: readonly Vector3[] = [
   new Vector3(-1.7, 4.6, -0.1),
   new Vector3(SUMMIT.x, SUMMIT.y + 5.5, SUMMIT.z),
 ];
-

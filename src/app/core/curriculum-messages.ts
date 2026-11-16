@@ -749,7 +749,8 @@ export const curriculumFr: CurriculumMessages = {
   gondola11: 'L’express dans les deux sens',
   gondola11Help: 'Plus 19 et 29, moins 9 et 19, jusqu’à 100.',
   gondola12: 'Maître de la montagne',
-  gondola12Help: 'Toutes les astuces mélangées, rien que des nombres. Trois étoiles pour le maîtriser.',
+  gondola12Help:
+    'Toutes les astuces mélangées, rien que des nombres. Trois étoiles pour le maîtriser.',
   race20: 'Colline de la demi-lune',
   race20Help: 'Les moitiés jusqu’à 100, comme la moitié de 18 et la moitié de 40.',
   race21: 'Sentier scintillant',

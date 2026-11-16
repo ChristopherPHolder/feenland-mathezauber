@@ -69,7 +69,6 @@ describe('Feenland navigation', () => {
   });
   it('switches all locales immediately and persists preference without changing progress', async () => {
     const h = await openRoute('/settings');
-    const i = TestBed.inject(LocaleService);
     const p = TestBed.inject(ProgressService);
     p.explore('tens');
     const before = JSON.stringify(p.progress());

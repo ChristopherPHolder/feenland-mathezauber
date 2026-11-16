@@ -56,7 +56,8 @@
   white-space: nowrap;
 }
 
-@media (max-height: 940px) and (max-width: 520px), (orientation: landscape) and (max-height: 520px) {
+@media (max-height: 940px) and (max-width: 520px),
+  (orientation: landscape) and (max-height: 520px) {
   .keys {
     gap: 6px;
   }

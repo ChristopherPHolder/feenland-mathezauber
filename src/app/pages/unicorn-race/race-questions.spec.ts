@@ -60,7 +60,7 @@ describe('race questions', () => {
     expect(raceCups.map((cup) => cupTracks(cup).length)).toEqual([4, 5, 5, 5, 3]);
     // Cups stay in order: every track of a cup comes before the next cup's tracks.
     expect(raceTracks.map((track) => raceCups.indexOf(track.cup))).toEqual(
-      raceTracks.map((track) => raceCups.indexOf(track.cup)).sort(),
+      raceTracks.map((track) => raceCups.indexOf(track.cup)).sort((a, b) => a - b),
     );
     expect(trackPosition(16)).toBe(1);
     expect(trackAfter(16)).toBe(1);

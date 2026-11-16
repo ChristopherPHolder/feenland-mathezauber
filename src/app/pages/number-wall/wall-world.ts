@@ -280,7 +280,7 @@ export class WallWorld extends Stage implements StateWorld<WallFrame> {
     }
     for (const crack of this.cracks) {
       crack.removeFromParent();
-      crack.material instanceof MeshBasicMaterial && crack.material.map?.dispose();
+      if (crack.material instanceof MeshBasicMaterial) crack.material.map?.dispose();
     }
     this.cracks = [];
     this.bricks = frame.rows.flatMap((row, rowIndex) =>

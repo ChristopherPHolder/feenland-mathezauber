@@ -982,7 +982,6 @@ export class Bakery {
         ? `${note} ${this.totalPrompt()}`
         : note;
     }
-    const shown = this.shown();
     switch (order.phase) {
       case 'cut':
         return this.t(
@@ -1027,7 +1026,7 @@ export class Bakery {
   protected helpText() {
     const help = this.round().help;
     if (!help) return '';
-    const values: Record<string, string | number> = { ...(help.values ?? {}) };
+    const values: Record<string, string | number> = { ...help.values };
     if (help.list) values['list'] = this.joinList(help.list.map(String));
     return this.t(help.key, values);
   }

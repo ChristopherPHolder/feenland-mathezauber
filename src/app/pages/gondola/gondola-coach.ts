@@ -1,4 +1,12 @@
-import { afterNextRender, Component, ElementRef, inject, input, output, viewChild } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  ElementRef,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { LocaleService } from '../../core/locale';
 import { GondolaDemo } from './gondola-demo';
 import { gondolaText, GondolaMessageKey } from './gondola-messages';

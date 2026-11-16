@@ -4,7 +4,8 @@
   position: absolute;
   inset: 0;
 }
-.is-3d :is(
+.is-3d
+  :is(
     .forest,
     .scene-shade,
     .fireflies,

@@ -3,7 +3,14 @@ import { DestroyRef, inject, Injectable } from '@angular/core';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
 
 export type DrumEffect =
-  'start' | 'bonk' | 'layerUp' | 'layerDown' | 'verse' | 'solo' | 'win' | 'tap';
+  | 'start'
+  | 'bonk'
+  | 'layerUp'
+  | 'layerDown'
+  | 'verse'
+  | 'solo'
+  | 'win'
+  | 'tap';
 
 /** How often the scheduler wakes, and how far ahead it books notes on the audio clock. */
 const TICK_MS = 25;

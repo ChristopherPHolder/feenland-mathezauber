@@ -12,7 +12,14 @@ import type { BookShape } from './firework-shapes';
  * - `show`: the round is over and every firework of the round goes up together
  */
 export type FireworkPhase =
-  'idle' | 'launch' | 'look' | 'fade' | 'gone' | 'bloom' | 'fizzle' | 'show';
+  | 'idle'
+  | 'launch'
+  | 'look'
+  | 'fade'
+  | 'gone'
+  | 'bloom'
+  | 'fizzle'
+  | 'show';
 
 /** What the lakeside scene draws: plain state from the game, never decisions. */
 export interface FireworkFrame {

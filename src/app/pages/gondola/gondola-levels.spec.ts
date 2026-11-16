@@ -84,14 +84,20 @@ describe('gondola levels', () => {
         const keys = round.map((item) => `${item.kind}${item.a},${item.b}`);
         expect(new Set(keys).size).toBe(keys.length);
         const big = round.at(-1)!;
-        expect(level.bigPool().some((item) => item.kind === big.kind && item.a === big.a && item.b === big.b)).toBe(true);
+        expect(
+          level
+            .bigPool()
+            .some((item) => item.kind === big.kind && item.a === big.a && item.b === big.b),
+        ).toBe(true);
       }
     }
   });
 
   it('starts from 9, then 8, then 7 and 6, and mixes the order on level 4', () => {
-    for (const round of rounds(1)) expect(round.slice(0, -1).every((item) => item.a === 9)).toBe(true);
-    for (const round of rounds(2)) expect(round.slice(0, -1).every((item) => item.a === 8)).toBe(true);
+    for (const round of rounds(1))
+      expect(round.slice(0, -1).every((item) => item.a === 9)).toBe(true);
+    for (const round of rounds(2))
+      expect(round.slice(0, -1).every((item) => item.a === 8)).toBe(true);
     for (const round of rounds(3))
       expect(round.slice(0, -1).every((item) => item.a === 7 || item.a === 6)).toBe(true);
     const level4 = rounds(4).flat();
@@ -103,8 +109,10 @@ describe('gondola levels', () => {
   it('keeps the bigger mountains in their ranges', () => {
     for (const item of rounds(5).flat()) expect(item).toMatchObject({ kind: 'sub' });
     for (const item of rounds(6).flat().slice(0, -1)) expect([7, 8, 9]).toContain(item.b);
-    for (const item of rounds(7).flat()) expect(item.a >= 10 && item.b < 10 && item.kind === 'add').toBe(true);
-    for (const item of rounds(8).flat()) expect(item.a >= 20 && item.b < 10 && item.kind === 'sub').toBe(true);
+    for (const item of rounds(7).flat())
+      expect(item.a >= 10 && item.b < 10 && item.kind === 'add').toBe(true);
+    for (const item of rounds(8).flat())
+      expect(item.a >= 20 && item.b < 10 && item.kind === 'sub').toBe(true);
     for (const item of rounds(9).flat()) expect(item.b >= 12 && item.a + item.b <= 99).toBe(true);
     for (const item of rounds(10).flat()) expect([8, 9, 19]).toContain(item.b);
     for (const item of rounds(11).flat()) expect([9, 19, 29]).toContain(item.b);
@@ -167,7 +175,10 @@ describe('splitting the group', () => {
         if (canExpress(level, item)) moves.push('express');
         for (const move of moves) {
           const layout = sceneLayout(frameFor(item, move, 'answer'));
-          expect(layoutTotal(layout, item.kind), `${item.a} ${item.kind} ${item.b} by ${move}`).toBe(answer);
+          expect(
+            layoutTotal(layout, item.kind),
+            `${item.a} ${item.kind} ${item.b} by ${move}`,
+          ).toBe(answer);
           expect(layout.parked).toBeGreaterThanOrEqual(0);
           expect(layout.boarding ?? 0).toBeGreaterThanOrEqual(0);
           expect(layout.opened ?? 0).toBeGreaterThanOrEqual(0);

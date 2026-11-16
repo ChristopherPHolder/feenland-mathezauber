@@ -408,7 +408,6 @@ interface Built {
   readonly answer: number;
 }
 
-const QUARTER = [0, 90 * DEG, 180 * DEG, 270 * DEG];
 const DICE_TURNS = [0, 45 * DEG, 90 * DEG];
 const FRAME_TURNS = [0, 90 * DEG];
 

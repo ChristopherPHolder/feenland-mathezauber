@@ -31,7 +31,9 @@
         <app-gondola-demo class="demo" />
         <div class="intro-side">
           <div class="trick-card">
-            <h3>{{ t('trickTitle') }} <span class="example">{{ stage().example }}</span></h3>
+            <h3>
+              {{ t('trickTitle') }} <span class="example">{{ stage().example }}</span>
+            </h3>
             <p>{{ t(stage().trick) }}</p>
           </div>
           <fieldset class="pace" aria-describedby="pace-help">
@@ -66,7 +68,9 @@
                   </svg>
                   <strong>{{ t(option.label) }}</strong>
                   <span class="pace-time">{{
-                    option.id === 'off' ? t('paceUnlimited') : t('paceSeconds', { n: paceSeconds(option.id) })
+                    option.id === 'off'
+                      ? t('paceUnlimited')
+                      : t('paceSeconds', { n: paceSeconds(option.id) })
                   }}</span>
                 </label>
               }
@@ -109,8 +113,8 @@
       [attr.aria-label]="t('done')"
     >
       <app-three-stage class="outcome-art" [world]="loadWorld" [state]="outcomeFrame()">
-          <app-gondola-platform [frame]="outcomeFrame()" />
-        </app-three-stage>
+        <app-gondola-platform [frame]="outcomeFrame()" />
+      </app-three-stage>
       <div class="outcome-copy">
         <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
         <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
@@ -176,7 +180,10 @@
     </section>
   } @else {
     <div class="hud">
-      <ol class="cabin-strip" [attr.aria-label]="t('turnsHud', { n: round().delivered, total: turns() })">
+      <ol
+        class="cabin-strip"
+        [attr.aria-label]="t('turnsHud', { n: round().delivered, total: turns() })"
+      >
         @for (slot of cabinSlots(); track slot) {
           <li
             class="cabin-slot"
@@ -190,7 +197,10 @@
               <path class="hang" d="M12 1v5" />
               <rect x="3" y="6" width="18" height="15" rx="5" />
               @if (round().log[slot]) {
-                <path class="slot-star" d="m12 9 1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" />
+                <path
+                  class="slot-star"
+                  d="m12 9 1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z"
+                />
               }
             </svg>
           </li>
@@ -225,7 +235,9 @@
               <path class="steam" d="M8 6q-1-2 0-4m4 4q-1-2 0-4" />
             }
           </svg>
-          <span>{{ t('cocoa') }}: {{ t(round().cocoa === 'cold' ? 'cocoaCold' : 'cocoaWarm') }}</span>
+          <span
+            >{{ t('cocoa') }}: {{ t(round().cocoa === 'cold' ? 'cocoaCold' : 'cocoaWarm') }}</span
+          >
           <span class="cloud-meter" aria-hidden="true"><span></span></span>
         </p>
       }
@@ -255,9 +267,12 @@
           </p>
           <p class="sum">
             {{ sum() }} =
-            <span class="unknown" [class.solved]="round().phase === 'solved'" [class.typing]="!!round().typed">{{
-              round().phase === 'solved' ? shape().answer : round().typed || '?'
-            }}</span>
+            <span
+              class="unknown"
+              [class.solved]="round().phase === 'solved'"
+              [class.typing]="!!round().typed"
+              >{{ round().phase === 'solved' ? shape().answer : round().typed || '?' }}</span
+            >
           </p>
           <p class="step">
             {{
@@ -324,7 +339,12 @@
                 </button>
               }
             </div>
-            @if (swappable() || takeTenOffer() || expressOffer() || stage().representation === 'numbers') {
+            @if (
+              swappable() ||
+              takeTenOffer() ||
+              expressOffer() ||
+              stage().representation === 'numbers'
+            ) {
               <div class="tricks">
                 @if (swappable()) {
                   <button type="button" class="trick swap" (click)="swap()">{{ t('swap') }}</button>
@@ -366,12 +386,23 @@
                 class="record"
                 [whole]="shape().group"
                 [first]="cherryFirst()"
-                [label]="t('cherryLabel', { n: shape().group, first: cherryFirst() ?? 0, rest: shape().group - (cherryFirst() ?? 0) })"
+                [label]="
+                  t('cherryLabel', {
+                    n: shape().group,
+                    first: cherryFirst() ?? 0,
+                    rest: shape().group - (cherryFirst() ?? 0),
+                  })
+                "
               />
             }
             @if (round().phase === 'answer') {
               @if (stage().choices) {
-                <div class="choices" [class.is-guided]="guideAnswer()" role="group" [attr.aria-label]="t('choicesLabel')">
+                <div
+                  class="choices"
+                  [class.is-guided]="guideAnswer()"
+                  role="group"
+                  [attr.aria-label]="t('choicesLabel')"
+                >
                   @for (choice of round().choices; track choice) {
                     <button type="button" class="choice" (click)="answer(choice)">
                       {{ choice }}
@@ -407,7 +438,7 @@
         }
       </div>
     </div>
-      @if (coaching()) {
+    @if (coaching()) {
       <app-gondola-coach [alternate]="demoClash()" (done)="closeHelp()" />
     }
   }

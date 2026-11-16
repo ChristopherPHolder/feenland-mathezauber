@@ -13,14 +13,22 @@ import { Component, computed, ElementRef, input, model, output, viewChild } from
 @Component({
   selector: 'app-gondola-split',
   template: `
-    <div class="row" [class.is-down]="kind() === 'sub'" [style.--n]="group()" [style.--split]="split()">
+    <div
+      class="row"
+      [class.is-down]="kind() === 'sub'"
+      [style.--n]="group()"
+      [style.--split]="split()"
+    >
       <span class="first-band" aria-hidden="true"></span>
       <span class="tokens" aria-hidden="true">
         @for (slot of slots(); track slot) {
           <span class="token" [class.is-first]="slot < split()">
             <svg viewBox="0 0 40 56">
               <path class="ear" d="M11 22 8 3c0-3 6-3 7 0l3 18zM29 22l3-19c1-3 7-3 7 0l-4 19z" />
-              <path class="ear-in" d="M12 19 10 5c0-1 3-1 3 0l2 14zM28 19l2-14c0-1 3-1 3 0l-2 14z" />
+              <path
+                class="ear-in"
+                d="M12 19 10 5c0-1 3-1 3 0l2 14zM28 19l2-14c0-1 3-1 3 0l-2 14z"
+              />
               <ellipse class="fur" cx="20" cy="43" rx="13" ry="12" />
               <circle class="fur" cx="20" cy="27" r="10" />
               <path class="scarf" [style.fill]="scarf(slot)" d="M11 34q9 5 18 0v4q-9 5-18 0z" />
@@ -162,7 +170,9 @@ export class GondolaCherry {
  */
 @Component({
   selector: 'app-gondola-keypad',
-  template: `<p class="display sr-only" aria-live="polite">{{ answerLabel() }}: {{ value() || '?' }}</p>
+  template: `<p class="display sr-only" aria-live="polite">
+      {{ answerLabel() }}: {{ value() || '?' }}
+    </p>
     <div class="keys" role="group" [attr.aria-label]="padLabel()">
       @for (digit of digits; track digit) {
         <button type="button" class="key" [disabled]="disabled()" (click)="digit$.emit(digit)">

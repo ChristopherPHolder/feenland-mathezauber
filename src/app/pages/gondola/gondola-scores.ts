@@ -21,12 +21,19 @@ export function parseGondolaSave(value: unknown): GondolaSave {
       ? (Object.fromEntries(
           Object.entries(raw.best).filter(
             ([id, score]) =>
-              LEVEL_ID.test(id) && typeof score === 'number' && Number.isInteger(score) && score >= 0,
+              LEVEL_ID.test(id) &&
+              typeof score === 'number' &&
+              Number.isInteger(score) &&
+              score >= 0,
           ),
         ) as Record<string, number>)
       : {};
   const built = Array.isArray(raw.built)
-    ? [...new Set(raw.built.filter((id): id is string => typeof id === 'string' && LEVEL_ID.test(id)))]
+    ? [
+        ...new Set(
+          raw.built.filter((id): id is string => typeof id === 'string' && LEVEL_ID.test(id)),
+        ),
+      ]
     : [];
   return { best, built };
 }

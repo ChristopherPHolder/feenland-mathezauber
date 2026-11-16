@@ -99,7 +99,10 @@ export class GondolaSounds {
     oscillator.type = voice.wave;
     oscillator.frequency.setValueAtTime(frequency, time);
     if (voice.slide)
-      oscillator.frequency.exponentialRampToValueAtTime(frequency * voice.slide, time + voice.length);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        frequency * voice.slide,
+        time + voice.length,
+      );
     const peak = voice.wave === 'square' ? 0.03 : 0.07;
     gain.gain.setValueAtTime(0, time);
     gain.gain.linearRampToValueAtTime(peak, time + 0.02);

@@ -219,12 +219,8 @@ export class Gondola {
   });
   protected readonly big = computed(() => this.round().index === this.turns() - 1);
   protected readonly sum = computed(() => sumText(this.item()));
-  protected readonly splitting = computed(
-    () => this.started() && this.round().phase === 'split',
-  );
-  protected readonly answering = computed(
-    () => this.started() && this.round().phase === 'answer',
-  );
+  protected readonly splitting = computed(() => this.started() && this.round().phase === 'split');
+  protected readonly answering = computed(() => this.started() && this.round().phase === 'answer');
   /** Numbers-only levels hide the bunnies until "Show the bunnies" is tapped. */
   protected readonly representation = computed(() => {
     const stage = this.stage().representation;
@@ -478,7 +474,11 @@ export class Gondola {
   /** The handle moved by a drag, tap or arrow key. */
   protected setSplit(split: number) {
     if (!this.splitting()) return;
-    this.round.update((round) => ({ ...round, split, help: round.help === 'seats' ? 'none' : round.help }));
+    this.round.update((round) => ({
+      ...round,
+      split,
+      help: round.help === 'seats' ? 'none' : round.help,
+    }));
   }
   protected countGesture() {
     if (!this.splitting()) return;
@@ -505,8 +505,7 @@ export class Gondola {
     const round = this.round();
     const result = checkSplit(this.shape(), first);
     if (result === 'fill') {
-      const clever =
-        canSwap(this.stage(), round.items[round.index]) && round.item.a > round.item.b;
+      const clever = canSwap(this.stage(), round.items[round.index]) && round.item.a > round.item.b;
       this.accept('fill', moves, clever);
       return;
     }
@@ -559,7 +558,12 @@ export class Gondola {
 
   protected revealBunnies() {
     if (!this.started() || this.round().showBunnies) return;
-    this.round.update((round) => ({ ...round, showBunnies: true, tarpDue: false, tarpDown: false }));
+    this.round.update((round) => ({
+      ...round,
+      showBunnies: true,
+      tarpDue: false,
+      tarpDown: false,
+    }));
     this.focusSplit();
   }
 
@@ -595,24 +599,29 @@ export class Gondola {
     this.status.set({ key });
     this.sounds.play(move === 'express' ? 'whistle' : 'hop');
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      this.sounds.play('door');
-      this.sounds.play('bell');
-      this.round.update((r) =>
-        r.phase === 'moving'
-          ? { ...r, phase: 'answer', choices: answerChoices(r.item, this.random), typed: '' }
-          : r,
-      );
-      this.status.set({ key: this.item().kind === 'add' ? 'askAdd' : 'askSub' });
-      this.armIdle();
-      this.focusAnswer();
-    }, this.sceneStage()?.ready() ? MOVE_DELAY_3D : MOVE_DELAY_FLAT);
+    this.timer = setTimeout(
+      () => {
+        this.sounds.play('door');
+        this.sounds.play('bell');
+        this.round.update((r) =>
+          r.phase === 'moving'
+            ? { ...r, phase: 'answer', choices: answerChoices(r.item, this.random), typed: '' }
+            : r,
+        );
+        this.status.set({ key: this.item().kind === 'add' ? 'askAdd' : 'askSub' });
+        this.armIdle();
+        this.focusAnswer();
+      },
+      this.sceneStage()?.ready() ? MOVE_DELAY_3D : MOVE_DELAY_FLAT,
+    );
   }
 
   protected typeDigit(digit: number) {
     if (!this.answering()) return;
     this.round.update((round) =>
-      round.typed.length >= 2 ? round : { ...round, typed: (round.typed + digit).replace(/^0+(?=\d)/, '') },
+      round.typed.length >= 2
+        ? round
+        : { ...round, typed: (round.typed + digit).replace(/^0+(?=\d)/, '') },
     );
   }
   protected eraseDigit() {
@@ -895,7 +904,9 @@ export class Gondola {
   protected statusText() {
     const status = this.status();
     if (!status) return '';
-    return [status.key, ...(status.extras ?? [])].map((key) => this.t(key, status.values)).join(' ');
+    return [status.key, ...(status.extras ?? [])]
+      .map((key) => this.t(key, status.values))
+      .join(' ');
   }
 
   private focusSplit() {

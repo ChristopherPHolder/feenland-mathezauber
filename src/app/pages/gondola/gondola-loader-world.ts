@@ -49,7 +49,10 @@ export class GondolaLoaderWorld extends Stage implements StateWorld<null> {
     this.sun.position.set(-3, 9, 7);
     const kit = this.kit;
     const steel = kit.mat('#4a5260', { metalness: 0.5, roughness: 0.45 });
-    const ends = [FROM.clone().add(new Vector3(-0.8, -0.3, 0)), TO.clone().add(new Vector3(0.8, 0.3, 0))];
+    const ends = [
+      FROM.clone().add(new Vector3(-0.8, -0.3, 0)),
+      TO.clone().add(new Vector3(0.8, 0.3, 0)),
+    ];
     this.scene.add(kit.rod(steel, ends[0], ends[1], 0.03));
     // Two pylons and a little snowy ground under the cable.
     for (const [x, top] of [
@@ -57,7 +60,13 @@ export class GondolaLoaderWorld extends Stage implements StateWorld<null> {
       [ends[1].x - 0.2, ends[1].y],
     ]) {
       this.scene.add(
-        kit.rod(kit.mat('#7c8796', { metalness: 0.4 }), new Vector3(x, 0, -0.1), new Vector3(x, top + 0.15, -0.1), 0.09, 0.06),
+        kit.rod(
+          kit.mat('#7c8796', { metalness: 0.4 }),
+          new Vector3(x, 0, -0.1),
+          new Vector3(x, top + 0.15, -0.1),
+          0.09,
+          0.06,
+        ),
       );
     }
     this.scene.add(kit.blob(kit.mat('#ffffff', { roughness: 1 }), 4.4, 0.35, 1.4, 0, 0, -0.4));
@@ -123,7 +132,11 @@ export class GondolaLoaderWorld extends Stage implements StateWorld<null> {
 
   private aim(distance: number) {
     const camera = this.camera;
-    camera.position.set(0, 2.2 + Math.sin(PITCH * DEG) * distance, Math.cos(PITCH * DEG) * distance);
+    camera.position.set(
+      0,
+      2.2 + Math.sin(PITCH * DEG) * distance,
+      Math.cos(PITCH * DEG) * distance,
+    );
     camera.lookAt(0, 2.2, 0);
     camera.updateMatrixWorld();
     const box = { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity };
@@ -160,4 +173,3 @@ export class GondolaLoaderWorld extends Stage implements StateWorld<null> {
     this.kit.dispose();
   }
 }
-

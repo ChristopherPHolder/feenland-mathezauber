@@ -2,7 +2,16 @@ import { DestroyRef, inject, Injectable } from '@angular/core';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
 
 export type PotionSound =
-  'start' | 'pick' | 'pour' | 'fizzle' | 'moon' | 'brew' | 'perfect' | 'fever' | 'sand' | 'win';
+  | 'start'
+  | 'pick'
+  | 'pour'
+  | 'fizzle'
+  | 'moon'
+  | 'brew'
+  | 'perfect'
+  | 'fever'
+  | 'sand'
+  | 'win';
 
 const notes: Record<PotionSound, readonly number[]> = {
   start: [523, 784],

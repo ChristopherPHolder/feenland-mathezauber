@@ -112,7 +112,13 @@ export function sceneLayout(frame: GondolaFrame): SceneLayout {
   if (!moved) return { ...base, parked: tens, loose: cabin, ticket: 10 * groupTens + group };
   if (frame.move === 'express') {
     const cabins = frame.expressCabins;
-    return { ...base, parked: tens - cabins, down: cabins, loose: cabin + frame.fix, hopped: frame.fix };
+    return {
+      ...base,
+      parked: tens - cabins,
+      down: cabins,
+      loose: cabin + frame.fix,
+      hopped: frame.fix,
+    };
   }
   if (frame.move === 'takeTen') {
     return {

@@ -113,7 +113,9 @@ describe('the mountain gondola', () => {
     expect(text).toContain(en.villageEmpty);
     expect(element(fixture).querySelectorAll('.level-pill').length).toBe(12);
     expect(element(fixture).querySelectorAll('.pace-choice').length).toBe(4);
-    expect(element(fixture).querySelector<HTMLInputElement>('.pace-choice input:checked')!.value).toBe('off');
+    expect(
+      element(fixture).querySelector<HTMLInputElement>('.pace-choice input:checked')!.value,
+    ).toBe('off');
   });
 
   it('plays a turn with the tap fallback: fill the cabin, then say how many', () => {
@@ -123,9 +125,9 @@ describe('the mountain gondola', () => {
     useItem(fixture, { kind: 'add', a: 8, b: 5 });
     element(fixture).querySelector<HTMLButtonElement>('.start-dock button');
     expect(element(fixture).querySelector('.sum')!.textContent).toContain('8 + 5 =');
-    expect(element(fixture).querySelector<HTMLButtonElement>('.tap-button')!.getAttribute('aria-label')).toBe(
-      en.tapOneAdd,
-    );
+    expect(
+      element(fixture).querySelector<HTMLButtonElement>('.tap-button')!.getAttribute('aria-label'),
+    ).toBe(en.tapOneAdd);
     tap(fixture, 2);
     expect(status(fixture)).toBe(en.filled);
     ride(fixture);
@@ -184,7 +186,9 @@ describe('the mountain gondola', () => {
     ride(fixture);
     choose(fixture, 10);
     expect(status(fixture)).toBe(en.stopAtTenAdd);
-    const wrong = internals(fixture).round().choices.find((n) => n !== 13 && n !== 10)!;
+    const wrong = internals(fixture)
+      .round()
+      .choices.find((n) => n !== 13 && n !== 10)!;
     choose(fixture, wrong);
     expect(status(fixture)).toBe(en.tryAgain);
     expect(element(fixture).querySelector('app-gondola-card')!.textContent).not.toMatch(/\b13\b/);
@@ -226,9 +230,18 @@ describe('the mountain gondola', () => {
     fixture.detectChanges();
     ride(fixture);
     const keys = [...element(fixture).querySelectorAll<HTMLButtonElement>('.key')];
-    expect(keys.slice(0, 10).map((k) => k.textContent!.trim())).toEqual(
-      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-    );
+    expect(keys.slice(0, 10).map((k) => k.textContent!.trim())).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '0',
+    ]);
     keys[3].click();
     keys[4].click();
     fixture.detectChanges();

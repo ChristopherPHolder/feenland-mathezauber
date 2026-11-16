@@ -188,7 +188,11 @@ export class Kit {
       const parts = build();
       geometry = mergeColored(parts);
       parts.traverse((object) => {
-        if (object instanceof Mesh && object.geometry instanceof CylinderGeometry && object.geometry !== this.cylinder)
+        if (
+          object instanceof Mesh &&
+          object.geometry instanceof CylinderGeometry &&
+          object.geometry !== this.cylinder
+        )
           object.geometry.dispose();
       });
       this.baked.set(key, geometry);
@@ -216,7 +220,13 @@ export class Kit {
   }
 
   /** A tapered rod from one point to another, for legs, posts and hanger arms. */
-  rod(material: Material, from: Vector3, to: Vector3, startRadius: number, endRadius = startRadius) {
+  rod(
+    material: Material,
+    from: Vector3,
+    to: Vector3,
+    startRadius: number,
+    endRadius = startRadius,
+  ) {
     const direction = to.clone().sub(from);
     const length = direction.length();
     const mesh = new Mesh(new CylinderGeometry(endRadius, startRadius, length, 10), material);
@@ -226,8 +236,7 @@ export class Kit {
   }
 
   dispose() {
-    for (const value of Object.values(this))
-      if (value instanceof BufferGeometry) value.dispose();
+    for (const value of Object.values(this)) if (value instanceof BufferGeometry) value.dispose();
     for (const material of this.materials.values()) material.dispose();
     this.materials.clear();
     for (const geometry of this.baked.values()) geometry.dispose();
@@ -320,7 +329,13 @@ export class Bunny {
         kit.blob(fur, 0.085, 0.11, 0.135, 0.115, 0.12, -0.06),
         kit.blob(kit.mat('#ffffff'), 0.065, 0.06, 0.06, 0, 0.13, -0.21),
         // The left foreleg, slim and straight down to a small paw.
-        kit.rod(fur, new Vector3(-0.06, 0.25, 0.07), new Vector3(-0.055, 0.04, 0.115), 0.033, 0.026),
+        kit.rod(
+          fur,
+          new Vector3(-0.06, 0.25, 0.07),
+          new Vector3(-0.055, 0.04, 0.115),
+          0.033,
+          0.026,
+        ),
         kit.blob(fur, 0.034, 0.024, 0.045, -0.055, 0.025, 0.125),
         // A knitted scarf with one end hanging down the chest.
         knot,
@@ -409,7 +424,12 @@ export class Bunny {
 
     if (look.crown) {
       // The VIP's golden crown stays shiny, so it is not baked.
-      const gold = kit.mat(GOLDEN, { metalness: 0.7, roughness: 0.25, emissive: '#7a5200', emissiveIntensity: 0.5 });
+      const gold = kit.mat(GOLDEN, {
+        metalness: 0.7,
+        roughness: 0.25,
+        emissive: '#7a5200',
+        emissiveIntensity: 0.5,
+      });
       const crown = new Group();
       crown.position.set(0, 0.1, 0);
       crown.scale.setScalar(1.7);
@@ -421,7 +441,17 @@ export class Bunny {
         spike.position.set(Math.cos(angle) * 0.072, 0.055, Math.sin(angle) * 0.072);
         crown.add(spike);
       }
-      crown.add(kit.blob(kit.mat('#e0457b', { emissive: '#e0457b', emissiveIntensity: 0.4 }), 0.018, 0.018, 0.012, 0, 0.01, 0.078));
+      crown.add(
+        kit.blob(
+          kit.mat('#e0457b', { emissive: '#e0457b', emissiveIntensity: 0.4 }),
+          0.018,
+          0.018,
+          0.012,
+          0,
+          0.01,
+          0.078,
+        ),
+      );
       this.head.add(crown);
     }
     this.root.add(this.body);
@@ -526,7 +556,15 @@ export class Goat {
     band.rotation.x = Math.PI / 2;
     band.position.set(0, 0.13, 0);
     band.scale.set(1, 1.03, 1);
-    const badge = kit.blob(kit.mat('#ffd23f', { metalness: 0.6, roughness: 0.3 }), 0.022, 0.022, 0.01, 0, 0.16, 0.13);
+    const badge = kit.blob(
+      kit.mat('#ffd23f', { metalness: 0.6, roughness: 0.3 }),
+      0.022,
+      0.022,
+      0.01,
+      0,
+      0.16,
+      0.13,
+    );
     this.head.add(cap, crownTop, visor, band, badge);
     this.body.add(this.head);
 
@@ -662,7 +700,12 @@ export class Cabin {
         this.body.add(post);
       }
     // Side walls with a round window each, so the cabin reads as a closed gondola.
-    const glassSide = kit.mat('#bfe6ff', { roughness: 0.1, metalness: 0.1, emissive: '#5aa9d6', emissiveIntensity: 0.15 });
+    const glassSide = kit.mat('#bfe6ff', {
+      roughness: 0.1,
+      metalness: 0.1,
+      emissive: '#5aa9d6',
+      emissiveIntensity: 0.15,
+    });
     for (const side of [-1, 1]) {
       const wall = new Mesh(kit.cabinShell, paint);
       wall.rotation.y = Math.PI / 2;
@@ -724,8 +767,18 @@ export class Cabin {
     // The hanger arm and the grip that clamps the cable.
     const steel = kit.mat('#5d6675', { metalness: 0.6, roughness: 0.4 });
     this.body.add(
-      kit.rod(steel, new Vector3(0, height + 0.1, 0), new Vector3(0, height + hanger - 0.12, 0), 0.06),
-      kit.rod(steel, new Vector3(0, height + hanger - 0.14, 0), new Vector3(0.18, height + hanger, 0), 0.05),
+      kit.rod(
+        steel,
+        new Vector3(0, height + 0.1, 0),
+        new Vector3(0, height + hanger - 0.12, 0),
+        0.06,
+      ),
+      kit.rod(
+        steel,
+        new Vector3(0, height + hanger - 0.14, 0),
+        new Vector3(0.18, height + hanger, 0),
+        0.05,
+      ),
     );
     const grip = new Mesh(kit.cylinder, kit.mat('#3a4250', { metalness: 0.5, roughness: 0.4 }));
     grip.scale.set(0.16, 0.12, 0.16);
@@ -734,7 +787,12 @@ export class Cabin {
 
     // The tag: "10" for a full cabin, or the count where the bunnies are hidden.
     this.tag = new Sprite(
-      new SpriteMaterial({ map: this.label.texture, transparent: true, depthWrite: false, depthTest: false }),
+      new SpriteMaterial({
+        map: this.label.texture,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+      }),
     );
     this.tag.scale.set(0.95, 0.68, 1);
     this.tag.position.set(-0.75, height + 0.42, depth / 2);
@@ -775,19 +833,28 @@ export class Cabin {
       flag.position.set(x, height - 0.38 - Math.sin((index / 8) * Math.PI) * 0.1, depth / 2 + 0.1);
       this.flags.add(flag);
     }
-    const star = new Mesh(kit.sparkle, kit.mat('#ffd23f', { emissive: '#ffb800', emissiveIntensity: 0.6 }));
+    const star = new Mesh(
+      kit.sparkle,
+      kit.mat('#ffd23f', { emissive: '#ffb800', emissiveIntensity: 0.6 }),
+    );
     star.scale.set(0.16, 0.2, 0.06);
     star.position.set(0.55, height + 0.3, 0.2);
     this.flags.add(star);
     this.flags.visible = false;
     this.body.add(this.flags);
-    this.bell = new Mesh(kit.hemisphere, kit.mat(GOLDEN, { metalness: 0.8, roughness: 0.2, emissive: '#7a5200' }));
+    this.bell = new Mesh(
+      kit.hemisphere,
+      kit.mat(GOLDEN, { metalness: 0.8, roughness: 0.2, emissive: '#7a5200' }),
+    );
     this.bell.scale.set(0.14, -0.2, 0.14);
     this.bell.position.set(0.5, height + 0.42, 0);
     this.bell.visible = false;
     this.body.add(this.bell);
     for (let index = 0; index < 7; index++) {
-      const glint = new Mesh(kit.sparkle, kit.mat('#fff6bf', { emissive: '#ffe066', emissiveIntensity: 1 }));
+      const glint = new Mesh(
+        kit.sparkle,
+        kit.mat('#fff6bf', { emissive: '#ffe066', emissiveIntensity: 1 }),
+      );
       glint.scale.setScalar(0.07);
       glint.visible = false;
       this.body.add(glint);
@@ -881,11 +948,22 @@ export class Cabin {
   private paint() {
     const kit = this.kit;
     const body = this.golden
-      ? kit.mat(GOLDEN, { metalness: 0.55, roughness: 0.25, emissive: '#6b4500', emissiveIntensity: 0.35 })
+      ? kit.mat(GOLDEN, {
+          metalness: 0.55,
+          roughness: 0.25,
+          emissive: '#6b4500',
+          emissiveIntensity: 0.35,
+        })
       : kit.mat(this.color, { roughness: 0.45 });
-    const edge = this.fresh || this.golden
-      ? kit.mat('#ffcf33', { metalness: 0.6, roughness: 0.25, emissive: '#b37a00', emissiveIntensity: 0.6 })
-      : body;
+    const edge =
+      this.fresh || this.golden
+        ? kit.mat('#ffcf33', {
+            metalness: 0.6,
+            roughness: 0.25,
+            emissive: '#b37a00',
+            emissiveIntensity: 0.6,
+          })
+        : body;
     this.shell.material = body;
     for (const wall of this.sideWalls) wall.material = body;
     this.roof.material = edge;
@@ -899,7 +977,11 @@ export class Cabin {
     this.tag.material.dispose();
     this.root.traverse((object) => {
       // Rods are built per cabin; everything else is the kit's.
-      if (object instanceof Mesh && object.geometry instanceof CylinderGeometry && object.geometry !== this.kit.cylinder)
+      if (
+        object instanceof Mesh &&
+        object.geometry instanceof CylinderGeometry &&
+        object.geometry !== this.kit.cylinder
+      )
         object.geometry.dispose();
     });
   }
@@ -909,7 +991,11 @@ export class Cabin {
 export function disposeFigure(root: Object3D, kit: Kit) {
   root.removeFromParent();
   root.traverse((object) => {
-    if (object instanceof Mesh && object.geometry instanceof CylinderGeometry && object.geometry !== kit.cylinder)
+    if (
+      object instanceof Mesh &&
+      object.geometry instanceof CylinderGeometry &&
+      object.geometry !== kit.cylinder
+    )
       object.geometry.dispose();
   });
 }

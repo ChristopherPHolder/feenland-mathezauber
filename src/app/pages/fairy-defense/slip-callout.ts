@@ -1,7 +1,14 @@
 import { Component, input } from '@angular/core';
 
 export type SlipKind =
-  'wrong' | 'time' | 'heart' | 'cheer' | 'shield' | 'wave' | 'practice' | 'boss';
+  | 'wrong'
+  | 'time'
+  | 'heart'
+  | 'cheer'
+  | 'shield'
+  | 'wave'
+  | 'practice'
+  | 'boss';
 
 /**
  * A big speech bubble over the battlefield: who is coming at the start of a wave, a cheer for a

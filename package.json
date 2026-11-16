@@ -1,20 +1,18 @@
 {
   "name": "fun-math",
   "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
     "start": "vp dev",
     "build": "vp build",
     "preview": "vp build && vp preview",
     "test": "vp test",
-    "typecheck": "tsc -p tsconfig.spec.json --noEmit",
-    "lint": "vp lint",
+    "check": "vp check",
     "fmt": "vp fmt",
     "tokens": "node scripts/build-tokens.mjs",
     "deploy": "vp build && wrangler deploy"
   },
-  "private": true,
-  "type": "module",
-  "packageManager": "npm@11.19.0",
   "dependencies": {
     "@angular/common": "22.3.0-next.4",
     "@angular/compiler": "22.3.0-next.4",
@@ -31,7 +29,7 @@
     "@angular/compiler-cli": "22.3.0-next.4",
     "@cloudflare/vite-plugin": "^1.69.1",
     "@push-based/vite-plugin-ngp": "0.3.0",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "jsdom": "^30.0.0",
     "typescript": "~6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
@@ -43,5 +41,6 @@
   },
   "engines": {
     "node": ">=26"
-  }
+  },
+  "packageManager": "npm@11.19.0"
 }

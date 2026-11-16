@@ -42,13 +42,15 @@ export class BootSplash {
       return;
     }
     splash.inert = true;
-    splash
+    // `finished` rejects when the fade is cancelled; the splash goes either way.
+    const remove = () => splash.remove();
+    void splash
       .animate([{ opacity: 1 }, { opacity: 0 }], {
         duration: 240,
         easing: 'ease-out',
         fill: 'forwards',
       })
-      .finished.finally(() => splash.remove());
+      .finished.then(remove, remove);
   }
 }
 

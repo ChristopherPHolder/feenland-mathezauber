@@ -59,4 +59,7 @@ const icons = [
   } finally {
     await browser.close();
   }
-})();
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
