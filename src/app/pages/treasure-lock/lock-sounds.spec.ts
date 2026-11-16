@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { coinsAt, KEY_START, KEY_STEP } from './lock-reward';
 import { rewardNotes } from './lock-sounds';
 

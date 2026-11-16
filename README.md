@@ -6,18 +6,21 @@ A responsive, multilingual fairyland math adventure built with Angular 22. The n
 
 ## Development
 
-Use Node.js 24 and npm.
+Use Node.js 26 and npm. The toolchain is [Vite+](https://viteplus.dev) (`vp`): `vp dev`, `vp build`, `vp test`, `vp lint` and `vp fmt` replace the Angular CLI. Angular is compiled by [`@push-based/vite-plugin-ngp`](https://push-based.github.io/vite-plugin-ngp/), which carries its own build of Angular's ngp compiler and therefore needs every `@angular/*` package pinned to exactly `22.3.0-next.4`. Upgrade Angular only together with that plugin.
 
 ```sh
 npm ci
-npm start
-npm test -- --watch=false
-npm run build
+npm start               # vp dev on http://localhost:4200
+npm test                # vp test (Vitest in jsdom)
+npm run typecheck       # type-checks the specs; vp build type-checks the app and its templates
+npm run build           # vp build into dist/
 ```
+
+`vite.config.ts` holds the whole setup: the ngp plugin with the size budgets that used to live in `angular.json`, the Cloudflare plugin, and the `test`, `lint` and `fmt` settings. `index.html` sits at the project root and loads `src/main.ts`, `src/tokens.css` and `src/styles.css`. Files in `public/` are copied to the build as they are.
 
 ## Cloudflare deployment
 
-GitHub Actions runs tests and deploys the production Worker whenever a commit is pushed to `main`, including merged pull requests. Deployments are serialized to prevent overlapping uploads. Wrangler builds the production app as part of deployment.
+GitHub Actions lints, type-checks, tests and builds every pull request, and deploys the production Worker whenever a commit is pushed to `main`, including merged pull requests. Deployments are serialized to prevent overlapping uploads.
 
 Before the first automated deployment, add a repository Actions secret named `CLOUDFLARE_API_TOKEN` under [Settings → Secrets and variables → Actions](https://github.com/ChristopherPHolder/feenland-mathezauber/settings/secrets/actions). Create a Cloudflare API token using the **Edit Cloudflare Workers** template, scoped to the account in `wrangler.jsonc`, following [Cloudflare's GitHub Actions setup](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/). Local Wrangler login credentials are not available to GitHub Actions.
 
@@ -28,9 +31,9 @@ npx wrangler login
 npm run deploy
 ```
 
-Wrangler builds Angular before uploading the production assets. `wrangler.jsonc` configures the `fun-math` Worker and Cloudflare account. Angular navigation falls back to `index.html` through Cloudflare's single-page application handling.
+`npm run deploy` runs `vp build`, then `wrangler deploy`. The [Cloudflare Vite plugin](https://developers.cloudflare.com/workers/vite-plugin/) reads `wrangler.jsonc` (the `fun-math` Worker and Cloudflare account) and writes `dist/wrangler.json` next to the built assets, and Wrangler deploys from that file. Angular navigation falls back to `index.html` through Cloudflare's single-page application handling.
 
-To preview the production build with Cloudflare's local runtime:
+The dev server also runs through the Cloudflare plugin. To preview the production build in Cloudflare's local runtime:
 
 ```sh
 npm run preview

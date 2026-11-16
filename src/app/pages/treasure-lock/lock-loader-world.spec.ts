@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { dialTurn, glintSweep } from './lock-loader-world';
 
 describe('lock loader motion', () => {

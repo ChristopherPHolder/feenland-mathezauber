@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { TestBed } from '@angular/core/testing';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
 import { ClockAnchor, drumTune, DrumSounds, PENTATONIC } from './drum-sounds';

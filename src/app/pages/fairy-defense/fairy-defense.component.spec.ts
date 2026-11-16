@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import { FairyDefenseComponent } from './fairy-defense.component';
 import { GameAudio } from './game-audio';
 import { PlaytestStore } from './playtest-store';

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { Mushroom } from './drum-patterns';
 import { answer, asking, DrumPlay, shift, skip, startPlay, Step, tick } from './drum-round';
 

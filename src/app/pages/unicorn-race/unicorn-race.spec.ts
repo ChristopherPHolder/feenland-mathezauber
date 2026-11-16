@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import { UnicornRace } from './unicorn-race';
 import { RaceSounds } from './race-sounds';
 import { LocaleService } from '../../core/locale';

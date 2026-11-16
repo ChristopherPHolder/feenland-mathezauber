@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { POUR_SECONDS, pourPhase } from './potion-loader-world';
 
 describe('potion loader motion', () => {

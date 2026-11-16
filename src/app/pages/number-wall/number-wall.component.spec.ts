@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import { NumberWallComponent } from './number-wall.component';
 import { GameAudio } from '../fairy-defense/game-audio';
 import { LocaleService } from '../../core/locale';
