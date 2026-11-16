@@ -69,7 +69,7 @@ Phone screens use a vertical path and full-width actions. Tablet screens use two
 
 Use 8/16/24/40px spacing tokens, typically 20px phone page gutters and 40px wider gutters. Surfaces use 24–28px inner padding. No fixed whole-screen heights. Short landscape views reduce illustration height; system safe-area insets pad the body. Navigation restores scroll positions and chapter/level anchors.
 
-The actual validation matrix is recorded in [verification](docs/verification.md): 320, 375, 393, 768, 820, 1024, 1180, 1366, 1440 and 1920px widths, plus 852×393 and 568×320 landscape, with all four languages. Test overflow, keyboard focus and text growth on changed screens.
+The actual validation matrix is recorded in [verification](docs/history/verification.md): 320, 375, 393, 768, 820, 1024, 1180, 1366, 1440 and 1920px widths, plus 852×393 and 568×320 landscape, with all four languages. Test overflow, keyboard focus and text growth on changed screens.
 
 ## Elevation & Depth
 

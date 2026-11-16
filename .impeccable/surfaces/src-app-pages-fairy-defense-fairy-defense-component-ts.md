@@ -16,7 +16,7 @@ Twenty waves unlock sequentially; completed waves remain available for replay on
 
 Real level completion occurs only after all twenty waves. The first four teaching waves do not affect stars. Finish for one star; independently answer at least 43 of the remaining 64 assessed encounters for two, or all 64 for three. Requested and automatic help both affect independence. Two or three stars mark mastery; replay retains each wave’s best independent score, and existing earned progress never decreases. The final celebration enters the existing completion flow. Decorative star-wand effects remain distinct from earned stars.
 
-Pause contains music, effects, speech, language and wave-path controls, plus full explanatory text, speech replay and the unavailable-voice notice. Explicitly requested explanation or replay speech can run while the battle remains paused. Campaign results use `feenland.castle-campaign.v1`; existing `feenland.playtest.*` audio/tutorial preferences remain for compatibility. The original playtest checkpoint grants no campaign progress. See `docs/fairy-castle-campaign.md` for implemented rules, saving, star thresholds, verification and artwork provenance.
+Pause contains music, effects, speech, language and wave-path controls, plus full explanatory text, speech replay and the unavailable-voice notice. Explicitly requested explanation or replay speech can run while the battle remains paused. Campaign results use `feenland.castle-campaign.v1`; existing `feenland.playtest.*` audio/tutorial preferences remain for compatibility. The original playtest checkpoint grants no campaign progress. See `docs/games/fairy-castle-campaign.md` for implemented rules, saving, star thresholds, verification and artwork provenance.
 
 ## Evidence and scope
 
