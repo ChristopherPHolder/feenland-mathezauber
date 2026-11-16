@@ -60,4 +60,6 @@ The Hungry Crocodile lives in the Numbers world under its own chapter. Each of i
 
 To inspect the full flow, choose All games → any level card → play, then finish a round to reach the completion screen. Next adventure follows the catalog order and eventually reaches the caught-up state. All games inside a game returns to that game's section of the hub, and Settings returns to the screen you came from. Older `/worlds/...` links redirect into the hub.
 
-See [design rules](DESIGN.md) and [verification evidence](docs/verification.md) for shared states, accessibility, responsive coverage, storage recovery and offline navigation.
+See [design rules](DESIGN.md) and [verification evidence](docs/history/verification.md) for shared states, accessibility, responsive coverage, storage recovery and offline navigation.
+
+Every other doc is indexed in [docs](docs/README.md).

@@ -58,7 +58,7 @@ npm install --prefix /tmp/feenland-browser-check playwright @axe-core/playwright
 NODE_PATH=/tmp/feenland-browser-check/node_modules node scripts/verify-fairy-campaign.cjs
 ```
 
-The Chrome script uses a controlled browser clock to play all twenty waves. It checks boss damage, full boss retry, broken-layer persistence, wave-boundary saving and resume, zero and ten spells, completion/mastery, replay, image loading, and all four languages. It audits AXE and overflow at 1366×1000, 820×1180, 393×852 and 320×700 for representative waves 1, 5, 11 and 20, plus setback, completion, wave selection and language states. Captures are ignored under `.impeccable/review/campaign/`. Set `FAIRY_BASE_URL` to test another local port.
+The Chrome script uses a controlled browser clock to play all twenty waves. It checks boss damage, full boss retry, broken-layer persistence, wave-boundary saving and resume, zero and ten spells, completion/mastery, replay, image loading, and all four languages. It audits AXE and overflow at 1366×1000, 820×1180, 393×852 and 320×700 for representative waves 1, 5, 11 and 20, plus setback, completion, wave selection and language states. Captures are ignored under `.impeccable/review/campaign/`. Set `FAIRY_BASE_URL` to test another local port. `scripts/verify-fairy-playtest.cjs`, from the original two-monster playtest, remains as a compatibility entry point for this check.
 
 The focused tablet-fit check runs separately with the dev server and browser dependencies above:
 
