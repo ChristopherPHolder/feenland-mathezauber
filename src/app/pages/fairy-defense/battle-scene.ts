@@ -11,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { LocaleService } from '../../core/locale';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 import { Battle, gemsFor } from './battle';
 import { castleFrame, CastleFrame } from './castle-frame';

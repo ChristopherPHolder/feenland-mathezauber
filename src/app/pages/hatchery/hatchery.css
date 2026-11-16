@@ -161,7 +161,7 @@
   color: var(--muted);
   font-size: 15px !important;
 }
-.answers app-icon {
+.answers ui-icon {
   color: var(--star-ink);
 }
 .crack-pips {

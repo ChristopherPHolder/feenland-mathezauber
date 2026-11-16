@@ -15,7 +15,7 @@ import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
 import { GameHeader } from '../../shared/game-header';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { GameAudio } from '../fairy-defense/game-audio';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
 import {

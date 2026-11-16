@@ -69,11 +69,11 @@
           </div>
           <p>{{ t('warmHelp') }}</p>
           <a class="button primary" routerLink="/games"
-            >{{ t('warmGo') }}<app-icon kind="arrow"
+            >{{ t('warmGo') }}<ui-icon kind="arrow"
           /></a>
         }
         <p class="answers">
-          <app-icon kind="star" />{{ t('answers', { n: n(store.hatchery().answers) }) }}
+          <ui-icon kind="star" />{{ t('answers', { n: n(store.hatchery().answers) }) }}
         </p>
       } @else {
         @if (shown(); as dragon) {

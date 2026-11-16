@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { LocaleService } from '../../core/locale';
-import { StarRating } from '../../shared/star-rating';
+import { StarRating } from '@feenland/ui';
 import { ratingFor } from './number-wall';
 
 interface RewardRow {
@@ -31,7 +31,7 @@ interface RewardRow {
     <div class="foot">
       <p class="stars">
         <span>{{ i.t('wallRewardStars') }}</span>
-        <app-star-rating [stars]="stars()" />
+        <ui-star-rating [stars]="stars()" [label]="i.t('starsOf', { n: stars() })" />
       </p>
       @if (stars() < 3) {
         <p class="help">{{ i.t('wallStarsHelp') }}</p>

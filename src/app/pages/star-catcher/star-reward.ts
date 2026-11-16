@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import type { ConstellationId } from './star-constellations';
 import { StarPicture } from './star-picture';
 
@@ -53,7 +53,7 @@ const SPARKLES = [
     <p class="drew">{{ drew() }}</p>
     <span class="stars">
       @for (slot of slots; track slot) {
-        <app-icon
+        <ui-icon
           kind="star"
           class="star"
           [class.won]="slot <= stars()"

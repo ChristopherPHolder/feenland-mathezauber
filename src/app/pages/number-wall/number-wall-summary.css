@@ -188,7 +188,7 @@ app-wall-troll.reward-icon {
   .summary-fairy img {
     width: 120px;
   }
-  .summary .star-row app-icon {
+  .summary .star-row ui-icon {
     width: 42px;
     height: 42px;
   }
@@ -219,7 +219,7 @@ app-wall-troll.reward-icon {
   .summary-fairy img {
     width: clamp(160px, 46vh, 420px);
   }
-  .summary .star-row app-icon {
+  .summary .star-row ui-icon {
     width: clamp(44px, 9vh, 76px);
     height: clamp(44px, 9vh, 76px);
   }
@@ -240,7 +240,7 @@ app-wall-troll.reward-icon {
   .summary-actions {
     max-width: none;
   }
-  .summary .star-row app-icon {
+  .summary .star-row ui-icon {
     width: 36px;
     height: 36px;
   }

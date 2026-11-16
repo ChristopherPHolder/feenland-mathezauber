@@ -66,7 +66,7 @@
       </div>
       <div class="start-dock">
         <button class="button primary" type="button" (click)="play()">
-          {{ t('start') }}<app-icon kind="arrow" />
+          {{ t('start') }}<ui-icon kind="arrow" />
         </button>
       </div>
       <section class="book" aria-labelledby="book-title">
@@ -136,14 +136,14 @@
       <div class="outcome-actions">
         @if (nextLink(); as next) {
           <a class="button primary" [routerLink]="next"
-            >{{ t('nextLevel') }}<app-icon kind="arrow"
+            >{{ t('nextLevel') }}<ui-icon kind="arrow"
           /></a>
           <button class="button secondary" type="button" (click)="celebrate()">
             {{ t('celebrate') }}
           </button>
         } @else {
           <button class="button primary" type="button" (click)="celebrate()">
-            {{ t('celebrate') }}<app-icon kind="arrow" />
+            {{ t('celebrate') }}<ui-icon kind="arrow" />
           </button>
         }
         <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
@@ -288,7 +288,7 @@
                 (click)="see(null)"
               >
                 {{ round().index + 1 === roundLength ? t('toFinale') : t('next')
-                }}<app-icon kind="arrow" />
+                }}<ui-icon kind="arrow" />
               </button>
             </fieldset>
           }

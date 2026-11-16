@@ -1,56 +1,7 @@
-:root {
-  font-family: var(--font-sans);
-  color: var(--ink);
-  background: var(--ground);
-  font-weight: 400;
-  color-scheme: light;
-}
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-}
-button,
-input,
-select {
-  font: inherit;
-}
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-a {
-  color: inherit;
-  text-underline-offset: 4px;
-}
-button {
-  cursor: pointer;
-}
-button,
-a {
-  touch-action: manipulation;
-}
-button:focus-visible,
-a:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 5px;
-}
-main:focus {
-  outline: none;
-}
-::selection {
-  background: var(--pink-tint);
-  color: var(--ink);
-}
-html {
-  scrollbar-color: #839eb0 var(--ground);
-}
-h1,
-h2,
-p {
-  overflow-wrap: anywhere;
-}
+/* The app's own chrome: the site header and navigation, the footer, page layouts, Settings,
+   page transitions and the route loaders' tones. Everything a component can rely on anywhere
+   (reset, type, focus, buttons, panels, dialogs, motion settings) is the design system's, in
+   packages/ui/styles/base.css, which index.html loads first. */
 h1,
 h2 {
   text-wrap: balance;
@@ -112,7 +63,7 @@ nav a {
   font-size: 15px;
   font-weight: 600;
 }
-nav a app-icon {
+nav a ui-icon {
   width: 22px;
   height: 22px;
 }
@@ -137,42 +88,6 @@ footer {
   color: var(--muted);
   font-size: 13px;
 }
-.button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  min-height: 56px;
-  padding: 15px 24px;
-  text-decoration: none;
-  border: 0;
-  border-radius: var(--radius-button);
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.25;
-  transition:
-    background 0.15s,
-    transform 0.15s;
-}
-.button:hover {
-  transform: translateY(-2px);
-}
-.primary {
-  background: var(--pink);
-  color: var(--paper);
-  box-shadow: var(--shadow-primary);
-}
-.primary:hover {
-  background: var(--pink-hover);
-}
-.secondary {
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: var(--shadow-rest);
-}
-.secondary:hover {
-  background: #fff7df;
-}
 .page {
   max-width: 1180px;
   margin: auto;
@@ -184,18 +99,6 @@ footer {
 .narrow {
   max-width: 760px;
   min-height: 65vh;
-}
-.panel {
-  background: var(--cream);
-  padding: 28px;
-  border-radius: var(--radius-panel);
-}
-.panel h2 {
-  margin-top: 0;
-}
-.lead {
-  color: var(--muted);
-  font-size: 19px;
 }
 .languages {
   display: flex;
@@ -219,17 +122,6 @@ footer {
 }
 .about {
   margin-top: 36px;
-}
-dialog {
-  border: 0;
-  border-radius: var(--radius-panel);
-  max-width: min(480px, calc(100% - 32px));
-  padding: 32px;
-  color: var(--ink);
-  background: var(--cream);
-}
-dialog::backdrop {
-  background: var(--scrim);
 }
 .save-warning {
   max-width: 700px;
@@ -277,12 +169,6 @@ dialog::backdrop {
   .page {
     padding: 28px 20px;
   }
-  .panel {
-    padding: 24px;
-  }
-  .button {
-    font-size: 17px;
-  }
 }
 /* Moving between pages: the header stays put while the page softly fades and rises into
    place. Calm motion, reduced motion and same-page navigations skip it (core/page-transition). */
@@ -317,23 +203,6 @@ dialog::backdrop {
   ::view-transition-new(*) {
     animation: none !important;
   }
-  *,
-  *::before,
-  *::after {
-    transition: none !important;
-    animation: none !important;
-    scroll-behavior: auto !important;
-  }
-}
-/* The calm-motion switch in Settings: decorations stop where they are. Durations shrink instead
-   of animations being removed, so anything waiting for an animation to end still hears it. */
-:root.calm-motion *,
-:root.calm-motion *::before,
-:root.calm-motion *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-  scroll-behavior: auto !important;
 }
 @supports (padding: max(0px)) {
   body {

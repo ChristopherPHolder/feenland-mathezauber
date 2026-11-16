@@ -71,7 +71,7 @@ h1 span {
   display: grid;
   place-items: center;
 }
-.play app-icon {
+.play ui-icon {
   width: 22px;
   height: 22px;
 }
@@ -141,7 +141,7 @@ h1 span {
   font-weight: 600;
   color: var(--world-color);
 }
-.game-meta app-icon {
+.game-meta ui-icon {
   width: 20px;
   height: 20px;
 }
@@ -164,7 +164,7 @@ h1 span {
   min-height: 44px;
   font-weight: 600;
 }
-.levels-link app-icon {
+.levels-link ui-icon {
   width: 18px;
   height: 18px;
 }
@@ -215,7 +215,7 @@ dl > div {
   position: relative;
   padding-left: 62px;
 }
-dl app-icon {
+dl ui-icon {
   position: absolute;
   left: 0;
   top: 8px;
@@ -223,7 +223,7 @@ dl app-icon {
   height: 42px;
   color: var(--amber-ink);
 }
-dl > div:nth-child(3) app-icon {
+dl > div:nth-child(3) ui-icon {
   color: var(--violet);
 }
 dt {
@@ -315,7 +315,7 @@ dd {
     grid-template-columns: 1fr auto;
     padding-left: 46px;
   }
-  dl app-icon {
+  dl ui-icon {
     width: 30px;
     height: 30px;
     grid-row: 1;
@@ -362,7 +362,7 @@ dd {
   dl > div {
     padding-left: 40px;
   }
-  dl app-icon {
+  dl ui-icon {
     width: 30px;
   }
   dt {
@@ -448,7 +448,7 @@ dd {
   font-weight: 600;
   white-space: nowrap;
 }
-.hatchery-go app-icon {
+.hatchery-go ui-icon {
   width: 20px;
   height: 20px;
 }

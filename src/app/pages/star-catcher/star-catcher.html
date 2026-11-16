@@ -85,7 +85,7 @@
       </section>
       <div class="start-dock">
         <button class="button primary" type="button" (click)="play()">
-          {{ t('start') }}<app-icon kind="arrow" />
+          {{ t('start') }}<ui-icon kind="arrow" />
         </button>
       </div>
     </section>
@@ -129,14 +129,14 @@
         <div class="outcome-actions">
           @if (nextLink(); as next) {
             <a class="button primary" [routerLink]="next"
-              >{{ t('nextLevel') }}<app-icon kind="arrow"
+              >{{ t('nextLevel') }}<ui-icon kind="arrow"
             /></a>
             <button class="button secondary" type="button" (click)="celebrate()">
               {{ t('celebrate') }}
             </button>
           } @else {
             <button class="button primary" type="button" (click)="celebrate()">
-              {{ t('celebrate') }}<app-icon kind="arrow" />
+              {{ t('celebrate') }}<ui-icon kind="arrow" />
             </button>
           }
           <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
@@ -327,11 +327,11 @@
         </div>
         @if (round().phase === 'complete') {
           <button class="button primary finish" type="button" (click)="finish()">
-            {{ t('done') }}<app-icon kind="arrow" />
+            {{ t('done') }}<ui-icon kind="arrow" />
           </button>
         } @else if (round().phase === 'caught') {
           <button class="button secondary next" type="button" (click)="advance()">
-            {{ t('next') }}<app-icon kind="arrow" />
+            {{ t('next') }}<ui-icon kind="arrow" />
           </button>
         }
       </div>

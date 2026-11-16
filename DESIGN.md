@@ -55,7 +55,7 @@ The visual reference is [the existing fairyland illustration](public/images/feen
 
 ## Colors
 
-CSS tokens live on `:root` in `src/styles.css`; the frontmatter records their values. Ink is the default foreground, muted blue is supporting copy, pale blue is the page, cream is a grouping surface. Pink is the primary next action. Pale green supports earned/caught-up messages; warm yellow supports the current recommendation and the explicit demo notice. Focus uses a 3px blue outline with a 5px offset.
+CSS tokens live on `:root` in `packages/ui/styles/tokens.css`, compiled from `packages/ui/tokens.json` (the `@feenland/ui` design system); the frontmatter records their values. Ink is the default foreground, muted blue is supporting copy, pale blue is the page, cream is a grouping surface. Pink is the primary next action. Pale green supports earned/caught-up messages; warm yellow supports the current recommendation and the explicit demo notice. Focus uses a 3px blue outline with a 5px offset.
 
 World-specific colors and mathematical emblems belong to catalog configuration: Missing Number uses warm yellow, Number Magic green, Power of Ten blue, Subtraction mauve, Big Numbers peach, Math Master lavender. All keep ink text; colors supplement names, icons and labels. Test actual foreground/background pairs at WCAG AA: 4.5:1 body and 3:1 large text.
 

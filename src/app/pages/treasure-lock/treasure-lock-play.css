@@ -377,14 +377,14 @@
 :host-context(.calm-motion) .sand.urgent span {
   animation: none;
 }
-.chest-slot app-icon {
+.chest-slot ui-icon {
   width: 18px;
   height: 18px;
   color: #8f84b8;
 }
-.chest-slot.current app-icon {
+.chest-slot.current ui-icon {
   color: var(--violet);
 }
-.chest-slot.big app-icon {
+.chest-slot.big ui-icon {
   color: var(--gold-deep);
 }

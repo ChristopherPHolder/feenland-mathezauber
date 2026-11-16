@@ -32,7 +32,7 @@
                 >{{ t('wallLevelLabel', { n: position(suggestedLevel()) }) }} ·
                 {{ i.t(levelTitle(suggestedLevel())) }}</small
               ></span
-            ><app-icon kind="arrow" />
+            ><ui-icon kind="arrow" />
           </button>
           <p class="rule">{{ i.t('wallRule') }}</p>
           <p class="rule"><span aria-hidden="true">🧌</span> {{ i.t('wallTrollHelp') }}</p>
@@ -78,10 +78,10 @@
                   [attr.aria-label]="t('wallStars', { n: store.rating(option) })"
                 >
                   @for (star of stars; track star) {
-                    <app-icon kind="star" [class.earned]="store.rating(option) >= star" />
+                    <ui-icon kind="star" [class.earned]="store.rating(option) >= star" />
                   }
                 </span>
-                <span class="level-go"><app-icon kind="arrow" /></span>
+                <span class="level-go"><ui-icon kind="arrow" /></span>
               </button>
             </li>
           }
@@ -230,9 +230,9 @@
                   >
                 </span>
               } @else if (built()) {
-                <app-icon kind="star" />
+                <ui-icon kind="star" />
               } @else if (feedback().kind === 'correct') {
-                <app-icon kind="check" />
+                <ui-icon kind="check" />
               } @else if (feedback().kind === 'troll' || crumbled()) {
                 <span aria-hidden="true">🧌</span>
               }
@@ -251,7 +251,7 @@
             @if (built()) {
               <button #nextButton type="button" class="button primary next" (click)="next()">
                 {{ wallIndex() + 1 < walls().length ? i.t('wallNext') : i.t('wallWorldDone') }}
-                <app-icon kind="arrow" />
+                <ui-icon kind="arrow" />
               </button>
               @if (feedback(); as won) {
                 @if (won.kind === 'built') {
@@ -291,7 +291,7 @@
                   [disabled]="!entry()"
                   (click)="check()"
                 >
-                  <app-icon kind="check" />
+                  <ui-icon kind="check" />
                 </button>
               </div>
             }
@@ -311,7 +311,7 @@
         <div class="summary-hero">
           <div class="star-row" role="img" [attr.aria-label]="t('wallStars', { n: rating() })">
             @for (star of stars; track star) {
-              <app-icon kind="star" [class.earned]="rating() >= star" [style.--i]="star" />
+              <ui-icon kind="star" [class.earned]="rating() >= star" [style.--i]="star" />
             }
           </div>
           <div class="summary-fairy" [class.party]="rating() === 3" aria-hidden="true">
@@ -359,8 +359,7 @@
           <div class="summary-actions">
             @if (nextLevel(); as upcoming) {
               <button type="button" class="button primary" (click)="start(upcoming)">
-                {{ i.t('wallNextLevel') }} · {{ i.t(levelTitle(upcoming))
-                }}<app-icon kind="arrow" />
+                {{ i.t('wallNextLevel') }} · {{ i.t(levelTitle(upcoming)) }}<ui-icon kind="arrow" />
               </button>
             }
             <button
@@ -376,7 +375,7 @@
               {{ i.t('wallChooseLevel') }}
             </button>
             <a class="button secondary" routerLink="/games" fragment="number-walls"
-              ><app-icon kind="grid" />{{ i.t('allGames') }}</a
+              ><ui-icon kind="grid" />{{ i.t('allGames') }}</a
             >
           </div>
         </div>

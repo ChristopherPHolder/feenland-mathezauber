@@ -236,15 +236,15 @@ button.level-card:active {
   justify-content: center;
   gap: 10px;
 }
-.star-row app-icon {
+.star-row ui-icon {
   width: 52px;
   height: 52px;
 }
-app-icon.earned {
+ui-icon.earned {
   color: var(--star-ink);
   fill: var(--star-fill);
 }
-.star-row app-icon.earned {
+.star-row ui-icon.earned {
   animation: pop 0.6s ease-out calc(var(--i, 1) * 0.3s) both;
 }
 .level-go {

@@ -113,7 +113,7 @@
             "
           >
             @for (layer of shieldLayers(); track layer) {
-              <app-icon
+              <ui-icon
                 [kind]="layer < battle().encounter ? 'check' : 'gem'"
                 [class.broken]="layer < battle().encounter"
               />
@@ -144,7 +144,7 @@
           alt=""
         />
         <div class="sparkles" aria-hidden="true">
-          <app-icon kind="star" /><app-icon kind="star" /><app-icon kind="star" />
+          <ui-icon kind="star" /><ui-icon kind="star" /><ui-icon kind="star" />
         </div>
       }
     </div>
@@ -152,7 +152,7 @@
   @if (battle().phase === 'casting') {
     <div class="projectile" aria-hidden="true">
       @for (spark of heartsAndSpells.slice(0, battle().spell ?? 0); track spark) {
-        <app-icon kind="star" />
+        <ui-icon kind="star" />
       }
     </div>
   }

@@ -399,7 +399,7 @@
   background: var(--paper);
   color: var(--ink);
 }
-.nudge app-icon {
+.nudge ui-icon {
   width: 22px;
   height: 22px;
 }
@@ -495,7 +495,7 @@
     inset 0 0 0 2px #e6cfae,
     0 3px 0 #d8bf9b;
 }
-.pad-key app-icon {
+.pad-key ui-icon {
   width: 22px;
   height: 22px;
 }

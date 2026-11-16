@@ -64,7 +64,7 @@
   text-decoration: none;
   white-space: nowrap;
 }
-.game-jump app-emblem {
+.game-jump ui-emblem {
   font-size: 24px;
 }
 .game-jump a[aria-current] {
@@ -208,7 +208,7 @@
   color: var(--muted);
   white-space: nowrap;
 }
-.topic-meta app-icon {
+.topic-meta ui-icon {
   width: 16px;
   height: 16px;
   color: var(--amber-ink);
@@ -303,7 +303,7 @@
   font-size: 14px;
   font-weight: 600;
 }
-.level-state app-icon {
+.level-state ui-icon {
   width: 20px;
   height: 20px;
   color: var(--amber-ink);
@@ -330,7 +330,7 @@
   color: var(--paper);
   box-shadow: var(--shadow-primary);
 }
-.level-go app-icon {
+.level-go ui-icon {
   width: 24px;
   height: 24px;
 }
@@ -399,7 +399,7 @@
     width: 34px;
     height: 34px;
   }
-  .level-card:not(.hero-card) .level-go app-icon {
+  .level-card:not(.hero-card) .level-go ui-icon {
     width: 18px;
     height: 18px;
   }

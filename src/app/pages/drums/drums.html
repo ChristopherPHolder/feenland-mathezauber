@@ -119,7 +119,7 @@
         }
         @if (canSkip()) {
           <button class="button secondary skip" type="button" (click)="skipIntro()">
-            {{ t('skip') }}<app-icon kind="arrow" />
+            {{ t('skip') }}<ui-icon kind="arrow" />
           </button>
         }
       </section>
@@ -198,7 +198,7 @@
         <app-drum-demo [stage]="stage()" />
       }
       <button class="button primary" type="button" autofocus (click)="resume()">
-        {{ t('resume') }}<app-icon kind="play" />
+        {{ t('resume') }}<ui-icon kind="play" />
       </button>
       <button class="button secondary" type="button" (click)="restart()">{{ t('restart') }}</button>
       <button class="button secondary" type="button" (click)="toIntro()">

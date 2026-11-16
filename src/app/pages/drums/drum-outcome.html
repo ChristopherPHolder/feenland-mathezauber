@@ -11,7 +11,7 @@
   <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: result().stars })">
     @for (star of slots; track star) {
       <span class="star" [class.earned]="star <= result().stars" [style.--i]="star"
-        ><app-icon kind="star"
+        ><ui-icon kind="star"
       /></span>
     }
   </div>
@@ -47,15 +47,13 @@
   }
   <div class="actions">
     @if (next(); as next) {
-      <a class="button primary" [routerLink]="next"
-        >{{ t('nextLevel') }}<app-icon kind="arrow"
-      /></a>
+      <a class="button primary" [routerLink]="next">{{ t('nextLevel') }}<ui-icon kind="arrow" /></a>
       <button class="button secondary" type="button" (click)="celebrate.emit()">
         {{ t('celebrate') }}
       </button>
     } @else {
       <button class="button primary" type="button" (click)="celebrate.emit()">
-        {{ t('celebrate') }}<app-icon kind="arrow" />
+        {{ t('celebrate') }}<ui-icon kind="arrow" />
       </button>
     }
     <button class="button secondary" type="button" (click)="again.emit()">{{ t('again') }}</button>

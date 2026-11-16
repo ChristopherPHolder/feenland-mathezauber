@@ -13,6 +13,8 @@ export default defineConfig(({ mode }) => ({
     // Vitest runs the specs in jsdom, not in the Workers runtime.
     mode !== 'test' && cloudflare(),
   ],
+  // `@feenland/ui` and any other alias come from the paths in tsconfig.json.
+  resolve: { tsconfigPaths: true },
   server: { port: 4200 },
   lint: {
     ignorePatterns: ['dist/**', '.agents/**', '.claude/**'],
@@ -29,6 +31,50 @@ export default defineConfig(({ mode }) => ({
       'typescript/no-misused-spread': 'off',
     },
     overrides: [
+      {
+        // The app reaches the design system only through its public entry point.
+        files: ['src/**/*.ts'],
+        rules: {
+          'no-restricted-imports': [
+            'error',
+            {
+              patterns: [
+                {
+                  regex: 'packages/',
+                  message: "Import the design system from '@feenland/ui', not by path.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        // @feenland/ui holds dumb components only: no app code, services, routing, forms or 3D.
+        files: ['packages/ui/**/*.ts'],
+        rules: {
+          'no-restricted-imports': [
+            'error',
+            {
+              paths: [
+                {
+                  name: '@angular/core',
+                  importNames: ['inject', 'Injectable', 'Service'],
+                  message: 'Design-system components take data through inputs; the app injects.',
+                },
+                { name: '@angular/router', message: 'Project a link from the app instead.' },
+                { name: '@angular/forms', message: 'Forms belong to the app.' },
+                { name: 'three', message: '3D scenes belong to the app.' },
+              ],
+              patterns: [
+                {
+                  regex: '^\\.\\./\\.\\./|/src/app/|^@feenland/',
+                  message: 'The design system must not import the app or itself by name.',
+                },
+              ],
+            },
+          ],
+        },
+      },
       {
         // Specs save, stub and restore methods such as Storage.prototype.setItem and pass spies
         // to expect(), which reads them unbound by design.
@@ -55,7 +101,7 @@ export default defineConfig(({ mode }) => ({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['src/**/*.spec.ts'],
+    include: ['src/**/*.spec.ts', 'packages/*/src/**/*.spec.ts'],
     setupFiles: ['src/test-setup.ts'],
   },
   // The pre-commit hook in .vite-hooks runs `vp staged`, which formats and lints the staged files.
@@ -65,8 +111,8 @@ export default defineConfig(({ mode }) => ({
   // `vp run <task>`. Tasks are cached: a rerun with unchanged inputs replays the last result.
   run: {
     tasks: {
-      // Compiles design/tokens.json into src/tokens.css.
-      tokens: 'node scripts/build-tokens.mjs',
+      // Compiles packages/ui/tokens.json into packages/ui/styles/tokens.css.
+      tokens: 'node packages/ui/scripts/build-tokens.mjs',
       // Everything CI checks before a pull request can merge.
       ready: {
         command: ['vp check --deny-warnings', 'vp test run', 'vp build'],

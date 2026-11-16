@@ -18,10 +18,10 @@ vp check                # oxfmt, oxlint and type errors in the app and the specs
 vp check --fix          # format and apply lint fixes in place
 vp build                # build into dist/, which also type-checks the templates
 vp run ready            # what CI runs: vp check --deny-warnings, the tests and the build
-vp run tokens           # compile design/tokens.json into src/tokens.css
+vp run tokens           # compile packages/ui/tokens.json into packages/ui/styles/tokens.css
 ```
 
-`vite.config.ts` holds the whole setup: the ngp plugin with the size budgets that used to live in `angular.json`, the Cloudflare plugin, the `test`, `lint`, `fmt` and `staged` settings, and the `run.tasks` (`tokens`, `ready`, `deploy`). Tasks run through `vp run` are cached, so a rerun with unchanged inputs replays the previous result; `vp cache clean` clears the cache. `index.html` sits at the project root and loads `src/main.ts`, `src/tokens.css` and `src/styles.css`. Files in `public/` are copied to the build as they are.
+`vite.config.ts` holds the whole setup: the ngp plugin with the size budgets that used to live in `angular.json`, the Cloudflare plugin, the `test`, `lint`, `fmt` and `staged` settings, and the `run.tasks` (`tokens`, `ready`, `deploy`). Tasks run through `vp run` are cached, so a rerun with unchanged inputs replays the previous result; `vp cache clean` clears the cache. `index.html` sits at the project root and loads `src/main.ts`, the design system's `packages/ui/styles/tokens.css` and `base.css`, then the app's `src/styles.css`. Files in `public/` are copied to the build as they are.
 
 Installing dependencies runs `vp config`, which installs the Vite+ Git hook dispatcher. The pre-commit hook in `.vite-hooks/pre-commit` runs `vp staged`, which formats and lints the staged files with `vp check --fix`. Turn it off for one clone with `vp hooks disable`, or for one commit with `VP_GIT_HOOKS=0 git commit`.
 

@@ -69,11 +69,19 @@ npx -y modern-web-guidance@latest retrieve "<id>"
 
 Update it with `npx -y modern-web-guidance@latest update`.
 
+## Architecture
+
+- Layers, from the bottom: `@feenland/ui` (`packages/ui`, the design system) → `src/app/core` → `src/app/shared` → `src/app/pages/<game>`. Import only downwards. See `docs/architecture/layers.md`.
+- `@feenland/ui` holds dumb components only: inputs, `model()`, outputs and content projection; no `inject()`, router, forms, storage, translation or Three.js. Lint enforces it. Selectors use the `ui-` prefix. Read `packages/ui/README.md` before adding to it.
+- Import the design system as `@feenland/ui`, never by a relative path.
+- When a game needs a presentational piece another game already has (a reward burst, a coach dialog, a pill button), put it in `@feenland/ui` and use it from both instead of copying the folder of the last game.
+- Keep everything only one game uses inside that game's folder. Something two games share goes to `shared` (widgets) or `core` (logic, stores), not into one game's folder for the other to import.
+
 ## Tooling
 
 - The toolchain is Vite+ (`vp`); there is no Angular CLI and no `angular.json`. `vite.config.ts` holds the whole setup: the ngp and Cloudflare plugins, `lint`, `fmt`, `test`, `staged` and the `run.tasks`.
 - Use the `vp` commands: `vp dev`, `vp test`, `vp check` (format, lint and type errors), `vp check --fix`, `vp build`. Without the global `vp`, use the matching `npm run` script (`dev`, `test`, `check`, `build`) or `npx vp <command>`.
-- Run project tasks with `vp run <task>`: `tokens` compiles `design/tokens.json`, `ready` runs everything CI runs (`vp check --deny-warnings`, the tests and the build), and `deploy` runs `ready` and then deploys. Tasks are cached, so an unchanged rerun replays.
+- Run project tasks with `vp run <task>`: `tokens` compiles `packages/ui/tokens.json`, `ready` runs everything CI runs (`vp check --deny-warnings`, the tests and the build), and `deploy` runs `ready` and then deploys. Tasks are cached, so an unchanged rerun replays.
 - `@push-based/vite-plugin-ngp` compiles Angular. Every `@angular/*` package must stay exactly at the version the plugin was built against (see `README.md`). Never bump Angular on its own.
 - Use Node.js 26 (`devEngines` in `package.json`, `.nvmrc`).
 - Import test APIs from `vite-plus/test`, not `vitest`, and Vite APIs from `vite-plus`. The `vite-plus/prefer-vite-plus-imports` lint rule enforces it.

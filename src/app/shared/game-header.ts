@@ -1,132 +1,33 @@
 import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { GameBar, Icon, SoundToggle } from '@feenland/ui';
 import { LocaleService } from '../core/locale';
-import { Icon } from './icon';
 import { EggChip } from '../pages/hatchery/egg-chip';
+
 /**
  * The bar every game shows above its menu: the way back to the games hub (landing on this
- * game's section), the game's name, and an optional sound toggle.
+ * game's section), the game's name, the dragon egg and an optional sound toggle. It wires the
+ * design system's GameBar to the router, the locale and the hatchery.
  */
 @Component({
   selector: 'app-game-header',
-  imports: [RouterLink, Icon, EggChip],
-  template: `<a class="games-link" routerLink="/games" [fragment]="anchor()">
-      <app-icon kind="back" /><span>{{ i.t('allGames') }}</span>
+  imports: [RouterLink, GameBar, Icon, SoundToggle, EggChip],
+  host: { style: 'display: block' },
+  template: `<ui-game-bar [title]="title()" [detail]="detail()" [titleId]="titleId()">
+    <a uiGameBarBack class="ui-pill" routerLink="/games" [fragment]="anchor()">
+      <ui-icon kind="back" /><span class="ui-pill-label">{{ i.t('allGames') }}</span>
     </a>
-    <div class="titles">
-      <h1 [id]="titleId()">{{ title() }}</h1>
-      @if (detail()) {
-        <p>{{ detail() }}</p>
-      }
-    </div>
-    <div class="actions">
-      <ng-content />
-      <app-egg-chip />
-      @if (sound() !== undefined) {
-        <button
-          class="sound-button"
-          type="button"
-          [attr.aria-pressed]="sound()"
-          [attr.aria-label]="i.t(sound() ? 'soundOn' : 'soundOff')"
-          (click)="soundToggle.emit()"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 9v6h4l5 4V5L8 9z" />
-            @if (sound()) {
-              <path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" />
-            } @else {
-              <path d="m16 9 5 6m0-6-5 6" />
-            }
-          </svg>
-        </button>
-      }
-    </div>`,
-  styles: `
-    :host {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 12px;
+    <ng-content />
+    <app-egg-chip />
+    @if (sound() !== undefined) {
+      <ui-sound-toggle
+        [on]="!!sound()"
+        [onLabel]="i.t('soundOn')"
+        [offLabel]="i.t('soundOff')"
+        (toggle)="soundToggle.emit()"
+      />
     }
-    .games-link,
-    .sound-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      min-width: 46px;
-      min-height: 46px;
-      padding: 8px 14px;
-      border: 0;
-      border-radius: var(--radius-button);
-      background: #ffffffd9;
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 15px;
-      box-shadow: var(--shadow-rest);
-    }
-    .games-link app-icon {
-      width: 22px;
-      height: 22px;
-    }
-    .titles {
-      min-width: 0;
-      text-align: center;
-    }
-    h1 {
-      font-size: clamp(22px, 3vw, 30px);
-      line-height: 1.15;
-      margin: 0;
-    }
-    p {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.4;
-    }
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .sound-button {
-      padding: 8px;
-      border-radius: 50%;
-    }
-    .sound-button svg {
-      width: 26px;
-      height: 26px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    .sound-button[aria-pressed='false'] {
-      color: var(--muted);
-    }
-    @media (max-width: 540px) {
-      .games-link span {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-      }
-      .games-link {
-        padding: 8px;
-        border-radius: 50%;
-      }
-      h1 {
-        font-size: 20px;
-      }
-      p {
-        font-size: 13px;
-      }
-    }
-  `,
+  </ui-game-bar>`,
 })
 export class GameHeader {
   readonly title = input.required<string>();

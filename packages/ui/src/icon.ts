@@ -1,6 +1,23 @@
 import { Component, input } from '@angular/core';
+/** The names of the line icons the design system draws. */
+export type IconKind =
+  | 'check'
+  | 'star'
+  | 'book'
+  | 'cup'
+  | 'gem'
+  | 'gear'
+  | 'arrow'
+  | 'back'
+  | 'lock'
+  | 'home'
+  | 'play'
+  | 'grid'
+  | 'egg';
+
+/** A line icon in the current text colour, 1.6em square unless the caller sizes it. */
 @Component({
-  selector: 'app-icon',
+  selector: 'ui-icon',
   template: `<svg
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -26,21 +43,7 @@ import { Component, input } from '@angular/core';
   `,
 })
 export class Icon {
-  readonly kind = input<
-    | 'check'
-    | 'star'
-    | 'book'
-    | 'cup'
-    | 'gem'
-    | 'gear'
-    | 'arrow'
-    | 'back'
-    | 'lock'
-    | 'home'
-    | 'play'
-    | 'grid'
-    | 'egg'
-  >('star');
+  readonly kind = input<IconKind>('star');
   protected readonly paths = {
     check: 'm5 12 4 4 10-10',
     star: 'm12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z',

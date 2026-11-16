@@ -97,7 +97,7 @@
       </fieldset>
       <div class="start-dock">
         <button class="button primary" type="button" (click)="play()">
-          {{ t('start') }}<app-icon kind="arrow" />
+          {{ t('start') }}<ui-icon kind="arrow" />
         </button>
       </div>
       <app-hat-wardrobe [owned]="ownedHats()" [fresh]="newHat()" />
@@ -131,7 +131,7 @@
         <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
           @for (star of starSlots; track star) {
             <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
-              ><app-icon kind="star"
+              ><ui-icon kind="star"
             /></span>
           }
         </div>
@@ -164,14 +164,14 @@
         <div class="outcome-actions">
           @if (nextLink(); as next) {
             <a class="button primary" [routerLink]="next"
-              >{{ t('next') }}<app-icon kind="arrow"
+              >{{ t('next') }}<ui-icon kind="arrow"
             /></a>
             <button class="button secondary" type="button" (click)="celebrate()">
               {{ t('celebrate') }}
             </button>
           } @else {
             <button class="button primary" type="button" (click)="celebrate()">
-              {{ t('celebrate') }}<app-icon kind="arrow" />
+              {{ t('celebrate') }}<ui-icon kind="arrow" />
             </button>
           }
           <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>

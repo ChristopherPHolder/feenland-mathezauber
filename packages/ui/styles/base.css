@@ -1,0 +1,189 @@
+/* Feenland design system base: the reset, type, focus ring, buttons, panels, dialogs and the
+   motion settings every component can rely on. Loaded after tokens.css and before the app's
+   own styles.css. Colours, spacing and radii come from the tokens only. */
+:root {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--ground);
+  font-weight: 400;
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+a {
+  color: inherit;
+  text-underline-offset: 4px;
+}
+button {
+  cursor: pointer;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 5px;
+}
+main:focus {
+  outline: none;
+}
+::selection {
+  background: var(--pink-tint);
+  color: var(--ink);
+}
+html {
+  scrollbar-color: #839eb0 var(--ground);
+}
+h1,
+h2,
+p {
+  overflow-wrap: anywhere;
+}
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 56px;
+  padding: 15px 24px;
+  text-decoration: none;
+  border: 0;
+  border-radius: var(--radius-button);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+.button:hover {
+  transform: translateY(-2px);
+}
+.primary {
+  background: var(--pink);
+  color: var(--paper);
+  box-shadow: var(--shadow-primary);
+}
+.primary:hover {
+  background: var(--pink-hover);
+}
+.secondary {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+}
+.secondary:hover {
+  background: #fff7df;
+}
+.panel {
+  background: var(--cream);
+  padding: 28px;
+  border-radius: var(--radius-panel);
+}
+.panel h2 {
+  margin-top: 0;
+}
+.lead {
+  color: var(--muted);
+  font-size: 19px;
+}
+dialog {
+  border: 0;
+  border-radius: var(--radius-panel);
+  max-width: min(480px, calc(100% - 32px));
+  padding: 32px;
+  color: var(--ink);
+  background: var(--cream);
+}
+dialog::backdrop {
+  background: var(--scrim);
+}
+/* Hidden from sight, still read by screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* A white pill for small actions beside a game (a way back, a sound toggle, a counter), at
+   least 46px so a child's finger finds it. On a phone a pill with a .ui-pill-label turns into a
+   round icon button; the label stays for screen readers. */
+.ui-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: #ffffffd9;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: var(--shadow-rest);
+}
+.ui-pill ui-icon {
+  width: 22px;
+  height: 22px;
+}
+@media (max-width: 700px) {
+  .panel {
+    padding: 24px;
+  }
+  .button {
+    font-size: 17px;
+  }
+}
+@media (max-width: 540px) {
+  .ui-pill:has(.ui-pill-label) {
+    padding: 8px;
+    border-radius: 50%;
+  }
+  .ui-pill-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* The calm-motion switch in Settings: decorations stop where they are. Durations shrink instead
+   of animations being removed, so anything waiting for an animation to end still hears it. */
+:root.calm-motion *,
+:root.calm-motion *::before,
+:root.calm-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

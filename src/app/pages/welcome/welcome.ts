@@ -5,8 +5,7 @@ import { Chapter, entryLevel, levelStars, WORLD_CATALOG } from '../../core/catal
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
-import { Emblem } from '../../shared/emblem';
-import { Icon } from '../../shared/icon';
+import { Emblem, Icon } from '@feenland/ui';
 import { levels as wallLevels } from '../number-wall/number-wall';
 import { NumberWallStore } from '../number-wall/number-wall-store';
 import { DragonPortraits } from '../hatchery/dragon-portraits';
@@ -42,11 +41,11 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
       <div class="adventure-actions">
         @if (p.next(); as next) {
           <a class="button primary" [routerLink]="['/adventure', next.id]"
-            ><span class="play" aria-hidden="true"><app-icon kind="play" /></span
+            ><span class="play" aria-hidden="true"><ui-icon kind="play" /></span
             ><span
               >{{ i.t(p.progress().mastered.length ? 'continue' : 'start')
               }}<small>{{ i.t(p.nextWorld()?.title ?? 'missing') }}</small></span
-            ><app-icon kind="arrow"
+            ><ui-icon kind="arrow"
           /></a>
         } @else {
           <div class="caught">
@@ -55,7 +54,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
           </div>
         }
         <a class="button secondary" routerLink="/games"
-          ><app-icon kind="grid" />{{ i.t('allGames') }}</a
+          ><ui-icon kind="grid" />{{ i.t('allGames') }}</a
         >
       </div>
     </div>
@@ -84,7 +83,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
             : h('homeNoDragon')
         }}</small>
       </span>
-      <span class="hatchery-go">{{ h('homeAction') }}<app-icon kind="arrow" /></span>
+      <span class="hatchery-go">{{ h('homeAction') }}<ui-icon kind="arrow" /></span>
     </a>
     <section class="games" aria-labelledby="games-title">
       <h2 id="games-title">{{ i.t('homeGames') }}</h2>
@@ -97,13 +96,13 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
             [style.--world-ground]="game.ground"
           >
             <span class="game-emblem"
-              ><app-emblem [id]="game.chapter.id" [fallback]="game.chapter.emblem"
+              ><ui-emblem [id]="game.chapter.id" [fallback]="game.chapter.emblem"
             /></span>
             <div class="game-copy">
               <h3 [id]="'game-' + game.chapter.id">{{ i.t(game.chapter.title) }}</h3>
               <p>{{ i.t(game.chapter.description) }}</p>
               <p class="game-meta">
-                <app-icon kind="star" />{{
+                <ui-icon kind="star" />{{
                   i.t('chapterStars', { n: game.stars, total: game.total })
                 }}
               </p>
@@ -113,10 +112,10 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
                 class="button primary game-link"
                 [routerLink]="['/adventure', game.entry]"
                 [attr.aria-describedby]="'game-' + game.chapter.id"
-                >{{ i.t(game.play) }}<app-icon kind="arrow"
+                >{{ i.t(game.play) }}<ui-icon kind="arrow"
               /></a>
               <a class="levels-link" routerLink="/games" [fragment]="game.chapter.id"
-                >{{ i.t('allLevelsCount', { n: game.levels }) }}<app-icon kind="arrow"
+                >{{ i.t('allLevelsCount', { n: game.levels }) }}<ui-icon kind="arrow"
               /></a>
             </div>
           </li>
@@ -127,15 +126,15 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
       <h2 id="journey-title">{{ i.t('journey') }}</h2>
       <dl>
         <div>
-          <dt><app-icon kind="star" />{{ i.t('mastered') }}</dt>
+          <dt><ui-icon kind="star" />{{ i.t('mastered') }}</dt>
           <dd>{{ i.format(p.progress().mastered.length) }}</dd>
         </div>
         <div>
-          <dt><app-icon kind="cup" />{{ i.t('chapters') }}</dt>
+          <dt><ui-icon kind="cup" />{{ i.t('chapters') }}</dt>
           <dd>{{ i.format(p.progress().chapters.length) }}</dd>
         </div>
         <div>
-          <dt><app-icon kind="gem" />{{ i.t('explored') }}</dt>
+          <dt><ui-icon kind="gem" />{{ i.t('explored') }}</dt>
           <dd>{{ i.format(p.progress().explored.length) }}</dd>
         </div>
       </dl>

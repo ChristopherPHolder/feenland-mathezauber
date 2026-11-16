@@ -4,7 +4,7 @@ import { ActivatedRoute, PRIMARY_OUTLET, Router, RouterLink } from '@angular/rou
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LocaleService } from '../../core/locale';
 import { Locale } from '../../core/messages';
-import { Icon } from '../../shared/icon';
+import { Icon } from '@feenland/ui';
 import { MotionPreference } from '../../core/motion';
 import { PlaytestStore } from '../fairy-defense/playtest-store';
 @Component({

@@ -34,7 +34,7 @@
   font-weight: 600;
   color: var(--world-color);
 }
-.game-name app-emblem {
+.game-name ui-emblem {
   font-size: 28px;
 }
 h1 {
@@ -59,11 +59,11 @@ h2 {
 .star:nth-child(2) {
   translate: 0 -10px;
 }
-.star app-icon {
+.star ui-icon {
   width: 100%;
   height: 100%;
 }
-.star.earned app-icon {
+.star.earned ui-icon {
   fill: var(--star-fill);
 }
 .star.earned {
@@ -108,7 +108,7 @@ h2 {
   font-size: 15px;
   font-weight: 600;
 }
-.awards app-icon {
+.awards ui-icon {
   width: 20px;
   height: 20px;
 }

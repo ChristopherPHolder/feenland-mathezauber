@@ -215,11 +215,11 @@
   color: #fff5ad;
   animation: friend 1.8s ease-out;
 }
-.sparkles app-icon {
+.sparkles ui-icon {
   width: 40px;
   height: 40px;
 }
-.sparkles app-icon:nth-child(2) {
+.sparkles ui-icon:nth-child(2) {
   align-self: flex-end;
 }
 .projectile {
@@ -232,7 +232,7 @@
   filter: drop-shadow(0 0 8px #fff7b6);
   animation: spell 0.55s ease-in forwards;
 }
-.projectile app-icon {
+.projectile ui-icon {
   width: 60px;
   height: 60px;
 }
@@ -446,7 +446,7 @@
   background: var(--parchment);
   color: #744288;
 }
-.shield-layers app-icon {
+.shield-layers ui-icon {
   width: 22px;
   height: 22px;
 }
@@ -457,7 +457,7 @@
 .boss .equation {
   top: -42px;
 }
-.projectile app-icon {
+.projectile ui-icon {
   width: clamp(12px, 3vw, 36px);
   height: clamp(12px, 3vw, 36px);
 }
@@ -471,7 +471,7 @@
     gap: 3px;
     bottom: 28px;
   }
-  .shield-layers app-icon {
+  .shield-layers ui-icon {
     width: 17px;
     height: 17px;
   }
