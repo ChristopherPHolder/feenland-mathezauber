@@ -4,6 +4,8 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 import { CrocodileGame } from '../crocodile/crocodile-game';
 import { evaluate } from '../crocodile/comparison.fixture';
+import { DRAGONS } from './dragons';
+import { EggChip } from './egg-chip';
 import { Hatchery } from './hatchery';
 import { HatcheryStore } from './hatchery-store';
 import { hatcheryTranslations } from './hatchery-messages';
@@ -130,6 +132,149 @@ describe('the dragon hatchery', () => {
       element.querySelector('app-egg-chip a[href="/hatchery"]')!.getAttribute('aria-label'),
     ).toBe('Dragon Hatchery. Dragon egg: 1 of 20 warm');
     expect(element.querySelector('app-egg-chip')!.classList).toContain('is-warming');
+  });
+
+  describe('once every dragon has hatched', () => {
+    const everyone = DRAGONS.map((dragon) => dragon.id);
+    const save = (extra: Record<string, unknown> = {}) =>
+      localStorage.setItem(
+        'feenland.hatchery',
+        JSON.stringify({
+          version: 1,
+          egg: 'ember',
+          warmth: 0,
+          hatched: everyone,
+          hatches: 12,
+          favorite: 'fern',
+          answers: 600,
+          growth: 0,
+          ...extra,
+        }),
+      );
+    const panelButton = (element: HTMLElement, text: string) =>
+      [...element.querySelectorAll<HTMLButtonElement>('.panel button')].find((button) =>
+        button.textContent!.includes(text),
+      )!;
+    const tapThrice = (fixture: { detectChanges(): void }, element: HTMLElement) => {
+      for (let i = 0; i < 3; i++) {
+        element.querySelector<HTMLButtonElement>('.egg-tap')!.click();
+        fixture.detectChanges();
+      }
+    };
+
+    it('evolves the favourite into a new form with right answers and three taps', () => {
+      save();
+      const store = TestBed.inject(HatcheryStore);
+      const fixture = TestBed.createComponent(Hatchery);
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelector('.intro p')!.textContent).toContain('evolve into new forms');
+      expect(element.querySelector('.panel h2')!.textContent).toContain(
+        'Fern is getting ready to evolve',
+      );
+      expect(element.querySelector('.panel .stage-line')!.textContent).toContain('Baby form');
+      const meter = element.querySelector('[role="progressbar"]')!;
+      expect(meter.getAttribute('aria-valuetext')).toBe('0 of 30 to evolve');
+      expect(element.querySelector('.egg-tap')).toBeNull();
+
+      store.warm(30);
+      fixture.detectChanges();
+      expect(element.querySelector('.panel h2')!.textContent).toContain('Fern is ready to evolve!');
+      expect(element.querySelector('.egg-tap')!.getAttribute('aria-label')).toBe(
+        'Help Fern evolve. 3 taps to go.',
+      );
+      expect(element.querySelector('.tap-hint')!.textContent).toContain('Tap Fern!');
+      tapThrice(fixture, element);
+      expect(element.querySelector('.badge')!.textContent).toContain('Evolved!');
+      // A new form has a new name.
+      expect(element.querySelector('.panel h2')!.textContent).toContain('Bramble');
+      expect(element.querySelector('.panel')!.textContent).toContain('Fern evolved into Bramble!');
+      expect(element.querySelector('[role="status"]')!.textContent).toContain(
+        'Fern evolved into Bramble!',
+      );
+      expect(store.hatchery().stages).toEqual({ fern: 1 });
+      expect(JSON.parse(localStorage.getItem('feenland.hatchery')!).stages).toEqual({ fern: 1 });
+
+      panelButton(element, 'Back to the nest').click();
+      fixture.detectChanges();
+      expect(element.querySelector('[role="progressbar"]')!.getAttribute('aria-valuetext')).toBe(
+        '0 of 50 to evolve',
+      );
+      expect(element.querySelector('.panel .stage-line')!.textContent).toContain('Young form');
+      const card = element.querySelector('button.dragon-card.is-raising')!;
+      expect(card.textContent).toContain('Bramble');
+      expect(card.textContent).toContain('Evolving');
+    });
+
+    it('lets the child pick which dragon evolves next', () => {
+      save();
+      const store = TestBed.inject(HatcheryStore);
+      const fixture = TestBed.createComponent(Hatchery);
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+      const puff = [...element.querySelectorAll<HTMLButtonElement>('button.dragon-card')].find(
+        (card) => card.textContent!.includes('Puff'),
+      )!;
+      puff.click();
+      fixture.detectChanges();
+      panelButton(element, 'Evolve Puff next').click();
+      fixture.detectChanges();
+      expect(store.hatchery().raising).toBe('puff');
+      expect(element.querySelector('.panel')!.textContent).toContain('Puff evolves next');
+      expect(element.querySelector('[role="status"]')!.textContent).toBe('Puff evolves next');
+    });
+
+    it('says when a dragon reaches its final form and who is next', () => {
+      save({ stages: { fern: 1 }, growth: 50 });
+      const fixture = TestBed.createComponent(Hatchery);
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+      tapThrice(fixture, element);
+      expect(element.querySelector('.panel')!.textContent).toContain(
+        'Bramble evolved into Oakheart! Next up: Ember.',
+      );
+      expect(TestBed.inject(HatcheryStore).hatchery().raising).toBe('ember');
+      expect(element.querySelector('.panel .stage-line')!.textContent).toContain('Final form');
+    });
+
+    it('shows the evolving dragon in the game header', () => {
+      save({ growth: 5 });
+      const fixture = TestBed.createComponent(EggChip);
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelector('a')!.getAttribute('aria-label')).toBe(
+        'Dragon Hatchery. Fern evolves: 5 of 30',
+      );
+      expect(element.querySelector('ui-dragon-face')).not.toBeNull();
+      expect(element.querySelector('app-egg-icon')).toBeNull();
+      TestBed.inject(HatcheryStore).warm(25);
+      fixture.detectChanges();
+      expect(element.querySelector('a')!.getAttribute('aria-label')).toBe(
+        'Dragon Hatchery. Fern is ready to evolve! Visit the hatchery.',
+      );
+      expect(element.querySelector('[aria-live]')!.textContent).toBe('Fern is ready to evolve!');
+    });
+
+    it('starts evolving when the last egg hatches', () => {
+      save({
+        hatched: everyone.filter((id) => id !== 'prism-starlight'),
+        hatches: 11,
+        egg: 'prism-starlight',
+        warmth: 50,
+      });
+      const fixture = TestBed.createComponent(Hatchery);
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+      tapThrice(fixture, element);
+      expect(element.querySelector('.panel')!.textContent).toContain(
+        'All twelve dragons found! Now they can evolve.',
+      );
+      panelButton(element, 'Help Fern evolve').click();
+      fixture.detectChanges();
+      expect(element.querySelector('.panel h2')!.textContent).toContain(
+        'Fern is getting ready to evolve',
+      );
+    });
   });
 
   it('has identical hatchery message keys for every language', () => {

@@ -26,7 +26,7 @@ import { BakeryCard } from './bakery-card';
 import { BakeryCoach } from './bakery-coach';
 import { BakeryDemo, DemoKind } from './bakery-demo';
 import { countGuidedBake, GUIDED_BAKES, guidedBakes, IDLE_GUIDE } from './bakery-guide';
-import { ANIMALS, BakeryFrame, Customer } from './bakery-frame';
+import { ANIMALS, BakeryFrame, Customer, dragonCustomer } from './bakery-frame';
 import {
   BAKERY_PACES,
   BakeryPace,
@@ -249,14 +249,17 @@ export class Bakery {
   protected readonly customer = computed<Customer>(() => {
     const index = this.round().index;
     const hatched = this.hatchery.hatchery().hatched;
-    if (hatched.length && (index === 2 || index === ROUND_LENGTH - 1))
-      return `dragon:${hatched[(index + this.stage().stage) % hatched.length]}`;
+    if (hatched.length && (index === 2 || index === ROUND_LENGTH - 1)) {
+      const id = hatched[(index + this.stage().stage) % hatched.length];
+      return `dragon:${id}:${this.hatchery.hatchery().stages[id] ?? 0}`;
+    }
     return ANIMALS[(index + this.stage().stage) % ANIMALS.length];
   });
   protected readonly customerName = computed(() => {
     const customer = this.customer();
-    if (customer.startsWith('dragon:')) {
-      const dragon = dragonById(customer.slice(7));
+    const guest = dragonCustomer(customer);
+    if (guest) {
+      const dragon = dragonById(guest.id);
       return dragon ? this.hatchery.name(dragon) : this.t('fox');
     }
     return this.t(customer as 'fox' | 'rabbit' | 'hedgehog' | 'squirrel');
