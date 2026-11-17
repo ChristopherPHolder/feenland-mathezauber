@@ -17,7 +17,7 @@
             @if (portraits.pictures()[dragon.id]; as picture) {
               <img [src]="picture" width="256" height="256" alt="" />
             } @else {
-              <app-dragon-face class="flat-egg" [dragon]="dragon" [stage]="frame().stage" />
+              <ui-dragon-face class="flat-egg" [colors]="dragon" [form]="frame().stage" />
             }
           } @else {
             <app-egg-icon class="flat-egg" [dragon]="store.egg()" [warmth]="fill()" />
@@ -53,11 +53,7 @@
                 "
                 [attr.aria-label]="t('growTitle', { name: name(dragon) })"
               >
-                <app-dragon-face
-                  class="meter-egg"
-                  [dragon]="dragon"
-                  [stage]="store.stage(dragon)"
-                />
+                <ui-dragon-face class="meter-egg" [colors]="dragon" [form]="store.stage(dragon)" />
                 <div class="meter-track">
                   <span class="meter-fill is-growth" [style.inline-size.%]="fill() * 100"></span>
                 </div>
@@ -156,7 +152,7 @@
           <button class="button primary" type="button" (click)="backHome()">
             @if (store.growing()) {
               @if (store.raising(); as next) {
-                <app-dragon-face [dragon]="next" [stage]="store.stage(next)" />
+                <ui-dragon-face [colors]="next" [form]="store.stage(next)" />
                 {{
                   view() === 'reveal' ? t('startGrowing', { name: name(next) }) : t('backToNest')
                 }}

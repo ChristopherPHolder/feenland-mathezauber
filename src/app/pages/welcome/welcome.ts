@@ -5,11 +5,10 @@ import { Chapter, entryLevel, levelStars, WORLD_CATALOG } from '../../core/catal
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
-import { Emblem, Icon } from '@feenland/ui';
+import { DragonFace, Emblem, Icon } from '@feenland/ui';
 import { levels as wallLevels } from '../number-wall/number-wall';
 import { NumberWallStore } from '../number-wall/number-wall-store';
 import { DragonPortraits } from '../hatchery/dragon-portraits';
-import { DragonFace } from '../hatchery/dragon-face';
 import { STAGES } from '../hatchery/dragons';
 import { EggIcon } from '../hatchery/egg-icon';
 import { HatcheryStore } from '../hatchery/hatchery-store';
@@ -66,10 +65,10 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
           @if (portraits.pictures()[dragon.id]; as picture) {
             <img [src]="picture" width="256" height="256" alt="" />
           } @else if (hatchery.growing()) {
-            <app-dragon-face
+            <ui-dragon-face
               class="hatchery-egg"
-              [dragon]="dragon"
-              [stage]="hatchery.stage(dragon)"
+              [colors]="dragon"
+              [form]="hatchery.stage(dragon)"
             />
           }
         }

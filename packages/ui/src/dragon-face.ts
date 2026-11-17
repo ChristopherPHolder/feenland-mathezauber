@@ -1,17 +1,25 @@
 import { Component, input } from '@angular/core';
-import { GRAND } from './dragons';
-import type { Dragon } from './dragons';
 
-/** A flat dragon face in the dragon's own colours; each evolved form has bigger horns. */
+/** The three colours a dragon face is painted in. */
+export interface DragonFaceColors {
+  readonly body: string;
+  readonly belly: string;
+  readonly accent: string;
+}
+
+/**
+ * A flat, decorative dragon face in the given colours. `form` 0 has little horn nubs, 1 longer
+ * horns and 2 or more a second, swept-back pair.
+ */
 @Component({
-  selector: 'app-dragon-face',
+  selector: 'ui-dragon-face',
   template: `<svg viewBox="0 0 40 40" aria-hidden="true">
-    @if (stage() >= grand) {
-      <path d="M8 17 0 9l9 2zM32 17l8-8-9 2z" [attr.fill]="dragon().accent" />
+    @if (form() >= grand) {
+      <path d="M8 17 0 9l9 2zM32 17l8-8-9 2z" [attr.fill]="colors().accent" />
     }
-    <path [attr.d]="horns[stage()] ?? horns[0]" [attr.fill]="dragon().accent" />
-    <circle cx="20" cy="22" r="15" [attr.fill]="dragon().body" />
-    <ellipse cx="20" cy="29" rx="9" ry="6" [attr.fill]="dragon().belly" />
+    <path [attr.d]="horns[form()] ?? horns[0]" [attr.fill]="colors().accent" />
+    <circle cx="20" cy="22" r="15" [attr.fill]="colors().body" />
+    <ellipse cx="20" cy="29" rx="9" ry="6" [attr.fill]="colors().belly" />
     <circle cx="14" cy="19" r="4.4" fill="#fffefc" />
     <circle cx="26" cy="19" r="4.4" fill="#fffefc" />
     <circle cx="14.4" cy="19.6" r="2.7" fill="#2a2148" />
@@ -38,9 +46,9 @@ import type { Dragon } from './dragons';
   `,
 })
 export class DragonFace {
-  readonly dragon = input.required<Dragon>();
-  readonly stage = input(0);
-  protected readonly grand = GRAND;
+  readonly colors = input.required<DragonFaceColors>();
+  readonly form = input(0);
+  protected readonly grand = 2;
   /** Little horn nubs on a baby, longer ones on the young form, swept-back ones on the final. */
   protected readonly horns = [
     'M10 13 7 3l9 6zM30 13l3-10-9 6z',

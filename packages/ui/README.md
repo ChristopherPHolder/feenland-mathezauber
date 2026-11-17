@@ -39,6 +39,7 @@ long-standing base classes listed below.
 | `styles/tokens.css`   | Generated from `tokens.json` by `vp run tokens`. Never edit by hand.                                                                                |
 | `styles/base.css`     | Reset, type, focus ring, `.button` `.primary` `.secondary`, `.panel`, `.lead`, `dialog`, `.sr-only`, `.ui-pill`, and the reduced/calm motion rules. |
 | `src/icon.ts`         | `ui-icon`: the line icons (`IconKind`).                                                                                                             |
+| `src/dragon-face.ts`  | `ui-dragon-face`: a flat dragon face in given colours; bigger horns for each evolved `form`.                                                        |
 | `src/emblem.ts`       | `ui-emblem`: a game's or world's illustrated emblem, by catalog id, with an emoji fallback.                                                         |
 | `src/star-rating.ts`  | `ui-star-rating`: three star slots and one spoken label.                                                                                            |
 | `src/game-bar.ts`     | `ui-game-bar`: the way out, title and actions above a game.                                                                                         |

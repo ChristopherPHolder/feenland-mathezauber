@@ -2,8 +2,7 @@ import { Component, computed, ElementRef, inject, signal, viewChild } from '@ang
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LocaleService } from '../../core/locale';
-import { Icon } from '@feenland/ui';
-import { DragonFace } from './dragon-face';
+import { DragonFace, Icon } from '@feenland/ui';
 import { DragonPortraits } from './dragon-portraits';
 import { DAY_DRAGONS, Dragon, GRAND, STAGES, STARLIGHT_DRAGONS, starlightAwake } from './dragons';
 import { EggIcon } from './egg-icon';

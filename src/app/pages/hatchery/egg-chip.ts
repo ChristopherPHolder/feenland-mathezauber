@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DragonFace } from '@feenland/ui';
 import { LocaleService } from '../../core/locale';
-import { DragonFace } from './dragon-face';
 import { EggIcon } from './egg-icon';
 import { HatcheryStore } from './hatchery-store';
 import { hatcheryText } from './hatchery-messages';
@@ -27,7 +27,7 @@ import { hatcheryText } from './hatchery-messages';
             [attr.stroke-dasharray]="fill() * 100 + ' 100'"
           />
         </svg>
-        <app-dragon-face [dragon]="dragon" [stage]="store.stage(dragon)" />
+        <ui-dragon-face [colors]="dragon" [form]="store.stage(dragon)" />
       } @else {
         <app-egg-icon [dragon]="store.egg()" [warmth]="fill()" />
       }
@@ -81,7 +81,7 @@ import { hatcheryText } from './hatchery-messages';
       stroke-linecap: round;
       transition: stroke-dasharray 0.6s ease;
     }
-    app-dragon-face {
+    ui-dragon-face {
       position: relative;
       font-size: 15px;
     }

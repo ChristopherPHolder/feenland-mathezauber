@@ -245,7 +245,7 @@ describe('the dragon hatchery', () => {
       expect(element.querySelector('a')!.getAttribute('aria-label')).toBe(
         'Dragon Hatchery. Fern evolves: 5 of 30',
       );
-      expect(element.querySelector('app-dragon-face')).not.toBeNull();
+      expect(element.querySelector('ui-dragon-face')).not.toBeNull();
       expect(element.querySelector('app-egg-icon')).toBeNull();
       TestBed.inject(HatcheryStore).warm(25);
       fixture.detectChanges();
