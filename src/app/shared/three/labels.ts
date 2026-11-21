@@ -1,4 +1,4 @@
-import { CanvasTexture, LinearFilter, SRGBColorSpace } from 'three';
+import { CanvasTexture, LinearMipmapLinearFilter, SRGBColorSpace } from 'three';
 
 export interface LabelStyle {
   /** Text colour. */
@@ -35,7 +35,9 @@ export class TextLabel {
     this.context = canvas.getContext('2d')!;
     this.texture = new CanvasTexture(canvas);
     this.texture.colorSpace = SRGBColorSpace;
-    this.texture.minFilter = LinearFilter;
+    // Mipmaps and anisotropic filtering keep small or tilted numbers crisp instead of shimmering.
+    this.texture.minFilter = LinearMipmapLinearFilter;
+    this.texture.anisotropy = 4;
     this.update(text);
     // Repaint once Fredoka has loaded, in case the first paint used a fallback font.
     void document.fonts?.ready.then(() => this.paint());
