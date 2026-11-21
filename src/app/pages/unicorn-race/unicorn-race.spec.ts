@@ -17,6 +17,11 @@ describe('Unicorn race game', () => {
     vi.useFakeTimers();
     localStorage.clear();
     sessionStorage.clear();
+    // The Stable opens by itself on a first visit; most tests start from the race intro.
+    localStorage.setItem(
+      'feenland.unicorn-race.v1',
+      JSON.stringify({ version: 2, records: {}, sparkles: 0, pace: 'normal', stableSeen: true }),
+    );
     TestBed.configureTestingModule({
       imports: [UnicornRace],
       providers: [
@@ -142,11 +147,8 @@ describe('Unicorn race game', () => {
     expect(cards[21].getAttribute('href')).toBe('/adventure/unicorn-race-15');
     expect(cards[5].getAttribute('href')).toBe('/adventure/unicorn-race-20');
     expect(element.textContent).toContain('0 of 5 cups complete');
-    // Keepsakes stay locked until a whole cup is finished.
-    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(5);
-    expect(element.querySelector('.wardrobe .chip[aria-pressed="true"]')?.textContent).toContain(
-      'Just Lumi',
-    );
+    // The keepsakes moved into the Stable, so the intro no longer lists them.
+    expect(element.querySelector('.wardrobe')).toBeNull();
   });
   it('hands out the cup keepsake once three races of a cup are finished and lets Lumi wear it', () => {
     const { element, component, wait, answerRight, start, click, fixture } = setup(
@@ -167,11 +169,16 @@ describe('Unicorn race game', () => {
     expect(store.completedCups()).toBe(1);
     click('Choose a race');
     expect(element.textContent).toContain('1 of 5 cups complete');
-    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(4);
     expect(element.querySelector('.lineup app-racer .wreath')).toBeTruthy();
-    click('Just Lumi');
+    // In the Stable's dress-up tab the earned wreath is on, the other four are still locked.
+    click('Change Lumi');
+    click('👑');
+    expect(element.querySelectorAll('.dress.locked')).toHaveLength(4);
+    expect(element.querySelector('.dress:has(:checked)')?.textContent).toContain('Flower wreath');
+    element.querySelector<HTMLInputElement>('input[name="horse-outfit"]')!.click();
     fixture.detectChanges();
     expect(store.save().outfit).toBeNull();
+    click('✓ Done');
     expect(element.querySelector('.lineup app-racer .wreath')).toBeNull();
     expect(
       [...element.querySelectorAll('.level-card')][3].querySelectorAll('.level-stars .earned'),
@@ -377,7 +384,7 @@ describe('Unicorn race game', () => {
   it('races the shadow at par and asks to beat it', () => {
     const { element, component, start, chooseHeat } = setup('en', 'unicorn-race-5');
     chooseHeat(3);
-    expect(element.textContent).toContain('Lumi races her own shadow');
+    expect(element.textContent).toContain('Lumi races a shadow that runs your best time');
     start();
     expect(component.race().shadowMs).toBe(81000);
     expect(element.querySelector('.hud .rival')?.textContent).toContain('Shadow 81 s');
@@ -392,7 +399,10 @@ describe('Unicorn race game', () => {
         pace: 'fast',
       }),
     );
-    const { element } = setup();
+    const { element, click } = setup();
+    // A player from before the Stable meets it once, then lands on the intro.
+    expect(element.querySelector('app-horse-stable')).toBeTruthy();
+    click('✓ Done');
     const store = TestBed.inject(RaceStore);
     expect(store.record(1, 1)?.cup).toBe('gold');
     expect(store.heatsDone(1)).toBe(1);
@@ -402,6 +412,87 @@ describe('Unicorn race game', () => {
     );
     expect(element.querySelector('.cup-tag')?.textContent).toContain('Key chase');
     expect([...element.querySelectorAll('.level-card')][1].textContent).toContain('1 of 6 heats');
+  });
+  it('races with the horse from the Stable: its name in the lineup, messages and standings', () => {
+    localStorage.setItem(
+      'feenland.unicorn-race.v1',
+      JSON.stringify({
+        version: 2,
+        records: {},
+        sparkles: 0,
+        pace: 'normal',
+        outfit: null,
+        horse: { name: 'Sternchen', kind: 'pegasus', coat: 'midnight', mane: 'ocean' },
+        stableSeen: true,
+      }),
+    );
+    const { element, start, answerRight, wait } = setup();
+    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent?.trim()).toBe(
+      'Sternchen',
+    );
+    expect(element.textContent).toContain('Sternchen and friends gallop');
+    expect(element.textContent).toContain('Right answer: Sternchen gallops');
+    const art = element.querySelector<HTMLElement>('.lineup .is-lumi app-racer')!;
+    expect(art.style.getPropertyValue('--coat')).toBe('#48437a');
+    expect(art.style.getPropertyValue('--mane-1')).toBe('#5fb8ff');
+    expect(art.querySelector('.wing')).toBeTruthy();
+    expect(art.querySelector('.horn')).toBeNull();
+    // A rival keeps its own colours.
+    expect(
+      element
+        .querySelector<HTMLElement>('.lineup app-racer.racer-cloud')!
+        .style.getPropertyValue('--coat'),
+    ).toBe('');
+    start();
+    answerRight();
+    wait(100);
+    expect(element.querySelector('.standings')?.textContent).toContain('Sternchen');
+  });
+  it('keeps Lumi for a save from before the Stable, and a bad horse falls back part by part', () => {
+    localStorage.setItem(
+      'feenland.unicorn-race.v1',
+      JSON.stringify({
+        version: 2,
+        records: {},
+        sparkles: 5,
+        pace: 'normal',
+        outfit: null,
+        horse: { name: 42, kind: 'dragon', coat: 'mint', mane: 'plaid' },
+        stableSeen: true,
+      }),
+    );
+    const { element } = setup();
+    const store = TestBed.inject(RaceStore);
+    expect(store.save().horse).toEqual({
+      name: '',
+      kind: 'unicorn',
+      coat: 'mint',
+      mane: 'rainbow',
+      marking: 'none',
+      horn: 'gold',
+    });
+    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent?.trim()).toBe(
+      'Lumi',
+    );
+    store.setHorse({
+      name: '  Blitz   der   Wind  ',
+      kind: 'pony',
+      coat: 'cocoa',
+      mane: 'night',
+      marking: 'socks',
+      horn: 'silver',
+    });
+    const saved = JSON.parse(localStorage.getItem('feenland.unicorn-race.v1')!);
+    expect(saved.version).toBe(2);
+    expect(saved.sparkles).toBe(5);
+    expect(saved.horse).toEqual({
+      name: 'Blitz der Wi',
+      kind: 'pony',
+      coat: 'cocoa',
+      mane: 'night',
+      marking: 'socks',
+      horn: 'silver',
+    });
   });
   it('speaks German on the intro and during the race', () => {
     const { element, status, start } = setup('de');

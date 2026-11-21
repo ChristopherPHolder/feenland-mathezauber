@@ -26,6 +26,7 @@ import { MAX_SPEED, RacerId, RacerState } from './race';
 import { Particles } from './race-particles';
 import type { RaceCup, Sky } from './race-questions';
 import type { Outfit } from './race-store';
+import type { Horse } from './horse';
 import { Pony, RAINBOW } from './race-pony';
 import { INK, LANE_X, Scenery, UNIT } from './race-scenery';
 /** Everything the scene needs to know per frame; the page owns the race, this only draws it. */
@@ -49,6 +50,8 @@ export interface Course {
   readonly racers: readonly RacerId[];
   /** What Lumi wears, earned by completing a cup. */
   readonly outfit: Outfit | null;
+  /** The horse the child made in the Stable; its shadow takes the same shape. */
+  readonly horse: Horse;
   /** Later heats run at dusk and at night. */
   readonly sky: Sky;
 }
@@ -115,7 +118,10 @@ function paintTag(sprite: Sprite, name: string) {
   context.roundRect(4, 6, 184, 52, 26);
   context.fill();
   context.fillStyle = INK;
-  context.font = '600 30px system-ui, sans-serif';
+  // A long name shrinks to fit the pill instead of running off its ends.
+  let size = 30;
+  do context.font = `600 ${size}px system-ui, sans-serif`;
+  while (context.measureText(name).width > 168 && --size > 16);
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.fillText(name, 96, 34);
@@ -237,7 +243,7 @@ export class RaceWorld {
     this.scene.add(this.scenery.group, this.sparks.mesh, this.dust.mesh);
     this.camera = new PerspectiveCamera(58, 1, 0.1, 180);
     this.runners = course.racers.map((id) => {
-      const pony = new Pony(id, id === 'player' ? course.outfit : null);
+      const pony = new Pony(id, id === 'player' ? course.outfit : null, course.horse);
       pony.root.position.x = LANE_X[id];
       const tag = makeTag('');
       tag.position.set(0, 2.7, -0.5);

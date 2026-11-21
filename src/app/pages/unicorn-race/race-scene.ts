@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { RacerId, RacerState } from './race';
 import type { Course, RaceWorld, WorldFrame } from './race-world';
+import { sameHorse } from './horse';
 /**
  * The race track in 3D: lanes down a fairyland course to the rainbow castle, seen from just
  * behind Lumi. Purely presentational; the page owns the race and feeds it each tick. The world
@@ -211,6 +212,7 @@ export class RaceScene {
       this.built.length === course.length &&
       this.built.racers.join() === course.racers.join() &&
       this.built.outfit === course.outfit &&
+      sameHorse(this.built.horse, course.horse) &&
       this.built.sky === course.sky
     )
       return;

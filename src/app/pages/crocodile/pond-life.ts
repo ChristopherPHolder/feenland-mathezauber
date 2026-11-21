@@ -13,7 +13,9 @@ import {
   SphereGeometry,
   TubeGeometry,
   Vector3,
+  type Texture,
 } from 'three';
+import { smooth } from '../../shared/three/motion';
 
 const INK = '#172555';
 const toon = (color: string, extra: Partial<MeshStandardMaterial> = {}) =>
@@ -32,12 +34,15 @@ function part(
   return result;
 }
 
-/** A round lily pad of radius 1 with the little notch cut out, lying flat on the water. */
-export function makeLilyPad(color = '#4ca25f', rim = '#2f7a44'): Group {
+/**
+ * A round lily pad of radius 1 with the little notch cut out, lying flat on the water. `veins`
+ * (see `padVeins`) draws the leaf's veins on top.
+ */
+export function makeLilyPad(color = '#4ca25f', rim = '#2f7a44', veins?: Texture): Group {
   const pad = new Group();
   const top = new Mesh(
     new CylinderGeometry(1, 1, 0.06, 28, 1, false, 0.35, Math.PI * 2 - 0.7),
-    toon(color),
+    toon(color, veins ? { map: veins } : {}),
   );
   top.receiveShadow = true;
   const edge = new Mesh(
@@ -79,109 +84,252 @@ export function makeGoldenPad(): Group {
   return pad;
 }
 
-/** A clump of reeds with a cattail or two, about 1.6 units tall. */
-export function makeReeds(seed: number): Group {
-  const clump = new Group();
-  const leaf = toon('#3a8f55');
-  const light = toon('#5fbf6f');
-  const cattail = toon('#9a6a3c');
-  const stem = new ConeGeometry(0.045, 1, 5);
-  const head = new CapsuleGeometry(0.05, 0.18, 3, 8);
-  for (let i = 0; i < 6; i++) {
-    const angle = seed * 1.7 + i * 2.1;
-    const height = 0.9 + ((seed * 13 + i * 7) % 7) / 10;
-    const blade = part(
-      stem,
-      i % 2 ? leaf : light,
-      [Math.sin(angle) * 0.16, height / 2, Math.cos(angle) * 0.12],
-      [1, height, 1],
-    );
-    blade.rotation.z = Math.sin(angle) * 0.18;
-    blade.rotation.x = Math.cos(angle) * 0.12;
-    clump.add(blade);
-    if (i % 3 === 0) {
-      const tail = part(head, cattail, [
-        blade.position.x * 1.6,
-        height * 0.92,
-        blade.position.z * 1.4,
-      ]);
-      tail.rotation.copy(blade.rotation);
-      clump.add(tail);
-    }
-  }
-  return clump;
-}
-
-/** A small round frog that sits on a lily pad and hops now and then. */
+/**
+ * A small round frog that sits on a lily pad. Between hops it puffs its throat out to croak; a
+ * hop crouches first, leaps on an arc with its legs stretched out and lands with a squash.
+ */
 export class Frog {
   readonly root = new Group();
   private readonly body = new Group();
+  private readonly throat: Mesh;
+  private readonly legs: Mesh[] = [];
   private hopAt = 3;
+  private croakAt = 1.5;
+  private turn = 0;
+  private hopping = false;
 
   constructor() {
     const sphere = new SphereGeometry(1, 14, 10);
     const green = toon('#7cc85a');
     const white = toon('#ffffff', { roughness: 0.3 });
     const ink = toon(INK);
+    const belly = toon('#d9f2b4');
     this.body.add(part(sphere, green, [0, 0.16, 0], [0.24, 0.18, 0.22]));
-    this.body.add(part(sphere, toon('#d9f2b4'), [0, 0.13, 0.08], [0.18, 0.12, 0.16]));
+    this.body.add(part(sphere, belly, [0, 0.13, 0.08], [0.18, 0.12, 0.16]));
     for (const side of [-1, 1]) {
       this.body.add(part(sphere, green, [side * 0.12, 0.3, 0.06], [0.08, 0.08, 0.08]));
       this.body.add(part(sphere, white, [side * 0.12, 0.32, 0.1], [0.055, 0.055, 0.04]));
       this.body.add(part(sphere, ink, [side * 0.12, 0.32, 0.135], [0.028, 0.03, 0.02]));
-      this.body.add(part(sphere, green, [side * 0.2, 0.05, 0.1], [0.08, 0.04, 0.12]));
+      // Folded back legs at the sides, which stretch out behind it in a leap.
+      const leg = part(sphere, green, [side * 0.2, 0.05, -0.02], [0.08, 0.05, 0.14]);
+      this.legs.push(leg);
+      this.body.add(leg);
+      this.body.add(part(sphere, green, [side * 0.1, 0.03, 0.16], [0.045, 0.03, 0.06]));
     }
+    this.throat = part(sphere, toon('#f3ffd9'), [0, 0.09, 0.17], [0.09, 0.07, 0.06]);
+    this.body.add(this.throat);
     this.root.add(this.body);
   }
 
-  animate(t: number, calm: boolean) {
+  /** Moves the frog on; returns true on the frame it lands back on its pad. */
+  animate(t: number, calm: boolean): boolean {
     if (calm) {
       this.body.position.y = 0;
       this.body.scale.set(1, 1, 1);
-      return;
+      this.body.rotation.x = 0;
+      this.throat.scale.set(0.09, 0.07, 0.06);
+      return false;
     }
     const age = t - this.hopAt;
-    if (age > 0.9) this.hopAt = t + 4 + ((t * 3.7) % 3);
+    let landed = false;
+    if (age > 0.9) {
+      this.hopAt = t + 4 + ((t * 3.7) % 3);
+      this.turn += (t * 1.3) % 1 > 0.5 ? 0.9 : -0.9;
+    }
     const hop = age >= 0 && age <= 0.9 ? age / 0.9 : -1;
-    // Crouch, leap, land: a little squash and stretch.
-    this.body.position.y = hop < 0 ? 0 : Math.sin(Math.min(1, hop * 1.2) * Math.PI) * 0.45;
-    const squash = hop < 0 ? 1 : hop < 0.15 ? 1 - hop * 1.6 : 1 + Math.sin(hop * Math.PI) * 0.15;
+    if (hop >= 0.15 + 0.6) {
+      if (this.hopping) landed = true;
+      this.hopping = false;
+    } else if (hop >= 0.15) this.hopping = true;
+    // Crouch (0 to 0.15), leap (to 0.75), land and settle.
+    const air = hop < 0.15 ? 0 : Math.min(1, (hop - 0.15) / 0.6);
+    this.body.position.y = hop < 0 ? 0 : Math.sin(air * Math.PI) * 0.45;
+    const squash =
+      hop < 0
+        ? 1
+        : hop < 0.15
+          ? 1 - smooth(hop / 0.15) * 0.25
+          : hop < 0.75
+            ? 1 + Math.sin(air * Math.PI) * 0.18
+            : 1 - Math.sin(((hop - 0.75) / 0.25) * Math.PI) * 0.2;
     this.body.scale.set(1 / Math.sqrt(squash), squash, 1 / Math.sqrt(squash));
-    this.body.rotation.y = hop < 0 ? this.body.rotation.y : this.body.rotation.y + 0.02;
+    // Nose up on the way up, down on the way down; it turns a little each hop.
+    this.body.rotation.x = hop < 0.15 || hop > 0.75 ? 0 : -Math.cos(air * Math.PI) * 0.35;
+    this.body.rotation.y += (this.turn - this.body.rotation.y) * (air > 0 ? 0.15 : 0);
+    for (const leg of this.legs) {
+      leg.scale.z = 0.14 * (1 + Math.sin(air * Math.PI) * 0.9);
+      leg.position.z = -0.02 - Math.sin(air * Math.PI) * 0.12;
+    }
+    // A croak: the throat swells twice, then rests.
+    const croak = t - this.croakAt;
+    if (croak > 1.2) this.croakAt = t + 2.5 + ((t * 5.3) % 2.5);
+    const swell =
+      hop < 0 && croak >= 0 && croak <= 1.2
+        ? Math.max(0, Math.sin((croak / 1.2) * Math.PI * 2)) ** 0.7
+        : 0;
+    const size = 1 + swell * 1.3;
+    this.throat.scale.set(0.09 * size, 0.07 * size, 0.06 * (1 + swell * 0.8));
+    return landed;
   }
 }
 
-/** A butterfly with two flapping wings; the world flies it around the pond. */
-export class Butterfly {
+/**
+ * A dragonfly: long slim tail, big round eyes and four clear wings that buzz. It hovers in one
+ * spot, then darts to the next on a quick eased arc, the way real ones do.
+ */
+export class Dragonfly {
   readonly root = new Group();
-  private readonly wings: Mesh[] = [];
+  private readonly wings: Group[] = [];
+  private spots: readonly Vector3[] = [];
+  private from = 0;
+  private to = 0;
+  private leaveAt = 1.5;
+  private darts = 0;
+  private readonly arc = 0.5;
 
-  constructor(color: string) {
+  constructor() {
+    const body = toon('#46c7d8', { roughness: 0.35, metalness: 0.15 });
+    const eye = toon('#3a7be0', { roughness: 0.2 });
+    const sphere = new SphereGeometry(1, 10, 8);
+    this.root.add(part(sphere, body, [0, 0, 0.08], [0.06, 0.055, 0.09]));
+    for (const side of [-1, 1])
+      this.root.add(part(sphere, eye, [side * 0.045, 0.02, 0.17], [0.045, 0.045, 0.045]));
+    const tail = part(new CapsuleGeometry(0.02, 0.42, 3, 6), body, [0, 0, -0.22]);
+    tail.rotation.x = Math.PI / 2;
+    this.root.add(tail);
     const shape = new Shape();
     shape.moveTo(0, 0);
-    shape.bezierCurveTo(0.25, 0.3, 0.5, 0.15, 0.42, -0.02);
-    shape.bezierCurveTo(0.45, -0.2, 0.2, -0.3, 0, -0.05);
-    const geometry = new ShapeGeometry(shape, 8);
-    const material = toon(color, { side: DoubleSide });
-    for (const side of [-1, 1]) {
-      const wing = new Mesh(geometry, material);
-      wing.rotation.x = -Math.PI / 2;
-      wing.scale.set(side, 1, 1);
-      const hinge = new Group();
-      hinge.add(wing);
-      this.root.add(hinge);
-      this.wings.push(wing);
+    shape.bezierCurveTo(0.1, 0.05, 0.32, 0.06, 0.4, 0.0);
+    shape.bezierCurveTo(0.32, -0.05, 0.1, -0.04, 0, 0);
+    const geometry = new ShapeGeometry(shape, 6);
+    const glass = toon('#f2fdff', {
+      transparent: true,
+      opacity: 0.72,
+      side: DoubleSide,
+      roughness: 0.1,
+      depthWrite: false,
+    });
+    for (const z of [0.1, 0.03])
+      for (const side of [-1, 1]) {
+        const hinge = new Group();
+        hinge.position.set(side * 0.03, 0.04, z);
+        const wing = new Mesh(geometry, glass);
+        wing.rotation.x = -Math.PI / 2;
+        wing.scale.set(side, 1, 1);
+        hinge.add(wing);
+        this.root.add(hinge);
+        this.wings.push(hinge);
+      }
+  }
+
+  /** The spots it hovers over, in the world: high and low on one side, then the other. */
+  setSpots(spots: readonly Vector3[]) {
+    this.spots = spots;
+    this.from = this.to = 0;
+  }
+
+  update(t: number, calm: boolean) {
+    const spots = this.spots;
+    if (!spots.length) return;
+    if (calm) {
+      this.root.position.copy(spots[0]!);
+      this.root.rotation.set(0, 0.6, 0);
+      for (const hinge of this.wings) hinge.rotation.z = 0;
+      return;
     }
-    this.root.add(
-      part(new CapsuleGeometry(0.025, 0.16, 3, 6), toon(INK), [0, 0, 0], [1, 1, 1]).rotateX(
-        Math.PI / 2,
-      ),
-    );
+    const dart = 0.65;
+    if (t > this.leaveAt + dart) {
+      // It keeps to its own side of the pond, between a high and a low spot, and now and then
+      // crosses over along the top edge, so it never zips across Kiki and the numbers.
+      this.from = this.to;
+      this.darts++;
+      const high = this.from % 2 === 0;
+      this.to = high && this.darts % 3 === 0 ? (this.from + 2) % spots.length : this.from ^ 1;
+      this.leaveAt = t + 1.4 + ((t * 2.3) % 1.4);
+    }
+    const a = spots[this.from]!;
+    const b = spots[this.to]!;
+    const s = t < this.leaveAt ? 0 : smooth((t - this.leaveAt) / dart);
+    const scale = this.root.scale.x;
+    this.root.position.lerpVectors(a, b, s);
+    // A low arc between spots, and a small hovering bob while it waits.
+    this.root.position.y +=
+      Math.sin(s * Math.PI) * this.arc * scale + Math.sin(t * 5.3) * 0.06 * scale;
+    this.root.position.x += Math.sin(t * 2.1) * 0.05 * scale;
+    if (a !== b) {
+      const yaw = Math.atan2(b.x - a.x, b.z - a.z);
+      this.root.rotation.y += (yaw - this.root.rotation.y) * 0.08;
+    }
+    // Nose down while it darts, level while it hovers.
+    this.root.rotation.x = Math.sin(s * Math.PI) * 0.35;
+    const buzz = Math.sin(t * 60);
+    this.wings.forEach((hinge, index) => {
+      hinge.rotation.z = (index % 2 ? -1 : 1) * (0.15 + buzz * 0.35 * (index < 2 ? 1 : -1));
+    });
+  }
+}
+
+/**
+ * A butterfly: a big rounded forewing and a smaller hindwing on each side, with a pale spot,
+ * a slim dark body and two clubbed antennae. Its wings beat above its back, like a real one's,
+ * and never flip under it. The world flies it around the pond.
+ */
+export class Butterfly {
+  readonly root = new Group();
+  private readonly wings: Group[] = [];
+
+  constructor(color: string) {
+    const fore = new Shape();
+    fore.moveTo(0, 0.02);
+    fore.bezierCurveTo(0.12, 0.34, 0.5, 0.36, 0.52, 0.18);
+    fore.bezierCurveTo(0.5, 0.04, 0.3, -0.02, 0, -0.02);
+    const hind = new Shape();
+    hind.moveTo(0, -0.01);
+    hind.bezierCurveTo(0.26, -0.02, 0.42, -0.16, 0.32, -0.3);
+    hind.bezierCurveTo(0.22, -0.4, 0.06, -0.26, 0, -0.1);
+    const spot = new Shape();
+    spot.absellipse(0.32, 0.17, 0.08, 0.06, 0, Math.PI * 2, false, 0);
+    const material = toon(color, { side: DoubleSide });
+    const hindMaterial = toon(new Color(color).offsetHSL(0, 0, -0.08).getStyle(), {
+      side: DoubleSide,
+    });
+    const pale = toon('#fffaf0', { side: DoubleSide });
+    const foreGeometry = new ShapeGeometry(fore, 10);
+    const hindGeometry = new ShapeGeometry(hind, 10);
+    const spotGeometry = new ShapeGeometry(spot, 8);
+    for (const side of [-1, 1]) {
+      const hinge = new Group();
+      for (const [geometry, paint, lift] of [
+        [foreGeometry, material, 0],
+        [hindGeometry, hindMaterial, -0.002],
+        [spotGeometry, pale, 0.004],
+      ] as const) {
+        const wing = new Mesh(geometry, paint);
+        wing.rotation.x = -Math.PI / 2;
+        wing.position.y = lift;
+        wing.scale.set(side, 1, 1);
+        hinge.add(wing);
+      }
+      this.root.add(hinge);
+      this.wings.push(hinge);
+    }
+    const ink = toon(INK);
+    this.root.add(part(new CapsuleGeometry(0.03, 0.26, 3, 6), ink).rotateX(Math.PI / 2));
+    const feeler = new CylinderGeometry(0.006, 0.006, 0.22, 4);
+    const club = new SphereGeometry(0.02, 6, 4);
+    for (const side of [-1, 1]) {
+      const antenna = part(feeler, ink, [side * 0.04, 0.05, 0.22]);
+      antenna.rotation.set(1.0, 0, -side * 0.35);
+      antenna.add(part(club, ink, [0, 0.11, 0]));
+      this.root.add(antenna);
+    }
   }
 
   animate(t: number, calm: boolean) {
-    const flap = calm ? 0.5 : Math.sin(t * 18) * 0.9;
-    this.wings.forEach((wing, index) => (wing.parent!.rotation.z = (index ? -1 : 1) * flap));
+    // Mostly up with a quick downstroke, between nearly flat and nearly closed.
+    const beat = Math.sin(t * 16);
+    const flap = calm ? 0.35 : 0.65 + 0.55 * Math.sign(beat) * Math.abs(beat) ** 0.6;
+    this.wings.forEach((hinge, index) => (hinge.rotation.z = (index ? -1 : 1) * flap));
   }
 }
 
@@ -234,6 +382,8 @@ export class HeronModel {
   /** Where its beak tip is, in the heron's own space: snatched tiles hang from here. */
   readonly beak = new Vector3(0, 0.5, 1.32);
   private readonly wings: Group[] = [];
+  private readonly tips: Group[] = [];
+  private readonly shins: Mesh[] = [];
 
   constructor() {
     const grey = toon('#8fa8c4');
@@ -260,34 +410,72 @@ export class HeronModel {
     tail.scale.set(1, 1, 0.3);
     this.root.add(tail);
     const leg = new CylinderGeometry(0.02, 0.02, 0.7, 4);
+    // The legs trail behind in flight; they swing down when it reaches for a snack.
     for (const side of [-1, 1]) {
-      const shin = part(leg, toon('#d99a2b'), [side * 0.08, -0.12, -0.8]);
-      shin.rotation.x = Math.PI / 2.3;
-      this.root.add(shin);
+      const hip = new Group();
+      hip.position.set(side * 0.08, -0.12, -0.45);
+      const shin = part(leg, toon('#d99a2b'), [0, 0, -0.35]);
+      shin.rotation.x = Math.PI / 2;
+      hip.add(shin);
+      hip.rotation.x = -0.27;
+      this.root.add(hip);
+      this.shins.push(shin);
     }
-    const wingShape = new Shape();
-    wingShape.moveTo(0, 0.3);
-    wingShape.quadraticCurveTo(0.6, 0.45, 1.15, 0.05);
-    wingShape.quadraticCurveTo(0.7, -0.05, 0.6, -0.3);
-    wingShape.quadraticCurveTo(0.3, -0.15, 0, -0.3);
-    const wingGeometry = new ShapeGeometry(wingShape, 10);
+    // Each wing has an inner half at the shoulder and an outer half at the wrist; the outer half
+    // trails the beat, so the tips whip through after the stroke like real feathers.
+    const inner = new Shape();
+    inner.moveTo(0, 0.3);
+    inner.quadraticCurveTo(0.3, 0.38, 0.58, 0.32);
+    inner.lineTo(0.58, -0.28);
+    inner.quadraticCurveTo(0.3, -0.15, 0, -0.3);
+    const outer = new Shape();
+    outer.moveTo(0, 0.32);
+    outer.quadraticCurveTo(0.35, 0.3, 0.62, 0.02);
+    outer.quadraticCurveTo(0.28, -0.08, 0.12, -0.24);
+    outer.lineTo(0, -0.28);
+    const innerGeometry = new ShapeGeometry(inner, 8);
+    const outerGeometry = new ShapeGeometry(outer, 8);
     const wingMaterial = toon('#6f8bb0', { side: DoubleSide });
+    const tipMaterial = toon('#5a7399', { side: DoubleSide });
     for (const side of [-1, 1]) {
       const hinge = new Group();
       hinge.position.set(side * 0.18, 0.1, 0.05);
-      const wing = new Mesh(wingGeometry, wingMaterial);
+      const wing = new Mesh(innerGeometry, wingMaterial);
       wing.castShadow = true;
       wing.rotation.x = -Math.PI / 2;
       wing.scale.set(side, 1, 1);
       hinge.add(wing);
+      const wrist = new Group();
+      wrist.position.set(side * 0.57, 0, 0);
+      const tip = new Mesh(outerGeometry, tipMaterial);
+      tip.castShadow = true;
+      tip.rotation.x = -Math.PI / 2;
+      tip.scale.set(side, 1, 1);
+      wrist.add(tip);
+      hinge.add(wrist);
       this.root.add(hinge);
       this.wings.push(hinge);
+      this.tips.push(wrist);
     }
   }
 
-  /** `beat` from 0 (wings held out to glide) up to 1 (hard flapping). */
-  animate(t: number, beat: number) {
-    const angle = Math.sin(t * (6 + beat * 8)) * (0.15 + beat * 0.65);
-    this.wings.forEach((hinge, index) => (hinge.rotation.z = (index ? -1 : 1) * angle));
+  /**
+   * `beat` from 0 (wings held out to glide) up to 1 (hard flapping). `fold` from 0 to 1 sweeps
+   * the wings back for a dive, and `reach` from 0 to 1 swings the legs down to grab.
+   */
+  animate(t: number, beat: number, fold = 0, reach = 0) {
+    const speed = 6 + beat * 8;
+    const size = (0.15 + beat * 0.65) * (1 - fold * 0.7);
+    const phase = t * speed;
+    const shoulder = Math.sin(phase) * size + fold * 0.35;
+    const wrist = Math.sin(phase - 0.9) * size * 0.75 - fold * 0.5;
+    this.wings.forEach((hinge, index) => {
+      const side = index ? -1 : 1;
+      hinge.rotation.z = side * shoulder;
+      // Swept back toward the tail in a dive.
+      hinge.rotation.y = side * fold * 0.7;
+      this.tips[index]!.rotation.z = side * wrist;
+    });
+    for (const shin of this.shins) shin.parent!.rotation.x = -0.27 - reach * 0.9;
   }
 }

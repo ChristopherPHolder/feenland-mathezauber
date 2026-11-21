@@ -83,7 +83,7 @@
 /* The first cabins (and after six quiet seconds): what to tap next wears a gold halo. */
 .split-zone.is-guided,
 .choices.is-guided,
-app-gondola-keypad.is-guided {
+ui-number-pad.is-guided {
   border-radius: var(--radius-tile);
   box-shadow: 0 0 0 4px var(--gold);
 }
