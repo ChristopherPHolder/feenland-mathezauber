@@ -8,6 +8,9 @@
   />
 
   @switch (phase()) {
+    @case ('stable') {
+      <app-horse-stable (done)="closeStable()" />
+    }
     @case ('intro') {
       <div class="intro">
         <div class="story">
@@ -15,17 +18,26 @@
             <span aria-hidden="true">{{ cupEmblem(cup()) }}</span> {{ t(cupTitle(cup())) }} ·
             <span aria-hidden="true">{{ modeEmblem(mode()) }}</span> {{ t(heatTitle(heat())) }}
           </p>
-          <div class="lineup" aria-hidden="true">
+          <div class="lineup">
             @for (id of lineup(); track id) {
-              <span class="lineup-racer" [class.is-lumi]="id === 'player'">
-                <app-racer
-                  [kind]="id"
-                  [outfit]="id === 'player' ? outfit() : null"
-                  [horse]="horse()"
-                  [running]="id === 'player'"
-                />
-                <span class="lineup-name">{{ names()[id] }}</span>
-              </span>
+              @if (id === 'player') {
+                <button
+                  #editHorse
+                  type="button"
+                  class="lineup-racer is-lumi"
+                  [attr.aria-label]="editLabel()"
+                  (click)="openStable()"
+                >
+                  <app-racer kind="player" [outfit]="outfit()" [horse]="horse()" [running]="true" />
+                  <span class="edit-mark" aria-hidden="true">✏️</span>
+                  <span class="lineup-name" aria-hidden="true">{{ names()[id] }}</span>
+                </button>
+              } @else {
+                <span class="lineup-racer" aria-hidden="true">
+                  <app-racer [kind]="id" [horse]="horse()" />
+                  <span class="lineup-name">{{ names()[id] }}</span>
+                </span>
+              }
             }
           </div>
           <p class="lead">{{ t(introKey()) }}</p>

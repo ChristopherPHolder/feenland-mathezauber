@@ -17,6 +17,11 @@ describe('Unicorn race game', () => {
     vi.useFakeTimers();
     localStorage.clear();
     sessionStorage.clear();
+    // The Stable opens by itself on a first visit; most tests start from the race intro.
+    localStorage.setItem(
+      'feenland.unicorn-race.v1',
+      JSON.stringify({ version: 2, records: {}, sparkles: 0, pace: 'normal', stableSeen: true }),
+    );
     TestBed.configureTestingModule({
       imports: [UnicornRace],
       providers: [
@@ -392,7 +397,10 @@ describe('Unicorn race game', () => {
         pace: 'fast',
       }),
     );
-    const { element } = setup();
+    const { element, click } = setup();
+    // A player from before the Stable meets it once, then lands on the intro.
+    expect(element.querySelector('app-horse-stable')).toBeTruthy();
+    click('✓ Done');
     const store = TestBed.inject(RaceStore);
     expect(store.record(1, 1)?.cup).toBe('gold');
     expect(store.heatsDone(1)).toBe(1);
@@ -413,10 +421,13 @@ describe('Unicorn race game', () => {
         pace: 'normal',
         outfit: null,
         horse: { name: 'Sternchen', kind: 'pegasus', coat: 'midnight', mane: 'ocean' },
+        stableSeen: true,
       }),
     );
     const { element, start, answerRight, wait } = setup();
-    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent).toBe('Sternchen');
+    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent?.trim()).toBe(
+      'Sternchen',
+    );
     expect(element.textContent).toContain('Sternchen and friends gallop');
     expect(element.textContent).toContain('Right answer: Sternchen gallops');
     const art = element.querySelector<HTMLElement>('.lineup .is-lumi app-racer')!;
@@ -445,6 +456,7 @@ describe('Unicorn race game', () => {
         pace: 'normal',
         outfit: null,
         horse: { name: 42, kind: 'dragon', coat: 'mint', mane: 'plaid' },
+        stableSeen: true,
       }),
     );
     const { element } = setup();
@@ -455,7 +467,9 @@ describe('Unicorn race game', () => {
       coat: 'mint',
       mane: 'rainbow',
     });
-    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent).toBe('Lumi');
+    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent?.trim()).toBe(
+      'Lumi',
+    );
     store.setHorse({ name: '  Blitz   der   Wind  ', kind: 'pony', coat: 'cocoa', mane: 'night' });
     const saved = JSON.parse(localStorage.getItem('feenland.unicorn-race.v1')!);
     expect(saved.version).toBe(2);

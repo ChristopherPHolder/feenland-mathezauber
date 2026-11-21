@@ -41,6 +41,8 @@ export interface RaceSave {
    * running an older build reads the save instead of wiping it as unknown.
    */
   readonly horse: Horse;
+  /** The Stable opens by itself once, the first time a child comes to the race. */
+  readonly stableSeen: boolean;
 }
 const STORAGE_KEY = 'feenland.unicorn-race.v1';
 const empty: RaceSave = {
@@ -50,6 +52,7 @@ const empty: RaceSave = {
   pace: 'normal',
   outfit: null,
   horse: LUMI,
+  stableSeen: false,
 };
 const CUP_RANK: Readonly<Record<Cup, number>> = { gold: 3, silver: 2, bronze: 1 };
 export function cupFor(place: 1 | 2 | 3 | 4): Cup {
@@ -128,6 +131,12 @@ export class RaceStore {
     this.state.update((save) => ({ ...save, horse: readHorse(horse) }));
     this.persist();
   }
+  /** Remembers that the child has been to the Stable, so it no longer opens by itself. */
+  leaveStable() {
+    if (this.save().stableSeen) return;
+    this.state.update((save) => ({ ...save, stableSeen: true }));
+    this.persist();
+  }
   private persist() {
     try {
       this.document.defaultView?.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.save()));
@@ -174,7 +183,8 @@ export class RaceStore {
       const pace = paces.find((pace) => pace === record['pace']) ?? empty.pace;
       const outfit = outfits.find((outfit) => outfit === record['outfit']) ?? null;
       const horse = readHorse(record['horse']);
-      return { version: 2, records, sparkles, pace, outfit, horse };
+      const stableSeen = record['stableSeen'] === true;
+      return { version: 2, records, sparkles, pace, outfit, horse, stableSeen };
     } catch {
       return empty;
     }
