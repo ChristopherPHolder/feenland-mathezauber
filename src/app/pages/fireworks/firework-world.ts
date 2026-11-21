@@ -312,7 +312,6 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
   private readonly lake: Mesh;
   private readonly town: Group;
   private readonly probe = new Vector3();
-  private stars?: Points<BufferGeometry, PointsMaterial>;
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { fov: FOV });
@@ -431,7 +430,6 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     this.camera.position.set(0, EYE_Y, DISTANCE);
     this.camera.lookAt(0, EYE_Y, 0);
     this.viewWidth = VIEW_HEIGHT * aspect;
-    this.sparks.setScale((this.height * this.renderer.getPixelRatio()) / (2 * TAN));
     // Flick and the jetty stand near the left edge; the crowd fills the rest of the bank.
     const half = (z: number) => (DISTANCE - z) * TAN * aspect;
     const bankHalf = half(BANK_Z);
@@ -1330,6 +1328,8 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     this.updateFox(t, frame, calm);
     this.updateCrowd(t, frame, calm);
     this.updateLights(t, calm);
+    // Spark sizes are in device pixels, and the stage may change the pixel ratio any frame.
+    this.sparks.setScale((this.height * this.renderer.getPixelRatio()) / (2 * TAN));
     this.sparks.update(t, dt);
   }
 
@@ -1474,7 +1474,7 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     }
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new BufferAttribute(position, 3));
-    this.stars = new Points(
+    const stars = new Points(
       geometry,
       new PointsMaterial({
         size: 0.35,
@@ -1485,7 +1485,7 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
         depthWrite: false,
       }),
     );
-    this.scene.add(this.stars);
+    this.scene.add(stars);
   }
 
   private buildBank() {
@@ -1831,9 +1831,6 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     this.washMap.dispose();
     (this.scene.background as CanvasTexture | null)?.dispose();
     this.sparks.dispose();
-    // The stage frees meshes and sprites; the star field is points.
-    this.stars?.geometry.dispose();
-    this.stars?.material.dispose();
     super.dispose();
   }
 }
