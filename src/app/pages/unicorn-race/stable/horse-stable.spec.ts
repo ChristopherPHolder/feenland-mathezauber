@@ -219,6 +219,14 @@ describe('the Stable', () => {
     pointer('pointerup', 150);
     pointer('pointermove', 300);
     expect(component.world().spin).toBeCloseTo(0.6);
+    // The same turn without dragging: a tap or a key on the labelled buttons.
+    const right = find<HTMLButtonElement>('.turn.is-right');
+    expect(right.getAttribute('aria-label')).toBe('Turn right');
+    right.click();
+    expect(component.world().spin).toBeCloseTo(0.6 + Math.PI / 4);
+    find<HTMLButtonElement>('.turn.is-left').click();
+    find<HTMLButtonElement>('.turn.is-left').click();
+    expect(component.world().spin).toBeCloseTo(0.6 - Math.PI / 4);
   });
 
   it('names the horse by typing or with one tap on an idea', () => {

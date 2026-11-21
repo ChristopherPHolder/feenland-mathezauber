@@ -17,6 +17,25 @@
     <p class="tag">
       <span class="sr-only">{{ s('title') }}: </span>{{ shownName() }}
     </p>
+    <!-- Dragging turns the stand too; these do the same with a single tap or a key. -->
+    <button
+      type="button"
+      class="turn is-left"
+      [attr.aria-label]="s('turnLeft')"
+      [title]="s('turnLeft')"
+      (click)="turn(-1)"
+    >
+      <span aria-hidden="true">↺</span>
+    </button>
+    <button
+      type="button"
+      class="turn is-right"
+      [attr.aria-label]="s('turnRight')"
+      [title]="s('turnRight')"
+      (click)="turn(1)"
+    >
+      <span aria-hidden="true">↻</span>
+    </button>
     <button
       type="button"
       class="surprise"

@@ -269,6 +269,10 @@ export class HorseStable {
   protected dragEnd() {
     this.dragFrom = null;
   }
+  /** An eighth of a turn per tap, the button alternative to dragging. */
+  protected turn(direction: -1 | 1) {
+    this.spin.update((spin) => spin + (direction * Math.PI) / 4);
+  }
   protected typeName(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.nameDraft.set(value);

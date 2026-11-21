@@ -150,6 +150,28 @@
   cursor: pointer;
   transition: transform 0.2s ease;
 }
+.turn {
+  position: absolute;
+  bottom: clamp(8px, 3cqmin, 16px);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-round);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.turn.is-left {
+  left: 10px;
+}
+.turn.is-right {
+  right: 10px;
+}
 .surprise:active {
   transform: rotate(-20deg) scale(0.92);
 }
