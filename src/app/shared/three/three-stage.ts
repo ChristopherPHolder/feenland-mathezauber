@@ -107,8 +107,12 @@ export class ThreeStage<S> {
       this.instance = undefined;
       return;
     }
-    // A lost GL context (memory pressure on a tablet) drops back to the 2D scene.
-    canvas.addEventListener('webglcontextlost', () => this.ready.set(false), { once: true });
+    // A lost GL context (memory pressure on a tablet) drops back to the 2D scene until the
+    // browser restores it; Three.js then uploads the world again and it comes back.
+    canvas.addEventListener('webglcontextlost', () => this.ready.set(false));
+    canvas.addEventListener('webglcontextrestored', () => {
+      if (!this.destroyed) this.ready.set(true);
+    });
     this.ready.set(true);
   }
 }
