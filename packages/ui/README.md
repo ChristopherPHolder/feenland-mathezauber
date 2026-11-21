@@ -38,14 +38,15 @@ long-standing base classes listed below.
 | `tokens.json`         | The token source: colours, spacing, radii, shadows, type. See [TOKENS.md](TOKENS.md).                                                               |
 | `styles/tokens.css`   | Generated from `tokens.json` by `vp run tokens`. Never edit by hand.                                                                                |
 | `styles/base.css`     | Reset, type, focus ring, `.button` `.primary` `.secondary`, `.panel`, `.lead`, `dialog`, `.sr-only`, `.ui-pill`, and the reduced/calm motion rules. |
+| `src/coach-dialog.ts` | `ui-coach-dialog`: the full-screen "how to play" dialog around a demo film (gondola, clock).                                                        |
 | `src/icon.ts`         | `ui-icon`: the line icons (`IconKind`).                                                                                                             |
 | `src/dragon-face.ts`  | `ui-dragon-face`: a flat dragon face in given colours; bigger horns for each evolved `form`.                                                        |
 | `src/emblem.ts`       | `ui-emblem`: a game's or world's illustrated emblem, by catalog id, with an emoji fallback.                                                         |
 | `src/star-rating.ts`  | `ui-star-rating`: three star slots and one spoken label.                                                                                            |
 | `src/game-bar.ts`     | `ui-game-bar`: the way out, title and actions above a game.                                                                                         |
 | `src/sound-toggle.ts` | `ui-sound-toggle`: the round speaker button.                                                                                                        |
-| `src/number-pad.ts`   | `ui-number-pad`: the number pad in rows of five, with Delete and OK (gondola, market).                                                              |
-| `src/reward-burst.ts` | `ui-reward-burst`: the glow, sparkles and points card after a right answer, tinted with `--burst-*` (market).                                       |
+| `src/number-pad.ts`   | `ui-number-pad`: the number pad in rows of five, with Delete and OK (gondola, market, clock).                                                       |
+| `src/reward-burst.ts` | `ui-reward-burst`: the glow, sparkles and points card after a right answer, tinted with `--burst-*` (market, clock).                                |
 | `src/index.ts`        | The public API. Export every new component here.                                                                                                    |
 
 `index.html` loads `styles/tokens.css`, then `styles/base.css`, then the app's own

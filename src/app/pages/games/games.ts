@@ -36,6 +36,8 @@ import { gondolaStage } from '../gondola/gondola-levels';
 import { GondolaScores } from '../gondola/gondola-scores';
 import { marketStage } from '../market/market-levels';
 import { MarketScores } from '../market/market-scores';
+import { clockStage } from '../clock/clock-levels';
+import { ClockScores } from '../clock/clock-scores';
 import {
   levelPosition,
   levels as wallLevels,
@@ -105,6 +107,7 @@ export class Games {
   private readonly fireworkScores = inject(FireworkScores);
   private readonly gondolaScores = inject(GondolaScores);
   private readonly marketScores = inject(MarketScores);
+  private readonly clockScores = inject(ClockScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
   protected readonly nextId = computed(() => this.p.next()?.id);
@@ -261,6 +264,7 @@ export class Games {
         this.fireworkScores.best()[level.id] ??
         this.gondolaScores.best()[level.id] ??
         this.marketScores.best()[level.id] ??
+        this.clockScores.best()[level.id] ??
         0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
       recommended: level.id === this.nextId(),
@@ -310,6 +314,8 @@ export class Games {
     if (gondola) return gondola;
     const market = marketStage(level.id)?.example;
     if (market) return market;
+    const clock = clockStage(level.id)?.example;
+    if (clock) return clock;
     return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {

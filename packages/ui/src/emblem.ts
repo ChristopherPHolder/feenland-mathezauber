@@ -219,6 +219,18 @@ import { Component, input } from '@angular/core';
         <path d="M4 58h56" />
       </svg>
     }
+    @case ('clock-tower') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M14 58V26h36v32z" fill="#e8d3b4" />
+        <path d="M10 27 32 6l22 21z" fill="#7a5ac0" />
+        <circle cx="32" cy="38" r="12" fill="#fff8e6" />
+        <path d="M32 29v9l6 4" stroke-width="2.6" />
+        <path d="M32 27.5v2m0 17v2M21.5 38h2m17 0h2" stroke-width="1.6" />
+        <path d="M28 14q4-5 8 0v5h-8z" class="gold" />
+        <circle cx="32" cy="38" r="1.6" fill="#2a2350" stroke="none" />
+        <path d="M4 58h56" />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />
