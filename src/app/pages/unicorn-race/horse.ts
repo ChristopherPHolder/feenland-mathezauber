@@ -1,26 +1,31 @@
 /**
- * The horse a child races with: its name, what kind of horse it is and its colours. Lumi, the
+ * The horse a child races with: its name, what kind of horse it is, its colours and markings. Lumi, the
  * white unicorn with the rainbow mane, is the horse every child starts with.
  */
 export type HorseKind = 'unicorn' | 'pegasus' | 'alicorn' | 'pony';
 export const horseKinds: readonly HorseKind[] = ['unicorn', 'pegasus', 'alicorn', 'pony'];
 
-/** A coat colour and the darker shade for the far legs, the muzzle and the hooves. */
+/**
+ * A coat colour, the darker shade for the far legs, the muzzle and the hooves, and the colour
+ * of its markings: white on every coat but white, where they are a soft lilac grey.
+ */
 export interface CoatPaint {
   readonly coat: string;
   readonly shade: string;
+  readonly mark: string;
 }
+const WHITE_MARK = '#fffdfd';
 export const COATS = {
-  snow: { coat: '#fffdfd', shade: '#e7d8ee' },
-  blush: { coat: '#ffd9e6', shade: '#f2abc6' },
-  lilac: { coat: '#e3d3ff', shade: '#bda6ef' },
-  mint: { coat: '#cdf3dd', shade: '#9fd9b6' },
-  sky: { coat: '#cfe8ff', shade: '#9fc6ef' },
-  peach: { coat: '#ffd8bb', shade: '#f0b48e' },
-  butter: { coat: '#fff0b0', shade: '#e6cc78' },
-  caramel: { coat: '#e3ac78', shade: '#b97c4c' },
-  cocoa: { coat: '#8f5f48', shade: '#674232' },
-  midnight: { coat: '#48437a', shade: '#2f2b58' },
+  snow: { coat: '#fffdfd', shade: '#e7d8ee', mark: '#cbb7e3' },
+  blush: { coat: '#ffd9e6', shade: '#f2abc6', mark: WHITE_MARK },
+  lilac: { coat: '#e3d3ff', shade: '#bda6ef', mark: WHITE_MARK },
+  mint: { coat: '#cdf3dd', shade: '#9fd9b6', mark: WHITE_MARK },
+  sky: { coat: '#cfe8ff', shade: '#9fc6ef', mark: WHITE_MARK },
+  peach: { coat: '#ffd8bb', shade: '#f0b48e', mark: WHITE_MARK },
+  butter: { coat: '#fff0b0', shade: '#e6cc78', mark: WHITE_MARK },
+  caramel: { coat: '#e3ac78', shade: '#b97c4c', mark: '#fff6ea' },
+  cocoa: { coat: '#8f5f48', shade: '#674232', mark: '#fff6ea' },
+  midnight: { coat: '#48437a', shade: '#2f2b58', mark: '#f4f0ff' },
 } as const satisfies Record<string, CoatPaint>;
 export type CoatId = keyof typeof COATS;
 export const coatIds = Object.keys(COATS) as CoatId[];
@@ -40,16 +45,47 @@ export const MANES = {
 export type ManeId = keyof typeof MANES;
 export const maneIds = Object.keys(MANES) as ManeId[];
 
+/** White patches a real horse can have: a star or a blaze on the face, socks, or spots. */
+export type Marking = 'none' | 'star' | 'blaze' | 'socks' | 'spots';
+export const markings: readonly Marking[] = ['none', 'star', 'blaze', 'socks', 'spots'];
+
+/** A horn's colour and the darker groove that winds round it. */
+export type HornPaint = readonly [string, string];
+export const HORNS = {
+  gold: ['#ffd54a', '#e2a400'],
+  silver: ['#eceff7', '#a3abc4'],
+  rose: ['#ffb8d2', '#e0709c'],
+  crystal: ['#c4f4ff', '#62bfe0'],
+} as const satisfies Record<string, HornPaint>;
+export type HornId = keyof typeof HORNS;
+export const hornIds = Object.keys(HORNS) as HornId[];
+
 export interface Horse {
   /** What the child called it; empty means the default name in the child's language. */
   readonly name: string;
   readonly kind: HorseKind;
   readonly coat: CoatId;
   readonly mane: ManeId;
+  readonly marking: Marking;
+  /** Only shows on a horse with a horn, but is kept when the kind changes. */
+  readonly horn: HornId;
 }
-export const LUMI: Horse = { name: '', kind: 'unicorn', coat: 'snow', mane: 'rainbow' };
+export const LUMI: Horse = {
+  name: '',
+  kind: 'unicorn',
+  coat: 'snow',
+  mane: 'rainbow',
+  marking: 'none',
+  horn: 'gold',
+};
 /** Long enough for any first name, short enough for the name tag over the track. */
 export const NAME_MAX = 12;
+
+/** Spots read best dark on a pale coat and white on a dark one. */
+export function spotColour(coat: CoatId): string {
+  const paint: CoatPaint = COATS[coat];
+  return paint.mark === WHITE_MARK ? paint.shade : paint.mark;
+}
 
 export function hasHorn(kind: HorseKind): boolean {
   return kind === 'unicorn' || kind === 'alicorn';
@@ -65,13 +101,27 @@ export function cleanName(name: string): string {
 }
 
 export function sameHorse(a: Horse, b: Horse): boolean {
-  return a.name === b.name && a.kind === b.kind && a.coat === b.coat && a.mane === b.mane;
+  return (
+    a.name === b.name &&
+    a.kind === b.kind &&
+    a.coat === b.coat &&
+    a.mane === b.mane &&
+    a.marking === b.marking &&
+    a.horn === b.horn
+  );
 }
 
-/** A random kind, coat and mane; the name stays, so "surprise me" never wipes a typed name. */
+/** A random look; the name stays, so "surprise me" never wipes a typed name. */
 export function randomHorse(name: string, random: () => number = Math.random): Horse {
   const pick = <T>(items: readonly T[]) => items[Math.floor(random() * items.length)];
-  return { name, kind: pick(horseKinds), coat: pick(coatIds), mane: pick(maneIds) };
+  return {
+    name,
+    kind: pick(horseKinds),
+    coat: pick(coatIds),
+    mane: pick(maneIds),
+    marking: pick(markings),
+    horn: pick(hornIds),
+  };
 }
 
 /** Reads a stored horse, keeping every valid part and falling back to Lumi's for the rest. */
@@ -82,5 +132,7 @@ export function readHorse(value: unknown): Horse {
   const kind = horseKinds.find((kind) => kind === saved['kind']) ?? LUMI.kind;
   const coat = coatIds.find((coat) => coat === saved['coat']) ?? LUMI.coat;
   const mane = maneIds.find((mane) => mane === saved['mane']) ?? LUMI.mane;
-  return { name, kind, coat, mane };
+  const marking = markings.find((marking) => marking === saved['marking']) ?? LUMI.marking;
+  const horn = hornIds.find((horn) => horn === saved['horn']) ?? LUMI.horn;
+  return { name, kind, coat, mane, marking, horn };
 }
