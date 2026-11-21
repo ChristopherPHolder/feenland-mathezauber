@@ -1,6 +1,15 @@
 import type { RaceMessageKey } from './race-messages';
 import type { RaceCup } from './race-questions';
-import type { Outfit } from './race-store';
+/** One keepsake per cup; the child's horse wears the chosen one in every race. */
+export type Outfit = 'wreath' | 'wings' | 'tiara' | 'crown' | 'cape';
+export const outfits: readonly Outfit[] = ['wreath', 'wings', 'tiara', 'crown', 'cape'];
+export const OUTFIT_CUP: Readonly<Record<Outfit, RaceCup>> = {
+  wreath: 'meadow',
+  wings: 'sky',
+  tiara: 'star',
+  crown: 'castle',
+  cape: 'rainbow',
+};
 /** The picture for each cup keepsake, shown beside its name. */
 const OUTFIT_EMBLEM: Readonly<Record<Outfit, string>> = {
   wreath: '🌸',

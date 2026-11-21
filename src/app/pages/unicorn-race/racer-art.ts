@@ -1,7 +1,17 @@
 import { booleanAttribute, Component, computed, input } from '@angular/core';
 import type { RacerId } from './race';
 import type { Outfit } from './race-store';
-import { COATS, hasHorn, hasWings, Horse, HORNS, LUMI, MANES, spotColour } from './horse';
+import {
+  CoatPaint,
+  COATS,
+  hasHorn,
+  hasWings,
+  Horse,
+  HORNS,
+  LUMI,
+  MANES,
+  spotColour,
+} from './horse';
 /** Each pony draws its socks with its own gradients, so every instance needs unique ids. */
 let nextSockId = 0;
 /**
@@ -203,6 +213,21 @@ let nextSockId = 0;
         </g>
       }
     }
+    @if (paint()?.finish === 'stars') {
+      <g class="stars">
+        <circle cx="55" cy="58" r="0.9" />
+        <circle cx="63" cy="66" r="0.7" />
+        <circle cx="70" cy="53" r="1.1" />
+        <circle cx="79" cy="64" r="0.8" />
+        <circle cx="86" cy="55" r="0.7" />
+        <circle cx="93" cy="70" r="1" />
+        <circle cx="101" cy="59" r="0.8" />
+        <circle cx="109" cy="68" r="0.7" />
+        <circle cx="114" cy="54" r="0.9" />
+        <circle cx="118" cy="40" r="0.7" />
+        <circle cx="76" cy="73" r="0.6" />
+      </g>
+    }
     <ellipse class="eye" cx="134.9" cy="28.6" rx="2" ry="2.4" />
     <circle class="shine" cx="135.6" cy="27.7" r=".75" />
     <g class="legs">
@@ -342,6 +367,9 @@ let nextSockId = 0;
     }
     .spots {
       fill: var(--spot);
+    }
+    .stars {
+      fill: #fff6d8;
     }
     .blaze {
       fill: none;
@@ -502,8 +530,9 @@ export class RacerArt {
   protected readonly paint = computed(() => {
     if (this.kind() !== 'player') return null;
     const horse = this.horse();
+    const coat: CoatPaint = COATS[horse.coat];
     return {
-      ...COATS[horse.coat],
+      ...coat,
       spot: spotColour(horse.coat),
       mane: MANES[horse.mane],
       horn: HORNS[horse.horn],

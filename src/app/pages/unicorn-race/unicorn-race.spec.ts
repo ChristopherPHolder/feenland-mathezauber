@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vite-plus/test';
-import { UnicornRace } from './unicorn-race';
+import { FINISH_HOLD_MS, UnicornRace } from './unicorn-race';
 import { RaceSounds } from './race-sounds';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
@@ -163,7 +163,7 @@ describe('Unicorn race game', () => {
       answerRight();
       wait(400);
     }
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     expect(element.querySelector('.summary .new-outfit')?.textContent).toContain('Flower wreath');
     expect(store.save().outfit).toBe('wreath');
     expect(store.completedCups()).toBe(1);
@@ -248,7 +248,7 @@ describe('Unicorn race game', () => {
       answerRight();
       wait(1200);
     }
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     const line = () => element.querySelector('.summary-line')?.textContent?.trim() ?? '';
     expect(line()).toContain('1 stumble ·');
     expect(line()).toMatch(/\d+ right · 1 stumble · \d+ seconds/);
@@ -270,7 +270,7 @@ describe('Unicorn race game', () => {
     expect(component.race().done).toBe(true);
     expect(element.querySelector('.countdown')?.textContent).toContain('Finish!');
     expect(element.querySelector('.summary')).toBeNull();
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     const summary = element.querySelector('.summary');
     expect(summary).toBeTruthy();
     expect(summary?.querySelector('h2')?.textContent).toContain('Lumi wins the race!');
@@ -296,7 +296,7 @@ describe('Unicorn race game', () => {
       wait(400);
     }
     expect(component.race().done).toBe(true);
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     click('Race again');
     wait(4 * 800 + 300);
     answerRight();
@@ -313,7 +313,7 @@ describe('Unicorn race game', () => {
     document.dispatchEvent(new Event('visibilitychange'));
     wait(300);
     document.dispatchEvent(new Event('visibilitychange'));
-    wait(1500);
+    wait(FINISH_HOLD_MS);
     fixture.detectChanges();
     expect(TestBed.inject(RaceStore).save().sparkles).toBe(sparkles);
     expect(sounds.play.mock.calls.filter(([kind]) => kind === 'win')).toHaveLength(1);
@@ -359,7 +359,7 @@ describe('Unicorn race game', () => {
       wait(400);
     }
     expect(component.race().done).toBe(true);
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     expect(element.querySelector('.summary h2')?.textContent).toContain('got the key back');
     expect(TestBed.inject(RaceStore).record(2, 2)?.cup).toBe('gold');
     expect(TestBed.inject(RaceStore).record(2, 1)).toBeUndefined();

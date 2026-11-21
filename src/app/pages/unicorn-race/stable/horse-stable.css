@@ -88,6 +88,22 @@
 .stand {
   position: absolute;
   inset: 0;
+  /* Dragging turns the horse; nothing here scrolls anyway. */
+  touch-action: none;
+  cursor: grab;
+}
+.balance {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
 }
 .flat {
   height: 100%;
@@ -133,6 +149,28 @@
   font-size: 28px;
   cursor: pointer;
   transition: transform 0.2s ease;
+}
+.turn {
+  position: absolute;
+  bottom: clamp(8px, 3cqmin, 16px);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-round);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.turn.is-left {
+  left: 10px;
+}
+.turn.is-right {
+  right: 10px;
 }
 .surprise:active {
   transform: rotate(-20deg) scale(0.92);
@@ -223,8 +261,73 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   justify-items: center;
 }
+.coats {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px 4px;
+}
 .manes {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px 4px;
+}
+.coats .dot,
+.manes .dot {
+  min-width: 40px;
+  min-height: 40px;
+}
+/* A special not bought yet wears its price instead of a tick, even while tried on. */
+.swatch:has(.price):has(:checked)::after {
+  display: none;
+}
+.price {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  translate: -50% 0;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.buy {
+  grid-area: done;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+}
+.buy-button {
+  justify-content: center;
+  min-height: 56px;
+  font-size: 20px;
+}
+.short {
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-button);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow: var(--shadow-rest);
+}
+.no-thanks {
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: var(--radius-round);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
 }
 .swatch {
   width: 100%;

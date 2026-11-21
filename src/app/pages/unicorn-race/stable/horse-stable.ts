@@ -31,7 +31,10 @@ import {
   markings,
   NAME_MAX,
   randomHorse,
+  SpecialId,
+  specialPrice,
 } from '../horse';
+import { RaceSounds } from '../race-sounds';
 import { cupTitleKey, outfitEmblem, outfitNameKey } from '../outfits';
 import { raceText } from '../race-messages';
 import { Outfit, OUTFIT_CUP, outfits, RaceStore } from '../race-store';
@@ -68,8 +71,9 @@ const capital = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
   styleUrl: './horse-stable.css',
 })
 export class HorseStable {
-  private readonly i = inject(LocaleService);
+  protected readonly i = inject(LocaleService);
   private readonly store = inject(RaceStore);
+  private readonly sounds = inject(RaceSounds);
   readonly done = output<void>();
   protected readonly tabs = TABS;
   protected readonly kinds = horseKinds;
@@ -84,9 +88,31 @@ export class HorseStable {
   protected readonly loadWorld = loadWorld;
   protected readonly tab = signal<Tab>('name');
   protected readonly horse = computed(() => this.store.save().horse);
+  /** A sparkle special being tried on before it is bought; the horse shows it meanwhile. */
+  protected readonly trying = signal<Partial<Pick<Horse, 'coat' | 'mane'>> | null>(null);
+  /** The horse as it looks right now, with anything being tried on. */
+  protected readonly shown = computed<Horse>(() => ({ ...this.horse(), ...this.trying() }));
+  protected readonly tryingId = computed<SpecialId | null>(() => {
+    const trying = this.trying();
+    if (trying?.coat) return `coat:${trying.coat}`;
+    if (trying?.mane) return `mane:${trying.mane}`;
+    return null;
+  });
+  protected readonly tryingPrice = computed(() => {
+    const id = this.tryingId();
+    return id ? (specialPrice(id) ?? 0) : 0;
+  });
+  protected readonly balance = computed(() => {
+    this.store.save();
+    return this.store.balance();
+  });
+  protected readonly affordable = computed(() => this.balance() >= this.tryingPrice());
+  /** How far the child has turned the stand by dragging, in radians. */
+  private readonly spin = signal(0);
+  private dragFrom: number | null = null;
   protected readonly defaultName = computed(() => raceText(this.i.locale(), 'racerPlayer'));
   protected readonly shownName = computed(() => this.horse().name || this.defaultName());
-  protected readonly horned = computed(() => hasHorn(this.horse().kind));
+  protected readonly horned = computed(() => hasHorn(this.shown().kind));
   protected readonly outfit = computed(() => this.store.save().outfit);
   /** What is in the name field; the store keeps it tidied, this keeps the spaces being typed. */
   protected readonly nameDraft = linkedSignal<string, string>({
@@ -102,9 +128,10 @@ export class HorseStable {
   });
   private readonly hop = signal(0);
   protected readonly world = computed<StableState>(() => ({
-    horse: this.horse(),
+    horse: this.shown(),
     outfit: this.store.save().outfit,
     hop: this.hop(),
+    spin: this.spin(),
   }));
   private readonly heading = viewChild.required<ElementRef<HTMLElement>>('heading');
   private readonly tabButtons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
@@ -158,11 +185,17 @@ export class HorseStable {
   }
   protected wear(outfit: Outfit | null) {
     this.store.wear(outfit);
-    this.hop.update((hop) => hop + 1);
+    this.react('pick');
   }
   /** The horse as it would look with another marking, for the pictures on the marking options. */
   protected withMarking(marking: Marking): Horse {
-    return { ...this.horse(), marking };
+    return { ...this.shown(), marking };
+  }
+  /** The horse hops and the Stable chimes for every change. */
+  private react(sound: 'pick' | 'buy') {
+    this.hop.update((hop) => hop + 1);
+    this.sounds.unlock();
+    this.sounds.play(sound);
   }
   /** A round swatch striped in a mane's three colours. */
   protected maneFill(mane: ManeId): string {
@@ -171,11 +204,74 @@ export class HorseStable {
   }
   /** The horse as it would look as another kind, for the pictures on the kind options. */
   protected asKind(kind: HorseKind): Horse {
-    return { ...this.horse(), kind };
+    return { ...this.shown(), kind };
   }
+  protected coatSpecial(coat: CoatId): SpecialId {
+    return `coat:${coat}`;
+  }
+  protected maneSpecial(mane: ManeId): SpecialId {
+    return `mane:${mane}`;
+  }
+  /** The price of a special not bought yet, or nothing for a free or owned one. */
+  protected price(id: SpecialId): number | undefined {
+    this.store.save();
+    return this.store.owns(id) ? undefined : specialPrice(id);
+  }
+  protected specialLabel(name: string, id: SpecialId): string {
+    const price = this.price(id);
+    return price === undefined ? name : this.s('priced', { name, n: this.i.format(price) });
+  }
+  /** Changes a part; a special not bought yet is tried on instead, with the buy bar showing. */
   protected change(part: Partial<Omit<Horse, 'name'>>) {
-    this.store.setHorse({ ...this.horse(), ...part });
-    this.hop.update((hop) => hop + 1);
+    const special: SpecialId | null = part.coat
+      ? `coat:${part.coat}`
+      : part.mane
+        ? `mane:${part.mane}`
+        : null;
+    if (special && this.price(special) !== undefined) {
+      this.trying.set(part.coat ? { coat: part.coat } : { mane: part.mane });
+    } else {
+      this.trying.set(null);
+      this.store.setHorse({ ...this.horse(), ...part });
+    }
+    this.react('pick');
+  }
+  protected buy() {
+    const id = this.tryingId();
+    const trying = this.trying();
+    if (!id || !trying || !this.store.buy(id)) return;
+    this.store.setHorse({ ...this.horse(), ...trying });
+    this.trying.set(null);
+    this.react('buy');
+  }
+  protected stopTrying() {
+    this.trying.set(null);
+  }
+  protected finish() {
+    this.trying.set(null);
+    this.done.emit();
+  }
+  protected chooseTab(tab: Tab) {
+    this.trying.set(null);
+    this.tab.set(tab);
+  }
+  /** Dragging across the stand turns it; the buttons on top of it keep their taps. */
+  protected dragStart(event: PointerEvent) {
+    if ((event.target as Element).closest('button')) return;
+    this.dragFrom = event.clientX;
+    (event.currentTarget as Element).setPointerCapture?.(event.pointerId);
+  }
+  protected dragMove(event: PointerEvent) {
+    if (this.dragFrom === null) return;
+    this.spin.update((spin) => spin + (event.clientX - this.dragFrom!) * 0.012);
+    this.dragFrom = event.clientX;
+  }
+  protected dragEnd() {
+    this.dragFrom = null;
+  }
+  /** An eighth of a turn per tap, the button alternative to dragging. */
+  protected turn(direction: -1 | 1) {
+    this.spin.update((spin) => spin + (direction * Math.PI) / 4);
   }
   protected typeName(event: Event) {
     const value = (event.target as HTMLInputElement).value;
@@ -186,16 +282,18 @@ export class HorseStable {
   protected pickName(name: string) {
     this.nameDraft.set(name);
     this.store.setHorse({ ...this.horse(), name });
-    this.hop.update((hop) => hop + 1);
+    this.react('pick');
   }
   protected moreNames() {
     this.ideasFrom.update((from) => from + IDEAS_SHOWN);
   }
+  /** A new look from the free colours and the specials already bought. */
   protected surprise() {
-    let next = randomHorse(this.horse().name);
+    const owned = this.store.save().owned;
+    let next = randomHorse(this.horse().name, Math.random, owned);
     // A surprise must look different from what is there.
     for (let tries = 0; tries < 5 && this.looksSame(next); tries++)
-      next = randomHorse(this.horse().name);
+      next = randomHorse(this.horse().name, Math.random, owned);
     this.change(next);
   }
   /** Tabs follow the ARIA pattern: arrows, Home and End move and select at once. */
@@ -217,7 +315,7 @@ export class HorseStable {
               : null;
     if (target === null) return;
     event.preventDefault();
-    this.tab.set(TABS[target].id);
+    this.chooseTab(TABS[target].id);
     this.tabButtons()[target]?.nativeElement.focus();
   }
   private looksSame(horse: Horse): boolean {
