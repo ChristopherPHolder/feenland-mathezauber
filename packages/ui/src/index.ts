@@ -3,6 +3,7 @@
  * take everything through inputs and content projection and report through outputs. Nothing
  * here injects an app service, reads storage, routes or translates. See ../README.md.
  */
+export { CoachDialog } from './coach-dialog';
 export { DragonFace, type DragonFaceColors } from './dragon-face';
 export { Emblem } from './emblem';
 export { GameBar } from './game-bar';
