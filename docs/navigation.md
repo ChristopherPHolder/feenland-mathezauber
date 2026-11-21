@@ -50,6 +50,7 @@ Switching levels never requires leaving the game:
 - **The Star Catcher** has twelve level routes (`/adventure/star-catcher-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Mountain Gondola** has twelve level routes (`/adventure/gondola-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Fairy Market** has ten level routes (`/adventure/market-1` … `-10`); its intro has a level strip 1–10 and a how-to film with the current level marked `aria-current="page"`, Lumi's shelf of bought treats, and the finish shows a receipt and offers the next level.
+- **The Clock Tower** has twelve level routes (`/adventure/clock-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, the tower balcony of woken friends, and the finish shows Pip's day planner and offers the next level.
 - **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the thirty practice stages, grouped under a heading per topic. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
 - Finishing a round offers Next level, Play again and All games.
 

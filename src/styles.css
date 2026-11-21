@@ -342,6 +342,14 @@ main.focused-game {
   --loader-star: var(--sky-deep);
   --loader-dot: var(--pink);
 }
+.is-route-tone[data-tone='clock'] {
+  --loader-ground: linear-gradient(#2e2f7a, #6f6fc0 45%, #ffcf9a);
+  --loader-orb: #3a3a86;
+  --loader-star: var(--gold);
+  --loader-dot: #ffd36b;
+  --loader-ink: var(--cream);
+  --loader-pill: #1a1b4dcc;
+}
 .is-route-tone[data-tone='market'] {
   --loader-ground: linear-gradient(#fde7c8, #fff4e2 45%, #fffaf0);
   --loader-star: var(--gold-deep);

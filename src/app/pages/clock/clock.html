@@ -1,0 +1,501 @@
+<section
+  class="game"
+  [class.playing]="started() && round().phase !== 'complete'"
+  aria-labelledby="game-title"
+>
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <h2 id="intro-title" class="sr-only">{{ i.t(levelKey(stage().stage)) }}</h2>
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.position }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <app-clock-demo class="demo" />
+        <div class="intro-side">
+          <div class="trick-card">
+            <h3>
+              {{ t('trickTitle') }} <span class="example">{{ stage().example }}</span>
+            </h3>
+            <p>{{ t(stage().trick) }}</p>
+          </div>
+          <fieldset class="pace" aria-describedby="pace-help">
+            <legend>{{ t('paceTitle') }}</legend>
+            <p id="pace-help" class="pace-help">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+            <div class="pace-options">
+              @for (option of paces; track option.id; let index = $index) {
+                <label class="pace-choice" [class.selected]="pace() === option.id">
+                  <input
+                    type="radio"
+                    name="clock-pace"
+                    [value]="option.id"
+                    [checked]="pace() === option.id"
+                    (change)="selectPace(option.id)"
+                  />
+                  <svg class="pace-art" viewBox="0 0 64 36" aria-hidden="true">
+                    @if (option.id === 'off') {
+                      <path class="moon" d="M38 6a13 13 0 1 0 8 23A15 15 0 0 1 38 6z" />
+                    } @else {
+                      <rect
+                        class="wax"
+                        x="26"
+                        [attr.y]="8 + index * 5"
+                        width="12"
+                        [attr.height]="26 - index * 5"
+                        rx="2"
+                      />
+                      <path
+                        class="flame"
+                        [attr.d]="'M32 ' + (0 + index * 5) + 'q5 5 0 8q-5-3 0-8z'"
+                      />
+                    }
+                  </svg>
+                  <strong>{{ t(option.label) }}</strong>
+                  <span class="pace-time">{{
+                    option.id === 'off'
+                      ? t('paceUnlimited')
+                      : t('paceSeconds', { n: paceSeconds(option.id) })
+                  }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+        </div>
+      </div>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<ui-icon kind="arrow" />
+        </button>
+      </div>
+      <section class="balcony" aria-labelledby="balcony-title">
+        <h3 id="balcony-title">
+          {{ t('balconyTitle') }}
+          <span>{{
+            scores.friends().length
+              ? t('balconyCount', { n: scores.friends().length, total: totalFriends })
+              : t('balconyEmpty')
+          }}</span>
+        </h3>
+        <ol class="friend-row">
+          @for (friend of friendSlots; track friend) {
+            @let woken = scores.friends().includes(friend);
+            <li
+              class="friend-slot"
+              [class.woken]="woken"
+              [style.--body]="critter(friend).body"
+              [style.--accent]="critter(friend).accent"
+              [attr.aria-hidden]="woken ? null : 'true'"
+            >
+              <span class="friend-face" aria-hidden="true"></span>
+              @if (woken) {
+                <span class="sr-only">{{ friendName(friend) }}</span>
+              }
+            </li>
+          }
+        </ol>
+      </section>
+    </section>
+  } @else if (round().phase === 'complete') {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <app-three-stage class="outcome-art" [world]="loadWorld" [state]="outcomeFrame()">
+        <app-clock-scene [frame]="outcomeFrame()" />
+      </app-three-stage>
+      <div class="outcome-copy">
+        <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (star of starSlots; track star) {
+            <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
+              ><ui-icon kind="star"
+            /></span>
+          }
+        </div>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+        <div class="planner">
+          <h3>{{ t('plannerTitle') }}</h3>
+          <ol>
+            @for (entry of round().planner; track $index) {
+              <li [class.first]="entry.first">
+                <span
+                  class="planner-dot"
+                  [style.--body]="critter(entry.event).body"
+                  aria-hidden="true"
+                ></span>
+                <span class="planner-event">{{ eventName(entry.event) }}</span>
+                <span class="planner-time">{{ entry.text }}</span>
+                @if (entry.first) {
+                  <ui-icon class="planner-star" kind="star" />
+                  <span class="sr-only">{{ t('badgeFirst') }}</span>
+                }
+              </li>
+            }
+          </ol>
+        </div>
+        <dl class="tiles">
+          <div class="tile">
+            <dt>{{ t('tileFirst') }}</dt>
+            <dd>{{ i.format(round().firstTries) }} / {{ i.format(round().base) }}</dd>
+          </div>
+          <div class="tile">
+            <dt>{{ t('tileStreak') }}</dt>
+            <dd>{{ i.format(round().bestStreak) }}</dd>
+          </div>
+          <div class="tile">
+            <dt>{{ t('tileFriends') }}</dt>
+            <dd>{{ i.format(round().newFriends.length) }}</dd>
+          </div>
+        </dl>
+        @if (round().newFriends.length) {
+          <p class="friends-line">{{ t('newFriends', { names: newFriendNames() }) }}</p>
+        }
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        </p>
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('nextLevel') }}<ui-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<ui-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <ol
+        class="turn-strip"
+        [attr.aria-label]="t('turnsHud', { n: round().rung, total: round().items.length })"
+      >
+        @for (slot of turnSlots(); track slot.index) {
+          <li
+            class="turn-slot"
+            [class.done]="slot.index < round().rung"
+            [class.current]="slot.index === round().index"
+            [class.midnight]="slot.midnight"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M5 18q0-12 7-12t7 12l2 2H3z" />
+              <circle cx="12" cy="21" r="2" />
+            </svg>
+          </li>
+        }
+      </ol>
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openHelp()"
+      >
+        ?
+      </button>
+      <p class="points" [class.bump]="round().phase === 'solved'">
+        <span>{{ t('points') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (round().golden) {
+        <p class="golden-chip">{{ t('goldenChip') }}</p>
+      }
+      @if (timed()) {
+        <p
+          class="candle-chip"
+          [class.out]="round().candle === 'out'"
+          [style.--burn]="round().candle === 'lit' ? burn() : round().candle === 'out' ? 1 : 0"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect class="wax" x="8" y="9" width="8" height="13" rx="1.5" />
+            @if (round().candle !== 'out') {
+              <path class="flame" d="M12 1q4 4 0 7q-4-3 0-7z" />
+            }
+          </svg>
+          <span
+            >{{ t('candle') }}: {{ t(round().candle === 'out' ? 'candleOut' : 'candleLit') }}</span
+          >
+          <span class="burn-meter" aria-hidden="true"><span></span></span>
+        </p>
+      }
+    </div>
+    <div class="play-area" [class.is-reading]="task() !== 'set'">
+      <section class="board" [class.midnight]="midnight()" [attr.aria-label]="t('boardLabel')">
+        <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
+          <app-clock-scene [frame]="frame()" />
+        </app-three-stage>
+        @if (task() === 'set') {
+          <app-clock-dial
+            [dial]="round().dial"
+            [step]="item().step"
+            [disabled]="!playing()"
+            [guided]="guide()"
+            [hourLabel]="t('hourSlider')"
+            [minuteLabel]="t('minuteSlider')"
+            [valueText]="handsText()"
+            (dialChange)="setDial($event)"
+          />
+        }
+        @if (midnight() && round().phase === 'play') {
+          <p class="midnight-banner" aria-hidden="true">{{ t('midnightBanner') }}</p>
+        }
+        @if (reward(); as reward) {
+          <ui-reward-burst
+            [kind]="reward.kind"
+            [cheer]="reward.cheer"
+            [points]="reward.points"
+            [badges]="reward.badges"
+            [wait]="scene.ready() ? 0.5 : 0"
+          />
+        }
+      </section>
+      <div class="controls">
+        <div
+          class="event-card"
+          [class.midnight]="midnight()"
+          [style.--body]="critter(item().event).body"
+          [style.--accent]="critter(item().event).accent"
+        >
+          <span class="event-face" aria-hidden="true"></span>
+          <div class="event-copy">
+            <p class="turn-name">
+              {{
+                midnight()
+                  ? t('midnightTurn')
+                  : round().repeat
+                    ? t('repeatTurn')
+                    : t('turnCount', { n: round().index + 1, total: round().base })
+              }}
+            </p>
+            <p class="event-name">{{ eventName(item().event) }}</p>
+            <p class="event-time" [class.is-ask]="task() === 'pick' || task() === 'type'">
+              {{ cardTime() }}
+            </p>
+          </div>
+        </div>
+        <p class="step">{{ stepText() }}</p>
+        <p
+          class="status"
+          [class.is-scene]="
+            status()?.key === 'sceneSet' ||
+            status()?.key === 'readAsk' ||
+            status()?.key === 'untilAsk'
+          "
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {{ statusText() }}
+        </p>
+
+        @if (round().phase === 'solved') {
+          <button class="button primary next" type="button" (click)="advance()">
+            {{ t('next') }}<ui-icon kind="arrow" />
+          </button>
+        } @else {
+          @switch (task()) {
+            @case ('set') {
+              <div
+                class="hands"
+                role="group"
+                [attr.aria-label]="t('handsLabel')"
+                [class.is-guided]="guide()"
+              >
+                <div class="hand-pair short">
+                  <span class="hand-name" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 13V7" />
+                      <circle cx="12" cy="13" r="2" />
+                    </svg>
+                    {{ t('shortHand') }}
+                  </span>
+                  <button
+                    type="button"
+                    class="hand-button"
+                    [attr.aria-label]="t('shortBack')"
+                    (click)="moveHour(-1)"
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    class="hand-button"
+                    [attr.aria-label]="t('shortOn')"
+                    (click)="moveHour(1)"
+                  >
+                    +
+                  </button>
+                </div>
+                <div class="hand-pair long">
+                  <span class="hand-name" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 13V3" />
+                      <circle cx="12" cy="13" r="2" />
+                    </svg>
+                    {{ t('longHand') }}
+                  </span>
+                  @if (item().step === 1) {
+                    <button
+                      type="button"
+                      class="hand-button small"
+                      [attr.aria-label]="t('longBack', { n: 5 })"
+                      (click)="moveMinute(-5)"
+                    >
+                      −5
+                    </button>
+                    <button
+                      type="button"
+                      class="hand-button small"
+                      [attr.aria-label]="t('longBack1')"
+                      (click)="moveMinute(-1)"
+                    >
+                      −1
+                    </button>
+                    <button
+                      type="button"
+                      class="hand-button small"
+                      [attr.aria-label]="t('longOn1')"
+                      (click)="moveMinute(1)"
+                    >
+                      +1
+                    </button>
+                    <button
+                      type="button"
+                      class="hand-button small"
+                      [attr.aria-label]="t('longOn', { n: 5 })"
+                      (click)="moveMinute(5)"
+                    >
+                      +5
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="hand-button"
+                      [attr.aria-label]="t('longBack', { n: 5 })"
+                      (click)="moveMinute(-5)"
+                    >
+                      −5
+                    </button>
+                    <button
+                      type="button"
+                      class="hand-button"
+                      [attr.aria-label]="t('longOn', { n: 5 })"
+                      (click)="moveMinute(5)"
+                    >
+                      +5
+                    </button>
+                  }
+                </div>
+              </div>
+              <button class="button primary ring-button" type="button" (click)="ring()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 17q0-11 7-11t7 11l2 2H3z" />
+                  <circle cx="12" cy="20.5" r="1.8" />
+                </svg>
+                {{ t('ring') }}
+              </button>
+            }
+            @case ('pick') {
+              <div
+                class="choices"
+                role="group"
+                [attr.aria-label]="t('choicesLabel')"
+                [class.is-guided]="guide()"
+              >
+                @for (choice of round().choices; track choice) {
+                  <button
+                    type="button"
+                    class="choice"
+                    [class.is-words]="item().show === 'words'"
+                    (click)="pick(choice)"
+                  >
+                    {{ choiceText(choice) }}
+                  </button>
+                }
+              </div>
+            }
+            @default {
+              @if (task() === 'until' && round().timeline) {
+                <app-clock-timeline
+                  [stops]="timeline().stops"
+                  [labels]="timeline().labels"
+                  [label]="t('timeline')"
+                />
+              }
+              <div class="readout" aria-hidden="true">
+                @if (task() === 'type') {
+                  <span class="field" [class.active]="round().field === 'hours'">{{
+                    typedDisplay().hours
+                  }}</span>
+                  <span class="colon">:</span>
+                  <span class="field" [class.active]="round().field === 'minutes'">{{
+                    typedDisplay().minutes
+                  }}</span>
+                } @else {
+                  <span class="field active wide">{{ round().typed || '?' }}</span>
+                  <span class="unit">{{ t('minutesUnit') }}</span>
+                }
+              </div>
+              <ui-number-pad
+                [class.is-guided]="guide()"
+                [value]="typedValue()"
+                [answerLabel]="t('answerLabel')"
+                [padLabel]="t('keypadLabel')"
+                [deleteLabel]="t('delete')"
+                [okLabel]="t('ok')"
+                (digit)="typeDigit($event)"
+                (erase)="eraseDigit()"
+                (submit)="submitTyped()"
+              />
+            }
+          }
+        }
+      </div>
+    </div>
+    @if (coaching()) {
+      <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeHelp()">
+        <app-clock-demo [alternate]="demoClash()" />
+      </ui-coach-dialog>
+    }
+  }
+</section>

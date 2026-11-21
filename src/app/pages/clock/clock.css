@@ -1,0 +1,483 @@
+/* The page, the intro and the end-of-day card. Play layout lives in clock-play.css. */
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  display: block;
+  min-height: calc(100dvh - var(--safe-y));
+  background: linear-gradient(#d9d0fa, #efe9ff 40%, #fbf1e4);
+  padding: 12px max(12px, env(safe-area-inset-right)) 20px max(12px, env(safe-area-inset-left));
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.game {
+  max-width: 1240px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow-panel);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.best-line {
+  margin: 0;
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+
+/* Intro */
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(6 * 46px + 5 * 8px);
+  margin: 0 auto 16px;
+  padding: 0;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  min-height: 46px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--violet);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: #efe9ff;
+}
+.level-pill[aria-current='page'] {
+  background: var(--violet);
+  color: var(--paper);
+}
+@media (min-width: 760px) {
+  .level-strip {
+    max-width: none;
+  }
+}
+.intro-grid,
+.outcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(12px, 3vw, 28px);
+}
+.intro-side {
+  display: grid;
+  gap: 12px;
+}
+.trick-card {
+  padding: 12px 16px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-card h3,
+.balcony h3,
+.planner h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.balcony h3,
+.planner h3 {
+  color: var(--violet);
+}
+.trick-card p {
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+.trick-card .example {
+  margin-left: 8px;
+  font-size: 20px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--violet);
+}
+.pace {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pace legend {
+  padding: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.pace-help {
+  margin: 2px 0 8px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 2px solid var(--violet);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.pace-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--success-strong);
+}
+.pace-art {
+  width: 56px;
+  height: 32px;
+}
+.pace-art .moon {
+  fill: #ffd36b;
+}
+.pace-art .wax {
+  fill: #fff1d6;
+  stroke: #c98a3a;
+  stroke-width: 1.5;
+}
+.pace-art .flame {
+  fill: #ff9933;
+}
+.pace-choice strong {
+  font-size: 16px;
+}
+.pace-time {
+  font-size: 13px;
+  line-height: 1.3;
+}
+.start-dock {
+  margin-top: 12px;
+}
+.start-dock .button {
+  max-width: 360px;
+  margin: 0 auto;
+}
+.balcony {
+  margin-top: 6px;
+}
+.balcony h3 span {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.friend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.friend-slot {
+  width: 28px;
+  height: 28px;
+}
+.friend-face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px dashed #b8acd8;
+}
+.friend-slot.woken .friend-face {
+  border: 2px solid var(--ink);
+  background:
+    radial-gradient(circle at 34% 42%, var(--ink) 0 2px, #fff 2.5px 5px, transparent 5.5px),
+    radial-gradient(circle at 66% 42%, var(--ink) 0 2px, #fff 2.5px 5px, transparent 5.5px),
+    radial-gradient(circle at 50% 70%, var(--accent) 0 3px, transparent 3.5px), var(--body);
+}
+
+/* The end of the day */
+.outcome:focus {
+  outline: none;
+}
+.outcome {
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+}
+.outcome-art {
+  aspect-ratio: 8 / 6;
+  width: 100%;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  background: linear-gradient(#141a52, #33377a);
+}
+.outcome h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.stars {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+.star {
+  width: 48px;
+  height: 48px;
+  color: var(--star-empty);
+}
+.star ui-icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.star.earned {
+  color: var(--star-earned-big);
+}
+.score-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+}
+.new-best {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 600;
+}
+.planner {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  border: 2px solid #d9cff3;
+}
+.planner ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 2px 14px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.planner li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 15px;
+}
+.planner-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--body);
+  border: 1.5px solid var(--ink);
+}
+.planner-event {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.planner-time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.planner-star {
+  width: 16px;
+  height: 16px;
+  fill: var(--star-earned-big);
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.tile {
+  padding: 6px 10px;
+  border-radius: var(--radius-chip);
+  background: #efe9ff;
+  border: 2px solid #d9cff3;
+}
+.tile dt {
+  font-size: 14px;
+  color: var(--muted);
+}
+.tile dd {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.friends-line {
+  padding: 8px 14px;
+  border-radius: var(--radius-chip);
+  background: var(--warm-ground);
+  font-weight: 600;
+}
+.outcome-help {
+  color: var(--muted);
+}
+.save-note {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: #fff2d2;
+}
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+@media (max-width: 720px) {
+  .intro-grid,
+  .outcome {
+    grid-template-columns: 1fr;
+  }
+  .outcome-art {
+    max-width: 420px;
+    margin: auto;
+  }
+  .demo {
+    width: 100%;
+    max-width: 440px;
+    margin: auto;
+  }
+}
+/* Phones: the whole card fits one screen, so nothing needs reading past the fold. */
+@media (max-width: 520px) {
+  .panel.intro {
+    padding: 12px;
+  }
+  .level-strip {
+    gap: 6px;
+    max-width: calc(6 * 36px + 5 * 6px);
+    margin-bottom: 10px;
+  }
+  .level-pill {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    font-size: 16px;
+  }
+  .trick-card p,
+  .pace-help,
+  .pace-time {
+    display: none;
+  }
+  .trick-card {
+    padding: 8px 12px;
+  }
+  .pace legend {
+    font-size: 17px;
+  }
+  .pace-options {
+    gap: 6px;
+  }
+  .pace-choice input {
+    top: 4px;
+    right: 4px;
+    width: 14px;
+    height: 14px;
+  }
+  .pace-choice strong {
+    font-size: 14px;
+  }
+  .intro-side {
+    gap: 8px;
+  }
+  .start-dock {
+    margin-top: 10px;
+  }
+  .outcome-art {
+    aspect-ratio: 8 / 5;
+  }
+  .planner ol {
+    grid-template-columns: 1fr;
+  }
+  .friend-row {
+    gap: 4px;
+  }
+  .friend-slot {
+    width: 23px;
+    height: 23px;
+  }
+}
+/* A phone on its side: film and choices side by side, Start always in reach. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .panel.intro {
+    padding: 10px 14px;
+  }
+  .level-strip {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .level-pill {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    font-size: 15px;
+  }
+  .intro-grid {
+    grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
+  }
+  .trick-card p,
+  .pace-help,
+  .pace-time {
+    display: none;
+  }
+  .start-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 6px;
+    padding: 8px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(#fffdf500, var(--cream) 16px);
+  }
+}

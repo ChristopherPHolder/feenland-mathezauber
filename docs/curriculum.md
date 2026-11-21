@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 166 selectable levels across twelve games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 178 selectable levels across thirteen games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -31,6 +31,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
 | The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min           |
 | The Fairy Market     | 6–7 treats and the big buy (two questions a treat on level 5)    | 7 × 15–25 s ≈ 2–3 min; spree 7 × 25–35 s ≈ 3–4 min    |
+| The Clock Tower      | 8 events and the midnight bell, up to 2 missed times again       | 9 × 12–20 s ≈ 2–3 min; typing and how long ≈ 3–4 min  |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -172,6 +173,18 @@ Every cabin holds ten, in two rows of five. Every item crosses a ten (the genera
 | Change          | change from 10 € (count up from the price) · change from 20 € (count up through a ten) · Lumi at the till (count out change to a customer, fewest coins) |
 
 Money is in euro values drawn in the game's own style, whole euros first; cents come in a later topic. The purse shows every coin on the coin levels and the first three "enough?" turns, then only a tag with its amount, so the child moves from counting coins to working with numbers. The tray never shows a running total and screen readers hear the coins on it, not their sum, because counting is the skill. Paying too little or too much gets a rule ("Olli needs a little more", "take a coin back"), never an amount; typing the price, the whole purse or purse + price for "what's left" each get their own hint. A missed turn comes back two turns later with a different treat (the spree keeps its order, because its purse carries over). Level 2 pays a bonus for the fewest coins; level 5 refills the purse to 20 € after a treat that costs too much, and needs three stars to be mastered. Adding up shows the list with each price; typing one treat's price or forgetting one treat on a list of three get their own hints, and once the total is right the game says it, since the child found it. Each level card plays a short film with made-up numbers (coins counted onto the tray, a purse against two prices, hops counted up to the purse, a price counted on), and `?` opens it during play while the sun waits; when the turn on screen uses the film's numbers the film shows another set. Change asks for the change as a typed amount (adding the price on, typing the price or typing the note each get a hint that names the rule, never a number); at the till the roles swap: a fox, rabbit, hedgehog or squirrel pays with the smallest note that covers the price, and Lumi counts the change out of a till drawer that can always make it, with a bonus for the fewest coins. The plan for the next topics ( plan and save with a wish jar, cents) is in issue #264.
+
+### The Clock Tower: 12 levels (`pages/clock/clock-levels.ts`)
+
+| Topic         | Levels, easiest first                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| Full and half | o'clock 3:00 · half past 3:30 (German "halb vier")                                                       |
+| Quarters      | quarter past and to 3:15 · 3:45 · all the quarters 7:45                                                  |
+| Minutes       | five-minute steps 4:25 · clock to digital 8:40 (type it) · to the minute 2:17                            |
+| Day and night | afternoon times 15:00 (24-hour clock) · morning or evening? 7:00 · 19:00 (read the sky)                  |
+| How long?     | whole hours later 3:30 + 2 h · minutes until 3:40 → 4:15 (time line) · tower master (mixed, three stars) |
+
+The time maths and the spoken wording per language live in `clock-time.ts` and are tested on their own, including German _halb_ (3:30 is "halb vier", 3:25 "fünf vor halb vier"), French _et demie_, _moins le quart_, _midi_ and _minuit_, and Spanish _y media_ and _menos cuarto_. Times not on a five-minute mark are only shown digitally. Each round is eight different events in the order of the day plus the midnight bell, each at an hour that suits it (breakfast in the morning, fireworks in the evening), so the sky makes sense on the 24-hour levels; no clock picture repeats within a round. The kinds of turn a level mixes take turns (set the hands, pick from three, type the digital time, how long), and pick-from-three offers the mix-ups children really make: the hour after (the _halb_ slip), the hands swapped, the quarter the wrong way round, or the other half of the day. "Minutes until" always starts before a full hour so the first hop on the time line goes to it; durations run from 15 minutes to just under two hours. A missed time comes back once before the midnight bell (at most two per round, for half points), and stars come from first tries on the round's own nine times.
 
 ## Adding a level
 
