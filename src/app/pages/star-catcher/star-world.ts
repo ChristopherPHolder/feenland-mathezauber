@@ -1,22 +1,16 @@
 import {
   AdditiveBlending,
   BoxGeometry,
-  BufferGeometry,
   CanvasTexture,
   Color,
   CylinderGeometry,
   DoubleSide,
-  Float32BufferAttribute,
   Group,
-  LineBasicMaterial,
-  LineSegments,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
   NormalBlending,
   PlaneGeometry,
-  Points,
-  PointsMaterial,
   RingGeometry,
   Shape,
   ShapeGeometry,
@@ -38,9 +32,12 @@ import {
 } from '../../shared/three/motion';
 import { Stage } from '../../shared/three/stage';
 import { StateWorld } from '../../shared/three/three-stage';
-import { constellation, ConstellationId, constellationEdges } from './star-constellations';
+import type { ConstellationId } from './star-constellations';
 import { BRIDGE, FrameTick, StarFrame } from './star-frame';
 import { buildNova, glowTexture, GlowKind, HOOP_Y, Nova, NOVA_HEIGHT } from './star-nova';
+import { NightSky } from './star-sky';
+import { beamTexture, PictureTextures, SkyPicture, softTexture } from './star-sky-picture';
+import { SparkPool } from './star-sparks';
 
 const DEG = Math.PI / 180;
 /** The bridge is always this long in the world; the camera moves so it spans BRIDGE on screen. */
@@ -107,13 +104,10 @@ interface Particle {
   readonly texture?: Texture;
 }
 
-interface Sky {
-  readonly id: ConstellationId;
-  readonly group: Group;
-  readonly points: readonly Sprite[];
-  readonly lines: LineSegments;
-  readonly faint: boolean;
-}
+/** Colours of the sparks a normal catch, a golden one and a flight up into the sky throw. */
+const CATCH_SPARKS = ['#fff6c8', '#9fe6ff', '#ffffff', '#ffd6f1'] as const;
+const GOLD_SPARKS = ['#ffd23f', '#fff3a0', '#ffffff'] as const;
+const TRAIL_SPARKS = ['#fff3c4', '#bfefff', '#ffd6f1', '#ffffff'] as const;
 
 /**
  * The Star Catcher's night sky in 3D: a glowing bridge that is the number line, Nova the
@@ -139,7 +133,12 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
   private readonly tex: Record<GlowKind, CanvasTexture>;
   private readonly sky: CanvasTexture;
   private readonly backdrop = new Group();
-  private readonly starLayers: Points[] = [];
+  private readonly night: NightSky;
+  /** How far behind the camera the star field hangs. */
+  private skyDepth = 55;
+  private readonly sparks: SparkPool;
+  private readonly pictureTex: PictureTextures;
+  private readonly ringGeometry = new RingGeometry(0.8, 1, 48);
   private readonly moon: Sprite;
   private readonly hills: Mesh;
   private readonly meadow: Mesh;
@@ -193,11 +192,14 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
   private hidden = new Set<'star' | 'landed' | 0 | 1>();
   private readonly flyers: Flyer[] = [];
   private readonly particles: Particle[] = [];
-  private main?: Sky;
-  private collection: Sky[] = [];
+  private main?: SkyPicture;
+  /** The main picture was just built: show what it already has without replaying it. */
+  private mainFresh = true;
+  /** The size of a lit star in the main picture, in world units. */
+  private mainDot = 0.5;
+  private collection: SkyPicture[] = [];
   private collectionKey = '';
   private completePending = false;
-  private pulseAt = -10;
   private readonly catches = new EventCounter();
   private readonly goldens = new EventCounter();
   private readonly bounces = new EventCounter();
@@ -210,6 +212,12 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
   private dimAt = -10;
   private shakeAt = -10;
   private cometSparkAt = 0;
+  private catchAt = -10;
+  private revealSparkle = -10;
+  private revealSparkAt = 0;
+  private readonly sparkColor = new Color();
+  private readonly starWhite = new Color('#ffffff');
+  private readonly missBlue = new Color('#8f9bd6');
   private readonly hoopPosition = new Vector3();
   private readonly scratch = new Vector3();
   private readonly scratch2 = new Vector3();
@@ -244,31 +252,15 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     this.scene.background = this.sky;
     this.scene.add(this.camera);
     this.camera.add(this.backdrop);
-    for (const [count, size, color] of [
-      [80, 2, '#ffffff'],
-      [45, 2.6, '#fff3c0'],
-      [25, 3.4, '#cfe0ff'],
-    ] as const) {
-      const positions: number[] = [];
-      for (let index = 0; index < count; index++)
-        positions.push(Math.random() * 2.2 - 1.1, Math.random() * 1.5 - 0.42, 0);
-      const geometry = new BufferGeometry();
-      geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
-      const layer = new Points(
-        geometry,
-        new PointsMaterial({
-          color,
-          size: size * 1.6 * this.renderer.getPixelRatio(),
-          sizeAttenuation: false,
-          map: this.tex.spark,
-          blending: AdditiveBlending,
-          transparent: true,
-          depthWrite: false,
-        }),
-      );
-      this.starLayers.push(layer);
-      this.backdrop.add(layer);
-    }
+    this.night = new NightSky(
+      this.backdrop,
+      this.tex.spark,
+      this.tex.trail,
+      this.renderer.getPixelRatio(),
+    );
+    this.pictureTex = { star: this.tex.star, beam: beamTexture(), soft: softTexture() };
+    this.sparks = new SparkPool(this.tex.spark);
+    this.scene.add(this.sparks.points);
     this.moon = new Sprite(
       new SpriteMaterial({ map: this.tex.moon, transparent: true, depthWrite: false }),
     );
@@ -466,7 +458,9 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
       group.position.set(0, 0, -d);
       group.scale.set(d * tan * aspect, d * tan, 1);
     };
-    for (const layer of this.starLayers) at(layer, depth + 45);
+    this.skyDepth = depth + 45;
+    this.night.layout(this.skyDepth, tan, aspect, h);
+    this.sparks.setScale((h * this.renderer.getPixelRatio()) / (2 * tan));
     at(this.hills, depth + 14);
     this.hills.position.y += cy * (depth + 14) * tan;
     const meadowDepth = depth + 12;
@@ -598,9 +592,11 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
 
   private syncSkies(frame: StarFrame) {
     if (this.main?.id !== frame.constellation) {
-      if (this.main) this.disposeSky(this.main);
-      for (const flyer of [...this.flyers]) this.removeFlyer(flyer);
+      this.main?.dispose();
+      for (let index = this.flyers.length - 1; index >= 0; index--)
+        this.removeFlyer(this.flyers[index]);
       this.main = this.buildSky(frame.constellation, false);
+      this.mainFresh = true;
       this.layoutSkies();
     }
     const others = frame.collection
@@ -609,91 +605,34 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     const key = others.join(',');
     if (key !== this.collectionKey) {
       this.collectionKey = key;
-      for (const sky of this.collection) this.disposeSky(sky);
+      for (const sky of this.collection) sky.dispose();
       this.collection = others.map((id) => this.buildSky(id, true));
       this.layoutSkies();
     }
   }
 
-  private buildSky(id: ConstellationId, faint: boolean): Sky {
-    const shape = constellation(id);
-    const group = new Group();
-    const points = shape.points.map(() => {
-      const sprite = new Sprite(
-        new SpriteMaterial({
-          map: this.tex.star,
-          transparent: true,
-          depthWrite: false,
-          opacity: faint ? 0.45 : 0.5,
-        }),
-      );
-      group.add(sprite);
-      return sprite;
-    });
-    const geometry = new BufferGeometry();
-    geometry.setAttribute(
-      'position',
-      new Float32BufferAttribute(new Float32Array((shape.points.length + 1) * 6), 3),
-    );
-    const lines = new LineSegments(
-      geometry,
-      new LineBasicMaterial({
-        color: faint ? '#9fb6ff' : '#cfe7ff',
-        transparent: true,
-        opacity: faint ? 0.3 : 0.75,
-        depthWrite: false,
-      }),
-    );
-    group.add(lines);
-    this.backdrop.add(group);
-    return { id, group, points, lines, faint };
+  private buildSky(id: ConstellationId, faint: boolean) {
+    const picture = new SkyPicture(id, faint, this.pictureTex);
+    this.backdrop.add(picture.group);
+    return picture;
   }
 
   private layoutSkies() {
     const { width: w, height: h } = this;
     if (w <= 1) return;
-    const depth = -this.starLayers[0].position.z - 20;
+    const depth = this.skyDepth - 20;
     if (this.main) {
       const size = Math.min(h * 0.38, w * 0.55);
       this.place(this.main.group, 0, 0.54, depth);
-      this.main.group.userData['unit'] = this.pxAt(depth, size);
-      this.main.group.userData['dot'] = this.pxAt(depth, clamp(h * 0.04, 14, 26));
-      this.positionSky(this.main, true);
+      this.mainDot = this.pxAt(depth, clamp(h * 0.04, 14, 26));
+      this.main.layout(this.pxAt(depth, size), this.mainDot);
     }
     this.collection.forEach((sky, index) => {
       const [x, y] = COLLECTION_SLOTS[index];
       const size = Math.min(h * 0.17, w * 0.18);
       this.place(sky.group, x, y, depth + 2);
-      sky.group.userData['unit'] = this.pxAt(depth + 2, size);
-      sky.group.userData['dot'] = this.pxAt(depth + 2, clamp(h * 0.022, 8, 14));
-      this.positionSky(sky, true);
+      sky.layout(this.pxAt(depth + 2, size), this.pxAt(depth + 2, clamp(h * 0.022, 8, 14)));
     });
-  }
-
-  /** Lays out a constellation's points and its lines for `lit` points (all for faint ones). */
-  private positionSky(sky: Sky, all: boolean, lit = 0, complete = true) {
-    const shape = constellation(sky.id);
-    const unit = sky.group.userData['unit'] as number;
-    shape.points.forEach(([x, y], index) => {
-      sky.points[index].position.set((x - 0.5) * unit, (0.5 - y) * unit, 0);
-    });
-    const edges = constellationEdges(shape, all ? shape.points.length : lit, all || complete);
-    const position = sky.lines.geometry.getAttribute('position') as Float32BufferAttribute;
-    edges.forEach(([a, b], index) => {
-      const pa = sky.points[a].position;
-      const pb = sky.points[b].position;
-      position.setXYZ(index * 2, pa.x, pa.y, -0.01);
-      position.setXYZ(index * 2 + 1, pb.x, pb.y, -0.01);
-    });
-    position.needsUpdate = true;
-    sky.lines.geometry.setDrawRange(0, edges.length * 2);
-  }
-
-  private disposeSky(sky: Sky) {
-    sky.group.removeFromParent();
-    for (const point of sky.points) point.material.dispose();
-    sky.lines.geometry.dispose();
-    (sky.lines.material as LineBasicMaterial).dispose();
   }
 
   /* ---------------------------------------------------------------------------------------- */
@@ -853,6 +792,7 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
       this.puffed = false;
     } else if (frame.kind === 'landed') {
       this.puff(this.landed.position, 6);
+      this.ring(this.landed.position, '#c9c6f2', this.starD * 0.4, 1.6, 0.5, 0.55, false);
     } else {
       this.bounceAt = this.elapsed;
       this.puffed = true;
@@ -876,33 +816,55 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     return { sprite, material };
   }
 
+  /** A burst of light where a star is caught: a flash, a ring of light and a spray of sparks. */
   private burst(at: Vector3, golden: boolean) {
-    const count = golden ? 26 : 14;
+    const t = this.elapsed;
     const size = this.starD;
+    this.flash(at, golden ? '#ffe9a0' : '#bfe6ff', size * (golden ? 2.6 : 2), 0.32);
+    this.ring(at, golden ? '#ffd23f' : '#bfeaff', size * 0.55, golden ? 5 : 3.6, 0.7, 0.85);
+    const colors = golden ? GOLD_SPARKS : CATCH_SPARKS;
+    const count = golden ? 34 : 22;
     for (let index = 0; index < count; index++) {
-      const color = golden
-        ? index % 2
-          ? '#ffd23f'
-          : '#fff3a0'
-        : index % 3
-          ? '#fff6c8'
-          : '#9fe6ff';
-      const { sprite, material } = this.sprite(this.tex.spark, color, true);
-      sprite.position.copy(at);
-      const angle = (index / count) * Math.PI * 2;
-      const speed = size * (golden ? 3.2 : 2.2) * (0.7 + (index % 3) * 0.2);
-      this.particles.push({
-        object: sprite,
-        material,
-        born: this.elapsed,
-        life: golden ? 1.1 : 0.8,
-        velocity: new Vector3(Math.cos(angle) * speed, Math.sin(angle) * speed + size, 0.2),
-        grow: -0.6,
-        fall: size * 3,
-        size: size * (golden ? 0.5 : 0.38),
-        opacity: 1,
-      });
-      this.scene.add(sprite);
+      const angle = (index / count) * Math.PI * 2 + (index % 2) * 0.13;
+      const speed = size * (golden ? 3.4 : 2.5) * (0.65 + (index % 3) * 0.22);
+      this.sparkColor.set(colors[index % colors.length]);
+      this.sparks.spawn(
+        t,
+        at.x,
+        at.y,
+        at.z + 0.1,
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed + size * 0.8,
+        0.3,
+        golden ? 1.1 : 0.85,
+        size * (golden ? 0.5 : 0.4),
+        this.sparkColor,
+        1,
+        -0.7,
+        size * 3,
+        1.8,
+      );
+    }
+    // A little glitter that drifts down after the burst.
+    for (let index = 0; index < (golden ? 14 : 8); index++) {
+      const angle = index * 2.39996;
+      this.sparkColor.set(colors[(index + 1) % colors.length]);
+      this.sparks.spawn(
+        t,
+        at.x + Math.cos(angle) * size * 0.3,
+        at.y + Math.sin(angle) * size * 0.3,
+        at.z + 0.15,
+        Math.cos(angle) * size * 0.6,
+        size * (0.6 + (index % 3) * 0.3),
+        0,
+        1.6,
+        size * 0.22,
+        this.sparkColor,
+        0.9,
+        -0.3,
+        size * 0.9,
+        1.2,
+      );
     }
     if (golden) {
       const rays = this.sprite(this.tex.rays, '#ffe066', true);
@@ -910,7 +872,7 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
       this.particles.push({
         object: rays.sprite,
         material: rays.material,
-        born: this.elapsed,
+        born: t,
         life: 1.2,
         velocity: new Vector3(),
         grow: 2.2,
@@ -919,29 +881,60 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
         opacity: 1,
       });
       this.scene.add(rays.sprite);
-      const ringMaterial = new MeshBasicMaterial({
-        color: '#ffd23f',
-        transparent: true,
-        blending: AdditiveBlending,
-        depthWrite: false,
-        side: DoubleSide,
-      });
-      const ring = new Mesh(new RingGeometry(0.8, 1, 40), ringMaterial);
-      ring.position.copy(at);
-      ring.renderOrder = 17;
-      this.particles.push({
-        object: ring,
-        material: ringMaterial,
-        born: this.elapsed,
-        life: 0.9,
-        velocity: new Vector3(),
-        grow: 5,
-        fall: 0,
-        size: size * 0.5,
-        opacity: 0.9,
-      });
-      this.scene.add(ring);
     }
+  }
+
+  /** A soft flash of light that swells and fades. */
+  private flash(at: Vector3, color: string, size: number, life: number) {
+    const { sprite, material } = this.sprite(this.pictureTex.soft, color, true);
+    sprite.position.set(at.x, at.y, at.z + 0.12);
+    sprite.renderOrder = 20;
+    this.particles.push({
+      object: sprite,
+      material,
+      born: this.elapsed,
+      life,
+      velocity: new Vector3(),
+      grow: 0.5,
+      fall: 0,
+      size,
+      opacity: 0.6,
+    });
+    this.scene.add(sprite);
+  }
+
+  /** A ring of light that spreads out from `at`. */
+  private ring(
+    at: Vector3,
+    color: string,
+    size: number,
+    grow: number,
+    life: number,
+    opacity: number,
+    additive = true,
+  ) {
+    const material = new MeshBasicMaterial({
+      color,
+      transparent: true,
+      blending: additive ? AdditiveBlending : NormalBlending,
+      depthWrite: false,
+      side: DoubleSide,
+    });
+    const ring = new Mesh(this.ringGeometry, material);
+    ring.position.copy(at);
+    ring.renderOrder = 17;
+    this.particles.push({
+      object: ring,
+      material,
+      born: this.elapsed,
+      life,
+      velocity: new Vector3(),
+      grow,
+      fall: 0,
+      size,
+      opacity,
+    });
+    this.scene.add(ring);
   }
 
   private puff(at: Vector3, count: number) {
@@ -1010,14 +1003,10 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     const calm = this.calm;
 
     // Twinkling sky and drifting fireflies; both hold still under calm motion.
-    this.starLayers.forEach((layer, index) => {
-      (layer.material as PointsMaterial).opacity = calm
-        ? 0.85
-        : 0.6 + 0.4 * Math.sin(t * (1.3 + index * 0.7) + index * 2);
-    });
+    this.night.update(t, dt, calm, this.novaX / (LENGTH / 2));
     const cy = 1 - 2 * BRIDGE.y;
     this.fireflies.forEach((bug, index) => {
-      const d = -this.starLayers[0].position.z - 35;
+      const d = this.skyDepth - 35;
       const phase = calm ? index * 1.7 : t * (0.25 + index * 0.05) + index * 1.7;
       const x = Math.sin(phase) * 0.85 + (index % 2 ? 0.08 : -0.08);
       const y =
@@ -1051,9 +1040,10 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
       sprite.material.opacity = calm ? 0.9 : 0.6 + 0.4 * Math.sin(t * 4 + index * 2);
     });
 
-    this.updateFlyers(t);
+    this.updateFlyers(t, calm);
     this.updateSky(frame, t, calm);
     this.updateParticles(t, dt);
+    this.sparks.update(t, dt);
   }
 
   private animateNova(frame: StarFrame, t: number, speed: number, calm: boolean) {
@@ -1073,6 +1063,10 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     // A golden spin, a shrug at a bounce, a cheer for a finished constellation.
     const spin = t - this.goldenAt;
     nova.body.rotation.y = !calm && spin < 0.8 ? Math.PI * 2 * easeOut(spin / 0.8) : 0;
+    // A catch: Nova dips under the star's weight and springs back up.
+    const caught = t - this.catchAt;
+    const give = !calm && caught < 0.7 ? Math.exp(-caught * 6) * Math.sin(caught * 16) * 0.09 : 0;
+    nova.body.scale.set(1 + give, 1 - give, 1 + give);
     const shrug = t - this.shrugAt;
     const shrugging = shrug < 0.8 ? Math.sin((shrug / 0.8) * Math.PI) : 0;
     nova.head.rotation.z = shrugging * 0.25;
@@ -1103,29 +1097,19 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
       if (!calm && t - this.cometSparkAt > 0.07) {
         this.cometSparkAt = t;
         this.hoop(this.hoopPosition);
-        const hue = (t * 0.6) % 1;
-        const { sprite, material: sparkMaterial } = this.sprite(
-          this.tex.spark,
-          `#${this.tint.setHSL(hue, 0.9, 0.7).getHexString()}`,
-          true,
-        );
-        sprite.position.set(
+        this.tint.setHSL((t * 0.6) % 1, 0.9, 0.7);
+        this.sparks.spawn(
+          t,
           this.hoopPosition.x,
           this.hoopPosition.y - 0.2 * this.novaScale,
           this.hoopPosition.z + 0.05,
+          -0.9 * this.novaScale - lean,
+          0.5 * this.novaScale,
+          0,
+          0.8,
+          this.starD * 0.28,
+          this.tint,
         );
-        this.particles.push({
-          object: sprite,
-          material: sparkMaterial,
-          born: t,
-          life: 0.8,
-          velocity: new Vector3(-0.9 * this.novaScale - lean, 0.5 * this.novaScale, 0),
-          grow: -0.8,
-          fall: 0,
-          size: this.starD * 0.28,
-          opacity: 1,
-        });
-        this.scene.add(sprite);
       }
     }
   }
@@ -1157,12 +1141,24 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
           if (!this.puffed) {
             this.puffed = true;
             this.puff(rim, 6);
+            this.ring(rim, '#c9c6f2', this.starD * 0.45, 1.6, 0.5, 0.55, false);
           }
         }
         rest.lerp(rim, w);
         rest.y += lift;
       }
       star.group.position.copy(rest);
+      // A miss greys the star a little and squashes it on the rim; it brightens as it rises.
+      const missed = t - this.bounceAt;
+      const grey =
+        missed < 0
+          ? 0
+          : missed < BOUNCE_IN
+            ? missed / BOUNCE_IN
+            : Math.max(0, 1 - (missed - BOUNCE_IN) / (BOUNCE_OUT + 0.4));
+      star.sprite.material.color.lerpColors(this.starWhite, this.missBlue, grey * 0.8);
+      const squash = calm ? 0 : Math.exp(-(((missed - BOUNCE_IN) / 0.1) ** 2)) * 0.26;
+      star.sprite.scale.set(this.starD * (1 + squash), this.starD * (1 - squash), 1);
       // Keep the number fully on screen when Nova stands near either end of the bridge.
       const half = this.width / 2 / this.ppu;
       const room = half - (this.labelH * (320 / 144)) / 2 - 28 / this.ppu;
@@ -1226,9 +1222,10 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     (view.trail.material as MeshBasicMaterial).opacity = (0.25 + 0.75 * share) * flicker;
   }
 
-  private updateFlyers(t: number) {
+  private updateFlyers(t: number, calm: boolean) {
     const hoop = this.hoop(this.hoopPosition);
-    for (const flyer of [...this.flyers]) {
+    for (let index = this.flyers.length - 1; index >= 0; index--) {
+      const flyer = this.flyers[index];
       const age = t - flyer.start;
       if (age < 0) continue;
       if (!flyer.started) {
@@ -1248,31 +1245,63 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
         this.burst(at, flyer.golden);
         this.pointsLabel(at, flyer.gain);
         this.flareAt = t;
+        this.catchAt = t;
         if (flyer.golden) this.goldenAt = t;
         if (flyer.swoop) sprite.position.copy(hoop);
       }
       const rest = age - swoop;
       if (rest < REST) {
-        sprite.scale.setScalar(this.starD * (1 + 0.15 * Math.sin((rest / REST) * Math.PI)));
+        // Anticipation: the star sits in the net and gathers itself before it leaps.
+        const k = rest / REST;
+        sprite.scale.set(
+          this.starD * (1 + 0.18 * Math.sin(k * Math.PI)),
+          this.starD * (1 + 0.18 * Math.sin(k * Math.PI) - 0.14 * k * k),
+          1,
+        );
         continue;
       }
       const sky = this.main;
-      const p = Math.min(1, (rest - REST) / ARC);
-      const point = sky?.points[Math.min(flyer.point, sky.points.length - 1)];
-      if (!point) {
+      if (!sky) {
         this.removeFlyer(flyer);
         continue;
       }
-      point.getWorldPosition(this.scratch2);
+      const p = Math.min(1, (rest - REST) / ARC);
+      sky.pointWorld(flyer.point, this.scratch2);
       const start = flyer.swoop ? hoop : flyer.from;
       const eased = smooth(p);
+      this.scratch.copy(sprite.position);
       sprite.position.lerpVectors(start, this.scratch2, eased);
       sprite.position.y += Math.sin(p * Math.PI) * this.starD * 1.5;
-      const dotWorld = (sky!.group.userData['dot'] as number) * 1.4;
-      sprite.scale.setScalar(lerp(this.starD, dotWorld, eased));
+      // Stretched along its flight at the start, round again as it arrives.
+      const size = lerp(this.starD, this.mainDot * 1.4, eased);
+      const stretch = p < 0.5 ? 1 + 0.35 * Math.sin(p * 2 * Math.PI) : 1;
+      sprite.scale.set(size / Math.sqrt(stretch), size * stretch, 1);
+      sprite.material.rotation = calm ? 0 : p * Math.PI * 2;
+      // A trail of glitter behind it, fewer sparks under calm motion.
+      const moved = sprite.position.distanceTo(this.scratch);
+      const spawns = p < 1 ? (calm ? 1 : 3) : 0;
+      for (let n = 0; n < spawns && moved > 0; n++) {
+        const f = n / spawns;
+        const wobble = Math.sin(t * 40 + n * 2.1);
+        this.sparkColor.set(TRAIL_SPARKS[(flyer.point + n + Math.floor(t * 20)) % 4]);
+        this.sparks.spawn(
+          t,
+          lerp(this.scratch.x, sprite.position.x, f) + wobble * size * 0.12,
+          lerp(this.scratch.y, sprite.position.y, f) - wobble * size * 0.08,
+          lerp(this.scratch.z, sprite.position.z, f),
+          wobble * size * 0.4,
+          -size * 0.3,
+          0,
+          0.55 + 0.25 * f,
+          size * (0.42 - 0.1 * f),
+          this.sparkColor,
+          0.95,
+          -0.8,
+        );
+      }
       if (p >= 1) {
         this.removeFlyer(flyer);
-        this.twinkle(this.scratch2);
+        this.landPop(this.scratch2, flyer.golden);
       }
     }
   }
@@ -1283,23 +1312,31 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     flyer.sprite.material.dispose();
   }
 
-  /** A small sparkle where a star clicks into its constellation. */
-  private twinkle(at: Vector3) {
-    const { sprite, material } = this.sprite(this.tex.spark, '#ffffff', true);
-    sprite.position.copy(at);
-    const size = (this.main?.group.userData['dot'] as number | undefined) ?? 0.5;
-    this.particles.push({
-      object: sprite,
-      material,
-      born: this.elapsed,
-      life: 0.6,
-      velocity: new Vector3(),
-      grow: 3,
-      fall: 0,
-      size: size * 1.5,
-      opacity: 1,
-    });
-    this.scene.add(sprite);
+  /** A little pop where a star clicks into its constellation: a flash and a ring of glints. */
+  private landPop(at: Vector3, golden: boolean) {
+    const dot = this.mainDot;
+    this.flash(at, golden ? '#ffe680' : '#ffffff', dot * 3.2, 0.5);
+    const colors = golden ? GOLD_SPARKS : TRAIL_SPARKS;
+    for (let index = 0; index < 10; index++) {
+      const angle = (index / 10) * Math.PI * 2;
+      this.sparkColor.set(colors[index % colors.length]);
+      this.sparks.spawn(
+        this.elapsed,
+        at.x,
+        at.y,
+        at.z + 0.05,
+        Math.cos(angle) * dot * 3.2,
+        Math.sin(angle) * dot * 3.2,
+        0,
+        0.55,
+        dot * 0.7,
+        this.sparkColor,
+        1,
+        -0.7,
+        0,
+        3,
+      );
+    }
   }
 
   private updateSky(frame: StarFrame, t: number, calm: boolean) {
@@ -1310,34 +1347,45 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     const complete = frame.complete && pending === 0;
     if (this.completePending && pending === 0) {
       this.completePending = false;
-      this.pulseAt = t;
       this.cheerAt = t;
+      this.revealSparkle = t;
     }
-    const pulse = Math.max(0, 1 - (t - this.pulseAt) / 1.6);
-    const dot = sky.group.userData['dot'] as number;
-    sky.points.forEach((point, index) => {
-      const on = complete || index < lit;
-      const glimmer = calm ? 1 : 1 + 0.08 * Math.sin(t * 3 + index);
-      point.scale.setScalar(on ? dot * glimmer * (1 + 0.6 * pulse) : dot * 0.62);
-      point.material.opacity = on ? 1 : 0.5;
-    });
-    this.positionSky(sky, false, lit, complete);
-    (sky.lines.material as LineBasicMaterial).opacity = 0.7 + 0.3 * pulse;
-    for (const other of this.collection) {
-      const small = other.group.userData['dot'] as number;
-      other.points.forEach((point) => point.scale.setScalar(small));
+    sky.sync(lit, complete, t, !this.mainFresh);
+    this.mainFresh = false;
+    sky.update(t, calm);
+    for (const other of this.collection) other.update(t, calm);
+    // Stardust drifts up from the finished picture for a moment, unless motion is calm.
+    const age = t - this.revealSparkle;
+    if (!calm && age > 0.6 && age < 2.4 && t - this.revealSparkAt > 0.05) {
+      this.revealSparkAt = t;
+      const index = Math.floor(t * 37) % CATCH_SPARKS.length;
+      sky.pointWorld(Math.floor(t * 53) % sky.count, this.scratch2);
+      this.sparkColor.set(CATCH_SPARKS[index]);
+      this.sparks.spawn(
+        t,
+        this.scratch2.x,
+        this.scratch2.y,
+        this.scratch2.z + 0.05,
+        0,
+        this.mainDot * 1.5,
+        0,
+        1.1,
+        this.mainDot * 0.8,
+        this.sparkColor,
+        0.9,
+        -0.6,
+      );
     }
   }
 
   private updateParticles(t: number, dt: number) {
-    for (const particle of [...this.particles]) {
+    const particles = this.particles;
+    for (let index = particles.length - 1; index >= 0; index--) {
+      const particle = particles[index];
       const age = t - particle.born;
       if (age > particle.life) {
-        particle.object.removeFromParent();
-        particle.material.dispose();
-        if (particle.object instanceof Mesh) particle.object.geometry.dispose();
-        particle.texture?.dispose();
-        this.particles.splice(this.particles.indexOf(particle), 1);
+        this.freeParticle(particle);
+        particles.splice(index, 1);
         continue;
       }
       const p = age / particle.life;
@@ -1356,21 +1404,22 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     }
   }
 
+  /** Rings share one geometry; everything else a particle owns goes with it. */
+  private freeParticle(particle: Particle) {
+    particle.object.removeFromParent();
+    particle.material.dispose();
+    particle.texture?.dispose();
+  }
+
   override dispose() {
-    for (const flyer of [...this.flyers]) this.removeFlyer(flyer);
-    for (const particle of this.particles) {
-      particle.object.removeFromParent();
-      particle.material.dispose();
-      if (particle.object instanceof Mesh) particle.object.geometry.dispose();
-      particle.texture?.dispose();
-    }
+    for (let index = this.flyers.length - 1; index >= 0; index--)
+      this.removeFlyer(this.flyers[index]);
+    for (const particle of this.particles) this.freeParticle(particle);
     this.particles.length = 0;
-    if (this.main) this.disposeSky(this.main);
-    for (const sky of this.collection) this.disposeSky(sky);
-    for (const layer of this.starLayers) {
-      layer.geometry.dispose();
-      (layer.material as PointsMaterial).dispose();
-    }
+    this.main?.dispose();
+    for (const sky of this.collection) sky.dispose();
+    this.night.dispose();
+    this.sparks.dispose();
     for (const label of this.postLabels) label.texture.dispose();
     for (const view of [this.star, ...this.pair]) view.label.texture.dispose();
     for (const geometry of [
@@ -1378,6 +1427,7 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
       this.endGeometry,
       this.lampGeometry,
       this.notchGeometry,
+      this.ringGeometry,
     ])
       geometry.dispose();
     for (const material of [
@@ -1389,6 +1439,8 @@ export class StarWorld extends Stage implements StateWorld<StarFrame> {
     ])
       material.dispose();
     for (const texture of Object.values(this.tex)) texture.dispose();
+    this.pictureTex.beam.dispose();
+    this.pictureTex.soft.dispose();
     this.sky.dispose();
     super.dispose();
   }
