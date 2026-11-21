@@ -342,6 +342,11 @@ main.focused-game {
   --loader-star: var(--sky-deep);
   --loader-dot: var(--pink);
 }
+.is-route-tone[data-tone='duel'] {
+  --loader-ground: linear-gradient(#ffe3cf, #fff4ec 45%, #e4f3e0);
+  --loader-star: var(--pink-deep);
+  --loader-dot: var(--gold-deep);
+}
 .is-route-tone[data-tone='market'] {
   --loader-ground: linear-gradient(#fde7c8, #fff4e2 45%, #fffaf0);
   --loader-star: var(--gold-deep);

@@ -44,7 +44,7 @@ long-standing base classes listed below.
 | `src/star-rating.ts`  | `ui-star-rating`: three star slots and one spoken label.                                                                                            |
 | `src/game-bar.ts`     | `ui-game-bar`: the way out, title and actions above a game.                                                                                         |
 | `src/sound-toggle.ts` | `ui-sound-toggle`: the round speaker button.                                                                                                        |
-| `src/coach-dialog.ts` | `ui-coach-dialog`: the "how to play" modal with a game's demo film projected inside (market).                                                       |
+| `src/coach-dialog.ts` | `ui-coach-dialog`: the "how to play" modal with a game's demo film projected inside (market, dragon duels).                                         |
 | `src/number-pad.ts`   | `ui-number-pad`: the number pad in rows of five, with Delete and OK (gondola, market).                                                              |
 | `src/reward-burst.ts` | `ui-reward-burst`: the glow, sparkles and points card after a right answer, tinted with `--burst-*` (market).                                       |
 | `src/index.ts`        | The public API. Export every new component here.                                                                                                    |
