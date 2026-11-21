@@ -1,4 +1,4 @@
-import type { GoodId } from './market-levels';
+import type { Customer, GoodId } from './market-levels';
 import type { Denomination } from './market-money';
 
 /**
@@ -24,6 +24,14 @@ export interface MarketFrame {
    * with its own price tag. Empty on single-treat levels.
    */
   readonly extras: readonly { readonly good: GoodId; readonly priceText: string }[];
+  /** Who stands behind the till: Olli (Lumi shops) or Lumi herself (Olli watches). */
+  readonly role: 'shopper' | 'till';
+  /** The animal buying from Lumi when she works the till. */
+  readonly customer: Customer | null;
+  /** The note or notes handed over to pay, lying on the counter by the till. */
+  readonly paid: readonly Denomination[];
+  /** The change Olli counts out once Lumi's purchase went through (shopper role only). */
+  readonly change: readonly Denomination[];
   /** Coins and notes the child has put on the counter tray, in the order they went down. */
   readonly tray: readonly Denomination[];
   /** How the turn ended: the treat went into Lumi's basket, or Olli put it back on the shelf. */
@@ -57,6 +65,10 @@ export function stillFrame(partial: Partial<MarketFrame> = {}): MarketFrame {
     price: 0,
     priceText: '',
     extras: [],
+    role: 'shopper',
+    customer: null,
+    paid: [],
+    change: [],
     tray: [],
     outcome: 'none',
     basket: [],

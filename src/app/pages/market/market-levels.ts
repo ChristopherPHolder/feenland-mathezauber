@@ -25,7 +25,7 @@ export type Random = () => number;
  * What the child does on a turn, in order: add up a shopping list ("total"), pay with coins,
  * judge "enough?", type what's left.
  */
-export type Step = 'total' | 'pay' | 'enough' | 'left';
+export type Step = 'total' | 'pay' | 'enough' | 'left' | 'change' | 'give';
 /** How the purse looks: every coin on show, or only a tag with its amount. */
 export type Look = 'coins' | 'tag';
 /** The skill a level is about; it also picks the level's tip card. */
@@ -36,7 +36,14 @@ export type MarketSkill =
   | 'left'
   | 'spree'
   | 'twoTreats'
-  | 'list';
+  | 'list'
+  | 'change10'
+  | 'change20'
+  | 'till';
+
+/** The animals who come to buy when Lumi works the till. */
+export const CUSTOMERS = ['fox', 'rabbit', 'hedgehog', 'squirrel'] as const;
+export type Customer = (typeof CUSTOMERS)[number];
 
 /** The treats on Olli's shelves, each with the prices it may carry (whole euros). */
 export const GOODS = [
@@ -69,6 +76,12 @@ export interface MarketTurn {
   readonly price: number;
   /** A shopping list of two or three treats, `good` first; absent for a single treat. */
   readonly items?: readonly Item[];
+  /** The note handed over to pay, on change turns: by Lumi, or by the customer at the till. */
+  readonly paid?: readonly Denomination[];
+  /** The coins in the till drawer Lumi gives change from, when she works the till. */
+  readonly till?: readonly Denomination[];
+  /** Who is buying, when Lumi works the till. */
+  readonly customer?: Customer;
   /** The coins and notes in Lumi's purse before she buys. */
   readonly purse: readonly Denomination[];
   /** What the child does, in order. A turn whose purse is too small stops after "enough". */
@@ -298,6 +311,54 @@ function listTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
   };
 }
 
+/** Level 8: Lumi pays with a 10 € note. How much change comes back? */
+function change10Turn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  const price = euros(big ? int(random, 1, 3) : int(random, 2, 9));
+  return {
+    good: pickGood(random, price, previous),
+    price,
+    paid: [1000],
+    purse: [1000],
+    steps: ['change'],
+    look: 'tag',
+  };
+}
+
+/** Level 9: change from 20 €, mostly from prices that make the count cross 10. */
+function change20Turn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  const teens = [11, 12, 13, 14, 15, 16, 17, 18, 19];
+  const price = euros(
+    big ? int(random, 3, 7) : random() < 0.6 ? pick(random, teens) : int(random, 3, 9),
+  );
+  return {
+    good: pickGood(random, price, previous),
+    price,
+    paid: [2000],
+    purse: [2000],
+    steps: ['change'],
+    look: 'tag',
+  };
+}
+
+/** The till drawer: enough of every coin and note to give any change under 20 €. */
+const TILL: readonly Denomination[] = [1000, 500, 200, 200, 100, 100, 100];
+
+/** Level 10: Lumi works the till. A customer pays with a note; Lumi counts out the change. */
+function tillTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  const price = euros(big ? int(random, 2, 8) : int(random, 1, 18));
+  const note: Denomination = big ? 2000 : price < 500 ? 500 : price < 1000 ? 1000 : 2000;
+  return {
+    good: pickGood(random, price, previous),
+    price,
+    paid: [note],
+    till: TILL,
+    customer: pick(random, CUSTOMERS),
+    purse: [],
+    steps: ['give'],
+    look: 'coins',
+  };
+}
+
 function eachTurn(
   turns: number,
   make: (index: number, big: boolean, previous?: GoodId) => MarketTurn,
@@ -368,6 +429,32 @@ export const marketStages: readonly MarketStage[] = [
     turns: 6,
     round: (random) => eachTurn(6, (_, big, previous) => listTurn(random, big, previous)),
   },
+  {
+    stage: 8,
+    group: 'marketChange',
+    skill: 'change10',
+    example: '10 € − 7 €',
+    turns: 7,
+    round: (random) => eachTurn(7, (_, big, previous) => change10Turn(random, big, previous)),
+  },
+  {
+    stage: 9,
+    group: 'marketChange',
+    skill: 'change20',
+    example: '20 € − 13 €',
+    turns: 7,
+    round: (random) => eachTurn(7, (_, big, previous) => change20Turn(random, big, previous)),
+  },
+  {
+    stage: 10,
+    group: 'marketChange',
+    skill: 'till',
+    example: '7 € → 10 €',
+    turns: 7,
+    fewest: true,
+    strict: true,
+    round: (random) => eachTurn(7, (_, big, previous) => tillTurn(random, big, previous)),
+  },
 ];
 
 export const TOTAL_STAGES = marketStages.length;
@@ -425,6 +512,27 @@ export function checkTotal(turn: MarketTurn, typed: number): TotalResult {
   return 'off';
 }
 
+/** The change due on a turn paid with a note. */
+export const changeDue = (turn: MarketTurn) => total(turn.paid ?? []) - turn.price;
+
+export type ChangeResult = 'ok' | 'added' | 'price' | 'paid' | 'off';
+/** A typed change. Adding instead, typing the price or typing the note get their own help. */
+export function checkChange(turn: MarketTurn, typed: number): ChangeResult {
+  const cents = typed * EURO;
+  const paid = total(turn.paid ?? []);
+  if (cents === paid - turn.price) return 'ok';
+  if (cents === paid + turn.price) return 'added';
+  if (cents === turn.price) return 'price';
+  if (cents === paid) return 'paid';
+  return 'off';
+}
+
+/** The change counted out at the till: the fewest coins the drawer allows earn the bonus. */
+export function isFewestChange(turn: MarketTurn, tray: readonly Denomination[]): boolean {
+  const fewest = fewestFromPurse(turn.till ?? [], changeDue(turn));
+  return fewest !== null && tray.length === fewest;
+}
+
 export type LeftResult = 'ok' | 'added' | 'price' | 'purse' | 'off';
 /**
  * A typed "what's left" answer. The common slips get their own help: adding the price on,
@@ -441,6 +549,9 @@ export function checkLeft(turn: MarketTurn, typed: number): LeftResult {
 
 /** Every turn can be done: an exact pay is possible, a "what's left" is never negative. */
 export function isPlayable(turn: MarketTurn): boolean {
+  if (turn.steps.includes('change') && changeDue(turn) <= 0) return false;
+  if (turn.steps.includes('give'))
+    return changeDue(turn) > 0 && canPayExactly(turn.till ?? [], changeDue(turn));
   if (turn.steps.includes('pay') && !canPayExactly(turn.purse, turn.price)) return false;
   if (turn.steps.includes('left') && !affordable(turn)) return false;
   if (!turn.steps.includes('enough') && !affordable(turn)) return false;

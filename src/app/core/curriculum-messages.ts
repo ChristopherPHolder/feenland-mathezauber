@@ -233,6 +233,13 @@ export const curriculumEn = {
   market6Help: 'Add two prices up to 20 €, then pay the total with coins and notes.',
   market7: 'Shopping list',
   market7Help: 'Three treats from a 20 € purse: add them up, then say what is left.',
+  marketChange: 'Change',
+  market8: 'Change from 10 €',
+  market8Help: 'Lumi pays with a 10 € note: count up from the price to find the change.',
+  market9: 'Change from 20 €',
+  market9Help: 'Pay with 20 €: count up to the next ten, then on to 20.',
+  market10: 'Lumi at the till',
+  market10Help: 'Lumi works the till and counts out the change. Three stars to master it.',
 };
 export type CurriculumKey = keyof typeof curriculumEn;
 type CurriculumMessages = { readonly [K in CurriculumKey]: string };
@@ -466,6 +473,13 @@ export const curriculumDe: CurriculumMessages = {
   market7: 'Einkaufsliste',
   market7Help:
     'Drei Sachen aus einem 20-€-Geldbeutel: zusammenzählen, dann sagen, was übrig bleibt.',
+  marketChange: 'Wechselgeld',
+  market8: 'Wechselgeld von 10 €',
+  market8Help: 'Lumi zahlt mit 10 €: Vom Preis weiterzählen ergibt das Wechselgeld.',
+  market9: 'Wechselgeld von 20 €',
+  market9Help: 'Mit 20 € zahlen: erst bis zum nächsten Zehner, dann bis 20 weiterzählen.',
+  market10: 'Lumi an der Kasse',
+  market10Help: 'Lumi sitzt an der Kasse und zählt das Wechselgeld ab. Drei Sterne zum Meistern.',
 };
 
 export const curriculumEs: CurriculumMessages = {
@@ -696,6 +710,13 @@ export const curriculumEs: CurriculumMessages = {
   market6Help: 'Suma dos precios hasta 20 € y paga el total con monedas y billetes.',
   market7: 'Lista de la compra',
   market7Help: 'Tres cosas con un monedero de 20 €: súmalas y di cuánto queda.',
+  marketChange: 'El cambio',
+  market8: 'Cambio de 10 €',
+  market8Help: 'Lumi paga con 10 €: cuenta desde el precio para saber el cambio.',
+  market9: 'Cambio de 20 €',
+  market9Help: 'Paga con 20 €: cuenta hasta la siguiente decena y luego hasta 20.',
+  market10: 'Lumi en la caja',
+  market10Help: 'Lumi atiende la caja y cuenta el cambio. Tres estrellas para dominarlo.',
 };
 
 export const curriculumFr: CurriculumMessages = {
@@ -928,4 +949,11 @@ export const curriculumFr: CurriculumMessages = {
   market6Help: 'Additionner deux prix jusqu’à 20 €, puis payer le total avec pièces et billets.',
   market7: 'Liste de courses',
   market7Help: 'Trois achats avec 20 € : les additionner, puis dire ce qui reste.',
+  marketChange: 'Rendre la monnaie',
+  market8: 'Monnaie sur 10 €',
+  market8Help: 'Lumi paie avec 10 € : compte à partir du prix pour trouver la monnaie.',
+  market9: 'Monnaie sur 20 €',
+  market9Help: 'Payer avec 20 € : compter jusqu’à la dizaine suivante, puis jusqu’à 20.',
+  market10: 'Lumi à la caisse',
+  market10Help: 'Lumi tient la caisse et rend la monnaie. Trois étoiles pour maîtriser.',
 };

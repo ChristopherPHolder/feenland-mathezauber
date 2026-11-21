@@ -325,6 +325,29 @@
   transform: translateY(2px) scale(0.96);
 }
 
+.purse.hidden {
+  display: none;
+}
+.till {
+  background: #fff8d6;
+  border-color: var(--gold);
+}
+.till-body {
+  fill: var(--gold-deep);
+}
+.till-top {
+  fill: var(--gold);
+}
+/* The note handed over on change turns. */
+.paid-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
 /* The counter tray: coins put down, tap one to take it back, then Pay. */
 .tray {
   display: flex;
