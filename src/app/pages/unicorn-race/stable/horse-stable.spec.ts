@@ -99,7 +99,8 @@ describe('the Stable', () => {
     expect(find('.flat app-racer .wing')).toBeTruthy();
     expect(find('.flat app-racer .horn')).toBeTruthy();
     tab('Coat');
-    expect(element.querySelectorAll('input[name="horse-coat"]')).toHaveLength(10);
+    // Ten coats for everyone and three sparkle specials.
+    expect(element.querySelectorAll('input[name="horse-coat"]')).toHaveLength(13);
     expect(find('.swatch:has(:checked)').textContent).toContain('Snow white');
     choose('coat', 9);
     expect(store.save().horse.coat).toBe('midnight');
@@ -160,6 +161,64 @@ describe('the Stable', () => {
     fixture.detectChanges();
     expect(store.save().outfit).toBe('wreath');
     expect(find('.flat app-racer .wreath')).toBeTruthy();
+  });
+
+  it('tries a sparkle special on, and buys it only with enough sparkles', () => {
+    const { store, tab, choose, find, fixture, element, press } = setup();
+    tab('Coat');
+    const golden = element.querySelectorAll<HTMLInputElement>('input[name="horse-coat"]')[11];
+    expect(golden.closest('.swatch')?.textContent).toContain('Gold, 500 sparkles');
+    expect(find('.balance').textContent).toContain('0');
+    choose('coat', 11);
+    // Tried on: the horse shows it, the save does not have it, and Done gives way to the buy bar.
+    expect(find<HTMLElement>('.flat app-racer').style.getPropertyValue('--coat')).toBe('#ffd56b');
+    expect(store.save().horse.coat).toBe('snow');
+    expect(element.querySelector('.done')).toBeNull();
+    expect(find('.short').textContent).toContain('500 more ✨ needed');
+    expect(find('[role="status"]').textContent).toContain('It costs 500 sparkles, you have 0.');
+    press('.no-thanks');
+    expect(find<HTMLElement>('.flat app-racer').style.getPropertyValue('--coat')).toBe('#fffdfd');
+    expect(find('.swatch:has(:checked)').textContent).toContain('Snow white');
+    expect(find('.done')).toBeTruthy();
+    // After a few races there are sparkles to spend.
+    store.recordRace(1, 1, 'gold', 650, 50000);
+    fixture.detectChanges();
+    choose('coat', 11);
+    press('.buy-button');
+    expect(sounds.play).toHaveBeenCalledWith('buy');
+    expect(store.save().horse.coat).toBe('golden');
+    expect(store.save().owned).toEqual(['coat:golden']);
+    expect(store.balance()).toBe(150);
+    expect(find('.balance').textContent).toContain('150');
+    expect(golden.closest('.swatch')?.querySelector('.price')).toBeNull();
+    // Owned now, so wearing it again needs no buying.
+    choose('coat', 0);
+    choose('coat', 11);
+    expect(store.save().horse.coat).toBe('golden');
+    expect(element.querySelector('.buy')).toBeNull();
+    // Switching tabs puts a try-on back.
+    tab('Mane');
+    choose('mane', 10);
+    expect(find('.short').textContent).toContain('450 more ✨ needed');
+    tab('Coat');
+    expect(element.querySelector('.buy')).toBeNull();
+    expect(store.save().horse.mane).toBe('rainbow');
+  });
+
+  it('turns the stand when the horse is dragged', () => {
+    const { find, fixture } = setup();
+    const preview = find<HTMLElement>('.preview');
+    const component = fixture.debugElement.query((node) => node.name === 'app-horse-stable')
+      .componentInstance as { world: () => { spin: number } };
+    const pointer = (type: string, clientX: number) =>
+      preview.dispatchEvent(
+        Object.assign(new Event(type, { bubbles: true }), { clientX, pointerId: 1 }),
+      );
+    pointer('pointerdown', 100);
+    pointer('pointermove', 150);
+    pointer('pointerup', 150);
+    pointer('pointermove', 300);
+    expect(component.world().spin).toBeCloseTo(0.6);
   });
 
   it('names the horse by typing or with one tap on an idea', () => {

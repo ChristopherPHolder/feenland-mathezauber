@@ -13,6 +13,8 @@ export interface CoatPaint {
   readonly coat: string;
   readonly shade: string;
   readonly mark: string;
+  /** Sparkle coats have a finish: a metal shine, a pearly rainbow sheen, or a sky of stars. */
+  readonly finish?: 'metal' | 'pearl' | 'stars';
 }
 const WHITE_MARK = '#fffdfd';
 export const COATS = {
@@ -26,6 +28,9 @@ export const COATS = {
   caramel: { coat: '#e3ac78', shade: '#b97c4c', mark: '#fff6ea' },
   cocoa: { coat: '#8f5f48', shade: '#674232', mark: '#fff6ea' },
   midnight: { coat: '#48437a', shade: '#2f2b58', mark: '#f4f0ff' },
+  pearl: { coat: '#fbf4ff', shade: '#e3d3f5', mark: '#d4c0ee', finish: 'pearl' },
+  golden: { coat: '#ffd56b', shade: '#d9a23a', mark: WHITE_MARK, finish: 'metal' },
+  galaxy: { coat: '#2c2a6e', shade: '#1c1a4d', mark: '#f4f0ff', finish: 'stars' },
 } as const satisfies Record<string, CoatPaint>;
 export type CoatId = keyof typeof COATS;
 export const coatIds = Object.keys(COATS) as CoatId[];
@@ -41,9 +46,41 @@ export const MANES = {
   berry: ['#b06ce8', '#e5a0ff', '#7d4bd1'],
   snow: ['#ffffff', '#eef2ff', '#d9d2ff'],
   night: ['#4b3a70', '#6d4a9a', '#2f2650'],
+  fire: ['#ff5a3c', '#ffb13b', '#ffe066'],
+  aurora: ['#4fe0bd', '#7aa8ff', '#c77dff'],
+  glitter: ['#ffe38a', '#ffffff', '#e2d0ff'],
 } as const satisfies Record<string, ManePaint>;
 export type ManeId = keyof typeof MANES;
 export const maneIds = Object.keys(MANES) as ManeId[];
+/** Manes with a metal shine on every lock. */
+export const SHINY_MANES: ReadonlySet<ManeId> = new Set(['glitter']);
+
+/**
+ * Sparkle specials: coats and manes a child buys once with race sparkles and keeps for good.
+ * A race pays out about 150 to 250 sparkles, so each takes two to four races to save up for.
+ */
+export type SpecialId = `coat:${CoatId}` | `mane:${ManeId}`;
+export const SPECIALS: Readonly<Partial<Record<SpecialId, number>>> = {
+  'coat:pearl': 300,
+  'coat:golden': 500,
+  'coat:galaxy': 800,
+  'mane:fire': 200,
+  'mane:aurora': 400,
+  'mane:glitter': 600,
+};
+export function specialPrice(id: SpecialId): number | undefined {
+  return SPECIALS[id];
+}
+export const specialIds = Object.keys(SPECIALS) as SpecialId[];
+/** The coats and manes every child has from the start. */
+export const freeCoatIds = coatIds.filter((coat) => !specialPrice(`coat:${coat}`));
+export const freeManeIds = maneIds.filter((mane) => !specialPrice(`mane:${mane}`));
+/** The specials this horse wears, which the child must own for the horse to keep them. */
+export function specialsOf(horse: Pick<Horse, 'coat' | 'mane'>): SpecialId[] {
+  return ([`coat:${horse.coat}`, `mane:${horse.mane}`] as const).filter(
+    (id) => specialPrice(id) !== undefined,
+  );
+}
 
 /** White patches a real horse can have: a star or a blaze on the face, socks, or spots. */
 export type Marking = 'none' | 'star' | 'blaze' | 'socks' | 'spots';
@@ -111,14 +148,27 @@ export function sameHorse(a: Horse, b: Horse): boolean {
   );
 }
 
-/** A random look; the name stays, so "surprise me" never wipes a typed name. */
-export function randomHorse(name: string, random: () => number = Math.random): Horse {
+/**
+ * A random look from the free coats and manes plus any specials the child owns; the name
+ * stays, so "surprise me" never wipes a typed name.
+ */
+export function randomHorse(
+  name: string,
+  random: () => number = Math.random,
+  owned: readonly SpecialId[] = [],
+): Horse {
   const pick = <T>(items: readonly T[]) => items[Math.floor(random() * items.length)];
+  const coats = coatIds.filter(
+    (coat) => freeCoatIds.includes(coat) || owned.includes(`coat:${coat}`),
+  );
+  const manes = maneIds.filter(
+    (mane) => freeManeIds.includes(mane) || owned.includes(`mane:${mane}`),
+  );
   return {
     name,
     kind: pick(horseKinds),
-    coat: pick(coatIds),
-    mane: pick(maneIds),
+    coat: pick(coats),
+    mane: pick(manes),
     marking: pick(markings),
     horn: pick(hornIds),
   };
