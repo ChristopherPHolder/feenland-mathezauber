@@ -15,6 +15,7 @@ import { DrumRoute } from './pages/drums/drum-route';
 import { StarRoute } from './pages/star-catcher/star-route';
 import { FireworkRoute } from './pages/fireworks/firework-route';
 import { GondolaRoute } from './pages/gondola/gondola-route';
+import { MarketRoute } from './pages/market/market-route';
 import { RaceRoute } from './pages/unicorn-race/race-route';
 import { WelcomeRoute } from './pages/welcome/welcome-route';
 /**
@@ -151,6 +152,16 @@ export const routes: Routes = [
         : null,
     data: { focusedGame: true },
     component: GondolaRoute,
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^market-[1-5]$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    component: MarketRoute,
   },
   {
     path: 'adventure/number-wall',

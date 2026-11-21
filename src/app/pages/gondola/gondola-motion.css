@@ -27,7 +27,7 @@
   .split-zone.is-guided .taps,
   .split-zone.is-guided app-gondola-split,
   .choices.is-guided,
-  app-gondola-keypad.is-guided {
+  ui-number-pad.is-guided {
     animation: hop 1.2s ease-in-out infinite;
   }
 }
@@ -84,7 +84,7 @@
 :host-context(.calm-motion) .split-zone.is-guided .taps,
 :host-context(.calm-motion) .split-zone.is-guided app-gondola-split,
 :host-context(.calm-motion) .choices.is-guided,
-:host-context(.calm-motion) app-gondola-keypad.is-guided {
+:host-context(.calm-motion) ui-number-pad.is-guided {
   animation: none;
 }
 :host-context(.calm-motion) .cloud-meter span {
