@@ -9,6 +9,7 @@ import { drumLevels } from '../pages/drums/drum-patterns';
 import { starLevels } from '../pages/star-catcher/star-levels';
 import { fireworkCatalogLevels } from '../pages/fireworks/firework-levels';
 import { gondolaLevels } from '../pages/gondola/gondola-levels';
+import { scalesLevels } from '../pages/scales/scales-levels';
 import { duelLevels } from '../pages/dragon-duel/duel';
 import { marketLevels } from '../pages/market/market-levels';
 import { MessageKey } from './messages';
@@ -155,6 +156,13 @@ export const worlds: readonly World[] = [
         description: 'gondolaChapterHelp',
         emblem: '🚡',
         levels: gondolaLevels,
+      },
+      {
+        id: 'scales',
+        title: 'scalesChapter',
+        description: 'scalesChapterHelp',
+        emblem: '⚖️',
+        levels: scalesLevels,
       },
       {
         id: 'market',

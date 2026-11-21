@@ -1,0 +1,638 @@
+/* A round in play. The page fills the screen (minus the notch and home bar); the kitchen takes
+   whatever room the controls leave. Upright screens stack kitchen over controls; wide ones put
+   them side by side. */
+.game.playing {
+  min-height: calc(100dvh - var(--safe-y) - 32px);
+}
+
+/* HUD: the seven recipe lines, points, the hearty pot and the soup timer, in one row */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+}
+.slots {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.slot {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  max-width: 52px;
+  height: 34px;
+  border-radius: var(--radius-chip);
+  background: #ffffffb3;
+  border: 2px solid #c9dbe6;
+}
+.slot svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.pot-icon {
+  fill: #c9ccd6;
+  stroke: #5b5d6b;
+}
+.steam-icon {
+  stroke: #9aa3b5;
+}
+.feast-icon {
+  fill: #f7c6d9;
+  stroke: #b3456f;
+}
+.slot.feast {
+  max-width: 66px;
+  border-color: var(--pink);
+}
+.slot.current {
+  border-color: var(--amber-ink);
+  background: var(--paper);
+  box-shadow: 0 0 0 3px #c98a4533;
+}
+.slot.done {
+  background: var(--warm-ground);
+  border-color: var(--sun);
+}
+.slot.done .pot-icon {
+  fill: #e8892b;
+  stroke: #8a4a12;
+}
+.slot.done .steam-icon {
+  stroke: #e8892b;
+}
+.points {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: none;
+  margin: 0;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+}
+.points span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.points strong {
+  min-width: 2.5ch;
+  font-size: 22px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.golden-chip {
+  flex: none;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(#ffe680, #ffc21a);
+  border: 2px solid var(--gold-deep);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.soup-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 3px 4px 3px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+}
+.ring {
+  width: 30px;
+  height: 30px;
+  transform: rotate(-90deg);
+}
+.ring-track {
+  fill: #ffe9c4;
+  stroke: #f3d2a2;
+  stroke-width: 5;
+}
+.ring-fill {
+  fill: none;
+  stroke: #e88a1a;
+  stroke-width: 5;
+  transition: stroke-dasharray 0.3s linear;
+}
+.soup-chip.urgent .ring-fill {
+  stroke: var(--pink);
+}
+.soup-chip.bubbled .ring-fill {
+  stroke: #8c5a2b;
+}
+.seconds {
+  min-width: 3ch;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.timer-off,
+.help {
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  cursor: pointer;
+}
+.timer-off {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #e6cfae;
+  color: var(--ink);
+}
+.timer-off svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.help {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--pink);
+  color: var(--pink-deep);
+  font: 600 24px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+}
+
+/* The kitchen and the controls */
+.play-area {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-rows: minmax(200px, 1fr) auto;
+  gap: 10px;
+  min-height: 0;
+}
+.board-wrap {
+  display: grid;
+  min-height: 0;
+}
+.board {
+  /* The reward card in brass and soup colours. */
+  --burst-edge: var(--gold-deep);
+  --burst-ground: var(--warm-ground);
+  --burst-shadow: #8a5a00;
+  --burst-cheer: var(--amber-ink);
+  position: relative;
+  min-height: 200px;
+  border-radius: var(--radius-panel);
+  background: linear-gradient(#cfe9f7, #fdf1dc);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+.board.golden {
+  box-shadow:
+    0 0 0 4px var(--gold),
+    0 0 28px #ffc21a99;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+}
+.recipe-chip,
+.equation {
+  position: absolute;
+  z-index: 1;
+  margin: 0;
+  border-radius: var(--radius-chip);
+  background: var(--parchment);
+  box-shadow:
+    inset 0 0 0 2px var(--parchment-deep),
+    0 3px 8px #4a342433;
+  font-weight: 600;
+}
+.recipe-chip {
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 6px;
+  font-size: 16px;
+  rotate: -2deg;
+}
+.recipe-chip strong {
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  font-size: 20px;
+  white-space: nowrap;
+}
+.equation {
+  top: 10px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 4px 16px;
+  font-size: clamp(20px, 4vw, 28px);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.equation.solved {
+  background: var(--success-ground);
+  box-shadow: inset 0 0 0 2px var(--success-strong);
+}
+.banner {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 3;
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: clamp(16px, 2.4vw, 22px);
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 6px 18px #0004;
+}
+.banner.gold {
+  background: linear-gradient(#ffe680, #ffc21a);
+  color: var(--ink);
+}
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+}
+.line-count {
+  margin: 0;
+  color: var(--amber-ink);
+  font-weight: 600;
+}
+.status {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.hint {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-chip);
+  background: var(--warm-ground);
+  line-height: 1.4;
+}
+.picks,
+.weights,
+.jugs,
+.pour-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.pick,
+.weight-button,
+.jug-button,
+.pan-chip,
+.pad-key {
+  border: 0;
+  font: 600 20px var(--font-sans);
+  cursor: pointer;
+}
+.pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 60px;
+  padding: 6px 10px;
+  border-radius: var(--radius-tile);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow:
+    inset 0 0 0 2px #c9dbe6,
+    0 4px 0 #9fb4c4;
+}
+.pick.yes {
+  box-shadow:
+    inset 0 0 0 3px var(--success-strong),
+    0 4px 0 #2e6b3d;
+}
+.pick.no {
+  box-shadow:
+    inset 0 0 0 3px var(--pink),
+    0 4px 0 #8c1f49;
+}
+.weight-button {
+  display: grid;
+  place-items: end center;
+  min-height: 62px;
+  padding: 0 2px 6px;
+  border-radius: 14px 14px 10px 10px;
+  background: linear-gradient(#f6d77a, #c9a24a);
+  color: #2e1d05;
+  box-shadow: inset 0 -4px 0 #8a6421;
+  font-size: 18px;
+  white-space: nowrap;
+}
+.weight-button[disabled],
+.jug-button[disabled],
+.pad-key.check[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.pan-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+.pan-title {
+  flex: none;
+  font-size: 14px;
+  color: var(--muted);
+}
+.pan-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pan-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--warm-ground);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px #c9a24a;
+  font-size: 15px;
+}
+.pan-chip .x {
+  color: var(--pink-deep);
+  font-size: 18px;
+}
+.pan-empty {
+  font-size: 14px;
+  color: var(--muted);
+}
+.weigh,
+.done-pour,
+.after-cook .button {
+  min-height: 54px;
+}
+.jug-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 60px;
+  border-radius: var(--radius-tile);
+  background: #dff1fb;
+  color: #1f4a66;
+  box-shadow:
+    inset 0 0 0 2px #4d7f9e,
+    0 4px 0 #4d7f9e;
+}
+.jug-button svg {
+  width: 26px;
+  height: 26px;
+  fill: #fff;
+  stroke: #4d7f9e;
+  stroke-width: 1.6;
+}
+.jug-button .jug-water {
+  fill: #5fb2e6;
+  stroke: none;
+}
+.answer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 28px;
+  font-weight: 600;
+}
+.answer-box {
+  min-width: 4ch;
+  padding: 2px 14px;
+  border: 3px solid #c9a24a;
+  border-radius: var(--radius-chip);
+  background: var(--paper);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.pad {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+.pad-key {
+  min-height: 50px;
+  padding: 0;
+  border-radius: var(--radius-tile);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 24px;
+  box-shadow:
+    inset 0 0 0 2px #e6cfae,
+    0 3px 0 #d8bf9b;
+}
+.pad-key ui-icon {
+  width: 22px;
+  height: 22px;
+}
+.pad-key.check {
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 17px;
+  box-shadow: 0 3px 0 #7d0e3b;
+}
+:is(.pick, .weight-button, .jug-button, .pan-chip, .pad-key, .timer-off, .help):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+:is(.pick, .weight-button, .jug-button, .pad-key):active {
+  translate: 0 3px;
+}
+
+/* "Use one of these": a gold halo and a hop on the group, never on one answer. */
+[data-guide='pick'] .pick,
+[data-guide='weights'] .weight-button,
+[data-guide='weigh'] :is(.weight-button, .weigh),
+[data-guide='jugs'] .jug-button,
+[data-guide='pad'] .pad-key:not(.check, .erase),
+[data-guide='check'] .pad-key.check,
+[data-guide='next'] .after-cook .button {
+  outline: 4px solid var(--sun);
+  outline-offset: 2px;
+}
+
+/* Wide screens: the kitchen on the left, the controls in a column beside it. */
+@media (orientation: landscape) and (min-width: 640px) {
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 32px);
+  }
+  .play-area {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr);
+  }
+  .board {
+    min-height: 0;
+  }
+  .controls {
+    justify-content: center;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+/* A phone on its side: everything compact. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 16px);
+  }
+  .play-area {
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 1fr);
+    gap: 8px;
+  }
+  .controls {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .line-count {
+    display: none;
+  }
+  .status {
+    font-size: 15px;
+  }
+  :is(.pick, .weight-button, .jug-button) {
+    min-height: 48px;
+  }
+  .pad-key {
+    min-height: 40px;
+  }
+  .slot {
+    height: 30px;
+  }
+}
+@media (max-width: 520px) {
+  .controls {
+    gap: 6px;
+    padding: 10px;
+  }
+  .line-count {
+    display: none;
+  }
+  .status {
+    font-size: 16px;
+  }
+  .hud {
+    gap: 6px;
+  }
+  .slots {
+    gap: 3px;
+  }
+  .points {
+    padding: 4px 10px;
+  }
+  .points span {
+    display: none;
+  }
+  .golden-chip {
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+  .recipe-chip {
+    font-size: 14px;
+  }
+  .weight-button {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .points.bump strong {
+    animation: bump 0.5s ease-out;
+  }
+  .soup-chip.urgent .ring {
+    animation: urgent 0.5s ease-in-out infinite alternate;
+  }
+  .banner {
+    animation: banner 2.6s ease-in-out both;
+  }
+  [data-guide='pick'] .pick,
+  [data-guide='weights'] .weight-button,
+  [data-guide='weigh'] .weigh,
+  [data-guide='jugs'] .jug-button,
+  [data-guide='pad'] .pad-key:not(.check, .erase),
+  [data-guide='check'] .pad-key.check,
+  [data-guide='next'] .after-cook .button {
+    animation: tap-me 1.6s ease-in-out infinite;
+  }
+  .equation.solved {
+    animation: bump 0.6s ease-out;
+  }
+}
+@keyframes bump {
+  40% {
+    transform: scale(1.25);
+  }
+}
+@keyframes urgent {
+  to {
+    opacity: 0.55;
+  }
+}
+@keyframes banner {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+  12%,
+  85% {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes tap-me {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  70% {
+    transform: translateY(-8px);
+  }
+  80% {
+    transform: translateY(0);
+  }
+  88% {
+    transform: translateY(-3px);
+  }
+}
+:host-context(.calm-motion)
+  :is(.points.bump strong, .soup-chip.urgent .ring, .banner, .equation.solved),
+:host-context(.calm-motion)
+  [data-guide]
+  :is(.pick, .weight-button, .weigh, .jug-button, .pad-key, .button) {
+  animation: none;
+}

@@ -1,0 +1,503 @@
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  display: block;
+  box-sizing: border-box;
+  min-height: calc(100dvh - var(--safe-y));
+  background: linear-gradient(#dff0f9, #fdf4e3 45%, #eef6de);
+  padding: 12px max(12px, env(safe-area-inset-right)) 20px max(12px, env(safe-area-inset-left));
+  color: var(--ink);
+}
+.game {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: 24px;
+  box-shadow: var(--shadow-panel);
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+
+/* Intro */
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 16px;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--violet);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--warm-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) 1fr;
+  align-items: center;
+  gap: 24px;
+}
+.intro-demo {
+  width: 100%;
+  max-width: 340px;
+  margin: auto;
+}
+.intro h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  margin: 0 0 8px;
+}
+.intro p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.trick-card {
+  margin: 14px 0 6px;
+  padding: 14px 18px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-card h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.trick-card .example {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--violet);
+}
+
+/* The feast table: a plate per level, with its dish once the level is cooked. */
+.feast-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0 4px;
+  padding: 10px 14px;
+  border-radius: var(--radius-surface);
+  background: #7a4a26;
+  color: #fff6e6;
+}
+.feast-strip p {
+  margin: 0;
+}
+.feast-strip strong {
+  font-size: 18px;
+  color: #ffd98a;
+  white-space: nowrap;
+}
+.plates {
+  display: grid;
+  grid-template-columns: repeat(6, 22px);
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.plate {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f3ece0;
+  box-shadow: inset 0 0 0 3px #d9cbb2;
+  opacity: 0.45;
+}
+.plate.cooked {
+  opacity: 1;
+}
+.plate.cooked::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50% 50% 40% 40%;
+  background: radial-gradient(circle at 40% 35%, var(--top), var(--dish));
+}
+
+.pace {
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+.pace legend {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 0;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice:hover {
+  background: var(--ground);
+}
+.pace-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.pace-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--success-strong);
+}
+.pace-choice strong {
+  font-size: 18px;
+}
+.pace-choice span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.pace-icon {
+  width: 34px;
+  height: 34px;
+  fill: #3b3b46;
+  stroke: #25252e;
+  stroke-width: 1.5;
+}
+.pace-soup {
+  fill: #e8892b;
+}
+.pace-bubble {
+  fill: #fff7e6;
+  stroke: #d9cbb2;
+}
+.pace-rule {
+  color: var(--muted);
+}
+.start-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 8px;
+  padding: 16px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 24px);
+}
+.start-dock .button {
+  margin: 0 auto;
+  max-width: 360px;
+}
+
+/* Outcome: the finished recipe card beside the stars */
+.outcome {
+  display: grid;
+  grid-template-columns: minmax(240px, 360px) 1fr;
+  align-items: start;
+  gap: 24px;
+}
+.outcome:focus {
+  outline: none;
+}
+.recipe-card {
+  padding: 16px 18px;
+  border-radius: var(--radius-surface);
+  background: var(--parchment);
+  box-shadow:
+    inset 0 0 0 3px var(--parchment-deep),
+    var(--shadow-rest);
+  rotate: -1deg;
+}
+.recipe-card h2 {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 3vw, 30px);
+}
+.recipe-lines {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.recipe-lines li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px dashed var(--parchment-deep);
+  padding-bottom: 3px;
+}
+.recipe-lines li span:not(.tick) {
+  flex: 1;
+}
+.tick {
+  color: var(--success-strong);
+  font-size: 18px;
+}
+.tick.first {
+  color: var(--amber-ink);
+}
+.stars {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.star {
+  width: 52px;
+  height: 52px;
+  color: var(--star-empty);
+}
+.star ui-icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.star.earned {
+  color: var(--star-earned-big);
+}
+.score-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+}
+.new-best {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 600;
+}
+.outcome-help {
+  color: var(--muted);
+}
+.save-note {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: #fff2d2;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+}
+.tiles li {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  border-radius: var(--radius-chip);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+  text-align: center;
+}
+.tiles strong {
+  font-size: 26px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.tiles span {
+  font-size: 13px;
+  line-height: 1.25;
+}
+.dish-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--pink-deep);
+}
+.dish-line .plate {
+  flex: none;
+  width: 30px;
+  height: 30px;
+}
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  :host {
+    padding-top: 6px;
+    padding-bottom: 8px;
+  }
+  .game {
+    gap: 8px;
+  }
+}
+@media (max-width: 700px) {
+  .intro-grid,
+  .outcome {
+    grid-template-columns: 1fr;
+  }
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .level-strip {
+    gap: 6px;
+    max-width: calc(6 * 44px + 5 * 6px);
+    padding: 0;
+  }
+  .level-pill {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    font-size: 18px;
+  }
+  .pace-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .panel {
+    padding: 18px;
+  }
+}
+/* The phone intro fits one screen: the film, the tip, the feast table and the timer choice. */
+@media (max-width: 520px) {
+  .intro .trick-card {
+    margin: 6px 0 2px;
+    padding: 8px 12px;
+  }
+  .intro .trick-card p {
+    margin: 2px 0;
+  }
+  .intro .trick-card .example {
+    font-size: 18px;
+  }
+  .intro h2,
+  .intro .trick-card h3,
+  .intro .trick-card p:not(.example),
+  .intro .best-line {
+    display: none;
+  }
+  .intro-grid {
+    gap: 6px;
+  }
+  .intro-demo {
+    max-width: 230px;
+  }
+  .pace-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .pace-choice {
+    padding: 8px 4px;
+  }
+  .pace-choice strong {
+    font-size: 13px;
+  }
+  .pace-choice span,
+  .pace-rule {
+    display: none;
+  }
+  .pace legend {
+    font-size: 16px;
+  }
+  .pace {
+    margin-top: 4px;
+  }
+  .feast-strip {
+    margin: 8px 0 0;
+    padding: 6px 10px;
+  }
+  .plates {
+    grid-template-columns: repeat(12, 14px);
+    gap: 3px;
+  }
+  .plate {
+    width: 14px;
+    height: 14px;
+  }
+  .plate.cooked::after {
+    inset: 3px;
+  }
+  .feast-strip strong {
+    font-size: 15px;
+  }
+  .intro .level-strip {
+    margin-bottom: 6px;
+  }
+  .panel.intro {
+    padding: 10px 12px 0;
+  }
+  .intro .start-dock {
+    padding-top: 8px;
+    /* The page already sits above the home bar. */
+    padding-bottom: 6px;
+  }
+  :host {
+    padding-bottom: 6px;
+  }
+  .intro .trick-card {
+    padding: 4px 12px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tiles li,
+  .recipe-lines li {
+    animation: star-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    animation-delay: calc(0.4s + var(--i) * 120ms);
+  }
+  .star.earned {
+    animation: star-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    animation-delay: calc(var(--i) * 160ms);
+  }
+}
+@keyframes star-pop {
+  from {
+    transform: scale(0);
+  }
+}
+:host-context(.calm-motion) .tiles li,
+:host-context(.calm-motion) .recipe-lines li,
+:host-context(.calm-motion) .star.earned {
+  animation: none;
+}
