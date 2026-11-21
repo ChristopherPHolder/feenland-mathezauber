@@ -293,7 +293,37 @@
           {{ statusText() }}
         </p>
 
-        <section class="purse" [attr.aria-label]="t('purseLabel')">
+        @if (step() === 'give') {
+          <section class="purse till" [attr.aria-label]="t('tillLabel')">
+            <p class="purse-tag">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path class="till-body" d="M3 14h26v14H3z" />
+                <path class="till-top" d="M7 6h18v8H7z" />
+              </svg>
+              <span>{{ t('tillLabel') }}</span>
+            </p>
+            <div class="coin-row" [class.is-guided]="guideNow()">
+              @for (coin of purseCoins(); track coin.index) {
+                <button
+                  type="button"
+                  class="coin-button"
+                  [disabled]="!shopping()"
+                  [attr.aria-label]="t('coinAdd', { value: moneyName(coin.value) })"
+                  (click)="addCoin(coin.index)"
+                >
+                  <app-market-money [value]="coin.value" />
+                </button>
+              }
+            </div>
+          </section>
+        }
+        @if (step() === 'change' || step() === 'give') {
+          <p class="paid-line">
+            <app-market-money [value]="turn().paid![0]" [scale]="0.8" />
+            <span>{{ paidText() }}</span>
+          </p>
+        }
+        <section class="purse" [class.hidden]="!showPurse()" [attr.aria-label]="t('purseLabel')">
           <p class="purse-tag">
             <svg viewBox="0 0 32 32" aria-hidden="true">
               <path class="purse-body" d="M4 12h24l-2 16H6z" />
@@ -337,7 +367,7 @@
           <button class="button primary next" type="button" (click)="advance()">
             {{ t('next') }}<ui-icon kind="arrow" />
           </button>
-        } @else if (step() === 'pay') {
+        } @else if (counting()) {
           <section class="tray" [attr.aria-label]="t('trayLabel')">
             <div class="tray-coins">
               @for (value of trayCoins(); track $index) {
@@ -350,7 +380,7 @@
                   <app-market-money [value]="value" [scale]="0.86" />
                 </button>
               } @empty {
-                <p class="tray-empty">{{ t('trayEmpty') }}</p>
+                <p class="tray-empty">{{ t(step() === 'give' ? 'trayEmptyTill' : 'trayEmpty') }}</p>
               }
             </div>
             <button
@@ -360,7 +390,7 @@
               [disabled]="!trayCoins().length"
               (click)="pay()"
             >
-              {{ t('pay') }}
+              {{ t(step() === 'give' ? 'give' : 'pay') }}
             </button>
           </section>
         } @else if (step() === 'enough') {

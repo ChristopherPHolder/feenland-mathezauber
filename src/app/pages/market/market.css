@@ -32,7 +32,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  max-width: calc(7 * 46px + 6 * 8px);
+  max-width: calc(10 * 46px + 9 * 8px);
   margin: 0 auto 16px;
   padding: 0;
 }
@@ -316,7 +316,7 @@
   }
   .level-strip {
     gap: 6px;
-    max-width: calc(7 * 36px + 6 * 6px);
+    max-width: calc(5 * 36px + 4 * 6px);
     margin-bottom: 10px;
   }
   .level-pill {
