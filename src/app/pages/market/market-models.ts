@@ -606,42 +606,45 @@ export interface PriceTag {
   setText(text: string, big: boolean): void;
 }
 
-/** A cream card with a pink border hanging on a string from a little brass hook. */
-export function buildPriceTag(kit: Kit): PriceTag {
+/**
+ * A cream card with a pink border. `hook`: it hangs on a string from a little brass hook that
+ * stands on the counter. `edge`: a squarer card clipped to the counter's front edge, for a row
+ * of treats that each need their own price.
+ */
+export function buildPriceTag(kit: Kit, mount: 'hook' | 'edge' = 'hook'): PriceTag {
   const root = new Group();
   const brass = kit.mat('#c99a3a', { metalness: 0.5, roughness: 0.35 });
-  root.add(
-    kit.can(brass, 0.06, 0.03, 0, 0.015, 0),
-    kit.rod(brass, v(0, 0, 0), v(0, 0.86, 0), 0.016),
-    kit.rod(brass, v(0, 0.86, 0), v(-0.12, 0.86, 0), 0.014),
-  );
   const card = new Group();
-  card.position.set(-0.12, 0.86, 0.02);
-  const string = kit.rod(kit.mat('#7a5a3a'), v(0, 0, 0), v(0, -0.2, 0), 0.006);
-  const body = new Mesh(roundedBox(0.72, 0.42, 0.025, 0.07), kit.mat('#fff6e4'));
-  body.position.y = -0.41;
-  const plain = new TextLabel('', {
-    fill: '#fff6e4',
-    border: '#e0457b',
-    ink: '#16264f',
-    width: 320,
-    height: 186,
-    radius: 0.2,
-  });
-  const golden = new TextLabel('', {
-    fill: '#ffe08a',
-    border: '#c99a1c',
-    ink: '#4a3200',
-    width: 320,
-    height: 186,
-    radius: 0.2,
-  });
+  const [w, h] = mount === 'hook' ? [0.72, 0.42] : [0.5, 0.38];
+  const string = kit.mat('#7a5a3a');
+  if (mount === 'hook') {
+    root.add(
+      kit.can(brass, 0.06, 0.03, 0, 0.015, 0),
+      kit.rod(brass, v(0, 0, 0), v(0, 0.86, 0), 0.016),
+      kit.rod(brass, v(0, 0.86, 0), v(-0.12, 0.86, 0), 0.014),
+    );
+    card.position.set(-0.12, 0.86, 0.02);
+    card.add(
+      kit.rod(string, v(0, 0, 0), v(0, -0.2, 0), 0.006),
+      kit.blob(string, 0.02, 0.02, 0.01, 0, -0.23, 0.014),
+    );
+  } else {
+    // A little brass clip over the edge.
+    const clip = new Mesh(roundedBox(0.12, 0.09, 0.06, 0.02), brass);
+    clip.position.set(0, -0.02, -0.01);
+    card.add(clip);
+  }
+  const top = mount === 'hook' ? -0.2 : -0.04;
+  const body = new Mesh(roundedBox(w, h, 0.025, 0.07), kit.mat('#fff6e4'));
+  body.position.y = top - h / 2;
+  const size = { width: 320, height: Math.round((320 * h) / w), radius: 0.2 };
+  const plain = new TextLabel('', { fill: '#fff6e4', border: '#e0457b', ink: '#16264f', ...size });
+  const golden = new TextLabel('', { fill: '#ffe08a', border: '#c99a1c', ink: '#4a3200', ...size });
   const face = new MeshBasicMaterial({ map: plain.texture, transparent: true });
   const front = new Mesh(kit.plane, face);
-  front.scale.set(0.7, 0.4, 1);
-  front.position.set(0, -0.41, 0.014);
-  const hole = kit.blob(kit.mat('#7a5a3a'), 0.02, 0.02, 0.01, 0, -0.23, 0.014);
-  card.add(string, body, front, hole);
+  front.scale.set(w - 0.02, h - 0.02, 1);
+  front.position.set(0, top - h / 2, 0.014);
+  card.add(body, front);
   root.add(card);
   return {
     root,
@@ -963,4 +966,245 @@ export function buildLumi(kit: Kit): Lumi {
   basket.root.position.set(-0.13, 0.62, 0.26);
   body.add(basket.root);
   return { root, body, head, wings, arms, basket: basket.root, basketItems: basket.items };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Customers
+
+export type CustomerKind = 'fox' | 'rabbit' | 'hedgehog' | 'squirrel';
+
+export interface CustomerModel {
+  readonly kind: CustomerKind;
+  /** Feet at the origin, facing +z. */
+  readonly root: Group;
+  /** Everything above the feet: it hops and bobs. */
+  readonly body: Group;
+  readonly head: Group;
+  /** Shoulder pivots, left (−x) then right (+x); both reach forward to hold the basket. */
+  readonly arms: readonly Group[];
+  /** The tail's pivot, for a happy wag (an empty group for the hedgehog). */
+  readonly tail: Group;
+  readonly basket: Group;
+  readonly basketItems: Group;
+}
+
+const CUSTOMER_LOOKS: Record<
+  CustomerKind,
+  { readonly fur: string; readonly light: string; readonly paw: string; readonly nose: string }
+> = {
+  fox: { fur: '#e8823a', light: '#fff4e6', paw: '#4a2c1c', nose: '#2a1a12' },
+  rabbit: { fur: '#a89584', light: '#f3ebe0', paw: '#8f7c6c', nose: '#e58fa0' },
+  hedgehog: { fur: '#9a6a42', light: '#f2dfc4', paw: '#7a5234', nose: '#2a1a12' },
+  squirrel: { fur: '#b8562e', light: '#f6e2c4', paw: '#8a3e20', nose: '#3b2416' },
+};
+
+/**
+ * A customer of the market, about 1.2 tall to the top of the head: a round toy animal in the
+ * same soft style as Olli, holding a wicker basket in both paws. A fox with a white chest and a
+ * bushy white-tipped tail, a grey-brown rabbit with long ears, a hedgehog with brown spines and
+ * a cream face, or a red-brown squirrel with a big fluffy tail.
+ */
+export function buildCustomer(kit: Kit, kind: CustomerKind): CustomerModel {
+  const look = CUSTOMER_LOOKS[kind];
+  const root = new Group();
+  const body = new Group();
+  root.add(body);
+  body.add(
+    kit.bake(`customer-body|${kind}`, () => {
+      const g = new Group();
+      const fur = kit.mat(look.fur);
+      const light = kit.mat(look.light);
+      const paw = kit.mat(look.paw);
+      g.add(
+        kit.blob(fur, 0.27, 0.33, 0.24, 0, 0.44, 0),
+        kit.blob(light, 0.17, 0.23, 0.09, 0, 0.43, 0.17),
+      );
+      for (const side of [-1, 1])
+        g.add(
+          kit.blob(fur, 0.1, 0.13, 0.11, side * 0.13, 0.16, 0),
+          kit.blob(paw, 0.085, 0.055, 0.13, side * 0.13, 0.05, 0.06),
+        );
+      if (kind === 'hedgehog') {
+        // Spines all over the back and round the sides, pointing out, so the spiky outline
+        // shows from the front too.
+        const spine = kit.mat('#5c3a22');
+        g.add(kit.blob(kit.mat('#6b4426'), 0.29, 0.34, 0.22, 0, 0.46, -0.06));
+        for (let index = 0; index < 13; index++) {
+          const angle = -2.2 + (index / 12) * 4.4;
+          const cone = new Mesh(kit.cone, spine);
+          cone.scale.set(0.055, 0.16, 0.055);
+          cone.position.set(Math.sin(angle) * 0.27, 0.46 + Math.cos(angle) * 0.32, -0.08);
+          cone.rotation.set(-0.35, 0, -angle);
+          g.add(cone);
+        }
+        for (let index = 0; index < 8; index++) {
+          const angle = -1.2 + (index / 7) * 2.4;
+          const cone = new Mesh(kit.cone, spine);
+          cone.scale.set(0.05, 0.16, 0.05);
+          cone.position.set(Math.sin(angle) * 0.2, 0.5 + Math.cos(angle) * 0.12, -0.24);
+          cone.rotation.set(-1.4, angle * 0.5, 0);
+          g.add(cone);
+        }
+      }
+      return g;
+    }),
+  );
+
+  const head = new Group();
+  head.position.set(0, 0.92, 0.02);
+  head.add(
+    kit.bake(`customer-head|${kind}`, () => {
+      const g = new Group();
+      const fur = kit.mat(kind === 'hedgehog' ? look.light : look.fur);
+      const light = kit.mat(look.light);
+      const dark = kit.mat('#1e140d', { roughness: 0.25 });
+      const white = kit.mat('#ffffff');
+      const pink = kit.mat('#f5a3a8');
+      g.add(kit.blob(fur, 0.25, 0.23, 0.23, 0, 0, 0));
+      for (const side of [-1, 1])
+        g.add(
+          kit.blob(dark, 0.036, 0.044, 0.025, side * 0.09, 0.04, 0.2),
+          kit.blob(white, 0.012, 0.012, 0.008, side * 0.09 + 0.01, 0.058, 0.222),
+          kit.blob(pink, 0.04, 0.025, 0.015, side * 0.15, -0.05, 0.17),
+        );
+      if (kind === 'fox') {
+        g.add(
+          kit.blob(light, 0.16, 0.1, 0.13, 0, -0.08, 0.15),
+          kit.blob(light, 0.09, 0.07, 0.12, 0, -0.06, 0.24),
+          kit.blob(kit.mat(look.nose), 0.04, 0.032, 0.03, 0, -0.03, 0.36),
+        );
+        for (const side of [-1, 1]) {
+          const ear = new Mesh(kit.cone, fur);
+          ear.scale.set(0.09, 0.22, 0.06);
+          ear.position.set(side * 0.14, 0.25, -0.02);
+          ear.rotation.z = -side * 0.35;
+          const tip = new Mesh(kit.cone, kit.mat(look.paw));
+          tip.scale.set(0.04, 0.08, 0.03);
+          tip.position.set(side * 0.18, 0.34, -0.02);
+          tip.rotation.z = -side * 0.35;
+          const inner = new Mesh(kit.cone, light);
+          inner.scale.set(0.05, 0.13, 0.02);
+          inner.position.set(side * 0.135, 0.23, 0.02);
+          inner.rotation.z = -side * 0.35;
+          g.add(ear, tip, inner);
+        }
+      } else if (kind === 'rabbit') {
+        g.add(
+          kit.blob(light, 0.1, 0.075, 0.08, 0, -0.08, 0.17),
+          kit.blob(kit.mat(look.nose), 0.03, 0.022, 0.02, 0, -0.04, 0.24),
+        );
+        for (const side of [-1, 1]) {
+          const ear = kit.blob(fur, 0.06, 0.24, 0.04, side * 0.09, 0.36, -0.03);
+          ear.rotation.z = -side * 0.15;
+          const inner = kit.blob(pink, 0.03, 0.18, 0.02, side * 0.09, 0.36, 0.0);
+          inner.rotation.z = -side * 0.15;
+          g.add(ear, inner);
+        }
+      } else if (kind === 'hedgehog') {
+        g.add(
+          kit.blob(light, 0.09, 0.08, 0.16, 0, -0.06, 0.2),
+          kit.blob(kit.mat(look.nose), 0.035, 0.03, 0.03, 0, -0.04, 0.36),
+          // The spiny cap over the back of the head.
+          kit.blob(kit.mat('#6b4426'), 0.26, 0.22, 0.2, 0, 0.05, -0.08),
+        );
+        // A halo of spines round the cream face.
+        const spine = kit.mat('#5c3a22');
+        for (let index = 0; index < 11; index++) {
+          const angle = -2.0 + (index / 10) * 4.0;
+          const cone = new Mesh(kit.cone, spine);
+          cone.scale.set(0.05, 0.15, 0.05);
+          cone.position.set(Math.sin(angle) * 0.25, 0.02 + Math.cos(angle) * 0.23, -0.07);
+          cone.rotation.set(-0.3, 0, -angle);
+          g.add(cone);
+        }
+        for (const side of [-1, 1])
+          g.add(kit.blob(light, 0.05, 0.05, 0.03, side * 0.17, 0.15, 0.02));
+      } else {
+        g.add(
+          kit.blob(light, 0.12, 0.09, 0.1, 0, -0.08, 0.16),
+          kit.blob(kit.mat(look.nose), 0.03, 0.025, 0.02, 0, -0.04, 0.25),
+        );
+        for (const side of [-1, 1]) {
+          const ear = new Mesh(kit.cone, fur);
+          ear.scale.set(0.07, 0.16, 0.05);
+          ear.position.set(side * 0.13, 0.24, -0.02);
+          ear.rotation.z = -side * 0.2;
+          g.add(ear, kit.blob(fur, 0.03, 0.05, 0.03, side * 0.145, 0.34, -0.02));
+        }
+      }
+      return g;
+    }),
+  );
+  body.add(head);
+
+  // The tail: a pivot at the back that can wag.
+  const tail = new Group();
+  tail.position.set(0, 0.3, -0.2);
+  if (kind !== 'hedgehog')
+    tail.add(
+      kit.bake(`customer-tail|${kind}`, () => {
+        const g = new Group();
+        const fur = kit.mat(look.fur);
+        const light = kit.mat(look.light);
+        if (kind === 'rabbit') g.add(kit.blob(kit.mat('#ffffff'), 0.09, 0.09, 0.08, 0, 0, -0.02));
+        else if (kind === 'fox') {
+          const puffs: [number, number, number, number][] = [
+            [0.1, 0.0, -0.1, 0.12],
+            [0.24, 0.05, -0.22, 0.15],
+            [0.38, 0.13, -0.28, 0.14],
+          ];
+          for (const [x, y, z, r] of puffs) g.add(kit.blob(fur, r, r * 0.9, r, x, y, z));
+          g.add(kit.blob(light, 0.1, 0.09, 0.1, 0.5, 0.2, -0.3));
+        } else {
+          // The squirrel's big curl rises up behind the back.
+          // It curls up beside the back, so it shows past the body from the front.
+          const puffs: [number, number, number, number][] = [
+            [0.08, 0.0, -0.12, 0.13],
+            [0.2, 0.28, -0.24, 0.17],
+            [0.3, 0.56, -0.27, 0.19],
+            [0.34, 0.82, -0.2, 0.18],
+            [0.28, 0.98, -0.06, 0.14],
+          ];
+          const tip = kit.mat('#d27a4a');
+          puffs.forEach(([x, y, z, r], index) =>
+            g.add(kit.blob(index === puffs.length - 1 ? tip : fur, r, r, r * 0.9, x, y, z)),
+          );
+        }
+        return g;
+      }),
+    );
+  body.add(tail);
+
+  const arms: Group[] = [];
+  for (const side of [-1, 1]) {
+    const shoulder = new Group();
+    shoulder.position.set(side * 0.24, 0.66, 0.05);
+    shoulder.add(
+      kit.bake(`customer-arm|${kind}`, () => {
+        const g = new Group();
+        g.add(
+          kit.rod(kit.mat(look.fur), v(0, 0, 0), v(0, -0.26, 0.02), 0.065, 0.055),
+          kit.blob(kit.mat(look.paw), 0.06, 0.055, 0.06, 0, -0.29, 0.03),
+        );
+        return g;
+      }),
+    );
+    shoulder.rotation.set(-0.95, 0, side * 0.35);
+    arms.push(shoulder);
+    body.add(shoulder);
+  }
+  const basket = buildBasket(kit);
+  basket.root.scale.setScalar(0.95);
+  basket.root.position.set(0, 0.42, 0.36);
+  body.add(basket.root);
+  return {
+    kind,
+    root,
+    body,
+    head,
+    arms,
+    tail,
+    basket: basket.root,
+    basketItems: basket.items,
+  };
 }

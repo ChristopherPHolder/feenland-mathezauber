@@ -157,7 +157,7 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
-      /^market-[1-5]$/.test(segments[1].path)
+      /^market-(?:[1-9]|10)$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },

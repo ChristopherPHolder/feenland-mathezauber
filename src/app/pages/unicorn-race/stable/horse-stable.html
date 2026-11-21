@@ -1,12 +1,41 @@
 <section class="stable" aria-labelledby="stable-title">
-  <div class="preview">
+  <div
+    class="preview"
+    (pointerdown)="dragStart($event)"
+    (pointermove)="dragMove($event)"
+    (pointerup)="dragEnd()"
+    (pointercancel)="dragEnd()"
+  >
     <h2 id="stable-title" class="sr-only" tabindex="-1" #heading>{{ s('title') }}</h2>
     <app-three-stage class="stand" [world]="loadWorld" [state]="world()">
-      <div class="flat"><app-racer kind="player" [horse]="horse()" [outfit]="outfit()" /></div>
+      <div class="flat"><app-racer kind="player" [horse]="shown()" [outfit]="outfit()" /></div>
     </app-three-stage>
+    <p class="balance">
+      <span aria-hidden="true">✨</span><span class="sr-only">{{ s('balance') }}: </span
+      >{{ balance() }}
+    </p>
     <p class="tag">
       <span class="sr-only">{{ s('title') }}: </span>{{ shownName() }}
     </p>
+    <!-- Dragging turns the stand too; these do the same with a single tap or a key. -->
+    <button
+      type="button"
+      class="turn is-left"
+      [attr.aria-label]="s('turnLeft')"
+      [title]="s('turnLeft')"
+      (click)="turn(-1)"
+    >
+      <span aria-hidden="true">↺</span>
+    </button>
+    <button
+      type="button"
+      class="turn is-right"
+      [attr.aria-label]="s('turnRight')"
+      [title]="s('turnRight')"
+      (click)="turn(1)"
+    >
+      <span aria-hidden="true">↻</span>
+    </button>
     <button
       type="button"
       class="surprise"
@@ -29,7 +58,7 @@
         aria-controls="stable-panel"
         [attr.aria-selected]="tab() === entry.id"
         [tabindex]="tab() === entry.id ? 0 : -1"
-        (click)="tab.set(entry.id)"
+        (click)="chooseTab(entry.id)"
         (keydown)="tabKey($event, index)"
       >
         <span class="tab-icon" aria-hidden="true">{{ entry.icon }}</span>
@@ -121,7 +150,7 @@
         </fieldset>
       }
       @case ('coat') {
-        <fieldset class="options swatches">
+        <fieldset class="options swatches coats">
           <legend class="sr-only">{{ s('tabCoat') }}</legend>
           @for (coat of coats; track coat) {
             <label
@@ -132,11 +161,14 @@
               <input
                 type="radio"
                 name="horse-coat"
-                [checked]="horse().coat === coat"
+                [checked]="shown().coat === coat"
                 (change)="change({ coat })"
               />
               <span class="dot" aria-hidden="true"></span>
-              <span class="sr-only">{{ s(coatKey(coat)) }}</span>
+              @if (price(coatSpecial(coat)); as cost) {
+                <span class="price" aria-hidden="true">✨{{ cost }}</span>
+              }
+              <span class="sr-only">{{ specialLabel(s(coatKey(coat)), coatSpecial(coat)) }}</span>
             </label>
           }
         </fieldset>
@@ -149,11 +181,14 @@
               <input
                 type="radio"
                 name="horse-mane"
-                [checked]="horse().mane === mane"
+                [checked]="shown().mane === mane"
                 (change)="change({ mane })"
               />
               <span class="dot" aria-hidden="true"></span>
-              <span class="sr-only">{{ s(maneKey(mane)) }}</span>
+              @if (price(maneSpecial(mane)); as cost) {
+                <span class="price" aria-hidden="true">✨{{ cost }}</span>
+              }
+              <span class="sr-only">{{ specialLabel(s(maneKey(mane)), maneSpecial(mane)) }}</span>
             </label>
           }
         </fieldset>
@@ -217,7 +252,36 @@
     }
   </div>
 
-  <button type="button" class="button primary done" (click)="done.emit()">
-    <span aria-hidden="true">✓</span> {{ s('done') }}
-  </button>
+  @if (tryingId()) {
+    <div class="buy">
+      @if (affordable()) {
+        <button type="button" class="button primary buy-button" (click)="buy()">
+          {{ s('buy') }} <span aria-hidden="true">✨</span>{{ tryingPrice() }}
+          <span class="sr-only">{{ s('sparkles') }}</span>
+        </button>
+      } @else {
+        <p class="short">
+          {{ s('notEnough', { n: i.format(tryingPrice() - balance()) }) }}
+        </p>
+      }
+      <button
+        type="button"
+        class="no-thanks"
+        [attr.aria-label]="s('noThanks')"
+        [title]="s('noThanks')"
+        (click)="stopTrying()"
+      >
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+  } @else {
+    <button type="button" class="button primary done" (click)="finish()">
+      <span aria-hidden="true">✓</span> {{ s('done') }}
+    </button>
+  }
+  <p class="sr-only" role="status">
+    @if (tryingId()) {
+      {{ s('tryOn', { n: i.format(tryingPrice()), have: i.format(balance()) }) }}
+    }
+  </p>
 </section>

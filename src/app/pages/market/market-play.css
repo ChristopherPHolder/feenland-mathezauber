@@ -213,6 +213,49 @@
   display: none;
 }
 
+/* A shopping list of two or three treats, each with its price. */
+.list {
+  display: grid;
+  gap: 4px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px;
+  border-radius: var(--radius-chip);
+  background: var(--paper);
+  font-size: clamp(17px, 5cqi, 22px);
+}
+.list .good-emoji {
+  font-size: 1.3em;
+}
+.list-name {
+  flex: 1 1 auto;
+}
+.list-price {
+  font-variant-numeric: tabular-nums;
+}
+.help {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--bronze);
+  font: 600 22px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+  cursor: pointer;
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
 /* Lumi's purse: coins to tap while paying, or a tag with the amount. */
 .purse {
   display: grid;
@@ -280,6 +323,29 @@
 }
 .coin-button:active:not([disabled]) app-market-money {
   transform: translateY(2px) scale(0.96);
+}
+
+.purse.hidden {
+  display: none;
+}
+.till {
+  background: #fff8d6;
+  border-color: var(--gold);
+}
+.till-body {
+  fill: var(--gold-deep);
+}
+.till-top {
+  fill: var(--gold);
+}
+/* The note handed over on change turns. */
+.paid-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 /* The counter tray: coins put down, tap one to take it back, then Pay. */
