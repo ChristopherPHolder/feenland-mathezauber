@@ -33,6 +33,7 @@ import {
   GOLDEN_STREAK,
   GOOD_IDS,
   GoodId,
+  Item,
   isFewest,
   isFewestChange,
   isMastered,
@@ -56,7 +57,7 @@ import { Denomination, fewestCoins, formatMoney, isNote, total } from './market-
 import { filmClash, filmFor, MarketDemo } from './market-demo';
 import { MarketMoney } from './market-money-art';
 import { MarketScores } from './market-scores';
-import { MarketBasket } from './market-basket';
+import { MarketBasket, SHOPPING_PURSE } from './market-basket';
 import { MarketShop } from './market-shop';
 import { MarketSounds } from './market-sounds';
 
@@ -175,6 +176,7 @@ export class Market {
   private readonly freeStart = viewChild<ElementRef<HTMLButtonElement>>('freeStart');
 
   protected leaveFreeTrip() {
+    this.started.set(false);
     this.freeTrip.set(false);
     requestAnimationFrame(() => this.freeStart()?.nativeElement.focus());
   }
@@ -194,8 +196,10 @@ export class Market {
   protected readonly coaching = signal(false);
 
   protected readonly turn = computed(() => this.round().turns[this.round().index]);
-  protected readonly turnsTotal = computed(() => this.stage().turns);
-  protected readonly big = computed(() => this.round().index === this.turnsTotal() - 1);
+  protected readonly turnsTotal = computed(() => this.round().turns.length);
+  protected readonly big = computed(
+    () => this.turnsTotal() > 1 && this.round().index === this.turnsTotal() - 1,
+  );
   protected readonly step = computed<Step>(
     () => this.turn().steps[Math.min(this.round().step, this.turn().steps.length - 1)],
   );
@@ -252,7 +256,17 @@ export class Market {
   );
   /** Change and till turns have no purse to look at: the note in hand is all that matters. */
   protected readonly showPurse = computed(() => this.step() !== 'change' && this.step() !== 'give');
-  protected readonly film = computed(() => filmFor(this.stage().skill));
+  protected readonly film = computed(() =>
+    filmFor(
+      this.freeTrip()
+        ? this.step() === 'pay'
+          ? 'notes'
+          : this.step() === 'left'
+            ? 'left'
+            : 'twoTreats'
+        : this.stage().skill,
+    ),
+  );
   protected readonly filmAlternate = computed(
     () =>
       this.started() &&
@@ -264,10 +278,12 @@ export class Market {
   );
   protected readonly guideNow = computed(() => this.shopping() && (this.guided() || this.idle()));
   protected readonly stars = computed(() => roundStars(this.round().firstTries, this.turnsTotal()));
-  protected readonly best = computed(() => this.scores.best()[this.levelId()] ?? 0);
+  private readonly scoreId = computed(() => (this.freeTrip() ? 'market-basket' : this.levelId()));
+  protected readonly best = computed(() => this.scores.best()[this.scoreId()] ?? 0);
   protected readonly turnSlots = computed(() =>
     Array.from({ length: this.turnsTotal() }, (_, index) => index),
   );
+  protected readonly purseTotalLeft = computed(() => purseTotal(this.turn()) - this.turn().price);
   protected readonly shelfSlots = GOOD_IDS;
   protected readonly spent = computed(() =>
     this.round().bought.reduce((sum, item) => sum + item.price, 0),
@@ -305,9 +321,19 @@ export class Market {
       cheers: round.cheers,
     };
   });
-  protected readonly introFrame = computed<MarketFrame>(() =>
-    stillFrame({ shelf: this.scores.shelf().length, good: 'honey' }),
-  );
+  private readonly basket = viewChild(MarketBasket);
+  protected readonly introFrame = computed<MarketFrame>(() => {
+    const items = this.basket()?.items() ?? [];
+    const first = items.at(0);
+    return stillFrame({
+      shelf: this.scores.shelf().length,
+      good: first?.good ?? 'honey',
+      priceText: first ? this.money(first.price) : '',
+      extras: items
+        .slice(1)
+        .map((item) => ({ good: item.good, priceText: this.money(item.price) })),
+    });
+  });
   protected readonly outcomeFrame = computed<MarketFrame>(() =>
     stillFrame({
       phase: 'complete',
@@ -382,9 +408,31 @@ export class Market {
     }
   }
 
+  protected checkout(items: readonly Item[]) {
+    const price = items.reduce((sum, item) => sum + item.price, 0);
+    if (!items.length || price > total(SHOPPING_PURSE)) return;
+    this.startRound([
+      {
+        good: items[0].good,
+        items,
+        price,
+        purse: SHOPPING_PURSE,
+        steps: items.length > 1 ? ['total', 'pay', 'left'] : ['pay', 'left'],
+        look: 'tag',
+      },
+    ]);
+    requestAnimationFrame(() => this.questionHeading()?.nativeElement.focus());
+  }
+
+  private readonly questionHeading = viewChild<ElementRef<HTMLElement>>('questionHeading');
+
   protected play() {
+    this.startRound(this.stage().round(this.random));
+  }
+
+  private startRound(turns: readonly MarketTurn[]) {
     this.stopTimers();
-    this.round.set(this.fresh());
+    this.round.set(this.fresh(turns));
     this.started.set(true);
     this.saveFailed.set(false);
     this.newBest.set(false);
@@ -394,9 +442,9 @@ export class Market {
     this.beginTurn();
   }
 
-  private fresh(): Round {
+  private fresh(turns: readonly MarketTurn[] = this.stage().round(this.random)): Round {
     return {
-      turns: this.stage().round(this.random),
+      turns,
       index: 0,
       step: 0,
       phase: 'shop',
@@ -473,8 +521,15 @@ export class Market {
       return;
     }
     const result = checkPay(this.trayCoins(), turn.price);
-    if (result === 'ok') this.solve('bought', isFewest(turn, this.trayCoins()));
-    else this.slip(result);
+    if (result !== 'ok') return this.slip(result);
+    if (turn.steps[this.round().step + 1] === 'left') {
+      this.round.update((round) => ({ ...round, step: round.step + 1, tray: [], typed: '' }));
+      this.status.set(null);
+      this.sounds.play('coin');
+      this.armIdle();
+      return;
+    }
+    this.solve('bought', isFewest(turn, this.trayCoins()));
   }
 
   protected judge(enough: boolean) {
@@ -640,9 +695,9 @@ export class Market {
   private finish(round: Round) {
     this.stopTimers();
     this.round.set({ ...round, phase: 'complete', cheers: round.cheers + 1 });
-    this.saveFailed.set(!this.record());
+    this.saveFailed.set(!this.freeTrip() && !this.record());
     const result = this.scores.record(
-      this.levelId(),
+      this.scoreId(),
       round.score,
       round.bought.map((item) => item.good),
     );

@@ -25,7 +25,7 @@ export function parseMarketSave(value: unknown): MarketSave {
       ? (Object.fromEntries(
           Object.entries(raw.best).filter(
             ([id, score]) =>
-              LEVEL_ID.test(id) &&
+              (id === 'market-basket' || LEVEL_ID.test(id)) &&
               typeof score === 'number' &&
               Number.isInteger(score) &&
               score >= 0,
