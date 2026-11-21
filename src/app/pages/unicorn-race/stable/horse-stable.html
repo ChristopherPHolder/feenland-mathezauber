@@ -1,0 +1,150 @@
+<section class="stable" aria-labelledby="stable-title">
+  <div class="preview">
+    <h2 id="stable-title" class="sr-only" tabindex="-1" #heading>{{ s('title') }}</h2>
+    <app-three-stage class="stand" [world]="loadWorld" [state]="world()">
+      <div class="flat"><app-racer kind="player" [horse]="horse()" /></div>
+    </app-three-stage>
+    <p class="tag">
+      <span class="sr-only">{{ s('title') }}: </span>{{ shownName() }}
+    </p>
+    <button
+      type="button"
+      class="surprise"
+      [attr.aria-label]="s('surprise')"
+      [title]="s('surprise')"
+      (click)="surprise()"
+    >
+      <span aria-hidden="true">🎲</span>
+    </button>
+  </div>
+
+  <div class="tabs" role="tablist" [attr.aria-label]="s('tabs')">
+    @for (entry of tabs; track entry.id; let index = $index) {
+      <button
+        #tabButton
+        type="button"
+        role="tab"
+        class="tab"
+        [id]="'stable-tab-' + entry.id"
+        aria-controls="stable-panel"
+        [attr.aria-selected]="tab() === entry.id"
+        [tabindex]="tab() === entry.id ? 0 : -1"
+        (click)="tab.set(entry.id)"
+        (keydown)="tabKey($event, index)"
+      >
+        <span class="tab-icon" aria-hidden="true">{{ entry.icon }}</span>
+        <span class="tab-label">{{ s(entry.key) }}</span>
+      </button>
+    }
+  </div>
+
+  <div
+    id="stable-panel"
+    class="panel"
+    role="tabpanel"
+    [attr.aria-labelledby]="'stable-tab-' + tab()"
+  >
+    @switch (tab()) {
+      @case ('name') {
+        <div class="name">
+          <label class="name-label" for="horse-name">{{ s('nameLabel') }}</label>
+          <input
+            id="horse-name"
+            class="name-field"
+            type="text"
+            autocomplete="off"
+            autocapitalize="words"
+            spellcheck="false"
+            enterkeyhint="done"
+            [attr.maxlength]="nameMax"
+            [placeholder]="defaultName()"
+            [value]="nameDraft()"
+            (input)="typeName($event)"
+          />
+          <div class="ideas" role="group" [attr.aria-label]="s('nameIdeas')">
+            @for (idea of ideas(); track $index) {
+              <button
+                type="button"
+                class="idea"
+                [attr.aria-pressed]="horse().name === idea"
+                (click)="pickName(idea)"
+              >
+                {{ idea }}
+              </button>
+            }
+            <button
+              type="button"
+              class="idea more"
+              [attr.aria-label]="s('moreNames')"
+              [title]="s('moreNames')"
+              (click)="moreNames()"
+            >
+              <span aria-hidden="true">🔄</span>
+            </button>
+          </div>
+        </div>
+      }
+      @case ('kind') {
+        <fieldset class="options kinds">
+          <legend class="sr-only">{{ s('tabKind') }}</legend>
+          @for (kind of kinds; track kind) {
+            <label class="option kind">
+              <input
+                type="radio"
+                name="horse-kind"
+                [checked]="horse().kind === kind"
+                (change)="change({ kind })"
+              />
+              <span class="kind-art" aria-hidden="true"
+                ><app-racer kind="player" [horse]="asKind(kind)"
+              /></span>
+              <span class="kind-name">{{ s(kindKey(kind)) }}</span>
+            </label>
+          }
+        </fieldset>
+      }
+      @case ('coat') {
+        <fieldset class="options swatches">
+          <legend class="sr-only">{{ s('tabCoat') }}</legend>
+          @for (coat of coats; track coat) {
+            <label
+              class="option swatch"
+              [style.--fill]="coatPaint[coat].coat"
+              [style.--rim]="coatPaint[coat].shade"
+            >
+              <input
+                type="radio"
+                name="horse-coat"
+                [checked]="horse().coat === coat"
+                (change)="change({ coat })"
+              />
+              <span class="dot" aria-hidden="true"></span>
+              <span class="sr-only">{{ s(coatKey(coat)) }}</span>
+            </label>
+          }
+        </fieldset>
+      }
+      @case ('mane') {
+        <fieldset class="options swatches manes">
+          <legend class="sr-only">{{ s('tabMane') }}</legend>
+          @for (mane of manes; track mane) {
+            <label class="option swatch" [style.--fill]="maneFill(mane)">
+              <input
+                type="radio"
+                name="horse-mane"
+                [checked]="horse().mane === mane"
+                (change)="change({ mane })"
+              />
+              <span class="dot" aria-hidden="true"></span>
+              <span class="sr-only">{{ s(maneKey(mane)) }}</span>
+            </label>
+          }
+        </fieldset>
+      }
+    }
+  </div>
+
+  <button type="button" class="button primary done" (click)="done.emit()">
+    <span aria-hidden="true">✓</span> {{ s('done') }}
+  </button>
+</section>

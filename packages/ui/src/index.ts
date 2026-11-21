@@ -7,5 +7,7 @@ export { DragonFace, type DragonFaceColors } from './dragon-face';
 export { Emblem } from './emblem';
 export { GameBar } from './game-bar';
 export { Icon, type IconKind } from './icon';
+export { NumberPad } from './number-pad';
+export { RewardBurst, type RewardBurstKind } from './reward-burst';
 export { SoundToggle } from './sound-toggle';
 export { StarRating } from './star-rating';

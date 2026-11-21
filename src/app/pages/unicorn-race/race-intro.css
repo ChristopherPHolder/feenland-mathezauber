@@ -49,6 +49,37 @@
   flex-grow: 1.4;
   max-width: 210px;
 }
+/* The child's own horse is a button into the Stable. */
+button.lineup-racer {
+  position: relative;
+  padding: 4px 4px 2px;
+  border: 0;
+  border-radius: var(--radius-tile);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+button.lineup-racer:hover {
+  transform: translateY(-2px);
+}
+button.lineup-racer:active {
+  transform: scale(0.97);
+}
+.edit-mark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-round);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+  font-size: 16px;
+}
 .lineup-racer app-racer {
   width: 100%;
   height: auto;
@@ -67,6 +98,9 @@
 .lineup-racer.is-lumi .lineup-name {
   background: var(--pink);
   color: var(--paper);
+  font-size: 15px;
+  padding: 3px 12px;
+  box-shadow: var(--shadow-rest);
 }
 .lead {
   font-size: 19px;
