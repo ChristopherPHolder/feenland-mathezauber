@@ -41,7 +41,7 @@ Switching levels never requires leaving the game:
 
 - **The Hungry Crocodile** has a level strip 1–14 on its intro (two rows of seven on a phone); the current level is marked with `aria-current="page"`.
 - **Magic walls** lists its eleven levels on the intro and also accepts `?level=n` (`/adventure/number-wall?level=3`) so the hub can open a level directly.
-- **The Unicorn Rainbow Race** has five race routes (`/adventure/unicorn-race-1` … `-5`); its intro lists all five as cards with the current one marked `aria-current="page"`, and the finish offers the next race directly.
+- **The Unicorn Rainbow Race** has five race routes (`/adventure/unicorn-race-1` … `-5`); its intro lists all five as cards with the current one marked `aria-current="page"`, and the finish offers the next race directly. The Stable (the horse creator) is a phase of the race page, not a route: it opens once on a child's first visit and again from their horse in the intro line-up (the ✏️ badge); Done goes back to the intro with focus on that horse.
 - **The Treasure Lock** has nine level routes (`/adventure/treasure-lock-1` … `-9`); its intro has a level strip 1–9, numbered by position (level 8, halving back, shows as 7), with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Firework Show** has twelve level routes (`/adventure/fireworks-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Potion Cauldron** has seven level routes (`/adventure/potion-1` … `-7`); its intro has a level strip 1–7 with the current level marked `aria-current="page"`, and the finish offers the next level.

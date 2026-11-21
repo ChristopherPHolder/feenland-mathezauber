@@ -15,34 +15,29 @@ import {
 } from 'three';
 import type { RacerId } from './race';
 import type { Outfit } from './race-store';
+import { COATS, hasHorn, hasWings, Horse, LUMI, MANES } from './horse';
 interface Look {
   readonly coat: string;
   readonly shade: string;
   readonly mane: readonly [string, string, string];
   readonly horn: boolean;
   readonly wings: boolean;
+  /** The flight feathers; the coverts above them take the coat's shade. */
+  readonly feather: string;
   readonly bow: boolean;
   readonly crown: boolean;
   /** Below 1 the pony is see-through, like a shadow. */
   readonly opacity: number;
 }
-const LOOK: Readonly<Record<RacerId, Look>> = {
-  player: {
-    coat: '#fffdfd',
-    shade: '#e7d8ee',
-    mane: ['#ff8fb8', '#ffd36b', '#8fd3ff'],
-    horn: true,
-    wings: false,
-    bow: false,
-    crown: false,
-    opacity: 1,
-  },
+type Rival = Exclude<RacerId, 'player' | 'shadow'>;
+const RIVALS: Readonly<Record<Rival, Look>> = {
   cloud: {
     coat: '#dccbff',
     shade: '#b9a3ef',
     mane: ['#fdf6ff', '#ead9ff', '#c9b1ff'],
     horn: false,
     wings: true,
+    feather: '#fdf6ff',
     bow: false,
     crown: false,
     opacity: 1,
@@ -53,6 +48,7 @@ const LOOK: Readonly<Record<RacerId, Look>> = {
     mane: ['#ff9ed1', '#ffc3e3', '#ff7bbd'],
     horn: true,
     wings: false,
+    feather: '#fdf6ff',
     bow: false,
     crown: false,
     opacity: 1,
@@ -63,6 +59,7 @@ const LOOK: Readonly<Record<RacerId, Look>> = {
     mane: ['#fff0b8', '#ffe58a', '#ffd766'],
     horn: false,
     wings: false,
+    feather: '#fdf6ff',
     bow: true,
     crown: false,
     opacity: 1,
@@ -73,21 +70,33 @@ const LOOK: Readonly<Record<RacerId, Look>> = {
     mane: ['#4b3a70', '#6d4a9a', '#3a2f5c'],
     horn: false,
     wings: true,
+    feather: '#c3c9e6',
     bow: false,
     crown: true,
     opacity: 1,
   },
-  shadow: {
-    coat: '#c9b8ff',
-    shade: '#b09cf2',
-    mane: ['#e2d6ff', '#d2c2ff', '#efe8ff'],
-    horn: true,
-    wings: false,
+};
+/** The shadow keeps its ghostly lilac but takes the shape of the child's horse. */
+const GHOST = {
+  coat: '#c9b8ff',
+  shade: '#b09cf2',
+  mane: ['#e2d6ff', '#d2c2ff', '#efe8ff'],
+} as const;
+/** How a racer looks: the rivals are fixed, the child's horse and its shadow follow the Stable. */
+function lookFor(id: RacerId, horse: Horse): Look {
+  if (id !== 'player' && id !== 'shadow') return RIVALS[id];
+  const paint = id === 'shadow' ? GHOST : { ...COATS[horse.coat], mane: MANES[horse.mane] };
+  return {
+    ...paint,
+    horn: hasHorn(horse.kind),
+    wings: hasWings(horse.kind),
+    // Pale feathers on any coat: a lighter take on the coat, so a dark horse has dusky wings.
+    feather: new Color(paint.coat).lerp(new Color('#ffffff'), 0.7).getStyle(),
     bow: false,
     crown: false,
-    opacity: 0.5,
-  },
-};
+    opacity: id === 'shadow' ? 0.5 : 1,
+  };
+}
 export const RAINBOW = ['#ff6f91', '#ffb347', '#ffe066', '#7ddf9b', '#7cc7ff', '#b79bff'];
 const INK = '#26224a';
 const GOLD = '#ffd54a';
@@ -226,6 +235,8 @@ export interface PonyPose {
   readonly celebrating: boolean;
   /** Standing on the finish line, pleased with the race: little hops and a nodding head. */
   readonly cheering: boolean;
+  /** Extra lift for the wings, in radians, to show them off on the Stable's stand. */
+  readonly wingLift?: number;
 }
 /**
  * One racer, modelled like a real horse: a lofted body, an arched neck and a long face,
@@ -249,8 +260,9 @@ export class Pony {
   constructor(
     readonly id: RacerId,
     outfit: Outfit | null = null,
+    horse: Horse = LUMI,
   ) {
-    const look = LOOK[id];
+    const look = lookFor(id, horse);
     this.ghost = look.opacity < 1;
     const skin = (color: string, roughness = 0.62) =>
       new MeshStandardMaterial({
@@ -287,7 +299,7 @@ export class Pony {
         this.legs.push(leg);
       }
     if (look.wings) {
-      const feather = skin(id === 'storm' ? '#c3c9e6' : '#fdf6ff', 0.7);
+      const feather = skin(look.feather, 0.7);
       for (const side of [-1, 1]) this.addWing(body, side, feather, shade);
     }
     if (look.bow) {
@@ -309,7 +321,8 @@ export class Pony {
       key.position.set(0.33, 1.12, -0.05);
       body.add(key);
     }
-    if (outfit) this.dress(body, outfit, skin);
+    // A horse with wings of its own keeps them rather than wearing a second pair.
+    if (outfit && !(outfit === 'wings' && look.wings)) this.dress(body, outfit, skin);
     this.root.traverse((part) => {
       if (part instanceof Mesh) part.castShadow = !this.ghost;
     });
@@ -411,7 +424,7 @@ export class Pony {
     });
     for (const wing of this.wings) {
       const flap = moving ? Math.sin(this.phase * 1.5) * 0.5 : Math.sin(now * 2) * 0.07;
-      wing.rotation.z = (moving ? 0.35 : 0.1) + flap;
+      wing.rotation.z = (moving ? 0.35 : 0.1) + flap + (pose.wingLift ?? 0);
     }
   }
   /** A standing pose, so a pony that has not been animated yet still looks right. */
