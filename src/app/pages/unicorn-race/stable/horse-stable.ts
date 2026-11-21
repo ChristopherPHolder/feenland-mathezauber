@@ -17,28 +17,37 @@ import {
   coatIds,
   COATS,
   CoatId,
+  hasHorn,
   Horse,
   HorseKind,
   horseKinds,
+  hornIds,
+  HORNS,
+  HornId,
   maneIds,
   MANES,
   ManeId,
+  Marking,
+  markings,
   NAME_MAX,
   randomHorse,
 } from '../horse';
+import { cupTitleKey, outfitEmblem, outfitNameKey } from '../outfits';
 import { raceText } from '../race-messages';
-import { RaceStore } from '../race-store';
+import { Outfit, OUTFIT_CUP, outfits, RaceStore } from '../race-store';
 import { RacerArt } from '../racer-art';
 import { NAME_IDEAS, StableMessageKey, stableText } from './stable-messages';
 import type { StableState } from './stable-world';
 
-type Tab = 'name' | 'kind' | 'coat' | 'mane';
+type Tab = 'name' | 'kind' | 'coat' | 'mane' | 'marking' | 'dress';
 const TABS: readonly { readonly id: Tab; readonly icon: string; readonly key: StableMessageKey }[] =
   [
     { id: 'name', icon: '✏️', key: 'tabName' },
     { id: 'kind', icon: '🦄', key: 'tabKind' },
     { id: 'coat', icon: '🎨', key: 'tabCoat' },
     { id: 'mane', icon: '🌈', key: 'tabMane' },
+    { id: 'marking', icon: '⭐', key: 'tabMarking' },
+    { id: 'dress', icon: '👑', key: 'tabDress' },
   ];
 /** How many name ideas show at once; "more names" moves on to the next handful. */
 const IDEAS_SHOWN = 5;
@@ -66,6 +75,10 @@ export class HorseStable {
   protected readonly kinds = horseKinds;
   protected readonly coats = coatIds;
   protected readonly manes = maneIds;
+  protected readonly markings = markings;
+  protected readonly horns = hornIds;
+  protected readonly hornPaint = HORNS;
+  protected readonly outfits = outfits;
   protected readonly coatPaint = COATS;
   protected readonly nameMax = NAME_MAX;
   protected readonly loadWorld = loadWorld;
@@ -73,6 +86,8 @@ export class HorseStable {
   protected readonly horse = computed(() => this.store.save().horse);
   protected readonly defaultName = computed(() => raceText(this.i.locale(), 'racerPlayer'));
   protected readonly shownName = computed(() => this.horse().name || this.defaultName());
+  protected readonly horned = computed(() => hasHorn(this.horse().kind));
+  protected readonly outfit = computed(() => this.store.save().outfit);
   /** What is in the name field; the store keeps it tidied, this keeps the spaces being typed. */
   protected readonly nameDraft = linkedSignal<string, string>({
     source: () => this.horse().name,
@@ -109,6 +124,45 @@ export class HorseStable {
   }
   protected maneKey(mane: ManeId): StableMessageKey {
     return `mane${capital(mane)}` as StableMessageKey;
+  }
+  protected markingKey(marking: Marking): StableMessageKey {
+    return `marking${capital(marking)}` as StableMessageKey;
+  }
+  protected hornKey(horn: HornId): StableMessageKey {
+    return `horn${capital(horn)}` as StableMessageKey;
+  }
+  /** A horn swatch: its colour with the groove as a ring. */
+  protected hornFill(horn: HornId): string {
+    const [colour, groove] = HORNS[horn];
+    return `repeating-linear-gradient(135deg, ${colour} 0 7px, ${groove} 7px 9px)`;
+  }
+  /** Race texts (keepsake names, "Just Lumi") with the horse's name filled in. */
+  protected r(key: Parameters<typeof raceText>[1], values: Record<string, string> = {}) {
+    return raceText(this.i.locale(), key, { name: this.shownName(), ...values });
+  }
+  protected outfitName(outfit: Outfit | null) {
+    return this.r(outfitNameKey(outfit));
+  }
+  protected outfitEmblem(outfit: Outfit): string {
+    return outfitEmblem(outfit);
+  }
+  protected outfitLocked(outfit: Outfit): string {
+    return this.r('outfitLocked', {
+      name: this.r(outfitNameKey(outfit)),
+      cup: this.r(cupTitleKey(OUTFIT_CUP[outfit])),
+    });
+  }
+  protected earned(outfit: Outfit): boolean {
+    this.store.save();
+    return this.store.earned(outfit);
+  }
+  protected wear(outfit: Outfit | null) {
+    this.store.wear(outfit);
+    this.hop.update((hop) => hop + 1);
+  }
+  /** The horse as it would look with another marking, for the pictures on the marking options. */
+  protected withMarking(marking: Marking): Horse {
+    return { ...this.horse(), marking };
   }
   /** A round swatch striped in a mane's three colours. */
   protected maneFill(mane: ManeId): string {
@@ -168,6 +222,11 @@ export class HorseStable {
   }
   private looksSame(horse: Horse): boolean {
     const now = this.horse();
-    return horse.kind === now.kind && horse.coat === now.coat && horse.mane === now.mane;
+    return (
+      horse.kind === now.kind &&
+      horse.coat === now.coat &&
+      horse.mane === now.mane &&
+      horse.marking === now.marking
+    );
   }
 }

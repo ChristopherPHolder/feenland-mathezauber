@@ -52,9 +52,14 @@ export class Kiki {
   private readonly legs: Mesh[] = [];
   private readonly lids: Mesh[] = [];
   private readonly pupils: Mesh[] = [];
+  /** Closed happy eyes: a dark upturned arc on each shut lid, like a drawn smile. */
+  private readonly happyEyes: Mesh[] = [];
+  private readonly whites: Mesh[] = [];
   private readonly smile: Mesh;
-  private readonly cheeks: Mesh[] = [];
+  private readonly cheekMeshes: Mesh[] = [];
   private readonly hatHolder = new Group();
+  /** A swallowed snack: a bump that slides from her throat down to her belly. */
+  private readonly bump: Mesh;
   private readonly skin = toon(GREEN);
   private readonly ridge = toon(DARK);
   private hatId: HatId | 'none' | null = null;
@@ -65,6 +70,12 @@ export class Kiki {
   glow = 0;
   /** 0 to 1: "Hmm, no thanks" after a wrong pick: eyes half shut, no smile, head tilted. */
   puzzled = 0;
+  /** 0 to 1: cheeks puffed out with a mouthful. */
+  cheeks = 0;
+  /** 0 to 1 while a swallowed bump travels from her throat to her belly; below 0 for none. */
+  gulp = -1;
+  /** 0 to 1: eyes shut in a happy smile, after a good meal. */
+  content = 0;
 
   constructor() {
     const sphere = new SphereGeometry(1, 20, 14);
@@ -74,6 +85,7 @@ export class Kiki {
     const white = toon('#ffffff', { roughness: 0.3 });
     const ink = toon(INK, { roughness: 0.3 });
     const mouth = toon('#e86a8a');
+    const happyArc = new TorusGeometry(0.075, 0.016, 6, 14, Math.PI);
     const blush = toon('#ff9fbf', { transparent: true, opacity: 0.75 });
 
     // Body: a long, low egg with a row of bumps down the back.
@@ -122,7 +134,9 @@ export class Kiki {
       const eye = new Group();
       eye.position.set(side * 0.17, 0.24, 0.04);
       eye.add(mesh(sphere, this.skin, [0, -0.02, 0], [0.16, 0.15, 0.15]));
-      eye.add(mesh(sphere, white, [0, 0.03, 0.04], [0.13, 0.13, 0.12]));
+      const eyeWhite = mesh(sphere, white, [0, 0.03, 0.04], [0.13, 0.13, 0.12]);
+      this.whites.push(eyeWhite);
+      eye.add(eyeWhite);
       // The pupils look up and out, toward the camera above the pond, with a white glint.
       const pupil = mesh(sphere, ink, [0, 0.115, 0.115], [0.068, 0.075, 0.035]);
       pupil.rotation.x = -0.8;
@@ -133,9 +147,15 @@ export class Kiki {
       const lid = mesh(sphere, this.skin, [0, 0.12, -0.05], [0.145, 0.04, 0.11]);
       this.lids.push(lid);
       eye.add(lid);
+      const happy = new Mesh(happyArc, ink);
+      happy.position.set(0, 0.13, 0.12);
+      happy.rotation.x = -0.8;
+      happy.visible = false;
+      this.happyEyes.push(happy);
+      eye.add(happy);
       this.head.add(eye);
       const cheek = mesh(lowSphere, blush, [side * 0.33, -0.01, 0.17], [0.08, 0.055, 0.05]);
-      this.cheeks.push(cheek);
+      this.cheekMeshes.push(cheek);
       this.head.add(cheek);
     }
 
@@ -164,6 +184,10 @@ export class Kiki {
     this.smile.position.set(0, 0.075, 0.44);
     this.smile.rotation.set(-1.0, 0, Math.PI * 1.15);
     this.upperJaw.add(this.smile);
+
+    this.bump = mesh(sphere, this.skin, [0, 0.1, 0.3], [0.2, 0.2, 0.2]);
+    this.bump.visible = false;
+    this.body.add(this.bump);
 
     this.hatHolder.position.set(0, 0.3, -0.08);
     this.head.add(this.hatHolder);
@@ -199,27 +223,44 @@ export class Kiki {
     this.nextBlink -= dt;
     const blinking = this.nextBlink < 0.14;
     if (this.nextBlink < 0) this.nextBlink = 2.4 + ((t * 7.31) % 2.2);
-    const squint = blinking ? 0 : this.puzzled;
+    // A happy face shuts her eyes the same way a blink does, only for longer.
+    const shut = blinking ? 1 : this.content;
+    const squint = this.puzzled * (1 - shut);
     for (const lid of this.lids) {
       lid.scale.set(
-        blinking ? 0.15 : 0.145 + squint * 0.005,
-        blinking ? 0.13 : 0.04 + squint * 0.06,
-        blinking ? 0.15 : 0.11 + squint * 0.03,
+        0.145 + squint * 0.005 + shut * 0.005,
+        0.04 + squint * 0.06 + shut * 0.09,
+        0.11 + squint * 0.03 + shut * 0.04,
       );
-      lid.position.set(
-        0,
-        blinking ? 0.06 : 0.12 - squint * 0.03,
-        blinking ? 0.05 : -0.05 + squint * 0.06,
-      );
+      lid.position.set(0, 0.12 - squint * 0.03 - shut * 0.06, -0.05 + squint * 0.06 + shut * 0.1);
     }
     this.head.rotation.z = this.puzzled * 0.24;
-    for (const pupil of this.pupils) pupil.position.x = look * 0.03;
+    // Held shut in a happy smile, the lids show a drawn arc and the pupils stay hidden.
+    const beaming = this.content > 0.5 && !blinking;
+    for (const happy of this.happyEyes) happy.visible = beaming;
+    for (const white of this.whites) white.visible = !beaming;
+    for (const pupil of this.pupils) {
+      pupil.position.x = look * 0.03;
+      pupil.visible = shut < 0.5;
+    }
 
     const open = this.jaw;
     this.upperJaw.rotation.x = -open * 0.62;
     this.lowerJaw.rotation.x = open * 0.28;
     this.smile.visible = open < 0.08 && this.puzzled < 0.35;
-    for (const cheek of this.cheeks) cheek.visible = open < 0.5;
+    const puff = 1 + this.cheeks * 0.9;
+    for (const cheek of this.cheekMeshes) {
+      cheek.visible = open < 0.5;
+      cheek.scale.set(0.08 * puff, 0.055 * puff, 0.05 * (1 + this.cheeks * 0.5));
+    }
+    // The bump swells out of her throat, slides along her belly and sinks away: it bulges at
+    // her sides, so it shows from above without growing a lump on her back.
+    this.bump.visible = this.gulp >= 0 && this.gulp <= 1;
+    if (this.bump.visible) {
+      const size = Math.sin(this.gulp * Math.PI);
+      this.bump.position.set(0, 0.02, 0.3 - this.gulp * 0.42);
+      this.bump.scale.set(0.3 + size * 0.17, 0.17, 0.16);
+    }
 
     this.skin.emissive.copy(GOLD_GLOW).multiplyScalar(this.glow * (0.32 + 0.12 * Math.sin(t * 8)));
     this.ridge.emissive.copy(this.skin.emissive);
