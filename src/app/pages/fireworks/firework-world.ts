@@ -29,9 +29,24 @@ import {
 import { easeOut, easeOutBack, EventCounter, smooth } from '../../shared/three/motion';
 import { Stage } from '../../shared/three/stage';
 import type { StateWorld } from '../../shared/three/three-stage';
-import { FADE_OUT, FireworkFrame, FireworkPhase, RISE, sparkGlow } from './firework-frame';
-import { Box, HUES, Pattern, SparkShape } from './firework-levels';
-import { shapePoints } from './firework-shapes';
+import { FADE_OUT, FireworkFrame, FireworkPhase, RISE, SHOW, sparkGlow } from './firework-frame';
+import { Box, HUES, Pattern } from './firework-levels';
+import { mergeByMaterial } from './firework-merge';
+import {
+  Cue,
+  finaleCues,
+  OPEN,
+  openSpread,
+  rocketAt,
+  RocketPoint,
+  shapeGlow,
+  shapeSpread,
+  ShellKind,
+  skyLevel,
+} from './firework-shells';
+import { BookShape, shapePoints } from './firework-shapes';
+import { Cell, FireworkSparks } from './firework-sparks';
+import { buildTown, seededRandom } from './firework-town';
 
 const DEG = Math.PI / 180;
 const FOV = 40;
@@ -55,8 +70,27 @@ const BANK_Z = 1.6;
 const JETTY_Y = -2.35;
 const MAX_SPARKS = 24;
 
+/** The pinned spark slots: the pattern, its reflection, the rocket's head and two book shapes. */
+const SHAPE_SPARKS = 96;
+const PATTERN_SLOT = 0;
+const MIRROR_SLOT = PATTERN_SLOT + MAX_SPARKS;
+const ROCKET_SLOT = MIRROR_SLOT + MAX_SPARKS;
+const SHAPE_SLOT = ROCKET_SLOT + 2;
+const SHAPES = 2;
+const PINNED = SHAPE_SLOT + SHAPES * SHAPE_SPARKS * 2;
+/** Free sparks in flight at once: a full finale stays well under this. */
+const FREE_SPARKS = 2600;
+/** Sky lights remembered at once; older ones have long faded. */
+const LIGHTS = 16;
+/** Show rockets in flight at once, for their trails. */
+const MAX_CUES = 32;
+/** Trail sparks are laid this far apart, so a trail stays even at any frame rate. */
+const TRAIL_STEP = 0.035;
+
 /** Smoothly from `a` to `b` as `t` runs 0 → 1. */
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+/** Where something at height `y` shows in the lake. */
+const mirrorY = (y: number) => -0.15 - REFLECT * y;
 
 function texture(size: number, draw: (c: CanvasRenderingContext2D, s: number) => void) {
   const canvas = document.createElement('canvas');
@@ -81,25 +115,16 @@ function glowTexture() {
   });
 }
 
-/** A glowing five-pointed star. */
-function starTexture() {
+/** A very soft wash of light, brightest in the middle: the lit sky and the lit lake. */
+function washTexture() {
   return texture(128, (c, s) => {
-    c.translate(s / 2, s / 2 + 4);
-    c.beginPath();
-    for (let i = 0; i < 10; i++) {
-      const r = i % 2 ? s * 0.15 : s * 0.36;
-      const a = -Math.PI / 2 + (i * Math.PI) / 5;
-      c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
-    }
-    c.closePath();
-    c.shadowColor = 'rgba(255,255,255,0.9)';
-    c.shadowBlur = 16;
-    c.fillStyle = '#fff';
-    c.lineJoin = 'round';
-    c.lineWidth = 6;
-    c.strokeStyle = '#fff';
-    c.fill();
-    c.stroke();
+    const g = c.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.35, 'rgba(255,255,255,0.5)');
+    g.addColorStop(0.7, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g;
+    c.fillRect(0, 0, s, s);
   });
 }
 
@@ -143,126 +168,6 @@ function roundRect(path: Path, w: number, h: number, r: number) {
   path.quadraticCurveTo(-w, -h, -w + r, -h);
 }
 
-/** A small seeded random, so the town and crowd look the same on every visit. */
-function seededRandom(seed: number) {
-  let a = seed;
-  return () => {
-    a = (a * 16807) % 2147483647;
-    return (a - 1) / 2147483646;
-  };
-}
-
-/**
- * Free-flying glowing bits in one draw call: rocket trails, show bursts, confetti embers, fizzle
- * embers and the sparkler. Each fades in and out smoothly; nothing blinks.
- */
-class Particles {
-  readonly points: Points;
-  private readonly capacity: number;
-  private readonly position: Float32Array;
-  private readonly color: Float32Array;
-  private readonly data: {
-    vx: number;
-    vy: number;
-    born: number;
-    life: number;
-    gravity: number;
-    drag: number;
-    r: number;
-    g: number;
-    b: number;
-    hold: number;
-  }[] = [];
-  private next = 0;
-
-  constructor(capacity: number, map: CanvasTexture, size: number) {
-    this.capacity = capacity;
-    this.position = new Float32Array(capacity * 3);
-    this.color = new Float32Array(capacity * 3);
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new BufferAttribute(this.position, 3));
-    geometry.setAttribute('color', new BufferAttribute(this.color, 3));
-    this.points = new Points(
-      geometry,
-      new PointsMaterial({
-        size,
-        map,
-        vertexColors: true,
-        transparent: true,
-        depthWrite: false,
-        blending: AdditiveBlending,
-      }),
-    );
-    this.points.frustumCulled = false;
-    for (let i = 0; i < capacity; i++)
-      this.data.push({
-        vx: 0,
-        vy: 0,
-        born: 0,
-        life: 0,
-        gravity: 0,
-        drag: 0,
-        r: 0,
-        g: 0,
-        b: 0,
-        hold: 0,
-      });
-  }
-
-  add(
-    t: number,
-    x: number,
-    y: number,
-    z: number,
-    vx: number,
-    vy: number,
-    color: Color,
-    life: number,
-    options: { gravity?: number; drag?: number; hold?: number } = {},
-  ) {
-    const i = this.next;
-    this.next = (this.next + 1) % this.capacity;
-    this.position.set([x, y, z], i * 3);
-    Object.assign(this.data[i], {
-      vx,
-      vy,
-      born: t,
-      life,
-      gravity: options.gravity ?? 0,
-      drag: options.drag ?? 0,
-      hold: options.hold ?? 0.35,
-      r: color.r,
-      g: color.g,
-      b: color.b,
-    });
-  }
-
-  update(t: number, dt: number) {
-    for (let i = 0; i < this.capacity; i++) {
-      const p = this.data[i];
-      const age = t - p.born;
-      if (p.life <= 0 || age > p.life || age < 0) {
-        this.color.set([0, 0, 0], i * 3);
-        continue;
-      }
-      const slow = Math.exp(-p.drag * dt);
-      p.vx *= slow;
-      p.vy = p.vy * slow - p.gravity * dt;
-      this.position[i * 3] += p.vx * dt;
-      this.position[i * 3 + 1] += p.vy * dt;
-      // Fade in quickly, hold, then dim away smoothly.
-      const k = age / p.life;
-      const glow = Math.min(
-        smooth(age / 0.18),
-        k < p.hold ? 1 : 1 - smooth((k - p.hold) / (1 - p.hold)),
-      );
-      this.color.set([p.r * glow, p.g * glow, p.b * glow], i * 3);
-    }
-    this.points.geometry.attributes['position'].needsUpdate = true;
-    this.points.geometry.attributes['color'].needsUpdate = true;
-  }
-}
-
 interface Creature {
   /** Placed along the bank by the layout. */
   readonly holder: Group;
@@ -273,19 +178,35 @@ interface Creature {
   readonly phase: number;
 }
 
-interface ShowBurst {
-  readonly at: number;
-  readonly x: number;
-  readonly y: number;
-  readonly hue: number;
-  done: boolean;
+/** A burst that lights the sky and the lake for a moment. */
+interface Light {
+  at: number;
+  light: number;
+  x: number;
+  y: number;
+  readonly color: Color;
+}
+
+/** A book shape drawn in sparks along its outline. */
+interface ShapeBurst {
+  at: number;
+  x: number;
+  y: number;
+  size: number;
+  glittered: boolean;
+  readonly points: Float32Array;
+  readonly colors: Color[];
 }
 
 /**
  * The Firework Show in 3D: a lake at dusk with a lantern-lit town on the far shore, a crowd of
- * fairyland creatures on the near bank, and Flick the fox on the jetty lighting rockets. Each
- * burst puts its sparks at the pattern's exact places, scaled to fill the sky above the town, so
- * the structure stays crisp; it glows up, holds for the look, and dims away. It never decides.
+ * fairyland creatures on the near bank, and Flick the fox on the jetty lighting rockets.
+ *
+ * A rocket climbs on a sparkling trail, wobbling and slowing to a breath before it bursts. Each
+ * burst is a layered shell: a core flash, the pattern's stars flying out on comet tails to their
+ * exact places (so the structure stays crisp for counting), a crackle round the edge, glitter
+ * that falls and fades, a puff of smoke lit in the burst's colour, and the sky and lake briefly
+ * lit. Every spark is one pooled point system, a single draw call. It never decides anything.
  */
 export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
   private frame?: FireworkFrame;
@@ -301,7 +222,6 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
   private bloomAt = -10;
   private fizzleAt = -10;
   private peekAt = -10;
-  private showAt = -10;
   private scale = 1;
   private viewWidth = 10;
   private patternWidth = 1;
@@ -314,14 +234,9 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
   private readonly shows = new EventCounter();
 
   private readonly glowMap = glowTexture();
-  private readonly starMap = starTexture();
-  /** The pattern, in spark units; the group's scale fits it to the sky. */
+  private readonly washMap = washTexture();
+  /** The pattern's frames, empty places and outlines; its sparks are pinned in `sparks`. */
   private readonly burst = new Group();
-  private readonly reflection = new Group();
-  private readonly sparks: Sprite[] = [];
-  private readonly mirrored: Sprite[] = [];
-  private readonly sparkMaterials: Record<SparkShape, SpriteMaterial>;
-  private readonly mirrorMaterials: Record<SparkShape, SpriteMaterial>;
   private readonly ringGeometry = new RingGeometry(0.2, 0.27, 28);
   private readonly ringMaterial = new MeshBasicMaterial({
     transparent: true,
@@ -335,13 +250,52 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
   });
   private readonly patternParts: Mesh[] = [];
   private outlines: { mesh: Mesh; material: MeshBasicMaterial }[] = [];
-  private readonly particles: Particles;
+  private readonly sparks = new FireworkSparks(PINNED + FREE_SPARKS, PINNED);
+  /** Where each pattern spark was last frame, for its comet tail. */
+  private readonly tailFrom = new Float32Array(MAX_SPARKS * 2);
   private readonly hue = new Color();
+  private readonly tint = new Color();
+  private readonly paint = new Color();
   private readonly white = new Color('#ffffff');
   private readonly ember = new Color('#c9b48a');
+  private readonly gold = new Color('#ffd45c');
+  private readonly warm = new Color('#ffe9c4');
+  private readonly smoke = new Color('#8d84b8');
+  private readonly ash = new Color('#6f6890');
+
+  private readonly lights: Light[] = Array.from({ length: LIGHTS }, () => ({
+    at: -10,
+    light: 0,
+    x: 0,
+    y: 0,
+    color: new Color(),
+  }));
+  private nextLight = 0;
+  private readonly lightColor = new Color();
+  private readonly fillColor = new Color('#b9a8ff');
+  private readonly skyWash: Mesh<PlaneGeometry, MeshBasicMaterial>;
+  private readonly lakeWash: Mesh<PlaneGeometry, MeshBasicMaterial>;
 
   private readonly rocket = new Group();
   private readonly rocketFrom = { x: 0, y: 0 };
+  private readonly rocketPoint: RocketPoint = { x: 0, y: 0, lean: 0, glow: 0 };
+  /** Where the rocket's trail was last laid. */
+  private readonly trailFrom = { x: 0, y: 0, ready: false };
+  private cues: Cue[] = [];
+  private cueAt = 0;
+  private readonly cueDone = new Uint8Array(MAX_CUES);
+  private readonly cueTrail = new Float32Array(MAX_CUES * 2);
+  private readonly shapes: ShapeBurst[] = Array.from({ length: SHAPES }, () => ({
+    at: -10,
+    x: 0,
+    y: 0,
+    size: 1,
+    glittered: true,
+    points: new Float32Array(SHAPE_SPARKS * 2),
+    colors: Array.from({ length: SHAPE_SPARKS }, () => new Color()),
+  }));
+  private nextShape = 0;
+
   private readonly fox = new Group();
   private readonly foxBody = new Group();
   private readonly foxHead = new Group();
@@ -356,16 +310,14 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
   private readonly crowd: Creature[] = [];
   private readonly crowdRoot = new Group();
   private readonly lake: Mesh;
-  private readonly bank: Mesh;
-  private readonly town = new Group();
-  private readonly showBursts: ShowBurst[] = [];
-  private shapeAt = -10;
+  private readonly town: Group;
   private readonly probe = new Vector3();
+  private stars?: Points<BufferGeometry, PointsMaterial>;
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { fov: FOV });
     this.fill.intensity = 1.1;
-    this.fill.color.set('#b9a8ff');
+    this.fill.color.copy(this.fillColor);
     this.sun.intensity = 1.1;
     this.sun.color.set('#ffc9a0');
     this.sun.position.set(-6, 6, 10);
@@ -379,7 +331,10 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
       [1, '#e3a07c'],
     ]);
     this.buildStars();
-    this.buildTown();
+    // The lit sky sits behind the town, so the roofs stand dark against it.
+    this.skyWash = this.wash(-6, 26, 20);
+    this.town = buildTown();
+    this.scene.add(this.town);
 
     this.lake = new Mesh(
       new PlaneGeometry(200, 9),
@@ -394,47 +349,56 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     );
     this.lake.position.set(0, -4.5, -0.25);
     this.scene.add(this.lake);
+    this.lakeWash = this.wash(-0.2, 14, 3.2);
 
-    this.sparkMaterials = {
-      round: this.sparkMaterial(this.glowMap, 1),
-      star: this.sparkMaterial(this.starMap, 1),
-    };
-    this.mirrorMaterials = {
-      round: this.sparkMaterial(this.glowMap, 0.3),
-      star: this.sparkMaterial(this.starMap, 0.3),
-    };
-    for (let i = 0; i < MAX_SPARKS; i++) {
-      const spark = new Sprite(this.sparkMaterials.round);
-      spark.renderOrder = 5;
-      this.sparks.push(spark);
-      this.burst.add(spark);
-      const twin = new Sprite(this.mirrorMaterials.round);
-      this.mirrored.push(twin);
-      this.reflection.add(twin);
-    }
     this.burst.position.set(0, BURST_Y, 0);
-    this.reflection.position.z = 0.05;
-    this.scene.add(this.burst, this.reflection);
+    this.scene.add(this.burst);
+    this.scene.add(this.sparks.points);
 
-    this.particles = new Particles(900, this.glowMap, 0.42);
-    this.particles.points.renderOrder = 6;
-    this.scene.add(this.particles.points);
-
-    this.bank = this.buildBank();
+    this.buildBank();
     this.buildJetty();
     this.buildFox();
     this.buildRocket();
     this.buildCrowd();
+    // Bake each character's still parts into one mesh per material.
+    const old = new Set<BufferGeometry>();
+    const bake = (group: Group) => mergeByMaterial(group).forEach((g) => old.add(g));
+    for (const group of [
+      this.jetty,
+      this.tube,
+      this.foxBody,
+      this.foxHead,
+      this.foxTail,
+      this.foxArm,
+      this.scarfEnd,
+      this.telescope,
+    ])
+      bake(group);
+    for (const creature of this.crowd) {
+      bake(creature.body);
+      bake(creature.head);
+      bake(creature.lantern);
+    }
+    for (const geometry of old) geometry.dispose();
   }
 
-  private sparkMaterial(map: CanvasTexture, opacity: number) {
-    return new SpriteMaterial({
-      map,
-      transparent: true,
-      opacity,
-      depthWrite: false,
-      blending: AdditiveBlending,
-    });
+  /** An additive soft light on a plane at depth `z`, `w` by `h` units, dark until a burst. */
+  private wash(z: number, w: number, h: number) {
+    const mesh = new Mesh(
+      new PlaneGeometry(1, 1),
+      new MeshBasicMaterial({
+        map: this.washMap,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: AdditiveBlending,
+      }),
+    );
+    mesh.scale.set(w, h, 1);
+    mesh.position.z = z;
+    mesh.visible = false;
+    this.scene.add(mesh);
+    return mesh;
   }
 
   setState(frame: FireworkFrame) {
@@ -444,19 +408,21 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
       this.pattern = frame.pattern;
       this.buildPattern(frame.pattern);
     }
+    let opens = false;
     if (frame.phase !== this.phase) {
       this.glowFrom = this.glow;
-      if (frame.phase === 'look') this.burstAt = t;
+      if (frame.phase === 'look') opens = true;
       this.phase = frame.phase;
       this.phaseAt = t;
     }
-    if (this.launches.take(frame.launches)) this.launchedAt = t;
-    if (this.bursts.take(frame.bursts) && frame.phase === 'look') this.burstAt = t;
+    if (this.launches.take(frame.launches)) this.launch(frame);
+    if (this.bursts.take(frame.bursts) && frame.phase === 'look') opens = true;
+    this.frame = frame;
+    if (opens) this.open(frame);
     if (this.blooms.take(frame.blooms)) this.celebrate(frame);
     if (this.fizzles.take(frame.fizzles)) this.fizzle();
     if (this.peeks.take(frame.peeks)) this.peekAt = t;
     if (this.shows.take(frame.shows)) this.startShow(frame);
-    this.frame = frame;
     this.draw();
   }
 
@@ -465,6 +431,7 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     this.camera.position.set(0, EYE_Y, DISTANCE);
     this.camera.lookAt(0, EYE_Y, 0);
     this.viewWidth = VIEW_HEIGHT * aspect;
+    this.sparks.setScale((this.height * this.renderer.getPixelRatio()) / (2 * TAN));
     // Flick and the jetty stand near the left edge; the crowd fills the rest of the bank.
     const half = (z: number) => (DISTANCE - z) * TAN * aspect;
     const bankHalf = half(BANK_Z);
@@ -491,8 +458,6 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     const height = ((BURST_TOP - BURST_BOTTOM) * FILL) / this.patternHeight;
     this.scale = Math.min(MAX_SCALE, width, height);
     this.burst.scale.setScalar(this.scale);
-    this.reflection.scale.set(this.scale, -this.scale * REFLECT, this.scale);
-    this.reflection.position.y = -BURST_Y * REFLECT - 0.15;
   }
 
   // ------------------------------------------------------------------------------------------
@@ -508,20 +473,6 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     for (const { material } of this.outlines) material.dispose();
     this.outlines = [];
 
-    this.sparks.forEach((spark, index) => {
-      const at = pattern.sparks[index];
-      const twin = this.mirrored[index];
-      spark.visible = twin.visible = !!at;
-      if (!at) return;
-      const shape = pattern.shapes[at.burst];
-      spark.material = this.sparkMaterials[shape];
-      twin.material = this.mirrorMaterials[shape];
-      const size = shape === 'star' ? 1.05 : 1.0;
-      spark.scale.setScalar(size);
-      twin.scale.setScalar(size * 1.3);
-      spark.position.set(at.x, at.y, 0);
-      twin.position.set(at.x, at.y, 0);
-    });
     for (const place of pattern.empty) {
       const ring = new Mesh(this.ringGeometry, this.ringMaterial);
       ring.position.set(place.x, place.y, -0.02);
@@ -600,9 +551,9 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     const glow = this.patternGlow(t, frame);
     this.glow = glow;
     const age = t - this.phaseAt;
-    // A fresh burst spreads out from its centre; under calm motion it fades in in place.
-    const spread =
-      calm || this.phase !== 'look' ? 1 : mix(0.35, 1, easeOut((t - this.burstAt) / 0.45));
+    // A fresh burst flies out from its centre to its places; under calm motion it fades in.
+    const opening = this.phase === 'look' ? t - this.burstAt : 10;
+    const spread = openSpread(opening, calm);
     const droop =
       this.phase === 'fade'
         ? smooth(age / FADE_OUT) * 0.35
@@ -610,34 +561,56 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
           ? smooth(age / 0.8) * 0.8
           : 0;
     const bloom = this.phase === 'bloom' && !calm ? mix(1, 1.15, easeOutBack(age / 0.5)) : 1;
-    this.burst.scale.setScalar(this.scale * bloom);
-    this.burst.position.y = BURST_Y - droop * this.scale;
-    this.reflection.scale.set(this.scale * bloom, -this.scale * REFLECT * bloom, this.scale);
+    const scale = this.scale * bloom;
+    const top = BURST_Y - droop * this.scale;
+    this.burst.scale.setScalar(scale);
+    this.burst.position.y = top;
     const pattern = this.pattern!;
     const shimmer = calm ? 0 : 1;
-    this.sparks.forEach((spark, index) => {
-      const at = pattern.sparks[index];
-      if (!at) return;
-      const fall = this.phase === 'fizzle' ? smooth(age / 1.1) * (0.25 + (index % 3) * 0.2) : 0;
-      spark.position.set(at.x * spread, at.y * spread - fall, 0);
-      const twin = this.mirrored[index];
-      twin.position.set(
-        at.x * spread + Math.sin(t * 2.3 + at.y * 3) * 0.08 * shimmer,
-        at.y * spread - fall,
-        0,
-      );
-    });
-    // Colour: the firework's own hue, brighter on the re-bloom, ash-gold in a fizzle.
-    const tint = this.hue.clone();
+    // Colour: the firework's own hue, white-hot as it opens, brighter on the re-bloom, ash-gold
+    // in a fizzle.
+    const tint = this.tint.copy(this.hue);
+    if (this.phase === 'look' && !calm) tint.lerp(this.white, 0.7 * (1 - smooth(opening / 0.5)));
     if (this.phase === 'bloom') tint.lerp(this.white, 0.15 * smooth(age / 0.4));
     if (this.phase === 'fizzle') tint.lerp(this.ember, smooth(age / 0.4));
-    for (const material of Object.values(this.sparkMaterials)) {
-      material.color.copy(tint);
-      material.opacity = glow;
-    }
-    for (const material of Object.values(this.mirrorMaterials)) {
-      material.color.copy(tint);
-      material.opacity = glow * 0.32;
+    const tails = !calm && this.phase === 'look' && opening < OPEN + 0.05 && glow > 0.02;
+    for (let index = 0; index < MAX_SPARKS; index++) {
+      const at = pattern.sparks[index];
+      if (!at || glow <= 0.002) {
+        this.sparks.pin(PATTERN_SLOT + index, 0, 0, 0, 0, tint, 0, Cell.Glow);
+        this.sparks.pin(MIRROR_SLOT + index, 0, 0, 0, 0, tint, 0, Cell.Streak);
+        continue;
+      }
+      const star = pattern.shapes[at.burst] === 'star';
+      const fall = this.phase === 'fizzle' ? smooth(age / 1.1) * (0.25 + (index % 3) * 0.2) : 0;
+      // The sparks wobble a little as they sag in a fizzle, like a sigh.
+      const sigh = this.phase === 'fizzle' && !calm ? Math.sin(age * 9 + index) * 0.05 * glow : 0;
+      const x = (at.x * spread + sigh) * scale;
+      const y = top + (at.y * spread - fall) * scale;
+      const size = (star ? 1.05 : 1) * scale;
+      this.sparks.pin(
+        PATTERN_SLOT + index,
+        x,
+        y,
+        0,
+        size,
+        tint,
+        glow,
+        star ? Cell.Star : Cell.Glow,
+      );
+      this.sparks.pin(
+        MIRROR_SLOT + index,
+        x + Math.sin(t * 2.3 + at.y * 3) * 0.08 * shimmer * scale,
+        mirrorY(y),
+        0.05,
+        size * 1.3,
+        tint,
+        glow * 0.32,
+        Cell.Streak,
+      );
+      if (tails) this.tail(t, index, x, y);
+      this.tailFrom[index * 2] = x;
+      this.tailFrom[index * 2 + 1] = y;
     }
     this.ringMaterial.opacity = glow * 0.45;
     this.frameMaterial.opacity = glow * 0.3;
@@ -653,154 +626,693 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     });
   }
 
+  /** A comet tail behind a pattern spark flying out to its place: sparks laid along its path. */
+  private tail(t: number, index: number, x: number, y: number) {
+    const fromX = this.tailFrom[index * 2];
+    const fromY = this.tailFrom[index * 2 + 1];
+    const length = Math.hypot(x - fromX, y - fromY);
+    const steps = Math.min(16, Math.floor(length / TRAIL_STEP));
+    if (!steps) return;
+    const spec = this.sparks.spec.reset();
+    spec.life = 0.4;
+    spec.size = 0.2 * this.scale;
+    spec.grow = -0.7;
+    spec.hold = 0.1;
+    spec.alpha = 0.8;
+    spec.color.copy(this.hue).lerp(this.white, 0.45);
+    for (let step = 1; step <= steps; step++) {
+      const k = step / steps;
+      this.sparks.emit(t, mix(fromX, x, k), mix(fromY, y, k), -0.02, 0, -0.15);
+    }
+    this.tailFrom[index * 2] = x;
+    this.tailFrom[index * 2 + 1] = y;
+  }
+
   // ------------------------------------------------------------------------------------------
   // Events
   // ------------------------------------------------------------------------------------------
+
+  /** Flick lights the fuse: a puff of smoke and a spit of sparks from the tube. */
+  private launch(frame: FireworkFrame) {
+    const t = this.elapsed;
+    this.launchedAt = t;
+    this.trailFrom.ready = false;
+    if (this.calm) return;
+    const x = this.rocketFrom.x;
+    const y = this.rocketFrom.y - 0.1;
+    const spec = this.sparks.spec.reset();
+    spec.cell = Cell.Puff;
+    spec.cover = 0.6;
+    spec.life = 1.8;
+    spec.size = 0.7;
+    spec.grow = 1.4;
+    spec.alpha = 0.45;
+    spec.fadeIn = 0.15;
+    spec.hold = 0.1;
+    spec.drag = 1.5;
+    spec.color.copy(this.smoke);
+    for (let i = 0; i < 3; i++)
+      this.sparks.emit(t + i * 0.05, x, y + 0.1, 0.35, (i - 1) * 0.3, 0.5);
+    spec.reset();
+    spec.cell = Cell.Glint;
+    spec.life = 0.35;
+    spec.size = 0.16;
+    spec.gravity = 3;
+    spec.twinkle = 0.6;
+    spec.color.copy(frame.bigShow ? this.gold : this.warm);
+    for (let i = 0; i < 10; i++) {
+      const a = Math.PI / 2 + (i / 9 - 0.5) * 1.6;
+      const speed = 1.2 + (i % 3) * 0.5;
+      this.sparks.emit(t, x, y + 0.15, 0.4, Math.cos(a) * speed, Math.sin(a) * speed);
+    }
+    this.addLight(t, 0.12, this.warm, x, y);
+  }
+
+  /** The shell opens: a core flash, crackle round the edge, glitter, smoke and the sky lit. */
+  private open(frame: FireworkFrame) {
+    const t = this.elapsed;
+    this.burstAt = t;
+    const calm = this.calm;
+    const pattern = frame.pattern;
+    // Comet tails start from the centre.
+    for (let index = 0; index < MAX_SPARKS; index++) {
+      this.tailFrom[index * 2] = 0;
+      this.tailFrom[index * 2 + 1] = BURST_Y;
+    }
+    const radius = this.patternRadius(pattern);
+    this.flash(t, 0, BURST_Y, this.hue, radius, calm);
+    this.puffs(t + 0.15, 0, BURST_Y, radius, this.hue, calm ? 3 : 5);
+    this.addLight(t, calm ? 0.3 : 0.6, this.hue, 0, BURST_Y);
+    if (calm) return;
+    // Crackle: glints pop round the edge of the burst once its stars have landed.
+    const spec = this.sparks.spec.reset();
+    spec.cell = Cell.Glint;
+    spec.life = 0.3;
+    spec.size = 0.36;
+    spec.hold = 0.2;
+    spec.twinkle = 0.5;
+    spec.color.copy(this.warm);
+    const random = seededRandom(17 + frame.firework * 7 + pattern.sparks.length);
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2 + random() * 0.4;
+      const r = radius * (1.05 + random() * 0.3);
+      this.sparks.emit(
+        t + 0.42 + random() * 0.35,
+        Math.cos(a) * r,
+        BURST_Y + Math.sin(a) * r * 0.85,
+        0.1,
+        0,
+        0,
+      );
+    }
+    // Glitter: a few tiny sparks drip from each star and fall away with gravity and drag.
+    this.glitter(t + 0.45, pattern, 2, 0.11, 1.5, this.hue);
+  }
+
+  /** The radius of the pattern in world units, from its centre to its farthest spark. */
+  private patternRadius(pattern: Pattern) {
+    let most = 0.5;
+    for (const spark of pattern.sparks) most = Math.max(most, Math.hypot(spark.x, spark.y) + 0.5);
+    return most * this.scale;
+  }
+
+  /** A shell's white-hot core: one bright swelling glow, then gone. Calm motion keeps it soft. */
+  private flash(t: number, x: number, y: number, color: Color, radius: number, calm: boolean) {
+    const spec = this.sparks.spec.reset();
+    spec.life = calm ? 0.9 : 0.45;
+    spec.size = Math.max(1.6, radius * 1.4);
+    spec.grow = calm ? 0.2 : 0.6;
+    spec.fadeIn = calm ? 0.25 : 0.04;
+    spec.hold = 0.05;
+    spec.alpha = calm ? 0.3 : 0.55;
+    spec.color.copy(color).lerp(this.white, 0.5);
+    this.sparks.emit(t, x, y, -0.1, 0, 0);
+    if (calm) return;
+    spec.size = Math.max(0.45, radius * 0.35);
+    spec.alpha = 0.9;
+    spec.life = 0.18;
+    spec.color.copy(this.white);
+    this.sparks.emit(t, x, y, -0.05, 0, 0);
+  }
+
+  /** Smoke left by a burst, lit from inside by its colour, drifting slowly away. */
+  private puffs(t: number, x: number, y: number, radius: number, color: Color, count: number) {
+    const spec = this.sparks.spec.reset();
+    spec.cell = Cell.Puff;
+    spec.cover = 0.35;
+    spec.life = 3.4;
+    spec.size = Math.max(1.2, radius * 0.9);
+    spec.grow = 0.8;
+    spec.fadeIn = 0.35;
+    spec.hold = 0.15;
+    spec.alpha = 0.3;
+    spec.drag = 0.6;
+    spec.color.copy(this.smoke).lerp(color, 0.45);
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2 + 0.4;
+      const r = radius * 0.45;
+      this.sparks.emit(
+        t + i * 0.04,
+        x + Math.cos(a) * r,
+        y + Math.sin(a) * r * 0.7,
+        -0.4,
+        Math.cos(a) * 0.25 + 0.08,
+        Math.sin(a) * 0.12 + 0.06,
+      );
+    }
+  }
+
+  /** Tiny sparks drip from each pattern star and fall away, twinkling. */
+  private glitter(
+    t: number,
+    pattern: Pattern,
+    each: number,
+    size: number,
+    life: number,
+    color: Color,
+  ) {
+    const spec = this.sparks.spec.reset();
+    spec.cell = Cell.Glint;
+    spec.life = life;
+    spec.size = size * Math.max(1, this.scale);
+    spec.gravity = 0.9;
+    spec.drag = 1.4;
+    spec.twinkle = 0.8;
+    spec.hold = 0.35;
+    spec.alpha = 0.9;
+    const random = seededRandom(31 + pattern.sparks.length * 5 + this.firework);
+    pattern.sparks.forEach((spark, index) => {
+      for (let k = 0; k < each; k++) {
+        spec.color.copy(k % 2 ? this.gold : color).lerp(this.white, 0.3);
+        this.sparks.emit(
+          t + random() * 0.5 + k * 0.12,
+          spark.x * this.scale + (random() - 0.5) * 0.2,
+          BURST_Y + spark.y * this.scale - 0.1,
+          0.05,
+          (random() - 0.5) * 0.5,
+          -0.1 - random() * 0.3 + (index % 2) * 0.1,
+        );
+      }
+    });
+  }
 
   private celebrate(frame: FireworkFrame) {
     const t = this.elapsed;
     this.bloomAt = t;
     const pattern = frame.pattern;
     const calm = this.calm;
-    // Confetti embers in the firework's colours drift out from the sparks.
-    const colors = [
-      new Color(HUES[pattern.hue]),
-      new Color('#fff4c2'),
-      new Color(HUES[(pattern.hue + 2) % HUES.length]),
-    ];
+    const radius = this.patternRadius(pattern) * 1.15;
+    this.addLight(t, calm ? 0.35 : 0.7, this.hue, 0, BURST_Y);
+    // A golden willow drips from every star of the re-bloom.
+    const spec = this.sparks.spec.reset();
+    spec.cell = Cell.Glint;
+    spec.life = calm ? 1.6 : 2.4;
+    spec.size = 0.15 * Math.max(1, this.scale);
+    spec.gravity = calm ? 0 : 0.7;
+    spec.drag = 1.5;
+    spec.twinkle = calm ? 0 : 0.6;
+    spec.hold = 0.45;
+    const colors = [this.hue, this.gold, this.warm];
+    const random = seededRandom(5 + frame.firework * 3);
     pattern.sparks.forEach((spark, index) => {
-      for (let k = 0; k < 2; k++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = calm ? 0.2 : 0.8 + Math.random() * 1.4;
-        this.particles.add(
-          t + 0.15,
+      for (let k = 0; k < (calm ? 1 : 4); k++) {
+        const angle = random() * Math.PI * 2;
+        const speed = calm ? 0.15 : 0.6 + random() * 1.1;
+        spec.color.copy(colors[(index + k) % colors.length]);
+        this.sparks.emit(
+          t + 0.12 + k * 0.08,
           spark.x * this.scale * 1.15,
           BURST_Y + spark.y * this.scale * 1.15,
           0.1,
           Math.cos(angle) * speed,
-          Math.sin(angle) * speed + (calm ? -0.2 : 0.4),
-          colors[(index + k) % colors.length],
-          1.8,
-          { gravity: calm ? 0 : 1.2, drag: 0.8, hold: 0.4 },
+          Math.sin(angle) * speed + (calm ? 0 : 0.5),
         );
       }
     });
-    if (frame.finale) {
-      this.shapeAt = t + 0.5;
-      this.bloomShape(frame, t + 0.5, 0, BURST_Y, Math.min(this.viewWidth * 0.46, 3.1));
+    if (!calm) {
+      // A ring of crackle bursts round the whole pattern.
+      spec.reset();
+      spec.cell = Cell.Glint;
+      spec.life = 0.35;
+      spec.size = 0.42;
+      spec.twinkle = 0.4;
+      spec.color.copy(this.warm);
+      for (let i = 0; i < 18; i++) {
+        const a = (i / 18) * Math.PI * 2;
+        const r = radius * (1.08 + random() * 0.25);
+        this.sparks.emit(
+          t + 0.3 + random() * 0.45,
+          Math.cos(a) * r,
+          BURST_Y + Math.sin(a) * r * 0.85,
+          0.1,
+          0,
+          0,
+        );
+      }
+      // A soft halo of the firework's colour rolls out behind it.
+      spec.reset();
+      spec.life = 1.1;
+      spec.size = 0.3;
+      spec.drag = 2.4;
+      spec.gravity = 0.4;
+      spec.hold = 0.3;
+      spec.alpha = 0.8;
+      spec.color.copy(this.hue).lerp(this.white, 0.25);
+      for (let i = 0; i < 36; i++) {
+        const a = (i / 36) * Math.PI * 2;
+        const speed = radius * 2.6;
+        this.sparks.emit(
+          t + 0.05,
+          Math.cos(a) * radius * 0.6,
+          BURST_Y + Math.sin(a) * radius * 0.6,
+          -0.3,
+          Math.cos(a) * speed,
+          Math.sin(a) * speed,
+        );
+      }
     }
+    if (frame.finale)
+      this.bloomShape(frame.shape, t + 0.5, 0, BURST_Y, this.shapeSize(), calm, this.hue);
   }
 
+  /** Not quite: each star sputters out with a little puff and drops a couple of dim embers. */
   private fizzle() {
     const t = this.elapsed;
     this.fizzleAt = t;
     const pattern = this.pattern;
     if (!pattern) return;
-    // Embers drift down from every spark, slowly, never alarming.
-    pattern.sparks.forEach((spark) => {
+    const calm = this.calm;
+    const spec = this.sparks.spec.reset();
+    const random = seededRandom(43 + pattern.sparks.length);
+    // Pfft: a small grey puff where each star was.
+    spec.cell = Cell.Puff;
+    spec.cover = 0.5;
+    spec.life = 1.6;
+    spec.size = 0.55 * this.scale;
+    spec.grow = 1.2;
+    spec.fadeIn = 0.2;
+    spec.hold = 0.15;
+    spec.alpha = 0.35;
+    spec.drag = 1;
+    spec.color.copy(this.ash);
+    for (const spark of pattern.sparks)
+      this.sparks.emit(
+        t + 0.12 + random() * 0.25,
+        spark.x * this.scale,
+        BURST_Y + spark.y * this.scale,
+        0.02,
+        (random() - 0.5) * 0.2,
+        calm ? 0 : 0.25,
+      );
+    // Embers drift down from every star, slowly, never alarming.
+    spec.reset();
+    spec.cell = Cell.Glint;
+    spec.life = 1.5;
+    spec.size = 0.14;
+    spec.gravity = calm ? 0 : 0.35;
+    spec.drag = 0.6;
+    spec.hold = 0.45;
+    spec.alpha = 0.8;
+    spec.twinkle = calm ? 0 : 0.7;
+    spec.color.copy(this.ember);
+    for (const spark of pattern.sparks)
       for (let k = 0; k < 2; k++)
-        this.particles.add(
+        this.sparks.emit(
           t + 0.15 + k * 0.25,
-          spark.x * this.scale + (Math.random() - 0.5) * 0.3,
+          spark.x * this.scale + (random() - 0.5) * 0.3,
           BURST_Y + spark.y * this.scale,
           0.1,
-          (Math.random() - 0.5) * 0.4,
-          -0.2 - Math.random() * 0.35,
-          this.ember,
-          1.5,
-          { gravity: 0.35, drag: 0.6, hold: 0.45 },
+          (random() - 0.5) * 0.4,
+          calm ? -0.1 : -0.2 - random() * 0.35,
         );
-    });
   }
 
   private startShow(frame: FireworkFrame) {
     const t = this.elapsed;
-    this.showAt = t;
-    this.showBursts.length = 0;
-    const hues = frame.launched.length ? frame.launched : [0, 1, 2, 3];
-    const halfWidth = Math.max(1.5, this.viewWidth * 0.36);
-    hues.forEach((hue, index) => {
-      const side = index % 2 ? 1 : -1;
-      const spread = ((index * 0.618) % 1) * halfWidth;
-      this.showBursts.push({
-        at: t + index * 0.32,
-        x: side * spread,
-        y: BURST_BOTTOM + 1.2 + ((index * 0.37) % 1) * (BURST_TOP - BURST_BOTTOM - 2.2),
-        hue,
-        done: false,
-      });
+    const calm = this.calm;
+    this.cues = finaleCues(frame.launched, calm ? SHOW / 2 : SHOW, calm).slice(0, MAX_CUES);
+    this.cueAt = t;
+    this.cueDone.fill(0);
+    this.cues.forEach((cue, index) => {
+      this.cueTrail[index * 2] = Number.NaN;
     });
-    this.shapeAt = t + hues.length * 0.32 + 0.3;
-    this.bloomShape(frame, this.shapeAt, 0, BURST_Y + 0.3, Math.min(halfWidth, 2.8));
   }
 
-  /** The level's book shape as a big rainbow firework, made of sparks along its outline. */
-  private bloomShape(frame: FireworkFrame, at: number, x: number, y: number, size: number) {
-    const calm = this.calm;
-    const color = new Color();
-    for (const point of shapePoints(frame.shape, 64)) {
-      color.setHSL(point.t, 0.75, 0.68);
-      const tx = x + point.x * size;
-      const ty = y + point.y * size;
-      if (calm) {
-        this.particles.add(at, tx, ty, 0.2, 0, 0, color, 2.6, { hold: 0.65 });
-      } else {
-        // The sparks fly out from the middle and settle on the outline.
-        this.particles.add(
-          at,
-          x + point.x * size * 0.2,
-          y + point.y * size * 0.2,
-          0.2,
-          point.x * size * 3.2,
-          point.y * size * 3.2,
+  /** The book shape's size: as big as the sky above the town allows. */
+  private shapeSize() {
+    return Math.min(this.viewWidth * 0.42, (BURST_TOP - BURST_BOTTOM) * 0.44);
+  }
+
+  /** Where a show cue bursts, in world units. */
+  private cueX(cue: Cue) {
+    return cue.x * Math.max(1.4, this.viewWidth * 0.38);
+  }
+  private cueY(cue: Cue) {
+    return BURST_BOTTOM + 0.7 + cue.y * (BURST_TOP - BURST_BOTTOM - 1.4);
+  }
+
+  /** The level's book shape as a big rainbow firework, sparks flying out to its outline. */
+  private bloomShape(
+    shape: BookShape,
+    at: number,
+    x: number,
+    y: number,
+    size: number,
+    calm: boolean,
+    core: Color,
+  ) {
+    const burst = this.shapes[this.nextShape];
+    this.nextShape = (this.nextShape + 1) % SHAPES;
+    burst.at = at;
+    burst.x = x;
+    burst.y = y;
+    burst.size = size;
+    burst.glittered = calm;
+    shapePoints(shape, SHAPE_SPARKS).forEach((point, index) => {
+      burst.points[index * 2] = point.x;
+      burst.points[index * 2 + 1] = point.y;
+      burst.colors[index].setHSL(point.t, 0.85, 0.62);
+    });
+    this.flash(at, x, y, core, size * 0.6, calm);
+    this.addLight(at, calm ? 0.3 : 0.55, this.white, x, y);
+  }
+
+  private updateShapes(t: number, calm: boolean) {
+    this.shapes.forEach((burst, which) => {
+      const base = SHAPE_SLOT + which * SHAPE_SPARKS * 2;
+      const age = t - burst.at;
+      const glow = shapeGlow(age);
+      if (glow <= 0) {
+        this.sparks.hide(base, base + SHAPE_SPARKS * 2);
+        return;
+      }
+      const size = Math.min(0.42, (burst.size * 0.16) / Math.sqrt(SHAPE_SPARKS / 64));
+      for (let index = 0; index < SHAPE_SPARKS; index++) {
+        const spread = calm ? 1 : shapeSpread(age, index, SHAPE_SPARKS);
+        const reach = mix(0.06, 1, spread) * burst.size;
+        const x = burst.x + burst.points[index * 2] * reach;
+        const y = burst.y + burst.points[index * 2 + 1] * reach;
+        // Every few sparks twinkle once it has settled; the outline itself stays steady.
+        const twinkle =
+          calm || index % 5 ? 1 : 0.75 + 0.25 * Math.sin(age * 9 + index * 1.7) * smooth(age - 1);
+        const color = this.paint.copy(burst.colors[index]);
+        if (!calm) color.lerp(this.white, 0.6 * (1 - smooth(age / 0.6)));
+        this.sparks.pin(base + index, x, y, 0.15, size, color, glow * twinkle, Cell.Glow);
+        this.sparks.pin(
+          base + SHAPE_SPARKS + index,
+          x,
+          mirrorY(y),
+          0.05,
+          size * 1.4,
           color,
-          2.6,
-          {
-            drag: 4,
-            gravity: 0.15,
-            hold: 0.6,
-          },
+          glow * 0.25,
+          Cell.Streak,
         );
       }
+      // Once the outline has drawn itself, glitter falls from it.
+      if (!burst.glittered && age > 0.9) {
+        burst.glittered = true;
+        const spec = this.sparks.spec.reset();
+        spec.cell = Cell.Glint;
+        spec.life = 1.8;
+        spec.size = 0.13;
+        spec.gravity = 0.8;
+        spec.drag = 1.2;
+        spec.twinkle = 0.8;
+        for (let index = 0; index < SHAPE_SPARKS; index += 3) {
+          spec.color.copy(burst.colors[index]).lerp(this.white, 0.4);
+          this.sparks.emit(
+            t + (index / SHAPE_SPARKS) * 0.6,
+            burst.x + burst.points[index * 2] * burst.size,
+            burst.y + burst.points[index * 2 + 1] * burst.size,
+            0.1,
+            0,
+            -0.2,
+          );
+        }
+      }
+    });
+  }
+
+  // ------------------------------------------------------------------------------------------
+  // Shells of the show
+  // ------------------------------------------------------------------------------------------
+
+  private shell(t: number, kind: ShellKind, x: number, y: number, color: Color, calm: boolean) {
+    const spec = this.sparks.spec.reset();
+    const random = seededRandom(Math.round(x * 100 + y * 1000) + 7);
+    switch (kind) {
+      case 'peony':
+      case 'ring': {
+        const ring = kind === 'ring';
+        const count = ring ? 30 : 40;
+        const tilt = (random() - 0.5) * 0.8;
+        const radius = ring ? 1.25 : 1.4;
+        spec.life = calm ? 1.8 : 1.6;
+        spec.size = 0.26;
+        spec.drag = 2.4;
+        spec.gravity = calm ? 0 : 0.7;
+        spec.hold = 0.4;
+        spec.fadeIn = calm ? 0.35 : 0.04;
+        spec.twinkle = calm ? 0 : 0.25;
+        for (let i = 0; i < count; i++) {
+          const a = (i / count) * Math.PI * 2 + random() * (ring ? 0 : 0.2);
+          // A ring is a flat circle seen at a tilt; a peony fills a ball.
+          const reach = ring ? 1 : 0.55 + random() * 0.45;
+          const dx = Math.cos(a) * reach;
+          const dy = Math.sin(a) * reach * (ring ? 0.55 : 1);
+          const rx = dx * Math.cos(tilt) - dy * Math.sin(tilt);
+          const ry = dx * Math.sin(tilt) + dy * Math.cos(tilt);
+          spec.color.copy(color).lerp(this.white, i % 4 ? 0 : 0.5);
+          if (calm) {
+            this.sparks.emit(t, x + rx * radius, y + ry * radius, -0.1, 0, 0);
+            continue;
+          }
+          const speed = radius * 2.4;
+          // Each star, then two fainter copies a moment later: a comet tail along its path.
+          for (let k = 0; k < 3; k++) {
+            spec.size = 0.26 * (1 - k * 0.3);
+            spec.alpha = 1 - k * 0.35;
+            // They leave from a small ring, so the shell's first frame is not one white blob.
+            this.sparks.emit(
+              t + k * 0.035,
+              x + rx * 0.15,
+              y + ry * 0.15,
+              -0.1,
+              rx * speed,
+              ry * speed,
+            );
+          }
+        }
+        break;
+      }
+      case 'crackle': {
+        spec.cell = Cell.Glint;
+        spec.life = 0.55;
+        spec.size = 0.34;
+        spec.drag = 3;
+        spec.twinkle = 0.9;
+        spec.hold = 0.3;
+        for (let i = 0; i < 26; i++) {
+          const a = random() * Math.PI * 2;
+          const speed = 1 + random() * 2.2;
+          spec.color.copy(i % 3 ? this.warm : color);
+          this.sparks.emit(
+            t + random() * 0.25,
+            x,
+            y,
+            -0.05,
+            Math.cos(a) * speed,
+            Math.sin(a) * speed,
+          );
+        }
+        break;
+      }
+      case 'willow': {
+        spec.cell = Cell.Glint;
+        spec.life = calm ? 2 : 3;
+        spec.size = 0.2;
+        spec.drag = 1.1;
+        spec.gravity = calm ? 0 : 1.5;
+        spec.hold = 0.5;
+        spec.twinkle = calm ? 0 : 0.45;
+        for (let i = 0; i < 44; i++) {
+          const a = (i / 44) * Math.PI * 2;
+          const speed = 1.5 + random() * 0.6;
+          // Long golden strands: each star followed by three fainter copies.
+          for (let k = 0; k < 4; k++) {
+            spec.alpha = 1 - k * 0.2;
+            spec.size = 0.2 * (1 - k * 0.12);
+            spec.color.copy(this.gold).lerp(this.white, k ? 0 : 0.3);
+            this.sparks.emit(
+              t + k * 0.09,
+              x,
+              y,
+              -0.15,
+              Math.cos(a) * speed,
+              Math.sin(a) * speed * 0.9 + 0.3,
+            );
+          }
+        }
+        break;
+      }
+      case 'shape':
+        break;
     }
   }
 
-  private peony(t: number, x: number, y: number, hue: number, calm: boolean) {
-    const color = new Color(HUES[hue]);
-    const count = 26;
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
-      if (calm) {
-        this.particles.add(
-          t,
-          x + Math.cos(angle) * 1.1,
-          y + Math.sin(angle) * 1.1,
-          -0.1,
-          0,
-          0,
-          color,
-          1.6,
-          { hold: 0.5 },
-        );
-      } else {
-        const speed = 2.6 + (i % 2) * 0.5;
-        this.particles.add(
-          t,
+  private updateShow(t: number, frame: FireworkFrame, calm: boolean) {
+    if (!this.cues.length) return;
+    const since = t - this.cueAt;
+    this.cues.forEach((cue, index) => {
+      if (this.cueDone[index]) return;
+      const x = this.cueX(cue);
+      const y = this.cueY(cue);
+      const launch = cue.at - cue.rise;
+      if (since < launch) return;
+      if (since < cue.at && cue.rise > 0) {
+        // The rocket climbs from the far shore on a glittering trail.
+        const point = rocketAt(
+          (since - launch) / cue.rise,
+          x * 0.85,
+          0.05,
           x,
           y,
-          -0.1,
-          Math.cos(angle) * speed,
-          Math.sin(angle) * speed,
-          color,
-          1.7,
-          {
-            drag: 1.8,
-            gravity: 0.9,
-            hold: 0.35,
-          },
+          1,
+          this.rocketPoint,
         );
+        this.rocketTrail(t, index, point.x, point.y, false, 0.6);
+        const spec = this.sparks.spec.reset();
+        spec.life = 0.05;
+        spec.size = 0.22 * point.glow;
+        spec.hold = 0.8;
+        spec.fadeIn = 0;
+        spec.color.copy(this.warm);
+        this.sparks.emit(t, point.x, point.y, 0, 0, 0);
+        return;
       }
+      this.cueDone[index] = 1;
+      const color = cue.hue < 0 ? this.gold : this.paint.set(HUES[cue.hue % HUES.length]);
+      this.addLight(t, cue.light * (calm ? 0.6 : 1), color, x, y);
+      if (cue.kind === 'shape') {
+        this.bloomShape(frame.shape, t, 0, BURST_Y + 0.3, this.shapeSize(), calm, this.white);
+        return;
+      }
+      this.flash(t, x, y, color, cue.kind === 'willow' ? 1.3 : 0.9, calm);
+      this.shell(t, cue.kind, x, y, color, calm);
+      if (!calm && cue.kind !== 'crackle') this.puffs(t + 0.2, x, y, 1.1, color, 2);
+    });
+  }
+
+  /** Lays sparks along a rocket's path since last frame: a light streak and falling glitter. */
+  private rocketTrail(
+    t: number,
+    index: number,
+    x: number,
+    y: number,
+    big: boolean,
+    strength: number,
+  ) {
+    const fromX = index < 0 ? this.trailFrom.x : this.cueTrail[index * 2];
+    const fromY = index < 0 ? this.trailFrom.y : this.cueTrail[index * 2 + 1];
+    const fresh = index < 0 ? !this.trailFrom.ready : Number.isNaN(fromX);
+    if (index < 0) {
+      this.trailFrom.x = x;
+      this.trailFrom.y = y;
+      this.trailFrom.ready = true;
+    } else {
+      this.cueTrail[index * 2] = x;
+      this.cueTrail[index * 2 + 1] = y;
     }
+    if (fresh) return;
+    const length = Math.hypot(x - fromX, y - fromY);
+    const steps = Math.min(24, Math.floor(length / TRAIL_STEP));
+    const spec = this.sparks.spec;
+    for (let step = 1; step <= steps; step++) {
+      const k = step / steps;
+      const px = mix(fromX, x, k);
+      const py = mix(fromY, y, k);
+      // The streak: a fading line of warm light.
+      spec.reset();
+      spec.life = 0.6;
+      spec.size = 0.16 * strength + 0.04;
+      spec.grow = -0.6;
+      spec.hold = 0.05;
+      spec.alpha = 0.85;
+      spec.color.copy(big ? this.gold : this.warm);
+      this.sparks.emit(t, px, py - 0.12, 0.12, 0, -0.1);
+      // Glitter shed along the way, falling and twinkling.
+      if (step % (big ? 2 : 4)) continue;
+      spec.cell = Cell.Glint;
+      spec.life = big ? 1.1 : 0.8;
+      spec.size = 0.13;
+      spec.grow = -0.3;
+      spec.gravity = 1;
+      spec.drag = 0.8;
+      spec.twinkle = 0.9;
+      spec.hold = 0.3;
+      spec.alpha = 0.9;
+      const side = Math.sin(t * 37 + step * 2.1);
+      this.sparks.emit(t, px, py - 0.15, 0.12, side * 0.45, -0.2);
+    }
+  }
+
+  /** Remembers a burst's light, so the sky and lake glow in its colour for a moment. */
+  private addLight(t: number, light: number, color: Color, x: number, y: number) {
+    const slot = this.lights[this.nextLight];
+    this.nextLight = (this.nextLight + 1) % LIGHTS;
+    slot.at = t;
+    slot.light = light;
+    slot.x = x;
+    slot.y = y;
+    slot.color.copy(color);
+  }
+
+  /** The sky, the lake and every lit thing take on the colour of the bursts now in the air. */
+  private updateLights(t: number, calm: boolean) {
+    const level = skyLevel(t, this.lights);
+    let weight = 0;
+    let x = 0;
+    let y = 0;
+    const color = this.lightColor.setRGB(0, 0, 0);
+    for (const light of this.lights) {
+      const age = t - light.at;
+      if (age < 0 || age > 1.4) continue;
+      const w = Math.max(0.001, light.light * (1 - age / 1.4));
+      weight += w;
+      x += light.x * w;
+      y += light.y * w;
+      color.r += light.color.r * w;
+      color.g += light.color.g * w;
+      color.b += light.color.b * w;
+    }
+    if (weight > 0) {
+      x /= weight;
+      y /= weight;
+      color.multiplyScalar(1 / weight);
+    }
+    // The rocket's own little light on the water as it climbs.
+    const rocket = this.rocket.visible ? 0.18 : 0;
+    const sky = this.skyWash;
+    sky.visible = level > 0.002;
+    if (sky.visible) {
+      sky.material.color.copy(color);
+      sky.material.opacity = level * (calm ? 0.3 : 0.45);
+      sky.position.set(x * 0.6, Math.max(BURST_BOTTOM + 1, y) + 0.5, sky.position.z);
+    }
+    const lake = this.lakeWash;
+    lake.visible = level + rocket > 0.002;
+    if (lake.visible) {
+      if (weight > 0) lake.material.color.copy(color).lerp(this.warm, rocket / (level + rocket));
+      else lake.material.color.copy(this.warm);
+      lake.material.opacity = Math.min(0.75, level * 0.6 + rocket);
+      const lx = weight > 0 ? x : this.rocket.position.x;
+      lake.position.set(lx, -1.55, lake.position.z);
+    }
+    // Ambient light carries the colour onto the fox, the crowd and the town.
+    this.fill.color.copy(this.fillColor);
+    if (weight > 0) this.fill.color.lerp(color, Math.min(0.6, level * 0.7));
+    this.fill.intensity = 1.1 + level * (calm ? 0.6 : 1.3);
   }
 
   // ------------------------------------------------------------------------------------------
@@ -813,59 +1325,51 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     const calm = this.calm;
     this.updatePattern(t, frame, calm);
     this.updateRocket(t, frame, calm);
-
-    for (const burst of this.showBursts) {
-      if (burst.done || t < burst.at) continue;
-      burst.done = true;
-      if (!calm) {
-        // A short trail up to the burst.
-        for (let i = 0; i < 8; i++)
-          this.particles.add(
-            t - 0.05 * i,
-            burst.x,
-            burst.y - i * 0.22,
-            -0.1,
-            0,
-            -0.2,
-            new Color('#ffe8b0'),
-            0.5,
-          );
-      }
-      this.peony(t, burst.x, burst.y, burst.hue, calm);
-    }
-
+    this.updateShow(t, frame, calm);
+    this.updateShapes(t, calm);
     this.updateFox(t, frame, calm);
     this.updateCrowd(t, frame, calm);
-    this.particles.update(t, dt);
+    this.updateLights(t, calm);
+    this.sparks.update(t, dt);
   }
 
   private updateRocket(t: number, frame: FireworkFrame, calm: boolean) {
     const rising = this.phase === 'launch' && !calm;
     const k = (t - this.launchedAt) / RISE;
     this.rocket.visible = rising && k >= 0 && k < 1;
-    if (!this.rocket.visible) return;
-    const e = easeOut(k);
-    const x = mix(this.rocketFrom.x, 0, smooth(k));
-    const y = mix(this.rocketFrom.y, BURST_Y, e);
-    this.rocket.position.set(x, y, 0.2);
-    const dx = (0 - this.rocketFrom.x) / RISE;
-    this.rocket.rotation.z = Math.atan2(-dx * 0.25, 1);
-    // A trail of sparks; a golden glitter trail in the Big show.
-    const big = frame.bigShow;
-    const gold = new Color(big ? '#ffd45c' : '#ffe9c4');
-    for (let i = 0; i < (big ? 3 : 1); i++) {
-      this.particles.add(
-        t,
-        x + (big ? (Math.random() - 0.5) * 0.25 : 0),
-        y - 0.25,
-        0.15,
-        big ? (Math.random() - 0.5) * 0.6 : 0,
-        big ? -0.4 - Math.random() * 0.6 : -0.3,
-        gold,
-        big ? 0.9 : 0.45,
-        { gravity: big ? 0.8 : 0 },
-      );
+    if (!this.rocket.visible) {
+      this.sparks.hide(ROCKET_SLOT, ROCKET_SLOT + 2);
+      return;
     }
+    const point = rocketAt(
+      k,
+      this.rocketFrom.x,
+      this.rocketFrom.y,
+      0,
+      BURST_Y,
+      1,
+      this.rocketPoint,
+    );
+    this.rocket.position.set(point.x, point.y, 0.2);
+    this.rocket.rotation.z = point.lean;
+    // The rocket stretches as it leaves the tube and pulls in as it slows at the top.
+    const stretch = 1 + 0.25 * (1 - smooth(k / 0.35)) - 0.12 * smooth((k - 0.7) / 0.3);
+    this.rocket.scale.set(1 / Math.sqrt(stretch), stretch, 1 / Math.sqrt(stretch));
+    // Its burning head, and a soft halo that swells in the breath before the burst.
+    const headX = point.x + Math.sin(-point.lean) * -0.22;
+    const headY = point.y - Math.cos(point.lean) * 0.22;
+    this.sparks.pin(ROCKET_SLOT, headX, headY, 0.25, 0.34 * point.glow, this.warm, 1, Cell.Glow);
+    this.sparks.pin(
+      ROCKET_SLOT + 1,
+      point.x,
+      point.y,
+      0.18,
+      1.3 * point.glow * point.glow,
+      this.warm,
+      0.22 * point.glow,
+      Cell.Glow,
+    );
+    this.rocketTrail(t, -1, headX, headY, frame.bigShow, 1);
   }
 
   // ------------------------------------------------------------------------------------------
@@ -918,20 +1422,16 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     if (show && !calm) {
       this.sparkler.updateMatrixWorld(true);
       const tip = this.sparkler.localToWorld(this.probe.set(0, 0.42, 0));
-      const gold = new Color('#ffd45c');
+      const spec = this.sparks.spec.reset();
+      spec.cell = Cell.Glint;
+      spec.life = 0.35;
+      spec.size = 0.14;
+      spec.gravity = 1;
+      spec.twinkle = 0.7;
+      spec.color.copy(this.gold);
       for (let i = 0; i < 2; i++) {
-        const a = Math.random() * Math.PI * 2;
-        this.particles.add(
-          t,
-          tip.x,
-          tip.y,
-          tip.z,
-          Math.cos(a) * 0.7,
-          Math.sin(a) * 0.7,
-          gold,
-          0.35,
-          { gravity: 1 },
-        );
+        const a = t * 23 + i * 2.4;
+        this.sparks.emit(t, tip.x, tip.y, tip.z, Math.cos(a) * 0.7, Math.sin(a) * 0.7);
       }
     }
   }
@@ -956,6 +1456,7 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
       const lift = frame.bigShow ? 1 : 0;
       const s = creature.lantern.scale.x + (lift - creature.lantern.scale.x) * 0.08;
       creature.lantern.scale.setScalar(Math.max(0.001, s));
+      creature.lantern.visible = s > 0.01;
       creature.lantern.position.y = 0.95 + (calm ? 0 : Math.sin(t * 2 + creature.phase) * 0.04);
     }
   }
@@ -973,7 +1474,7 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     }
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new BufferAttribute(position, 3));
-    const stars = new Points(
+    this.stars = new Points(
       geometry,
       new PointsMaterial({
         size: 0.35,
@@ -984,55 +1485,7 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
         depthWrite: false,
       }),
     );
-    this.scene.add(stars);
-  }
-
-  private buildTown() {
-    const random = seededRandom(11);
-    const hill = new MeshStandardMaterial({ color: '#2a2152', roughness: 1 });
-    const wall = new MeshStandardMaterial({ color: '#3a2d63', roughness: 0.9 });
-    const roof = new MeshStandardMaterial({ color: '#2b2050', roughness: 0.9 });
-    const window = new MeshBasicMaterial({ color: '#ffcf7a' });
-    const hills = new Mesh(new SphereGeometry(1, 24, 12), hill);
-    hills.scale.set(60, 0.75, 2);
-    hills.position.set(0, -0.6, -4.5);
-    this.town.add(hills);
-    const box = new BoxGeometry(1, 1, 1);
-    const cone = new ConeGeometry(0.75, 0.6, 4);
-    const pane = new PlaneGeometry(0.12, 0.16);
-    for (let x = -26; x < 26;) {
-      const w = 0.45 + random() * 0.5;
-      const h = 0.3 + random() * 0.4;
-      const house = new Mesh(box, wall);
-      house.scale.set(w, h, 0.6);
-      house.position.set(x + w / 2, -0.45 + h / 2, -4);
-      const top = new Mesh(cone, roof);
-      top.scale.set(w * 0.95, 0.45 + random() * 0.3, 0.6);
-      top.rotation.y = Math.PI / 4;
-      top.position.set(x + w / 2, -0.45 + h + top.scale.y * 0.3, -4);
-      this.town.add(house, top);
-      const lights = 1 + Math.floor(random() * 2);
-      for (let i = 0; i < lights; i++) {
-        const glow = new Mesh(pane, window);
-        glow.position.set(x + (w * (i + 1)) / (lights + 1), -0.45 + h * 0.55, -3.69);
-        this.town.add(glow);
-      }
-      x += w + 0.15 + random() * (Math.abs(x) < 4 ? 0.3 : 1.4);
-    }
-    // A string of lanterns over the far shore.
-    const lanternColors = ['#ffb347', '#ff9ccf', '#8fd3ff', '#ffe066', '#b7f0a0'];
-    const bulb = new SphereGeometry(0.07, 10, 8);
-    for (let x = -24; x <= 24; x += 0.55) {
-      const sag = ((x % 3.3) + 3.3) % 3.3;
-      const y = 0.68 - Math.sin((sag / 3.3) * Math.PI) * 0.18;
-      const lamp = new Mesh(
-        bulb,
-        new MeshBasicMaterial({ color: lanternColors[Math.round(x / 0.55 + 100) % 5] }),
-      );
-      lamp.position.set(x, y, -3.3);
-      this.town.add(lamp);
-    }
-    this.scene.add(this.town);
+    this.scene.add(this.stars);
   }
 
   private buildBank() {
@@ -1048,7 +1501,6 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     );
     bank.position.z = BANK_Z;
     this.scene.add(bank);
-    return bank;
   }
 
   private buildJetty() {
@@ -1102,18 +1554,7 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
       new MeshStandardMaterial({ color: '#7cc8ff', emissive: '#1d4a6b' }),
     );
     tip.position.y = 0.26;
-    const flame = new Sprite(
-      new SpriteMaterial({
-        map: this.glowMap,
-        color: '#ffd9a0',
-        transparent: true,
-        blending: AdditiveBlending,
-        depthWrite: false,
-      }),
-    );
-    flame.scale.setScalar(0.4);
-    flame.position.y = -0.22;
-    this.rocket.add(body, tip, flame);
+    this.rocket.add(body, tip);
     this.rocket.visible = false;
     this.scene.add(this.rocket);
   }
@@ -1303,6 +1744,9 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     const colors = ['#3f3270', '#4a3478', '#34386e', '#523a6e', '#3a2f62'];
     const sphere = new SphereGeometry(1, 18, 14);
     const bulbColors = ['#ffcf7a', '#ff9ccf', '#8fd3ff', '#b7f0a0'];
+    const eyeMaterial = new MeshBasicMaterial({ color: '#f3eaff' });
+    const poleGeometry = new CylinderGeometry(0.018, 0.018, 0.5, 6);
+    const poleMaterial = new MeshStandardMaterial({ color: '#8a6a4b' });
     for (let i = 0; i < 18; i++) {
       const material = new MeshStandardMaterial({
         color: colors[i % colors.length],
@@ -1348,16 +1792,13 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
       }
       // Two bright eyes catch the firework light.
       for (const side of [-1, 1]) {
-        const eye = new Mesh(sphere, new MeshBasicMaterial({ color: '#f3eaff' }));
+        const eye = new Mesh(sphere, eyeMaterial);
         eye.scale.setScalar(0.022);
         eye.position.set(side * 0.06, 0.02, 0.155);
         head.add(eye);
       }
       const lantern = new Group();
-      const pole = new Mesh(
-        new CylinderGeometry(0.018, 0.018, 0.5, 6),
-        new MeshStandardMaterial({ color: '#8a6a4b' }),
-      );
+      const pole = new Mesh(poleGeometry, poleMaterial);
       pole.position.y = -0.2;
       const bulb = new Mesh(
         sphere,
@@ -1386,16 +1827,13 @@ export class FireworkWorld extends Stage implements StateWorld<FireworkFrame> {
     this.ringGeometry.dispose();
     this.ringMaterial.dispose();
     this.frameMaterial.dispose();
-    for (const material of [
-      ...Object.values(this.sparkMaterials),
-      ...Object.values(this.mirrorMaterials),
-    ])
-      material.dispose();
     this.glowMap.dispose();
-    this.starMap.dispose();
+    this.washMap.dispose();
     (this.scene.background as CanvasTexture | null)?.dispose();
-    this.particles.points.geometry.dispose();
-    (this.particles.points.material as Material).dispose();
+    this.sparks.dispose();
+    // The stage frees meshes and sprites; the star field is points.
+    this.stars?.geometry.dispose();
+    this.stars?.material.dispose();
     super.dispose();
   }
 }
