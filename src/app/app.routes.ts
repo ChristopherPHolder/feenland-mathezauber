@@ -15,6 +15,8 @@ import { DrumRoute } from './pages/drums/drum-route';
 import { StarRoute } from './pages/star-catcher/star-route';
 import { FireworkRoute } from './pages/fireworks/firework-route';
 import { GondolaRoute } from './pages/gondola/gondola-route';
+import { ScalesRoute } from './pages/scales/scales-route';
+import { DragonDuelRoute } from './pages/dragon-duel/dragon-duel-route';
 import { MarketRoute } from './pages/market/market-route';
 import { RaceRoute } from './pages/unicorn-race/race-route';
 import { WelcomeRoute } from './pages/welcome/welcome-route';
@@ -157,11 +159,31 @@ export const routes: Routes = [
     matcher: (segments) =>
       segments.length === 2 &&
       segments[0].path === 'adventure' &&
+      /^scales-(?:[1-9]|1[0-2])$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    component: ScalesRoute,
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
       /^market-(?:[1-9]|10)$/.test(segments[1].path)
         ? { consumed: segments, posParams: { id: segments[1] } }
         : null,
     data: { focusedGame: true },
     component: MarketRoute,
+  },
+  {
+    matcher: (segments) =>
+      segments.length === 2 &&
+      segments[0].path === 'adventure' &&
+      /^dragon-duel-[1-8]$/.test(segments[1].path)
+        ? { consumed: segments, posParams: { id: segments[1] } }
+        : null,
+    data: { focusedGame: true },
+    component: DragonDuelRoute,
   },
   {
     path: 'adventure/number-wall',

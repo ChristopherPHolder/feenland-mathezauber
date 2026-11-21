@@ -1,0 +1,139 @@
+/* The film: the kitchen's own flat picture, small, with pretend buttons and a tapping finger. */
+:host {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+.film {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 320px);
+  padding: 6px;
+  border-radius: var(--radius-surface);
+  background: #fdf1dc;
+}
+app-scales-scene {
+  aspect-ratio: 4 / 3;
+  height: auto;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.pretend {
+  position: relative;
+  display: flex;
+  gap: 4px;
+}
+.fake {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 30px;
+  padding: 2px 4px;
+  border-radius: 10px;
+  background: #c9a24a;
+  color: #2e1d05;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.2s;
+}
+.fake.go {
+  background: var(--pink);
+  color: var(--paper);
+}
+.fake.pressed {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 3px var(--sun);
+}
+.finger {
+  position: absolute;
+  top: 12px;
+  width: 22px;
+  height: 28px;
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 3px 3px #17255540);
+  transition: left 0.5s ease-in-out;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 12px;
+  width: min(100%, 320px);
+}
+.steps {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ground);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.steps li.on {
+  background: var(--pink);
+  color: var(--paper);
+}
+.steps li.done {
+  background: var(--success-ground);
+  color: var(--ink);
+}
+.replay {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--pink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--pink-deep);
+}
+.replay svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.replay:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.caption {
+  flex: 1 1 100%;
+  min-height: 1.4em;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+/* On a phone the step dots go and the caption sits beside the replay button. */
+@media (max-width: 520px) {
+  .steps {
+    display: none;
+  }
+  .caption {
+    flex: 0 1 auto;
+    font-size: 16px;
+  }
+}
+:host-context(.calm-motion) :is(.finger, .fake) {
+  transition: none;
+}

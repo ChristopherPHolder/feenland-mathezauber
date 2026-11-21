@@ -25,7 +25,9 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
   'star-catcher': 'starCatcherPlay',
   fireworks: 'fireworksPlay',
   gondola: 'gondolaPlay',
+  scales: 'scalesPlay',
   market: 'marketPlay',
+  'dragon-duel': 'duelPlay',
 };
 @Component({
   selector: 'app-welcome',

@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 166 selectable levels across twelve games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 186 selectable levels across fourteen games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -30,7 +30,9 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Mushroom Drums   | 3 verses of 7–10 drums plus a 4-drum solo, about 34 answers      | 34 × 2.5–3.5 s + demos and titles ≈ 2.5–3.5 min       |
 | The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
 | The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min           |
+| The Giant’s Scales   | 6 recipe lines and the feast dish (weigh, read, pour or compare) | 7 × 20–30 s ≈ 2.5–3.5 min; level 1 ≈ 1.5 min          |
 | The Fairy Market     | 6–7 treats and the big buy (two questions a treat on level 5)    | 7 × 15–25 s ≈ 2–3 min; spree 7 × 25–35 s ≈ 3–4 min    |
+| Dragon Duels         | one duel: 20–30 sprite energy, 2–4 a hit (6–12 right answers)    | 9 × 8–15 s + attacks ≈ 2–3 min; boss ≈ 3–4 min        |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -161,6 +163,19 @@ The generator spreads a round's numbers across the bridge, one from each equal s
 
 Every cabin holds ten, in two rows of five. Every item crosses a ten (the generator filters for it), no item repeats in a round, and the last cabin is a big summit cabin from a harder pool that pays double. Single-digit levels (1–6) play 8 or 10 cabins with four answer buttons; levels 1 and 2 have only 8 different sums, so they play 8. Two-digit levels play 8 cabins with a number pad laid out in fives. The split must fill the cabin exactly (or, from level 6, take everything from a full ten; from level 10, send the express): a wrong split bounces a bunny off or jams the door, and after two slips Gusti shows a picture card with other numbers. Levels 1–6 show bunnies, 7–9 show full tens as "10" cabins, and 10–12 show numbers with a split diagram and a "Show the bunnies" button. Within a level, three quick first-try turns in a row bring a snow tarp over the cabins until the next miss. Level 10 asks for +9 and +8 rather than the issue's +11, because +11 only crosses a ten after a number ending in 9. Round stars come from first-try splits (three for 75%, two for half), and the master level needs three to be mastered.
 
+### The Giant’s Scales: 12 levels (`pages/scales/scales-levels.ts`)
+
+| Topic           | Levels, easiest first                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| Heavy and light | which is heavier? (by the tilt, then by labelled sacks) · level it with blocks (1 and 5)         |
+| Kilograms       | kilogram weights 1, 2, 5, 10 kg (fewest weights) · read the scale in kg (marks of 1 or 2)        |
+| Grams           | grams with 100, 200, 500 g, one line a whole 1 kg · read the kitchen scale (marks of 50/100)     |
+| Both sides      | same on both sides 7 + □ = 4 + 5 · balance puzzles □ + □ = 14 · times on the scale 3 × 4 = □ + 2 |
+| Pour it         | jugs of 1 l and 0,5 l · millilitres with 1 l, 500 ml and 250 ml jugs                             |
+| The feast       | giant’s feast: every kind mixed, three stars to master it                                        |
+
+A round is six recipe lines and a feast dish that pays double. The beam is the only feedback: Bramble holds it level while the child puts weights on, and when they tap Weigh it swings (a damped spring, past level and back) toward the heavier side, with the help line naming the side that went down, never how much is missing. A wrong mystery-box number is swapped onto the pan as a weight of that number, so the tilt answers it. A wrong dial reading only says to count the marks from 0 to the first number; dials always point at an unnumbered mark. Pouring says over or under the line. Generators are checked by tests to always be solvable with the weights or jugs offered, within twelve pieces; the fewest-weights bonus uses an exact coin-change solver. Equations stay within 20 and mystery-box scales within 40 kg. Amounts are written with the locale's decimal comma (1,5 l in de, es and fr) and 1000 g shows as 1 kg. Round stars come from first-try lines (three for six of seven, two for four), and three first tries in a row make the pot glow gold and double points until a slip.
+
 ### The Fairy Market: 10 levels (`pages/market/market-levels.ts`)
 
 | Topic           | Levels, easiest first                                                                                                                                    |
@@ -172,6 +187,16 @@ Every cabin holds ten, in two rows of five. Every item crosses a ten (the genera
 | Change          | change from 10 € (count up from the price) · change from 20 € (count up through a ten) · Lumi at the till (count out change to a customer, fewest coins) |
 
 Money is in euro values drawn in the game's own style, whole euros first; cents come in a later topic. The purse shows every coin on the coin levels and the first three "enough?" turns, then only a tag with its amount, so the child moves from counting coins to working with numbers. The tray never shows a running total and screen readers hear the coins on it, not their sum, because counting is the skill. Paying too little or too much gets a rule ("Olli needs a little more", "take a coin back"), never an amount; typing the price, the whole purse or purse + price for "what's left" each get their own hint. A missed turn comes back two turns later with a different treat (the spree keeps its order, because its purse carries over). Level 2 pays a bonus for the fewest coins; level 5 refills the purse to 20 € after a treat that costs too much, and needs three stars to be mastered. Adding up shows the list with each price; typing one treat's price or forgetting one treat on a list of three get their own hints, and once the total is right the game says it, since the child found it. Each level card plays a short film with made-up numbers (coins counted onto the tray, a purse against two prices, hops counted up to the purse, a price counted on), and `?` opens it during play while the sun waits; when the turn on screen uses the film's numbers the film shows another set. Change asks for the change as a typed amount (adding the price on, typing the price or typing the note each get a hint that names the rule, never a number); at the till the roles swap: a fox, rabbit, hedgehog or squirrel pays with the smallest note that covers the price, and Lumi counts the change out of a till drawer that can always make it, with a bonus for the fewest coins. The plan for the next topics ( plan and save with a wish jar, cents) is in issue #264.
+
+### Dragon Duels: 8 levels (`pages/dragon-duel/duel.ts`)
+
+| Topic          | Levels, easiest first                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| Meadow sprites | Pebble Pixie (adding to 10) · Puddle Pixie (taking away within 10) · Bramble Imp (± to 20)  |
+| Sky sprites    | Gusty (doubles and near doubles) · Cinder Imp (± tens to 100) · Moon Moth (2, 5, 10 tables) |
+| Night sprites  | Frost Wisp (missing numbers to 20) · Grumble, the storm sprite (everything mixed, boss)     |
+
+Each level is one sprite. Questions come from `duel-questions.ts` with four choices whose wrong ones are near misses (off by one or two, a ten, a digit swap). A right answer hits for 2 on the first try and 1 after a miss; a first try within 6 s (stretched by the sprite's `slow`, up to 1.4 for the later sprites) is a critical hit (+1), and a dragon whose element is the sprite's weak spot hits +1 more. Every element is some sprite's weak spot. A wrong answer is struck out and the sum stays until it is solved; after two slips the dragon whispers the sprite's trick in words, never with numbers. With a charge pace (Relaxed 24 s, Normal 15 s, Fast 9 s, times `slow`) the sprite fills its charge while the child thinks and a wrong answer adds a third; a full charge zaps one of three hearts, and three zaps send the dragon for a nap (no stars, try again). No zaps is the default. Stars: three for no heart lost and at most one slip, two for at most one heart and three slips, else one; three stars master a level. Every right answer warms the egg and a won duel adds 5 warmth.
 
 ## Adding a level
 

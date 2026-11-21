@@ -206,6 +206,19 @@ import { Component, input } from '@angular/core';
         <path d="M4 58h56" />
       </svg>
     }
+    @case ('scales') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M24 58h16l-3-5H27z" fill="#c9a24a" />
+        <path d="M32 53V14" stroke-width="3" />
+        <path d="M8 18 56 12" stroke-width="3" />
+        <circle cx="32" cy="14" r="3" class="gold" />
+        <path d="M8 18 2 34M8 18l6 16M56 12l-6 16M56 12l6 16" stroke-width="1.5" />
+        <path d="M1 34h14q-1 6-7 6t-7-6zM49 28h14q-1 6-7 6t-7-6z" class="gold" />
+        <circle cx="8" cy="28" r="6" fill="#f0952e" />
+        <path d="M8 22v-3" stroke-width="2" />
+        <path d="M51 28l1-4h8l1 4z" fill="#c9a24a" />
+      </svg>
+    }
     @case ('market') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M10 30h44v26H10z" fill="#f6dcb4" />
@@ -217,6 +230,26 @@ import { Component, input } from '@angular/core';
         <circle cx="44" cy="46" r="8" class="gold" />
         <path d="M44 42v8m-2.5-6.5h4" stroke-width="1.6" />
         <path d="M4 58h56" />
+      </svg>
+    }
+    @case ('dragon-duel') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M4 56q28-10 56 0v4H4z" fill="#a8dca0" />
+        <path d="M9 22 6 12l8 6zM25 22l4-10-8 6z" fill="#ffd43f" />
+        <circle cx="17" cy="32" r="13" fill="#f2703f" />
+        <ellipse cx="17" cy="38" rx="7" ry="5" fill="#ffd9a0" />
+        <circle cx="13" cy="29" r="2.6" fill="#fffefc" />
+        <circle cx="21" cy="29" r="2.6" fill="#fffefc" />
+        <circle cx="13.5" cy="29.5" r="1.4" fill="#2a2148" stroke="none" />
+        <circle cx="21.5" cy="29.5" r="1.4" fill="#2a2148" stroke="none" />
+        <circle cx="34" cy="26" r="4.5" fill="#ff7a2f" />
+        <circle cx="34" cy="26" r="2.2" class="gold" />
+        <ellipse cx="49" cy="40" rx="11" ry="10.5" fill="#a89a8a" />
+        <ellipse cx="49" cy="44" rx="6" ry="4.5" fill="#e6ddd0" />
+        <path d="M43 33l4 1.5M55 33l-4 1.5" stroke-width="2" />
+        <circle cx="45.5" cy="37.5" r="1.6" fill="#2a2148" stroke="none" />
+        <circle cx="52.5" cy="37.5" r="1.6" fill="#2a2148" stroke="none" />
+        <path d="M41 25l3 3m4-6v4m6-2-3 3" stroke-width="2" />
       </svg>
     }
     @case ('numbers') {

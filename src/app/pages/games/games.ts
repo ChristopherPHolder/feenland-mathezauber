@@ -34,8 +34,11 @@ import { fireworkLevel } from '../fireworks/firework-levels';
 import { FireworkScores } from '../fireworks/firework-scores';
 import { gondolaStage } from '../gondola/gondola-levels';
 import { GondolaScores } from '../gondola/gondola-scores';
+import { scalesStage } from '../scales/scales-levels';
+import { ScalesScores } from '../scales/scales-scores';
 import { marketStage } from '../market/market-levels';
 import { MarketScores } from '../market/market-scores';
+import { duelSprite } from '../dragon-duel/duel';
 import {
   levelPosition,
   levels as wallLevels,
@@ -104,6 +107,7 @@ export class Games {
   private readonly starScores = inject(StarScores);
   private readonly fireworkScores = inject(FireworkScores);
   private readonly gondolaScores = inject(GondolaScores);
+  private readonly scalesScores = inject(ScalesScores);
   private readonly marketScores = inject(MarketScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
@@ -260,6 +264,7 @@ export class Games {
         this.starScores.best()[level.id] ??
         this.fireworkScores.best()[level.id] ??
         this.gondolaScores.best()[level.id] ??
+        this.scalesScores.best()[level.id] ??
         this.marketScores.best()[level.id] ??
         0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
@@ -308,8 +313,12 @@ export class Games {
     if (firework) return firework;
     const gondola = gondolaStage(level.id)?.example;
     if (gondola) return gondola;
+    const scales = scalesStage(level.id)?.example;
+    if (scales) return scales;
     const market = marketStage(level.id)?.example;
     if (market) return market;
+    const duel = duelSprite(level.id)?.example;
+    if (duel) return duel;
     return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {
