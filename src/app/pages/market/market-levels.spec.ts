@@ -4,7 +4,9 @@ import {
   checkLeft,
   changeDue,
   checkChange,
+  checkNeed,
   checkPay,
+  checkPlan,
   isFewestChange,
   checkTotal,
   daylightSeconds,
@@ -22,6 +24,7 @@ import {
   roundStars,
   seeded,
   turnPoints,
+  withPlan,
 } from './market-levels';
 import { EURO } from './market-money';
 
@@ -30,7 +33,7 @@ const rounds = (stage: number, count = 200) =>
   Array.from({ length: count }, (_, seed) => marketStage(`market-${stage}`)!.round(seeded(seed)));
 
 describe('market levels', () => {
-  it('lists ten levels with stable ids and a topic each', () => {
+  it('lists twelve levels with stable ids and a topic each', () => {
     expect(marketLevels.map((level) => level.id)).toEqual([
       'market-1',
       'market-2',
@@ -42,6 +45,8 @@ describe('market levels', () => {
       'market-8',
       'market-9',
       'market-10',
+      'market-11',
+      'market-12',
     ]);
     expect(marketLevels.every((level) => level.group)).toBe(true);
     expect(marketStage('market-99')).toBeUndefined();
@@ -64,7 +69,7 @@ describe('market levels', () => {
             expect(item.price).toBeGreaterThanOrEqual(euros(good.from));
             expect(item.price).toBeLessThanOrEqual(euros(good.to));
           }
-          if (index > 0 && stage.skill !== 'spree')
+          if (index > 0 && !['spree', 'jar', 'party'].includes(stage.skill))
             expect(turn.good).not.toBe(round[index - 1].good);
         });
   });
@@ -235,6 +240,57 @@ describe('change', () => {
     };
     expect(isFewestChange(turn, [500, 200])).toBe(true);
     expect(isFewestChange(turn, [200, 200, 100, 100, 100, 100])).toBe(false);
+  });
+});
+
+describe('plan and save', () => {
+  it('offers three different wants at a party, with the cupcake always fitting the budget', () => {
+    for (const turn of rounds(11).flat()) {
+      expect(turn.items).toEqual([{ good: 'cupcake', price: turn.price }]);
+      expect(new Set(turn.offers!.map((item) => item.good)).size).toBe(3);
+      expect(turn.offers!.some((item) => item.good === 'cupcake')).toBe(false);
+      expect(checkPlan(turn, [])).toBe('ok');
+    }
+  });
+
+  it('accepts any plan within the budget and folds the wants into the list', () => {
+    const turn = rounds(11, 1)[0][0];
+    const fits = [0, 1, 2].filter(
+      (index) => turn.price + turn.offers![index].price <= purseTotal(turn),
+    );
+    expect(checkPlan(turn, fits.slice(0, 1))).toBe('ok');
+    expect(checkPlan(turn, [0, 1, 2])).toBe('tooMany');
+    const planned = withPlan(turn, [0]);
+    expect(planned.items).toHaveLength(2);
+    expect(planned.price).toBe(turn.price + turn.offers![0].price);
+    const greedy = { ...turn, offers: [{ good: 'kite' as const, price: euros(20) }] };
+    expect(checkPlan(greedy, [0])).toBe('overBudget');
+  });
+
+  it('fills the wish jar day by day until the last day can buy the wish', () => {
+    for (const round of rounds(12)) {
+      const goal = round[0].price;
+      round.forEach((turn, day) => {
+        expect(turn.price).toBe(goal);
+        expect(purseTotal(turn)).toBe(turn.pocket! * (day + 1));
+        if (day < round.length - 1) {
+          expect(turn.steps).toEqual(['need']);
+          expect(purseTotal(turn)).toBeLessThan(goal);
+        } else {
+          expect(turn.steps).toEqual(['enough']);
+          expect(affordable(turn)).toBe(true);
+        }
+      });
+    }
+  });
+
+  it('helps with "how much more" without giving it away', () => {
+    const turn = rounds(12, 1)[0][1];
+    const jar = purseTotal(turn) / 100;
+    const goal = turn.price / 100;
+    expect(checkNeed(turn, goal - jar)).toBe('ok');
+    expect(checkNeed(turn, jar)).toBe('jarOnly');
+    expect(checkNeed(turn, goal)).toBe('goalOnly');
   });
 });
 

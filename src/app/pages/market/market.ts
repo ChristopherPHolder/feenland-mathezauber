@@ -27,6 +27,8 @@ import {
   changeDue,
   checkChange,
   checkLeft,
+  checkNeed,
+  checkPlan,
   checkTotal,
   checkPay,
   daylightSeconds,
@@ -50,6 +52,7 @@ import {
   Step,
   TOTAL_STAGES,
   turnPoints,
+  withPlan,
 } from './market-levels';
 import { capitalise, marketText, MarketMessageKey } from './market-messages';
 import { Denomination, fewestCoins, formatMoney, isNote, total } from './market-money';
@@ -75,6 +78,8 @@ interface Round {
   readonly typed: string;
   /** Wrong answers on this turn, over all its steps. */
   readonly slips: number;
+  /** Party plan: which wants Lumi has put on the list (indexes into the offers). */
+  readonly chosen: readonly number[];
   readonly outcome: 'none' | 'bought' | 'putBack';
   readonly streak: number;
   readonly bestStreak: number;
@@ -183,7 +188,22 @@ export class Market {
   /** The "how to shop" film is open over the game; the sun waits. */
   protected readonly coaching = signal(false);
 
-  protected readonly turn = computed(() => this.round().turns[this.round().index]);
+  protected readonly turn = computed(() => {
+    const round = this.round();
+    const turn = round.turns[round.index];
+    // Once the party plan is made, the chosen wants are part of the list and its price.
+    return turn.offers && round.step > 0 ? withPlan(turn, round.chosen) : turn;
+  });
+  /** The wants on offer at a party, with each one's state on the list. */
+  protected readonly offers = computed(() =>
+    (this.turn().offers ?? []).map((item, index) => ({
+      ...item,
+      index,
+      name: this.goodLabel(item.good),
+      priceText: this.money(item.price),
+      chosen: this.round().chosen.includes(index),
+    })),
+  );
   protected readonly turnsTotal = computed(() => this.stage().turns);
   protected readonly big = computed(() => this.round().index === this.turnsTotal() - 1);
   protected readonly step = computed<Step>(
@@ -232,13 +252,19 @@ export class Market {
     if (step === 'pay')
       return list ? this.t('payTotal', { amount: this.priceText() }) : this.t('askPay');
     if (step === 'enough') return this.t('askEnough');
+    if (step === 'plan') return this.t('askPlan', { budget: this.purseText() });
+    if (step === 'need') return this.t('askNeed', { good: this.goodName() });
     if (step === 'change') return this.t('askChange', { paid: this.paidText() });
     if (step === 'give')
       return this.t('askGive', { customer: this.customerName(), paid: this.paidText() });
     return list ? this.t('leftTotal', { amount: this.priceText() }) : this.t('askLeft');
   });
   protected readonly typing = computed(
-    () => this.step() === 'total' || this.step() === 'left' || this.step() === 'change',
+    () =>
+      this.step() === 'total' ||
+      this.step() === 'left' ||
+      this.step() === 'change' ||
+      this.step() === 'need',
   );
   /** Change and till turns have no purse to look at: the note in hand is all that matters. */
   protected readonly showPurse = computed(() => this.step() !== 'change' && this.step() !== 'give');
@@ -393,6 +419,7 @@ export class Market {
       tray: [],
       typed: '',
       slips: 0,
+      chosen: [],
       outcome: 'none',
       streak: 0,
       bestStreak: 0,
@@ -500,6 +527,7 @@ export class Market {
     if (!this.shopping() || !this.typing() || !this.round().typed) return;
     if (this.step() === 'total') return this.submitTotal(Number(this.round().typed));
     if (this.step() === 'change') return this.submitChange(Number(this.round().typed));
+    if (this.step() === 'need') return this.submitNeed(Number(this.round().typed));
     const result = checkLeft(this.turn(), Number(this.round().typed));
     if (result === 'ok') this.solve('bought', false);
     else {
@@ -532,7 +560,39 @@ export class Market {
     this.armIdle();
   }
 
-  private slip(key: MarketMessageKey) {
+  /** Party plan: a want goes on the list or comes off it. */
+  protected toggleWant(index: number) {
+    if (!this.shopping() || this.step() !== 'plan') return;
+    this.round.update((round) => ({
+      ...round,
+      chosen: round.chosen.includes(index)
+        ? round.chosen.filter((at) => at !== index)
+        : [...round.chosen, index],
+    }));
+    this.sounds.play(this.round().chosen.includes(index) ? 'coin' : 'back');
+    this.armIdle();
+  }
+
+  /** Any plan within the budget is right; then the child says what is left. */
+  protected submitPlan() {
+    if (!this.shopping() || this.step() !== 'plan') return;
+    const result = checkPlan(this.turn(), this.round().chosen);
+    if (result !== 'ok')
+      return this.slip(result, result === 'overBudget' ? { budget: this.purseText() } : {});
+    this.round.update((round) => ({ ...round, step: round.step + 1, typed: '' }));
+    this.sounds.play('chime');
+    this.status.set({ key: 'planRight' });
+    this.armIdle();
+  }
+
+  private submitNeed(typed: number) {
+    const result = checkNeed(this.turn(), typed);
+    if (result === 'ok') return this.solve('saved', false);
+    this.round.update((round) => ({ ...round, typed: '' }));
+    this.slip(result === 'off' ? 'needOff' : result);
+  }
+
+  private slip(key: MarketMessageKey, values: Record<string, string | number> = {}) {
     this.round.update((round) => ({
       ...round,
       slips: round.slips + 1,
@@ -540,12 +600,16 @@ export class Market {
       streak: 0,
       golden: false,
     }));
-    this.status.set({ key });
+    this.status.set({ key, values });
     this.sounds.play('nope');
     this.armIdle();
   }
 
-  private solve(outcome: 'bought' | 'putBack', fewest: boolean) {
+  /**
+   * A turn is done: the treat was bought, put back (not enough), or, on the wish jar, the day
+   * was counted and the pocket money saved.
+   */
+  private solve(outcome: 'bought' | 'putBack' | 'saved', fewest: boolean) {
     this.stopIdle();
     const round = this.round();
     const turn = this.turn();
@@ -570,7 +634,7 @@ export class Market {
       ...round,
       turns,
       phase: 'solved',
-      outcome,
+      outcome: outcome === 'saved' ? 'none' : outcome,
       streak,
       bestStreak: Math.max(round.bestStreak, streak),
       golden,
@@ -585,21 +649,23 @@ export class Market {
         outcome === 'bought'
           ? [...round.bought, ...(turn.items ?? [{ good: turn.good, price: turn.price }])]
           : round.bought,
-      pays: round.pays + 1,
+      pays: outcome === 'saved' ? round.pays : round.pays + 1,
     });
     this.status.set(
-      outcome === 'putBack'
-        ? { key: 'putBack', values: { good: this.goodName() }, lead: 'cheerNo' }
-        : turn.steps.includes('change') || turn.steps.includes('give')
-          ? { key: 'changeRight', values: { amount: this.money(changeDue(turn)) } }
-          : turn.steps.includes('left')
-            ? { key: 'stillLeft', values: { amount: this.money(purseTotal(turn) - turn.price) } }
-            : { key: 'bought', values: { good: this.goodLabel(turn.good) } },
+      outcome === 'saved'
+        ? { key: 'pocketIn', values: { amount: this.money(turn.pocket ?? 0) } }
+        : outcome === 'putBack'
+          ? { key: 'putBack', values: { good: this.goodName() }, lead: 'cheerNo' }
+          : turn.steps.includes('change') || turn.steps.includes('give')
+            ? { key: 'changeRight', values: { amount: this.money(changeDue(turn)) } }
+            : turn.steps.includes('left')
+              ? { key: 'stillLeft', values: { amount: this.money(purseTotal(turn) - turn.price) } }
+              : { key: 'bought', values: { good: this.goodLabel(turn.good) } },
     );
     if (!round.golden && golden) this.status.set({ key: 'goldenStart' });
     this.hatchery.warm();
     if (guide.add() >= GUIDED_TURNS) this.guided.set(false);
-    this.sounds.play(outcome === 'putBack' ? 'putBack' : 'till');
+    this.sounds.play(outcome === 'putBack' ? 'putBack' : outcome === 'saved' ? 'coin' : 'till');
     this.sounds.play('chime', streak * 2);
     this.timer = setTimeout(() => this.advance(), SOLVE_DELAY);
   }
@@ -617,6 +683,7 @@ export class Market {
         tray: [],
         typed: '',
         slips: 0,
+        chosen: [],
         outcome: 'none',
         gain: 0,
         badges: [],

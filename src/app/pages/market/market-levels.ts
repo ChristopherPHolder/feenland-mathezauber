@@ -25,7 +25,7 @@ export type Random = () => number;
  * What the child does on a turn, in order: add up a shopping list ("total"), pay with coins,
  * judge "enough?", type what's left.
  */
-export type Step = 'total' | 'pay' | 'enough' | 'left' | 'change' | 'give';
+export type Step = 'total' | 'pay' | 'enough' | 'left' | 'change' | 'give' | 'plan' | 'need';
 /** How the purse looks: every coin on show, or only a tag with its amount. */
 export type Look = 'coins' | 'tag';
 /** The skill a level is about; it also picks the level's tip card. */
@@ -39,7 +39,9 @@ export type MarketSkill =
   | 'list'
   | 'change10'
   | 'change20'
-  | 'till';
+  | 'till'
+  | 'party'
+  | 'jar';
 
 /** The animals who come to buy when Lumi works the till. */
 export const CUSTOMERS = ['fox', 'rabbit', 'hedgehog', 'squirrel'] as const;
@@ -82,6 +84,12 @@ export interface MarketTurn {
   readonly till?: readonly Denomination[];
   /** Who is buying, when Lumi works the till. */
   readonly customer?: Customer;
+  /** Party plan: the treats Lumi may add if they still fit the budget (the wants). */
+  readonly offers?: readonly Item[];
+  /** Wish jar: the purse is the jar Lumi saves in, and the treat is her big wish. */
+  readonly jar?: boolean;
+  /** Wish jar: the pocket money that goes into the jar after this day. */
+  readonly pocket?: number;
   /** The coins and notes in Lumi's purse before she buys. */
   readonly purse: readonly Denomination[];
   /** What the child does, in order. A turn whose purse is too small stops after "enough". */
@@ -359,6 +367,59 @@ function tillTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
   };
 }
 
+/**
+ * Level 11: a party on a 10 € budget. The cupcake for the party is on the list (a need);
+ * Lumi may add up to two wants that still fit, then says what is left. Any plan within the
+ * budget is right.
+ */
+function partyTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  const budget = euros(big ? 15 : 10);
+  const need: Item = { good: 'cupcake', price: euros(int(random, 2, 4)) };
+  const wantGoods = GOODS.filter(
+    (good) => good.id !== 'cupcake' && good.id !== previous && good.from <= 6,
+  );
+  const offers: Item[] = [];
+  while (offers.length < 3) {
+    const good = pick(random, wantGoods);
+    if (offers.some((item) => item.good === good.id)) continue;
+    offers.push({ good: good.id, price: euros(int(random, good.from, Math.min(good.to, 6))) });
+  }
+  return {
+    good: need.good,
+    price: need.price,
+    items: [need],
+    offers,
+    purse: tidyPurse(budget),
+    steps: ['plan', 'left'],
+    look: 'tag',
+  };
+}
+
+/**
+ * Level 12: the wish jar. Lumi saves her pocket money for a big wish. Every day asks how much
+ * more she needs; on the last day the jar is full enough and she buys it.
+ */
+function jarRound(random: Random, turns: number): MarketTurn[] {
+  const pocket = euros(pick(random, [2, 3]));
+  const wish = pocket === euros(2) ? pick(random, ['wand', 'kite'] as const) : 'kite';
+  const goal = pocket * turns - euros(int(random, 0, 1));
+  const coins = (amount: number) =>
+    sortCoins(Array.from({ length: amount / pocket }, () => fewestCoins(pocket)!).flat());
+  return Array.from({ length: turns }, (_, day) => {
+    const saved = pocket * (day + 1);
+    const last = day === turns - 1;
+    return {
+      good: wish,
+      price: goal,
+      purse: coins(saved),
+      steps: last ? ['enough'] : ['need'],
+      look: 'coins',
+      jar: true,
+      pocket,
+    } satisfies MarketTurn;
+  });
+}
+
 function eachTurn(
   turns: number,
   make: (index: number, big: boolean, previous?: GoodId) => MarketTurn,
@@ -455,6 +516,22 @@ export const marketStages: readonly MarketStage[] = [
     strict: true,
     round: (random) => eachTurn(7, (_, big, previous) => tillTurn(random, big, previous)),
   },
+  {
+    stage: 11,
+    group: 'marketPlan',
+    skill: 'party',
+    example: '10 € − 3 € − 4 €',
+    turns: 6,
+    round: (random) => eachTurn(6, (_, big, previous) => partyTurn(random, big, previous)),
+  },
+  {
+    stage: 12,
+    group: 'marketPlan',
+    skill: 'jar',
+    example: '15 € − 9 €',
+    turns: 6,
+    round: (random) => jarRound(random, 6),
+  },
 ];
 
 export const TOTAL_STAGES = marketStages.length;
@@ -533,6 +610,34 @@ export function isFewestChange(turn: MarketTurn, tray: readonly Denomination[]):
   return fewest !== null && tray.length === fewest;
 }
 
+export type PlanResult = 'ok' | 'overBudget' | 'tooMany';
+/** A party plan: the need plus the chosen wants must fit the budget, two wants at most. */
+export function checkPlan(turn: MarketTurn, chosen: readonly number[]): PlanResult {
+  if (chosen.length > 2) return 'tooMany';
+  const cost = turn.price + chosen.reduce((sum, index) => sum + turn.offers![index].price, 0);
+  return cost <= purseTotal(turn) ? 'ok' : 'overBudget';
+}
+
+/** The turn once the plan is made: the chosen wants join the list and the price. */
+export function withPlan(turn: MarketTurn, chosen: readonly number[]): MarketTurn {
+  const wants = chosen.map((index) => turn.offers![index]);
+  return {
+    ...turn,
+    items: [...(turn.items ?? []), ...wants],
+    price: turn.price + wants.reduce((sum, item) => sum + item.price, 0),
+  };
+}
+
+export type NeedResult = 'ok' | 'jarOnly' | 'goalOnly' | 'off';
+/** How much more the wish needs: the jar alone and the whole price get their own help. */
+export function checkNeed(turn: MarketTurn, typed: number): NeedResult {
+  const cents = typed * EURO;
+  if (cents === turn.price - purseTotal(turn)) return 'ok';
+  if (cents === purseTotal(turn)) return 'jarOnly';
+  if (cents === turn.price) return 'goalOnly';
+  return 'off';
+}
+
 export type LeftResult = 'ok' | 'added' | 'price' | 'purse' | 'off';
 /**
  * A typed "what's left" answer. The common slips get their own help: adding the price on,
@@ -549,6 +654,8 @@ export function checkLeft(turn: MarketTurn, typed: number): LeftResult {
 
 /** Every turn can be done: an exact pay is possible, a "what's left" is never negative. */
 export function isPlayable(turn: MarketTurn): boolean {
+  if (turn.steps.includes('plan')) return checkPlan(turn, []) === 'ok';
+  if (turn.steps.includes('need')) return turn.price > purseTotal(turn);
   if (turn.steps.includes('change') && changeDue(turn) <= 0) return false;
   if (turn.steps.includes('give'))
     return changeDue(turn) > 0 && canPayExactly(turn.till ?? [], changeDue(turn));
@@ -570,7 +677,8 @@ export function replayMissed(
   random: Random,
 ): MarketTurn[] {
   const target = index + 2;
-  if (stage.skill === 'spree' || target >= round.length - 1) return [...round];
+  if (stage.skill === 'spree' || stage.skill === 'jar' || target >= round.length - 1)
+    return [...round];
   const missed = round[index];
   const copy = [...round];
   // A shopping list comes back as it was; a single treat comes back as another treat.

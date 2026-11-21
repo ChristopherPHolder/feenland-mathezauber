@@ -110,7 +110,7 @@ describe('The Fairy Market', () => {
     expect(text).toContain(en.coinByCoin);
     expect(text).toContain(en.paceTitle);
     expect(text).toContain(en.shelfEmpty);
-    expect(element(fixture).querySelectorAll('.level-pill')).toHaveLength(10);
+    expect(element(fixture).querySelectorAll('.level-pill')).toHaveLength(12);
     expect(element(fixture).querySelector('app-market-demo .caption')!.textContent).toContain(
       en.demoPay1,
     );
@@ -298,5 +298,43 @@ describe('The Fairy Market', () => {
     tapCoin(fixture, coin);
     click(fixture, '.pay');
     expect(status(fixture)).toBe(en.giveShort);
+  });
+
+  it('plans a party on level 11: over budget is caught, any plan that fits is right', () => {
+    const fixture = setup('market-11');
+    start(fixture);
+    const turn = current(fixture);
+    const wants = [...element(fixture).querySelectorAll<HTMLButtonElement>('.want')];
+    expect(wants).toHaveLength(3);
+    wants[0].click();
+    wants[1].click();
+    wants[2].click();
+    fixture.detectChanges();
+    click(fixture, '.plan .pay');
+    expect(status(fixture)).toBe(en.tooMany);
+    // Take everything back: the cupcake alone always fits.
+    for (const want of wants) want.click();
+    fixture.detectChanges();
+    click(fixture, '.plan .pay');
+    expect(status(fixture)).toBe(en.planRight);
+    type(fixture, (1000 - turn.price) / 100);
+    expect(internals(fixture).round().phase).toBe('solved');
+  });
+
+  it('saves in the wish jar on level 12 and buys the wish on the last day', () => {
+    const fixture = setup('market-12');
+    start(fixture);
+    expect(element(fixture).querySelector('.purse-tag')!.textContent).toContain(en.jarLabel);
+    for (let day = 0; day < 5; day++) {
+      const turn = current(fixture);
+      type(fixture, turn.price / 100);
+      expect(status(fixture)).toBe(en.goalOnly);
+      type(fixture, (turn.price - turn.purse.reduce((a, b) => a + b, 0)) / 100);
+      expect(status(fixture)).toContain('Pocket money!');
+      next(fixture);
+    }
+    click(fixture, '.judge-button.yes');
+    next(fixture);
+    expect(element(fixture).querySelectorAll('.receipt li')).toHaveLength(1);
   });
 });

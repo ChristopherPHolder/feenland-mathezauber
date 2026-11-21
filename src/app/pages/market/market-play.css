@@ -348,6 +348,54 @@
   font-weight: 600;
 }
 
+/* Party plan: wants to add to the list, each a toggle. */
+.plan {
+  display: grid;
+  gap: 8px;
+}
+.plan-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.wants {
+  display: grid;
+  gap: 6px;
+  border-radius: var(--radius-tile);
+}
+.want {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 4px 12px;
+  border: 2px dashed #d9b88f;
+  border-radius: var(--radius-chip);
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 18px var(--font-sans);
+  text-align: start;
+  cursor: pointer;
+}
+.want span:nth-child(2) {
+  flex: 1 1 auto;
+}
+.want[aria-pressed='true'] {
+  border: 2px solid var(--success-strong);
+  background: var(--success-ground);
+}
+.want[aria-pressed='true']::after {
+  content: '✓';
+  color: var(--success-strong);
+}
+.want:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
 /* The counter tray: coins put down, tap one to take it back, then Pay. */
 .tray {
   display: flex;
@@ -456,6 +504,7 @@
 
 /* The first treats (and after six quiet seconds): what to tap next wears a gold halo. */
 .coin-row.is-guided,
+.wants.is-guided,
 .judge.is-guided,
 .pay.is-guided,
 ui-number-pad.is-guided {

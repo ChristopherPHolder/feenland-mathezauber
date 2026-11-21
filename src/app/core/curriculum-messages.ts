@@ -240,6 +240,12 @@ export const curriculumEn = {
   market9Help: 'Pay with 20 €: count up to the next ten, then on to 20.',
   market10: 'Lumi at the till',
   market10Help: 'Lumi works the till and counts out the change. Three stars to master it.',
+  marketPlan: 'Plan and save',
+  market11: 'Party plan',
+  market11Help:
+    'A 10 € party: the cupcake first (a need), then wants that still fit, then what is left.',
+  market12: 'The wish jar',
+  market12Help: 'Save pocket money for a big wish: how much more does Lumi need?',
 };
 export type CurriculumKey = keyof typeof curriculumEn;
 type CurriculumMessages = { readonly [K in CurriculumKey]: string };
@@ -480,6 +486,12 @@ export const curriculumDe: CurriculumMessages = {
   market9Help: 'Mit 20 € zahlen: erst bis zum nächsten Zehner, dann bis 20 weiterzählen.',
   market10: 'Lumi an der Kasse',
   market10Help: 'Lumi sitzt an der Kasse und zählt das Wechselgeld ab. Drei Sterne zum Meistern.',
+  marketPlan: 'Planen und sparen',
+  market11: 'Partyplan',
+  market11Help:
+    'Eine Party für 10 €: zuerst der Muffin (braucht sie), dann Wünsche, die noch passen, dann der Rest.',
+  market12: 'Das Sparglas',
+  market12Help: 'Taschengeld für einen großen Wunsch sparen: Wie viel fehlt Lumi noch?',
 };
 
 export const curriculumEs: CurriculumMessages = {
@@ -717,6 +729,12 @@ export const curriculumEs: CurriculumMessages = {
   market9Help: 'Paga con 20 €: cuenta hasta la siguiente decena y luego hasta 20.',
   market10: 'Lumi en la caja',
   market10Help: 'Lumi atiende la caja y cuenta el cambio. Tres estrellas para dominarlo.',
+  marketPlan: 'Planear y ahorrar',
+  market11: 'Plan de fiesta',
+  market11Help:
+    'Una fiesta con 10 €: primero la magdalena (necesidad), luego caprichos que quepan y lo que queda.',
+  market12: 'El bote de deseos',
+  market12Help: 'Ahorra la paga para un gran deseo: ¿cuánto le falta a Lumi?',
 };
 
 export const curriculumFr: CurriculumMessages = {
@@ -956,4 +974,10 @@ export const curriculumFr: CurriculumMessages = {
   market9Help: 'Payer avec 20 € : compter jusqu’à la dizaine suivante, puis jusqu’à 20.',
   market10: 'Lumi à la caisse',
   market10Help: 'Lumi tient la caisse et rend la monnaie. Trois étoiles pour maîtriser.',
+  marketPlan: 'Prévoir et économiser',
+  market11: 'Plan de fête',
+  market11Help:
+    'Une fête avec 10 € : d’abord le cupcake (un besoin), puis des envies qui rentrent, puis le reste.',
+  market12: 'Le bocal à souhaits',
+  market12Help: 'Économiser l’argent de poche pour un grand souhait : combien manque-t-il à Lumi ?',
 };

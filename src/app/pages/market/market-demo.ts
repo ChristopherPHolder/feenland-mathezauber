@@ -28,6 +28,7 @@ export function filmFor(skill: MarketSkill): Film {
     case 'change10':
     case 'change20':
     case 'till':
+    case 'jar':
       return 'left';
     default:
       return 'total';
