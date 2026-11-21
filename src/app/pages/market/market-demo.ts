@@ -25,6 +25,9 @@ export function filmFor(skill: MarketSkill): Film {
     case 'spree':
       return 'enough';
     case 'left':
+    case 'change10':
+    case 'change20':
+    case 'till':
       return 'left';
     default:
       return 'total';

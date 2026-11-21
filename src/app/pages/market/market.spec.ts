@@ -110,7 +110,7 @@ describe('The Fairy Market', () => {
     expect(text).toContain(en.coinByCoin);
     expect(text).toContain(en.paceTitle);
     expect(text).toContain(en.shelfEmpty);
-    expect(element(fixture).querySelectorAll('.level-pill')).toHaveLength(7);
+    expect(element(fixture).querySelectorAll('.level-pill')).toHaveLength(10);
     expect(element(fixture).querySelector('app-market-demo .caption')!.textContent).toContain(
       en.demoPay1,
     );
@@ -256,5 +256,47 @@ describe('The Fairy Market', () => {
     ).toBe(sun);
     click(fixture, 'ui-coach-dialog .button.primary');
     expect(element(fixture).querySelector('ui-coach-dialog')).toBeNull();
+  });
+
+  it('asks for the change from a 10 € note on level 8', () => {
+    const fixture = setup('market-8');
+    start(fixture);
+    const turn = current(fixture);
+    expect(element(fixture).querySelector('.ask')!.textContent).toContain('Lumi pays with €10');
+    type(fixture, 10);
+    expect(status(fixture)).toBe(en.changePaid);
+    type(fixture, (1000 - turn.price) / 100);
+    expect(status(fixture)).toContain('Right!');
+    expect(internals(fixture).round().phase).toBe('solved');
+  });
+
+  it('lets Lumi count out change at the till on level 10', () => {
+    const fixture = setup('market-10');
+    start(fixture);
+    for (let index = 0; index < 7; index++) {
+      const turn = current(fixture);
+      expect(element(fixture).querySelector('.till')).not.toBeNull();
+      let left = turn.paid![0] - turn.price;
+      for (const coin of [...turn.till!].sort((a, b) => b - a))
+        if (coin <= left) {
+          tapCoin(fixture, coin);
+          left -= coin;
+        }
+      click(fixture, '.pay');
+      expect(internals(fixture).round().phase).toBe('solved');
+      next(fixture);
+    }
+    expect(element(fixture).textContent).toContain(en.perfectRound);
+  });
+
+  it('says when the change at the till is short', () => {
+    const fixture = setup('market-10');
+    start(fixture);
+    const turn = current(fixture);
+    const due = turn.paid![0] - turn.price;
+    const coin = [...turn.till!].sort((a, b) => a - b).find((value) => value < due)!;
+    tapCoin(fixture, coin);
+    click(fixture, '.pay');
+    expect(status(fixture)).toBe(en.giveShort);
   });
 });

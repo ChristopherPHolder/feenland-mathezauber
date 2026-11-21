@@ -639,7 +639,9 @@ export interface CabinOptions {
 export class Cabin {
   /** The grip point on the cable; position this. */
   readonly root = new Group();
-  /** The cabin under its hanger: it swings. */
+  /** The pivot at the grip: rotate it to swing the cabin like a pendulum under the cable. */
+  readonly swing = new Group();
+  /** The cabin under its hanger, hanging from the swing pivot. */
   readonly body = new Group();
   /** Where each seated bunny sits, as children of the body. */
   readonly seats: readonly Group[];
@@ -860,7 +862,8 @@ export class Cabin {
       this.body.add(glint);
       this.sparkles.push(glint);
     }
-    this.root.add(this.body);
+    this.swing.add(this.body);
+    this.root.add(this.swing);
   }
 
   private seatMaterial(index: number, glow: boolean) {

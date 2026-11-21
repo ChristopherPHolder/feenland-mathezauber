@@ -24,6 +24,8 @@ import { HatcheryStore } from '../hatchery/hatchery-store';
 import { GOOD_EMOJI, MarketFrame, stillFrame } from './market-frame';
 import {
   affordable,
+  changeDue,
+  checkChange,
   checkLeft,
   checkTotal,
   checkPay,
@@ -32,6 +34,7 @@ import {
   GOOD_IDS,
   GoodId,
   isFewest,
+  isFewestChange,
   isMastered,
   MARKET_PACES,
   MarketPace,
@@ -49,7 +52,7 @@ import {
   turnPoints,
 } from './market-levels';
 import { capitalise, marketText, MarketMessageKey } from './market-messages';
-import { Denomination, formatMoney, isNote } from './market-money';
+import { Denomination, fewestCoins, formatMoney, isNote, total } from './market-money';
 import { filmClash, filmFor, MarketDemo } from './market-demo';
 import { MarketMoney } from './market-money-art';
 import { MarketScores } from './market-scores';
@@ -187,15 +190,26 @@ export class Market {
     () => this.turn().steps[Math.min(this.round().step, this.turn().steps.length - 1)],
   );
   protected readonly shopping = computed(() => this.started() && this.round().phase === 'shop');
-  protected readonly trayCoins = computed(() =>
-    this.round().tray.map((index) => this.turn().purse[index]),
+  /** Coins go onto the tray to pay, or out of the till as change when Lumi works it. */
+  protected readonly counting = computed(() => this.step() === 'pay' || this.step() === 'give');
+  /** Where the tray's coins come from: Lumi's purse, or the till drawer. */
+  private readonly source = computed(() =>
+    this.step() === 'give' ? (this.turn().till ?? []) : this.turn().purse,
   );
-  /** Purse coins still in the purse, with their index, biggest first. */
+  protected readonly trayCoins = computed(() =>
+    this.round().tray.map((index) => this.source()[index]),
+  );
+  /** Coins still in the purse (or the till), with their index, biggest first. */
   protected readonly purseCoins = computed(() =>
-    this.turn()
-      .purse.map((value, index) => ({ value, index }))
+    this.source()
+      .map((value, index) => ({ value, index }))
       .filter(({ index }) => !this.round().tray.includes(index)),
   );
+  protected readonly paidText = computed(() => this.money(total(this.turn().paid ?? [])));
+  protected readonly customerName = computed(() => {
+    const customer = this.turn().customer;
+    return customer ? this.t(`customer${capitalise(customer) as Capitalize<typeof customer>}`) : '';
+  });
   protected readonly purseText = computed(() => this.money(purseTotal(this.turn())));
   protected readonly priceText = computed(() => this.money(this.turn().price));
   protected readonly goodName = computed(() => this.t(`the${GOOD_KEY(this.turn().good)}`));
@@ -218,9 +232,16 @@ export class Market {
     if (step === 'pay')
       return list ? this.t('payTotal', { amount: this.priceText() }) : this.t('askPay');
     if (step === 'enough') return this.t('askEnough');
+    if (step === 'change') return this.t('askChange', { paid: this.paidText() });
+    if (step === 'give')
+      return this.t('askGive', { customer: this.customerName(), paid: this.paidText() });
     return list ? this.t('leftTotal', { amount: this.priceText() }) : this.t('askLeft');
   });
-  protected readonly typing = computed(() => this.step() === 'total' || this.step() === 'left');
+  protected readonly typing = computed(
+    () => this.step() === 'total' || this.step() === 'left' || this.step() === 'change',
+  );
+  /** Change and till turns have no purse to look at: the note in hand is all that matters. */
+  protected readonly showPurse = computed(() => this.step() !== 'change' && this.step() !== 'give');
   protected readonly film = computed(() => filmFor(this.stage().skill));
   protected readonly filmAlternate = computed(
     () =>
@@ -254,6 +275,13 @@ export class Market {
       extras: (this.turn().items ?? [])
         .slice(1)
         .map((item) => ({ good: item.good, priceText: this.money(item.price) })),
+      role: this.step() === 'give' ? 'till' : 'shopper',
+      customer: turn.customer ?? null,
+      paid: turn.paid ?? [],
+      change:
+        round.phase !== 'shop' && this.step() === 'change'
+          ? (fewestCoins(changeDue(turn), [1000, 500, 200, 100]) ?? [])
+          : [],
       tray: this.trayCoins(),
       outcome: round.outcome,
       basket: round.bought.map((item) => item.good),
@@ -393,7 +421,7 @@ export class Market {
 
   // Paying: coins go from the purse onto the tray and back.
   protected addCoin(index: number) {
-    if (!this.shopping() || this.step() !== 'pay') return;
+    if (!this.shopping() || !this.counting()) return;
     this.round.update((round) => ({
       ...round,
       tray: [...round.tray, index],
@@ -405,7 +433,7 @@ export class Market {
   }
 
   protected takeBack(position: number) {
-    if (!this.shopping() || this.step() !== 'pay') return;
+    if (!this.shopping() || !this.counting()) return;
     this.round.update((round) => ({
       ...round,
       tray: round.tray.filter((_, at) => at !== position),
@@ -426,9 +454,16 @@ export class Market {
   }
 
   protected pay() {
-    if (!this.shopping() || this.step() !== 'pay' || !this.round().tray.length) return;
-    const result = checkPay(this.trayCoins(), this.turn().price);
-    if (result === 'ok') this.solve('bought', isFewest(this.turn(), this.trayCoins()));
+    if (!this.shopping() || !this.counting() || !this.round().tray.length) return;
+    const turn = this.turn();
+    if (this.step() === 'give') {
+      const result = checkPay(this.trayCoins(), changeDue(turn));
+      if (result === 'ok') this.solve('bought', isFewestChange(turn, this.trayCoins()));
+      else this.slip(result === 'short' ? 'giveShort' : 'giveOver');
+      return;
+    }
+    const result = checkPay(this.trayCoins(), turn.price);
+    if (result === 'ok') this.solve('bought', isFewest(turn, this.trayCoins()));
     else this.slip(result);
   }
 
@@ -464,12 +499,26 @@ export class Market {
   protected submitTyped() {
     if (!this.shopping() || !this.typing() || !this.round().typed) return;
     if (this.step() === 'total') return this.submitTotal(Number(this.round().typed));
+    if (this.step() === 'change') return this.submitChange(Number(this.round().typed));
     const result = checkLeft(this.turn(), Number(this.round().typed));
     if (result === 'ok') this.solve('bought', false);
     else {
       this.round.update((round) => ({ ...round, typed: '' }));
       this.slip(result);
     }
+  }
+
+  private submitChange(typed: number) {
+    const result = checkChange(this.turn(), typed);
+    if (result === 'ok') return this.solve('bought', false);
+    this.round.update((round) => ({ ...round, typed: '' }));
+    const keys = {
+      added: 'changeAdded',
+      price: 'changePrice',
+      paid: 'changePaid',
+      off: 'changeOff',
+    } as const;
+    this.slip(keys[result]);
   }
 
   /** A right total moves the list on to paying or to "what's left?". */
@@ -541,9 +590,11 @@ export class Market {
     this.status.set(
       outcome === 'putBack'
         ? { key: 'putBack', values: { good: this.goodName() }, lead: 'cheerNo' }
-        : turn.steps.includes('left')
-          ? { key: 'stillLeft', values: { amount: this.money(purseTotal(turn) - turn.price) } }
-          : { key: 'bought', values: { good: this.goodLabel(turn.good) } },
+        : turn.steps.includes('change') || turn.steps.includes('give')
+          ? { key: 'changeRight', values: { amount: this.money(changeDue(turn)) } }
+          : turn.steps.includes('left')
+            ? { key: 'stillLeft', values: { amount: this.money(purseTotal(turn) - turn.price) } }
+            : { key: 'bought', values: { good: this.goodLabel(turn.good) } },
     );
     if (!round.golden && golden) this.status.set({ key: 'goldenStart' });
     this.hatchery.warm();
