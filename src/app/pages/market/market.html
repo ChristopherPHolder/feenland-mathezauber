@@ -5,13 +5,19 @@
 >
   <app-game-header
     [title]="t('title')"
-    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [detail]="
+      freeTrip()
+        ? t('freeTrip')
+        : t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))
+    "
     [anchor]="levelId()"
     [sound]="sounds.enabled"
     (soundToggle)="sounds.toggle()"
   />
 
-  @if (!started()) {
+  @if (freeTrip()) {
+    <app-market-basket class="panel" (leave)="leaveFreeTrip()" />
+  } @else if (!started()) {
     <section class="panel intro" aria-labelledby="intro-title">
       <h2 id="intro-title" class="sr-only">{{ i.t(levelKey(stage().stage)) }}</h2>
       <nav class="level-strip" [attr.aria-label]="t('allLevels')">
@@ -77,6 +83,9 @@
       <div class="start-dock">
         <button class="button primary" type="button" (click)="play()">
           {{ t('start') }}<ui-icon kind="arrow" />
+        </button>
+        <button #freeStart class="button secondary" type="button" (click)="freeTrip.set(true)">
+          {{ t('freeTrip') }}
         </button>
       </div>
       <section class="shelf" aria-labelledby="shelf-title">

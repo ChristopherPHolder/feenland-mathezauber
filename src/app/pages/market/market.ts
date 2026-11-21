@@ -56,6 +56,7 @@ import { Denomination, fewestCoins, formatMoney, isNote, total } from './market-
 import { filmClash, filmFor, MarketDemo } from './market-demo';
 import { MarketMoney } from './market-money-art';
 import { MarketScores } from './market-scores';
+import { MarketBasket } from './market-basket';
 import { MarketShop } from './market-shop';
 import { MarketSounds } from './market-sounds';
 
@@ -122,6 +123,7 @@ const GOOD_KEY = (good: GoodId) => capitalise(good) as Capitalize<GoodId>;
     GameHeader,
     ThreeStage,
     MarketShop,
+    MarketBasket,
     MarketMoney,
     MarketDemo,
   ],
@@ -169,6 +171,14 @@ export class Market {
     this.stage();
     return false;
   });
+  protected readonly freeTrip = linkedSignal({ source: this.stage, computation: () => false });
+  private readonly freeStart = viewChild<ElementRef<HTMLButtonElement>>('freeStart');
+
+  protected leaveFreeTrip() {
+    this.freeTrip.set(false);
+    requestAnimationFrame(() => this.freeStart()?.nativeElement.focus());
+  }
+
   protected readonly paces = MARKET_PACES;
   protected readonly pace = signal<MarketPace>(this.readPace());
   protected readonly timed = computed(() => this.pace() !== 'off');

@@ -202,10 +202,14 @@
   line-height: 1.4;
 }
 .start-dock {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
   margin-top: 12px;
 }
 .start-dock .button {
-  margin: 0 auto;
+  margin: 0;
   max-width: 360px;
 }
 
