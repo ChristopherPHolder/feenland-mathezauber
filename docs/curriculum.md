@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 178 selectable levels across thirteen games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 186 selectable levels across fourteen games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -31,6 +31,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
 | The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min           |
 | The Fairy Market     | 6–7 treats and the big buy (two questions a treat on level 5)    | 7 × 15–25 s ≈ 2–3 min; spree 7 × 25–35 s ≈ 3–4 min    |
+| Dragon Duels         | one duel: 20–30 sprite energy, 2–4 a hit (6–12 right answers)    | 9 × 8–15 s + attacks ≈ 2–3 min; boss ≈ 3–4 min        |
 | The Clock Tower      | 8 events and the midnight bell, up to 2 missed times again       | 9 × 12–20 s ≈ 2–3 min; typing and how long ≈ 3–4 min  |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
@@ -185,6 +186,16 @@ Money is in euro values drawn in the game's own style, whole euros first; cents 
 | How long?     | whole hours later 3:30 + 2 h · minutes until 3:40 → 4:15 (time line) · tower master (mixed, three stars) |
 
 The time maths and the spoken wording per language live in `clock-time.ts` and are tested on their own, including German _halb_ (3:30 is "halb vier", 3:25 "fünf vor halb vier"), French _et demie_, _moins le quart_, _midi_ and _minuit_, and Spanish _y media_ and _menos cuarto_. Times not on a five-minute mark are only shown digitally. Each round is eight different events in the order of the day plus the midnight bell, each at an hour that suits it (breakfast in the morning, fireworks in the evening), so the sky makes sense on the 24-hour levels; no clock picture repeats within a round. The kinds of turn a level mixes take turns (set the hands, pick from three, type the digital time, how long), and pick-from-three offers the mix-ups children really make: the hour after (the _halb_ slip), the hands swapped, the quarter the wrong way round, or the other half of the day. "Minutes until" always starts before a full hour so the first hop on the time line goes to it; durations run from 15 minutes to just under two hours. A missed time comes back once before the midnight bell (at most two per round, for half points), and stars come from first tries on the round's own nine times.
+
+### Dragon Duels: 8 levels (`pages/dragon-duel/duel.ts`)
+
+| Topic          | Levels, easiest first                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| Meadow sprites | Pebble Pixie (adding to 10) · Puddle Pixie (taking away within 10) · Bramble Imp (± to 20)  |
+| Sky sprites    | Gusty (doubles and near doubles) · Cinder Imp (± tens to 100) · Moon Moth (2, 5, 10 tables) |
+| Night sprites  | Frost Wisp (missing numbers to 20) · Grumble, the storm sprite (everything mixed, boss)     |
+
+Each level is one sprite. Questions come from `duel-questions.ts` with four choices whose wrong ones are near misses (off by one or two, a ten, a digit swap). A right answer hits for 2 on the first try and 1 after a miss; a first try within 6 s (stretched by the sprite's `slow`, up to 1.4 for the later sprites) is a critical hit (+1), and a dragon whose element is the sprite's weak spot hits +1 more. Every element is some sprite's weak spot. A wrong answer is struck out and the sum stays until it is solved; after two slips the dragon whispers the sprite's trick in words, never with numbers. With a charge pace (Relaxed 24 s, Normal 15 s, Fast 9 s, times `slow`) the sprite fills its charge while the child thinks and a wrong answer adds a third; a full charge zaps one of three hearts, and three zaps send the dragon for a nap (no stars, try again). No zaps is the default. Stars: three for no heart lost and at most one slip, two for at most one heart and three slips, else one; three stars master a level. Every right answer warms the egg and a won duel adds 5 warmth.
 
 ## Adding a level
 

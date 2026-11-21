@@ -27,6 +27,7 @@ const playLabels: Readonly<Record<string, MessageKey>> = {
   gondola: 'gondolaPlay',
   market: 'marketPlay',
   'clock-tower': 'clockPlay',
+  'dragon-duel': 'duelPlay',
 };
 @Component({
   selector: 'app-welcome',
