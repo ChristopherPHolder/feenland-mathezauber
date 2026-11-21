@@ -17,7 +17,7 @@ import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
 import { ProgressService } from '../../core/progress';
 import { GameHeader } from '../../shared/game-header';
-import { Icon } from '@feenland/ui';
+import { Icon, NumberPad } from '@feenland/ui';
 import { ThreeStage, WorldLoader } from '../../shared/three/three-stage';
 import { HatcheryStore } from '../hatchery/hatchery-store';
 import { GondolaCard } from './gondola-card';
@@ -62,7 +62,7 @@ import { GondolaPlatform } from './gondola-platform';
 import { GondolaReward, GondolaRewardKind } from './gondola-reward';
 import { GondolaScores } from './gondola-scores';
 import { GondolaSounds } from './gondola-sounds';
-import { GondolaCherry, GondolaKeypad, GondolaSplit } from './gondola-split';
+import { GondolaCherry, GondolaSplit } from './gondola-split';
 
 interface Round {
   readonly items: readonly GondolaItem[];
@@ -139,7 +139,7 @@ const IDLE_MS = 6000;
     GondolaPlatform,
     GondolaSplit,
     GondolaCherry,
-    GondolaKeypad,
+    NumberPad,
     GondolaReward,
     GondolaCard,
     GondolaDemo,
