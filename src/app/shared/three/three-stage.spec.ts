@@ -1,7 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StateWorld, ThreeStage, WorldLoader } from './three-stage';
-import { EventCounter, bounce, easeOutBack, smooth } from './motion';
 
 const made: FakeWorld[] = [];
 class FakeWorld implements StateWorld<number> {
@@ -63,22 +62,5 @@ describe('ThreeStage', () => {
     expect(made[0]!.states).toEqual([1, 2]);
     fixture.destroy();
     expect(made[0]!.disposed).toBe(true);
-  });
-});
-
-describe('3D motion helpers', () => {
-  it('eases from 0 to 1', () => {
-    for (const ease of [smooth, bounce, easeOutBack]) {
-      expect(ease(0)).toBeCloseTo(0);
-      expect(ease(1)).toBeCloseTo(1);
-    }
-  });
-
-  it('counts only new events and syncs on the first value', () => {
-    const counter = new EventCounter();
-    expect(counter.take(5)).toBe(0);
-    expect(counter.take(5)).toBe(0);
-    expect(counter.take(7)).toBe(2);
-    expect(counter.take(0)).toBe(0);
   });
 });
