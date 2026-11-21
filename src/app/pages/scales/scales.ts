@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FilmDialog, Icon, RewardBurst } from '@feenland/ui';
+import { CoachDialog, Icon, RewardBurst } from '@feenland/ui';
 import { CompletionService } from '../../core/completion';
 import { LocaleService } from '../../core/locale';
 import { MessageKey } from '../../core/messages';
@@ -23,7 +23,7 @@ import { HatcheryStore } from '../hatchery/hatchery-store';
 import { ScalesItem } from './scales-art';
 import { ScalesDemo, DemoKind } from './scales-demo';
 import { DISHES, PanThing, ScalesFrame } from './scales-frame';
-import { countGuidedLine, GUIDED_LINES, guidedLines, IDLE_GUIDE } from './scales-guide';
+import { guide, GUIDED_LINES, IDLE_GUIDE } from './scales-guide';
 import {
   cookPoints,
   HEARTY_STREAK,
@@ -125,7 +125,7 @@ const NO_COUNTERS: Counters = { cooks: 0, slips: 0, adds: 0, pours: 0 };
     RouterLink,
     Icon,
     RewardBurst,
-    FilmDialog,
+    CoachDialog,
     GameHeader,
     ThreeStage,
     ScalesScene,
@@ -189,7 +189,7 @@ export class Scales {
 
   protected readonly coachOpen = signal(false);
   /** The first few lines on a device always show what to tap next. */
-  private readonly learning = signal(guidedLines() < GUIDED_LINES);
+  private readonly learning = signal(guide.count() < GUIDED_LINES);
   /** The child has waited a while without tapping. */
   private readonly idle = signal(false);
 
@@ -718,7 +718,7 @@ export class Scales {
       fewest: round.fewest + (fewest ? 1 : 0),
       counters: { ...round.counters, cooks: round.counters.cooks + 1 },
     });
-    if (countGuidedLine() >= GUIDED_LINES) this.learning.set(false);
+    if (guide.add() >= GUIDED_LINES) this.learning.set(false);
     this.sounds.play('level', streak);
     this.sounds.play('splash');
     if (streak === HEARTY_STREAK) {

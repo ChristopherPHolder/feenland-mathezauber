@@ -1,24 +1,23 @@
 import { afterNextRender, Component, ElementRef, input, output, viewChild } from '@angular/core';
 
 /**
- * A full-screen modal card that shows a game's "how to play" film: the film is projected, the
- * title and the button text arrive already worded. It opens as soon as it renders and focuses
- * its button; the button and Escape both emit `done`, and the caller removes it. Games hold
- * their timers while it is open.
+ * "How to play" over a game: a modal dialog with the game's demo film projected inside, a
+ * title and one big button. It opens itself when shown; Escape and the button both emit
+ * `done`, and the game removes it. Text arrives already translated.
  *
- *     @if (coachOpen()) {
- *       <ui-film-dialog [heading]="t('help')" [go]="t('coachGo')" (done)="closeCoach()">
- *         <app-my-demo />
- *       </ui-film-dialog>
- *     }
+ *     <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeHelp()">
+ *       <app-market-demo [skill]="..." />
+ *     </ui-coach-dialog>
  */
 @Component({
-  selector: 'ui-film-dialog',
-  template: `<dialog #dialog aria-labelledby="ui-film-title" (cancel)="cancel($event)">
+  selector: 'ui-coach-dialog',
+  template: `<dialog #dialog aria-labelledby="ui-coach-title" (cancel)="cancel($event)">
     <div class="card">
-      <h2 id="ui-film-title">{{ heading() }}</h2>
+      <h2 id="ui-coach-title">{{ heading() }}</h2>
       <ng-content />
-      <button class="button primary" type="button" (click)="done.emit()">{{ go() }}</button>
+      <button class="button primary" type="button" (click)="done.emit()">
+        {{ goLabel() }}
+      </button>
     </div>
   </dialog>`,
   styles: `
@@ -45,7 +44,7 @@ import { afterNextRender, Component, ElementRef, input, output, viewChild } from
     dialog::backdrop {
       overflow: hidden;
       overscroll-behavior: contain;
-      background: var(--scrim);
+      background: rgb(23 37 85 / 0.5);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
@@ -71,10 +70,9 @@ import { afterNextRender, Component, ElementRef, input, output, viewChild } from
     }
   `,
 })
-export class FilmDialog {
+export class CoachDialog {
   readonly heading = input.required<string>();
-  /** The button that closes it, like "Got it!". */
-  readonly go = input.required<string>();
+  readonly goLabel = input.required<string>();
   readonly done = output<void>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
@@ -87,7 +85,7 @@ export class FilmDialog {
     });
   }
 
-  /** Escape closes it the same way the button does. */
+  /** Escape closes the coach the same way the button does. */
   protected cancel(event: Event) {
     event.preventDefault();
     this.done.emit();

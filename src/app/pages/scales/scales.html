@@ -289,11 +289,12 @@
           }
           @if (reward(); as reward) {
             <ui-reward-burst
+              [kind]="
+                reward.kind === 'feast' ? 'big' : reward.kind === 'hearty' ? 'golden' : 'plain'
+              "
               [cheer]="reward.cheer"
-              [tags]="reward.tags"
+              [badges]="reward.tags"
               [points]="reward.points"
-              [big]="reward.kind === 'feast'"
-              [golden]="reward.kind === 'hearty'"
               [wait]="scene.ready() ? 0.7 : 0"
             />
           }
@@ -460,9 +461,9 @@
       </div>
     </div>
     @if (coachOpen()) {
-      <ui-film-dialog [heading]="t('demoTitle')" [go]="t('coachGo')" (done)="closeCoach()">
+      <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeCoach()">
         <app-scales-demo [kind]="demoKind()" />
-      </ui-film-dialog>
+      </ui-coach-dialog>
     }
   }
 </section>

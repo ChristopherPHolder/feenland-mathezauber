@@ -8,7 +8,9 @@ export type RaceSound =
   | 'stumble'
   | 'overtake'
   | 'win'
-  | 'finish';
+  | 'finish'
+  | 'pick'
+  | 'buy';
 /** Component-scoped so leaving the race releases the audio context. Shares the effects preference. */
 @Injectable()
 export class RaceSounds {
@@ -45,7 +47,13 @@ export class RaceSounds {
   play(kind: RaceSound) {
     if (!this.enabled || this.destroyed) return;
     // A new answer cue replaces stale feedback; fanfares queue after the cue.
-    if (kind === 'gallop' || kind === 'stumble' || kind === 'count' || kind === 'go')
+    if (
+      kind === 'gallop' ||
+      kind === 'stumble' ||
+      kind === 'count' ||
+      kind === 'go' ||
+      kind === 'pick'
+    )
       this.silence();
     void this.schedule(kind, this.generation).catch(() => undefined);
   }
@@ -69,8 +77,11 @@ export class RaceSounds {
       overtake: [784, 1047],
       win: [523, 659, 784, 1047, 1319],
       finish: [392, 494, 587, 784],
+      // The Stable: a bright two-note blip for a change, a little fanfare for a purchase.
+      pick: [880, 1175],
+      buy: [784, 988, 1175, 1568],
     };
-    const answer = kind === 'gallop' || kind === 'stumble';
+    const answer = kind === 'gallop' || kind === 'stumble' || kind === 'pick';
     const step = answer ? 0.12 : kind === 'count' || kind === 'go' ? 0.2 : 0.14;
     const length = answer ? 0.13 : kind === 'count' ? 0.18 : 0.3;
     const start = Math.max(context.currentTime + 0.02, this.nextStart);

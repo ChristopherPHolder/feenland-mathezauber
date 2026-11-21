@@ -1,0 +1,587 @@
+/* A round in play. The page fills the screen (minus the notch and home bar); the shop scene
+   takes whatever room the controls leave. Upright screens stack shop over controls; wide ones
+   put them side by side, and the controls scroll inside their column if a phone is short. */
+.game.playing {
+  min-height: calc(100dvh - var(--safe-y) - 32px);
+}
+
+/* HUD: the round's shopping bags, points, Lucky Shopper and the sun, on one row */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.turn-strip {
+  display: flex;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.turn-slot {
+  flex: 1 1 0;
+  min-width: 12px;
+  max-width: 34px;
+}
+.turn-slot svg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+.turn-slot .bag {
+  fill: #ffffffb3;
+  stroke: #d2b48c;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.turn-slot .handle {
+  fill: none;
+  stroke: #d2b48c;
+  stroke-width: 2;
+}
+.turn-slot.current .bag {
+  fill: var(--paper);
+  stroke: var(--pink);
+  stroke-width: 2.6;
+}
+.turn-slot.done .bag {
+  fill: #ffe3b8;
+  stroke: var(--bronze);
+}
+.turn-slot.big .bag {
+  stroke: var(--gold-deep);
+  stroke-width: 2.6;
+}
+.turn-slot .slot-star {
+  fill: var(--star-earned-big);
+}
+.points,
+.golden-chip,
+.sun-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+  white-space: nowrap;
+}
+.points span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.points strong {
+  min-width: 3ch;
+  font-size: 22px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.golden-chip {
+  background: linear-gradient(90deg, #ffe066, var(--gold));
+  border: 2px solid var(--gold-deep);
+  color: var(--ink);
+  font-weight: 600;
+}
+.sun-chip {
+  font-size: 15px;
+}
+.sun-chip svg {
+  width: 24px;
+  height: 24px;
+}
+.sun-chip .hill {
+  fill: #7cbf6a;
+}
+.sun-chip .sun {
+  fill: color-mix(in srgb, #ff8a3d calc(var(--sunset) * 100%), var(--gold));
+}
+.sun-chip.set .sun {
+  fill: #6b4f9e;
+}
+.sun-meter {
+  width: 48px;
+  height: 8px;
+  border-radius: 4px;
+  background: #ffe9b0;
+  overflow: hidden;
+}
+.sun-meter span {
+  display: block;
+  height: 100%;
+  width: calc(var(--sunset) * 100%);
+  background: linear-gradient(90deg, #ffb066, #6b4f9e);
+  transition: width 0.3s linear;
+}
+
+/* Shop and controls */
+.play-area {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-rows: minmax(200px, 1fr) auto;
+  gap: 10px;
+  min-height: 0;
+}
+.board {
+  position: relative;
+  min-height: 200px;
+  border-radius: var(--radius-panel);
+  background: linear-gradient(#f3dcb8, #fdf1de);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+.board.big {
+  box-shadow:
+    0 0 0 4px var(--gold),
+    var(--shadow-panel);
+}
+.scene {
+  position: absolute;
+  inset: 0;
+}
+.reward {
+  --burst-edge: var(--bronze);
+  --burst-ground: #fff1dc;
+  --burst-shadow: #7a4a1c;
+  --burst-cheer: var(--pink-deep);
+}
+.big-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
+  padding: 6px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  border: 3px solid var(--gold-deep);
+  font-size: clamp(16px, 2.4vw, 22px);
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 #8a5a00;
+}
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: clamp(12px, 2vw, 20px);
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+  container-type: inline-size;
+}
+.controls > * {
+  flex-shrink: 0;
+}
+.question p {
+  margin: 0;
+}
+.turn-name {
+  color: var(--bronze);
+  font-weight: 600;
+  font-size: 15px;
+}
+.price-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(20px, 6cqi, 28px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.good-emoji {
+  font-size: 1.5em;
+  line-height: 1;
+}
+.ask {
+  font-weight: 600;
+  color: var(--pink-deep);
+}
+.status {
+  min-height: 1.45em;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+}
+.status:empty {
+  display: none;
+}
+
+/* A shopping list of two or three treats, each with its price. */
+.list {
+  display: grid;
+  gap: 4px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px;
+  border-radius: var(--radius-chip);
+  background: var(--paper);
+  font-size: clamp(17px, 5cqi, 22px);
+}
+.list .good-emoji {
+  font-size: 1.3em;
+}
+.list-name {
+  flex: 1 1 auto;
+}
+.list-price {
+  font-variant-numeric: tabular-nums;
+}
+.help {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--bronze);
+  font: 600 22px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+  cursor: pointer;
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Lumi's purse: coins to tap while paying, or a tag with the amount. */
+.purse {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-surface);
+  background: #fff4e2;
+  border: 2px solid #ecc98f;
+}
+.purse-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  color: var(--muted);
+}
+.purse-tag strong {
+  color: var(--ink);
+  font-size: clamp(20px, 6cqi, 26px);
+  font-variant-numeric: tabular-nums;
+}
+.purse-tag svg {
+  width: 28px;
+  height: 28px;
+}
+.purse-body {
+  fill: var(--pink);
+}
+.purse-clasp {
+  fill: none;
+  stroke: var(--gold-deep);
+  stroke-width: 2.4;
+}
+.coin-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.coin-row.is-static li {
+  display: flex;
+}
+.coin-button {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 2px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.coin-button:hover:not([disabled]) {
+  background: #ffe7c2;
+}
+.coin-button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.coin-button:active:not([disabled]) app-market-money {
+  transform: translateY(2px) scale(0.96);
+}
+
+.purse.hidden {
+  display: none;
+}
+.till {
+  background: #fff8d6;
+  border-color: var(--gold);
+}
+.till-body {
+  fill: var(--gold-deep);
+}
+.till-top {
+  fill: var(--gold);
+}
+/* The note handed over on change turns. */
+.paid-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* The counter tray: coins put down, tap one to take it back, then Pay. */
+.tray {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-surface);
+  background: #ead2ad;
+  box-shadow: inset 0 2px 6px #7a4a1c33;
+}
+.tray-coins {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  min-height: 48px;
+}
+.tray-empty {
+  margin: 0;
+  color: #6f5435;
+  font-size: 15px;
+}
+.coin-button.on-tray {
+  min-width: 44px;
+  min-height: 44px;
+}
+.pay {
+  flex: none;
+  min-width: 120px;
+}
+
+/* Enough? Two big answers. */
+.judge {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.judge-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 64px;
+  border: 0;
+  border-radius: var(--radius-tile);
+  font: 600 22px var(--font-sans);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.judge-button span {
+  font-size: 28px;
+}
+.judge-button.yes {
+  background: var(--success-ground);
+  color: var(--success-strong);
+  box-shadow:
+    inset 0 0 0 2px var(--success-strong),
+    0 4px 0 var(--success-strong);
+}
+.judge-button.no {
+  background: #ffe4ea;
+  color: var(--pink-deep);
+  box-shadow:
+    inset 0 0 0 2px var(--pink-deep),
+    0 4px 0 var(--pink-deep);
+}
+.judge-button:active {
+  transform: translateY(3px);
+}
+.judge-button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* What's left: the typed amount and the number pad. */
+.left-zone {
+  display: grid;
+  gap: 8px;
+}
+.typed {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.typed-value {
+  min-width: 2ch;
+  padding: 0 10px;
+  border-radius: var(--radius-chip);
+  background: var(--paper);
+  border: 3px solid var(--bronze);
+  text-align: center;
+}
+.typed-value.empty {
+  border-style: dashed;
+  color: var(--muted);
+}
+.next {
+  align-self: stretch;
+}
+
+/* The first treats (and after six quiet seconds): what to tap next wears a gold halo. */
+.coin-row.is-guided,
+.judge.is-guided,
+.pay.is-guided,
+ui-number-pad.is-guided {
+  border-radius: var(--radius-tile);
+  box-shadow: 0 0 0 4px var(--gold);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .coin-row.is-guided,
+  .judge.is-guided,
+  .pay.is-guided,
+  ui-number-pad.is-guided {
+    animation: hop 1.2s ease-in-out infinite;
+  }
+  .points.bump strong {
+    animation: bump 0.5s ease-out;
+  }
+}
+@keyframes hop {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes bump {
+  40% {
+    transform: scale(1.3);
+  }
+}
+:host-context(.calm-motion) .is-guided,
+:host-context(.calm-motion) .points.bump strong {
+  animation: none;
+}
+
+/* Wide screens: the shop on the left, the controls in a column beside it. */
+@media (orientation: landscape) and (min-width: 640px) {
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 32px);
+  }
+  .play-area {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+  }
+  .board {
+    min-height: 0;
+  }
+  .controls {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+/* A phone on its side: everything compact, so the purse and the answers stay in view. */
+@media (orientation: landscape) and (max-height: 520px) {
+  :host {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .game {
+    gap: 6px;
+  }
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 12px);
+  }
+  .play-area {
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 1fr);
+    gap: 8px;
+  }
+  .points strong {
+    font-size: 18px;
+  }
+  .points,
+  .golden-chip,
+  .sun-chip {
+    padding: 2px 10px;
+  }
+  .sun-chip > span:not(.sun-meter),
+  .turn-name {
+    display: none;
+  }
+  .controls {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .price-line {
+    font-size: 19px;
+  }
+  .judge-button {
+    min-height: 52px;
+  }
+  .typed {
+    font-size: 26px;
+  }
+}
+/* Upright phones: a little less chrome so the shop keeps its room. */
+@media (orientation: portrait) and (max-width: 520px) {
+  .sun-chip > span:not(.sun-meter),
+  .points span {
+    display: none;
+  }
+  .controls {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .play-area {
+    grid-template-rows: minmax(150px, 1fr) auto;
+    gap: 8px;
+  }
+  .board {
+    min-height: 150px;
+  }
+  .turn-name {
+    font-size: 14px;
+  }
+  .price-line {
+    font-size: 19px;
+  }
+  .status {
+    font-size: 15px;
+  }
+  .purse {
+    padding: 6px 8px;
+  }
+  .typed {
+    font-size: 26px;
+  }
+}

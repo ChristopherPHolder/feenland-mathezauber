@@ -43,9 +43,10 @@ long-standing base classes listed below.
 | `src/emblem.ts`       | `ui-emblem`: a game's or world's illustrated emblem, by catalog id, with an emoji fallback.                                                         |
 | `src/star-rating.ts`  | `ui-star-rating`: three star slots and one spoken label.                                                                                            |
 | `src/game-bar.ts`     | `ui-game-bar`: the way out, title and actions above a game.                                                                                         |
-| `src/film-dialog.ts`  | `ui-film-dialog`: a full-screen modal card around a game's "how to play" film, with a worded title and button.                                      |
-| `src/reward-burst.ts` | `ui-reward-burst`: the glow, sparkles and cheer card over a board when a step is won, with bonus tags and points.                                   |
 | `src/sound-toggle.ts` | `ui-sound-toggle`: the round speaker button.                                                                                                        |
+| `src/coach-dialog.ts` | `ui-coach-dialog`: the "how to play" modal with a game's demo film projected inside (market, scales).                                               |
+| `src/number-pad.ts`   | `ui-number-pad`: the number pad in rows of five, with Delete and OK (gondola, market).                                                              |
+| `src/reward-burst.ts` | `ui-reward-burst`: the glow, sparkles and points card after a right answer, tinted with `--burst-*` (market, scales).                               |
 | `src/index.ts`        | The public API. Export every new component here.                                                                                                    |
 
 `index.html` loads `styles/tokens.css`, then `styles/base.css`, then the app's own

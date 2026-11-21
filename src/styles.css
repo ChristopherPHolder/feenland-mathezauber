@@ -347,6 +347,11 @@ main.focused-game {
   --loader-star: var(--gold-deep);
   --loader-dot: var(--pink);
 }
+.is-route-tone[data-tone='market'] {
+  --loader-ground: linear-gradient(#fde7c8, #fff4e2 45%, #fffaf0);
+  --loader-star: var(--gold-deep);
+  --loader-dot: var(--pink);
+}
 .is-route-tone[data-tone='potion'] {
   --loader-ground: linear-gradient(#e6e0ff, #f4eefc 40%, #e9f6ee);
   --loader-star: var(--violet);

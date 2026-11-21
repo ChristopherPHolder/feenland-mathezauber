@@ -219,6 +219,19 @@ import { Component, input } from '@angular/core';
         <path d="M51 28l1-4h8l1 4z" fill="#c9a24a" />
       </svg>
     }
+    @case ('market') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M10 30h44v26H10z" fill="#f6dcb4" />
+        <path d="M6 18h52l-3 12H9z" fill="#e2467c" />
+        <path d="M15 18l-2 12m14-12-1 12m12-12 1 12m12-12 2 12" stroke="#fffaf3" stroke-width="5" />
+        <path d="M6 18h52l-3 12H9z" fill="none" />
+        <path d="M8 18 14 8h36l6 10" fill="#f3b8cc" />
+        <rect x="16" y="38" width="16" height="18" rx="2" fill="#a46b35" />
+        <circle cx="44" cy="46" r="8" class="gold" />
+        <path d="M44 42v8m-2.5-6.5h4" stroke-width="1.6" />
+        <path d="M4 58h56" />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />

@@ -10,6 +10,7 @@ import { starLevels } from '../pages/star-catcher/star-levels';
 import { fireworkCatalogLevels } from '../pages/fireworks/firework-levels';
 import { gondolaLevels } from '../pages/gondola/gondola-levels';
 import { scalesLevels } from '../pages/scales/scales-levels';
+import { marketLevels } from '../pages/market/market-levels';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
@@ -161,6 +162,13 @@ export const worlds: readonly World[] = [
         description: 'scalesChapterHelp',
         emblem: '⚖️',
         levels: scalesLevels,
+      },
+      {
+        id: 'market',
+        title: 'marketChapter',
+        description: 'marketChapterHelp',
+        emblem: '🛍️',
+        levels: marketLevels,
       },
     ],
   },

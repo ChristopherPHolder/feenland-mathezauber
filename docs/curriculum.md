@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 168 selectable levels across twelve games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 178 selectable levels across thirteen games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -31,6 +31,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
 | The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min           |
 | The Giant’s Scales   | 6 recipe lines and the feast dish (weigh, read, pour or compare) | 7 × 20–30 s ≈ 2.5–3.5 min; level 1 ≈ 1.5 min          |
+| The Fairy Market     | 6–7 treats and the big buy (two questions a treat on level 5)    | 7 × 15–25 s ≈ 2–3 min; spree 7 × 25–35 s ≈ 3–4 min    |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -173,6 +174,18 @@ Every cabin holds ten, in two rows of five. Every item crosses a ten (the genera
 | The feast       | giant’s feast: every kind mixed, three stars to master it                                        |
 
 A round is six recipe lines and a feast dish that pays double. The beam is the only feedback: Bramble holds it level while the child puts weights on, and when they tap Weigh it swings (a damped spring, past level and back) toward the heavier side, with the help line naming the side that went down, never how much is missing. A wrong mystery-box number is swapped onto the pan as a weight of that number, so the tilt answers it. A wrong dial reading only says to count the marks from 0 to the first number; dials always point at an unnumbered mark. Pouring says over or under the line. Generators are checked by tests to always be solvable with the weights or jugs offered, within twelve pieces; the fewest-weights bonus uses an exact coin-change solver. Equations stay within 20 and mystery-box scales within 40 kg. Amounts are written with the locale's decimal comma (1,5 l in de, es and fr) and 1000 g shows as 1 kg. Round stars come from first-try lines (three for six of seven, two for four), and three first tries in a row make the pot glow gold and double points until a slip.
+
+### The Fairy Market: 10 levels (`pages/market/market-levels.ts`)
+
+| Topic           | Levels, easiest first                                                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Coins and notes | coin by coin (1 € and 2 € up to 10 €) · notes join in (up to 20 €, fewest coins)                                                                         |
+| Enough money?   | can Lumi buy it? (purse against price up to 20 €)                                                                                                        |
+| What's left?    | what's left? (purse up to 10 €) · shopping spree (20 €, enough? then what's left)                                                                        |
+| Adding up       | two treats (add two prices up to 20 €, then pay the total) · shopping list (three treats from 20 €: total, then what's left)                             |
+| Change          | change from 10 € (count up from the price) · change from 20 € (count up through a ten) · Lumi at the till (count out change to a customer, fewest coins) |
+
+Money is in euro values drawn in the game's own style, whole euros first; cents come in a later topic. The purse shows every coin on the coin levels and the first three "enough?" turns, then only a tag with its amount, so the child moves from counting coins to working with numbers. The tray never shows a running total and screen readers hear the coins on it, not their sum, because counting is the skill. Paying too little or too much gets a rule ("Olli needs a little more", "take a coin back"), never an amount; typing the price, the whole purse or purse + price for "what's left" each get their own hint. A missed turn comes back two turns later with a different treat (the spree keeps its order, because its purse carries over). Level 2 pays a bonus for the fewest coins; level 5 refills the purse to 20 € after a treat that costs too much, and needs three stars to be mastered. Adding up shows the list with each price; typing one treat's price or forgetting one treat on a list of three get their own hints, and once the total is right the game says it, since the child found it. Each level card plays a short film with made-up numbers (coins counted onto the tray, a purse against two prices, hops counted up to the purse, a price counted on), and `?` opens it during play while the sun waits; when the turn on screen uses the film's numbers the film shows another set. Change asks for the change as a typed amount (adding the price on, typing the price or typing the note each get a hint that names the rule, never a number); at the till the roles swap: a fox, rabbit, hedgehog or squirrel pays with the smallest note that covers the price, and Lumi counts the change out of a till drawer that can always make it, with a bonus for the fewest coins. The plan for the next topics ( plan and save with a wish jar, cents) is in issue #264.
 
 ## Adding a level
 

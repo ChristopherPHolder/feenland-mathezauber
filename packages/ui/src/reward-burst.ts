@@ -1,37 +1,36 @@
 import { Component, input } from '@angular/core';
 
-/** When the first tag pops into the card, and the gap to the next one, in seconds. */
-const TAG_START = 0.35;
-const TAG_STEP = 0.22;
+export type RewardBurstKind = 'plain' | 'golden' | 'big';
 
-/** Where the sparkles burst over the board, in percent, each with its own little delay. */
+/** Where the sparkles burst on the board, in percent, with their own little delay. */
 const SPARKLES = [
-  [18, 22, 0],
-  [80, 18, 0.12],
-  [12, 58, 0.24],
-  [88, 52, 0.06],
+  [16, 20, 0],
+  [82, 16, 0.12],
+  [10, 56, 0.24],
+  [90, 50, 0.06],
   [30, 10, 0.3],
   [68, 8, 0.18],
-  [50, 34, 0.42],
-  [24, 40, 0.36],
-  [76, 36, 0.48],
+  [50, 30, 0.42],
+  [22, 38, 0.36],
+  [78, 34, 0.48],
 ] as const;
 
 /**
- * The burst over a game board when a round step is won: a warm glow, sparkles, and a card with
- * the cheer, a tag for each bonus and the points. It only shows what it is given, already
- * worded; the game decides when. Screen readers hear the same news from the game's status
- * line, so it stays hidden from them. Place it in a positioned board; it fills it.
+ * The burst over a game board after a right answer: a glow, sparkles, and a card with the
+ * cheer, the points won and a badge for each bonus. Golden and big turns get a gold card.
+ * `wait` holds it back while a 3D scene plays its own moment first. A game tints the plain
+ * card with `--burst-edge`, `--burst-ground`, `--burst-shadow` and `--burst-cheer`.
  *
- *     <ui-reward-burst cheer="Cooked!" [tags]="['First try']" points="+20 points" />
+ * It only shows. Screen readers hear the same news from the game's status line, so the
+ * burst stays hidden from them.
  */
 @Component({
   selector: 'ui-reward-burst',
   host: {
     'aria-hidden': 'true',
-    '[class.is-big]': 'big()',
-    '[class.is-golden]': 'golden()',
-    '[style.--wait]': 'wait() + "s"',
+    '[class.is-golden]': "kind() === 'golden'",
+    '[class.is-big]': "kind() === 'big'",
+    '[style.--wait]': "wait() + 's'",
   },
   template: `
     <span class="glow"></span>
@@ -46,14 +45,14 @@ const SPARKLES = [
     <div class="card">
       <span class="rays"></span>
       <strong class="cheer">{{ cheer() }}</strong>
-      @if (tags().length) {
-        <ul class="tags">
-          @for (tag of tags(); track tag) {
-            <li class="tag" [style.--at]="tagAt($index) + 's'">{{ tag }}</li>
+      <span class="gain">{{ points() }}</span>
+      @if (badges().length) {
+        <span class="badges">
+          @for (badge of badges(); track badge) {
+            <span class="badge" [style.--at]="0.5 + $index * 0.15 + 's'">{{ badge }}</span>
           }
-        </ul>
+        </span>
       }
-      <span class="gain" [style.--at]="tagAt(tags().length) + 's'">{{ points() }}</span>
     </div>
   `,
   styles: `
@@ -63,22 +62,22 @@ const SPARKLES = [
       z-index: 2;
       display: grid;
       justify-items: center;
-      align-items: end;
-      padding: 0 6% 5%;
+      align-items: start;
+      padding: 4% 6% 0;
       pointer-events: none;
       container-type: inline-size;
     }
     .glow {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 45%, #ffe9887a, #ffd23f26 45%, transparent 70%);
+      background: radial-gradient(circle at 50% 30%, #fff6c47a, #ffd23f22 45%, transparent 70%);
     }
     .sparkle {
       position: absolute;
-      width: 22px;
-      height: 22px;
-      margin: -11px 0 0 -11px;
-      background: #fff6bf;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      background: var(--paper);
       clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
       opacity: 0;
     }
@@ -87,53 +86,45 @@ const SPARKLES = [
       display: grid;
       justify-items: center;
       gap: 2px;
-      min-width: min(64%, 260px);
+      min-width: min(60%, 240px);
       max-width: 100%;
-      padding: 10px 22px 12px;
-      border: 3px solid var(--gold-deep);
+      padding: 8px 20px 10px;
+      border: 3px solid var(--burst-edge, var(--sky-deep));
       border-radius: 22px;
-      background: linear-gradient(180deg, var(--paper), var(--warm-ground));
+      background: linear-gradient(180deg, var(--paper), var(--burst-ground, #e6f3ff));
       color: var(--ink);
+      box-shadow:
+        0 6px 0 var(--burst-shadow, #16467a),
+        0 12px 28px #0005;
+      text-align: center;
+    }
+    :host(.is-golden) .card,
+    :host(.is-big) .card {
+      border-color: var(--gold-deep);
+      background: linear-gradient(180deg, var(--paper), var(--warm-ground));
       box-shadow:
         0 6px 0 #8a5a00,
         0 12px 28px #0006;
-      text-align: center;
     }
     .rays {
       position: absolute;
       inset: -60% -30%;
       z-index: -1;
-      background: repeating-conic-gradient(#ffd23f66 0 10deg, transparent 10deg 30deg);
+      background: repeating-conic-gradient(#ffffff88 0 10deg, transparent 10deg 30deg);
       mask-image: radial-gradient(circle, #000 25%, transparent 65%);
     }
+    :host(.is-golden) .rays,
+    :host(.is-big) .rays {
+      background: repeating-conic-gradient(#ffd23f66 0 10deg, transparent 10deg 30deg);
+    }
     .cheer {
-      font-size: clamp(22px, 7cqi, 34px);
+      font-size: clamp(20px, 6.5cqi, 32px);
       line-height: 1.1;
-      color: var(--amber-ink);
+      color: var(--burst-cheer, var(--sky-deep));
     }
+    :host(.is-golden) .cheer,
     :host(.is-big) .cheer {
-      color: var(--pink-deep);
-    }
-    :host(.is-golden) .card {
-      border-color: #e0a800;
-      background: linear-gradient(180deg, #fff6c2, #ffd95a);
-    }
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 4px 6px;
-      margin: 2px 0;
-      padding: 0;
-      list-style: none;
-    }
-    .tag {
-      padding: 2px 10px;
-      border-radius: var(--radius-pill);
-      background: var(--sun);
-      color: var(--ink);
-      font-size: clamp(13px, 3.6cqi, 16px);
-      font-weight: 600;
+      color: var(--amber-ink);
     }
     .gain {
       font-size: clamp(17px, 5cqi, 24px);
@@ -141,6 +132,22 @@ const SPARKLES = [
       color: var(--amber-ink);
       font-variant-numeric: tabular-nums;
     }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .badge {
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--success-ground);
+      color: var(--success-strong);
+      font-size: clamp(14px, 4cqi, 18px);
+      font-weight: 600;
+    }
+
     @media (prefers-reduced-motion: no-preference) {
       .glow {
         animation: glow 1.4s ease-out both;
@@ -157,12 +164,8 @@ const SPARKLES = [
       .rays {
         animation: rays 6s linear infinite;
       }
-      .tag {
-        animation: key-pop 0.45s cubic-bezier(0.3, 1.8, 0.5, 1) both;
-        animation-delay: calc(var(--wait) + var(--at));
-      }
-      .gain {
-        animation: gain-rise 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+      .badge {
+        animation: badge-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both;
         animation-delay: calc(var(--wait) + var(--at));
       }
     }
@@ -194,7 +197,7 @@ const SPARKLES = [
     @keyframes card-pop {
       from {
         opacity: 0;
-        transform: translateY(30px) scale(0.4);
+        transform: translateY(-24px) scale(0.4);
       }
     }
     @keyframes rays {
@@ -202,38 +205,29 @@ const SPARKLES = [
         transform: rotate(1turn);
       }
     }
-    @keyframes key-pop {
+    @keyframes badge-pop {
       from {
         opacity: 0;
-        transform: translateY(-14px) scale(0.2) rotate(-40deg);
+        transform: scale(0.3);
       }
     }
-    @keyframes gain-rise {
-      from {
-        opacity: 0;
-        transform: translateY(14px) scale(0.6);
-      }
-    }
-    :host-context(.calm-motion) :is(.glow, .sparkle, .card, .rays, .tag, .gain) {
+    :host-context(.calm-motion) .glow,
+    :host-context(.calm-motion) .sparkle,
+    :host-context(.calm-motion) .card,
+    :host-context(.calm-motion) .rays,
+    :host-context(.calm-motion) .badge {
       animation: none;
     }
   `,
 })
 export class RewardBurst {
+  readonly kind = input<RewardBurstKind>('plain');
   readonly cheer = input.required<string>();
-  /** Bonus names, already worded: "First try", "Fewest weights". */
-  readonly tags = input<readonly string[]>([]);
-  /** The points line, already worded, like "+30 points". */
+  /** The points line, already worded, like "+35 points". */
   readonly points = input.required<string>();
-  /** A bigger moment (the last dish of a round): the cheer turns pink. */
-  readonly big = input(false);
-  /** A streak bonus: the card turns gold. */
-  readonly golden = input(false);
-  /** Seconds to hold back the burst, so a 3D animation can finish first. */
+  /** Short bonus lines, already worded. */
+  readonly badges = input<readonly string[]>([]);
+  /** Seconds to wait before the burst shows. */
   readonly wait = input(0);
-
   protected readonly sparkles = SPARKLES;
-  protected tagAt(index: number) {
-    return TAG_START + index * TAG_STEP;
-  }
 }

@@ -182,6 +182,11 @@
   min-height: 0;
 }
 .board {
+  /* The reward card in brass and soup colours. */
+  --burst-edge: var(--gold-deep);
+  --burst-ground: var(--warm-ground);
+  --burst-shadow: #8a5a00;
+  --burst-cheer: var(--amber-ink);
   position: relative;
   min-height: 200px;
   border-radius: var(--radius-panel);
