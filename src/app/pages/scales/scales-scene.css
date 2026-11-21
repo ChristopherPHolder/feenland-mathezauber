@@ -1,0 +1,174 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cauldron.away {
+  display: none;
+}
+text {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-anchor: middle;
+}
+.thing ellipse,
+.thing rect,
+.thing path {
+  stroke: #4a3424;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.tag {
+  font-size: 13px;
+  fill: #3a2418;
+  paint-order: stroke;
+  stroke: #fff7e6;
+  stroke-width: 4px;
+}
+.weight {
+  fill: #c9a24a;
+  stroke: #6e4d12;
+}
+.knob {
+  fill: #8a6421;
+}
+.weight-label {
+  fill: #2e1d05;
+}
+.sack {
+  fill: #c79a5e;
+}
+.sack-label {
+  font-size: 8px;
+}
+.mystery {
+  fill: #8b5fc0;
+  stroke: #4b2c78;
+}
+.box-label {
+  font-size: 16px;
+  fill: #fff6bf;
+}
+.mark {
+  stroke: #3a2418;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.mark.long {
+  stroke-width: 3.5;
+}
+.dial-label {
+  font-size: 15px;
+  fill: #3a2418;
+  dominant-baseline: middle;
+}
+.dial-unit {
+  font-size: 18px;
+  fill: #8c1f49;
+}
+.needle {
+  fill: #d8343b;
+  transform-box: view-box;
+  transform: rotate(var(--n));
+}
+.beam {
+  transform-box: view-box;
+  transform-origin: 200px 108px;
+  transform: rotate(var(--a));
+}
+.hang {
+  transform-box: view-box;
+  transform: rotate(calc(-1 * var(--a)));
+}
+.jug-label {
+  font-size: 14px;
+  fill: #1f4a66;
+}
+.line-label {
+  font-size: 15px;
+  fill: #8c1f49;
+  text-anchor: start;
+}
+.target {
+  stroke: #e2467c;
+  stroke-width: 4;
+  stroke-dasharray: 10 6;
+}
+.water.over {
+  stroke: #e2467c;
+  stroke-width: 3;
+}
+.foam {
+  fill: #fff7e6;
+  stroke: #d9cbb2;
+}
+.golden .cauldron {
+  filter: drop-shadow(0 0 10px var(--gold));
+}
+.giant[data-mood='oops'] .mouth {
+  d: path('M341 73q9 -6 18 0');
+}
+
+/* The springy ease of a real balance: past the resting place and back. */
+@media (prefers-reduced-motion: no-preference) {
+  .beam,
+  .hang {
+    transition: transform 1.3s cubic-bezier(0.3, 1.7, 0.45, 0.85);
+  }
+  .needle {
+    transition: transform 1.2s cubic-bezier(0.3, 1.5, 0.5, 1);
+  }
+  .water {
+    transition:
+      height 0.6s ease-out,
+      y 0.6s ease-out;
+  }
+  .thing.added {
+    animation: drop-in 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  }
+  .jug.tipped path {
+    animation: tip 0.7s ease-in-out;
+    transform-origin: 18px -60px;
+  }
+  .foam {
+    animation: foam 0.8s ease-in-out infinite alternate;
+  }
+  .quick .beam,
+  .quick .hang {
+    transition-duration: 0.8s;
+  }
+}
+@keyframes drop-in {
+  from {
+    translate: 0 -40px;
+    opacity: 0;
+  }
+}
+@keyframes tip {
+  50% {
+    rotate: 50deg;
+  }
+}
+@keyframes foam {
+  to {
+    translate: 0 -4px;
+  }
+}
+:host-context(.calm-motion) .beam,
+:host-context(.calm-motion) .hang,
+:host-context(.calm-motion) .needle,
+:host-context(.calm-motion) .water {
+  transition: none;
+}
+:host-context(.calm-motion) .thing.added,
+:host-context(.calm-motion) .jug.tipped path,
+:host-context(.calm-motion) .foam {
+  animation: none;
+}

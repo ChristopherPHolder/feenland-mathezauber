@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 156 selectable levels across eleven games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 168 selectable levels across twelve games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -30,6 +30,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Mushroom Drums   | 3 verses of 7–10 drums plus a 4-drum solo, about 34 answers      | 34 × 2.5–3.5 s + demos and titles ≈ 2.5–3.5 min       |
 | The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
 | The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min           |
+| The Giant’s Scales   | 6 recipe lines and the feast dish (weigh, read, pour or compare) | 7 × 20–30 s ≈ 2.5–3.5 min; level 1 ≈ 1.5 min          |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -159,6 +160,19 @@ The generator spreads a round's numbers across the bridge, one from each equal s
 | Clever tricks     | the express 34 + 9 → 44 − 1 · express both ways 63 − 9 → 53 + 1 · mountain master (mixed, numbers only)         |
 
 Every cabin holds ten, in two rows of five. Every item crosses a ten (the generator filters for it), no item repeats in a round, and the last cabin is a big summit cabin from a harder pool that pays double. Single-digit levels (1–6) play 8 or 10 cabins with four answer buttons; levels 1 and 2 have only 8 different sums, so they play 8. Two-digit levels play 8 cabins with a number pad laid out in fives. The split must fill the cabin exactly (or, from level 6, take everything from a full ten; from level 10, send the express): a wrong split bounces a bunny off or jams the door, and after two slips Gusti shows a picture card with other numbers. Levels 1–6 show bunnies, 7–9 show full tens as "10" cabins, and 10–12 show numbers with a split diagram and a "Show the bunnies" button. Within a level, three quick first-try turns in a row bring a snow tarp over the cabins until the next miss. Level 10 asks for +9 and +8 rather than the issue's +11, because +11 only crosses a ten after a number ending in 9. Round stars come from first-try splits (three for 75%, two for half), and the master level needs three to be mastered.
+
+### The Giant’s Scales: 12 levels (`pages/scales/scales-levels.ts`)
+
+| Topic           | Levels, easiest first                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| Heavy and light | which is heavier? (by the tilt, then by labelled sacks) · level it with blocks (1 and 5)         |
+| Kilograms       | kilogram weights 1, 2, 5, 10 kg (fewest weights) · read the scale in kg (marks of 1 or 2)        |
+| Grams           | grams with 100, 200, 500 g, one line a whole 1 kg · read the kitchen scale (marks of 50/100)     |
+| Both sides      | same on both sides 7 + □ = 4 + 5 · balance puzzles □ + □ = 14 · times on the scale 3 × 4 = □ + 2 |
+| Pour it         | jugs of 1 l and 0,5 l · millilitres with 1 l, 500 ml and 250 ml jugs                             |
+| The feast       | giant’s feast: every kind mixed, three stars to master it                                        |
+
+A round is six recipe lines and a feast dish that pays double. The beam is the only feedback: Bramble holds it level while the child puts weights on, and when they tap Weigh it swings (a damped spring, past level and back) toward the heavier side, with the help line naming the side that went down, never how much is missing. A wrong mystery-box number is swapped onto the pan as a weight of that number, so the tilt answers it. A wrong dial reading only says to count the marks from 0 to the first number; dials always point at an unnumbered mark. Pouring says over or under the line. Generators are checked by tests to always be solvable with the weights or jugs offered, within twelve pieces; the fewest-weights bonus uses an exact coin-change solver. Equations stay within 20 and mystery-box scales within 40 kg. Amounts are written with the locale's decimal comma (1,5 l in de, es and fr) and 1000 g shows as 1 kg. Round stars come from first-try lines (three for six of seven, two for four), and three first tries in a row make the pot glow gold and double points until a slip.
 
 ## Adding a level
 

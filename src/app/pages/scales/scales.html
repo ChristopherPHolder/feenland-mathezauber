@@ -1,0 +1,468 @@
+<section class="game" [class.playing]="started() && !round().complete" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.position }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <div class="intro-demo">
+          <app-scales-demo [kind]="demoKind()" />
+        </div>
+        <div class="intro-copy">
+          <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
+          <p class="sr-only">{{ t('story') }}</p>
+          <div class="trick-card">
+            <h3>{{ t('trickTitle') }}</h3>
+            <p>{{ t(tipKey(stage().stage)) }}</p>
+            <p class="example">{{ stage().example }}</p>
+          </div>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+          <div class="feast-strip">
+            <ul class="plates" [attr.aria-label]="t('feastTable')">
+              @for (cooked of scores.table(); track $index) {
+                <li
+                  class="plate"
+                  [class.cooked]="cooked"
+                  [style.--dish]="dishColors[$index].color"
+                  [style.--top]="dishColors[$index].top"
+                >
+                  <span class="sr-only">{{ t(dishKey($index)) }}{{ cooked ? ' ✓' : '' }}</span>
+                </li>
+              }
+            </ul>
+            <p>
+              <strong>{{ t('feastProgress', { n: scores.dishes() }) }}</strong>
+              <span class="sr-only">{{ t('feastHelp') }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <fieldset class="pace" aria-describedby="pace-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="pace-help" class="sr-only">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id) {
+            <label class="pace-choice" [class.selected]="pace() === option.id">
+              <input
+                type="radio"
+                name="scales-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <svg class="pace-icon" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M4 14h24q0 14-12 14T4 14z" />
+                <ellipse class="pace-soup" cx="16" cy="14" rx="12" ry="3" />
+                @if (option.id !== 'off') {
+                  <circle class="pace-bubble" cx="11" cy="8" r="2.5" />
+                  <circle class="pace-bubble" cx="19" cy="6" r="2" />
+                  @if (option.id !== 'relaxed') {
+                    <circle class="pace-bubble" cx="15" cy="3" r="2" />
+                  }
+                  @if (option.id === 'fast') {
+                    <circle class="pace-bubble" cx="23" cy="10" r="1.6" />
+                  }
+                }
+              </svg>
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceUnlimited')
+                  : t('paceSeconds', { n: paceSeconds(option.id) })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+      </fieldset>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<ui-icon kind="arrow" />
+        </button>
+      </div>
+    </section>
+  } @else if (round().complete) {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <div class="recipe-card">
+        <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
+        <ol class="recipe-lines">
+          @for (row of recipeLines(); track $index) {
+            <li [style.--i]="$index">
+              <app-scales-item [item]="row.item" />
+              <span>{{ row.text }}</span>
+              <span class="tick" [class.first]="row.first" aria-hidden="true">{{
+                row.first ? '★' : '✓'
+              }}</span>
+            </li>
+          }
+        </ol>
+      </div>
+      <div class="outcome-copy">
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (star of starSlots; track star) {
+            <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
+              ><ui-icon kind="star"
+            /></span>
+          }
+        </div>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+        <ul class="tiles">
+          <li [style.--i]="1">
+            <strong>{{ round().results.length }}</strong
+            ><span>{{ t('tileLines') }}</span>
+          </li>
+          <li [style.--i]="2">
+            <strong>{{ firstTries() }}</strong
+            ><span>{{ t('tileFirst') }}</span>
+          </li>
+          <li [style.--i]="3">
+            <strong>{{ round().bestStreak }}</strong
+            ><span>{{ t('tileStreak') }}</span>
+          </li>
+          <li [style.--i]="4">
+            <strong>{{ round().fewest }}</strong
+            ><span>{{ t('tileFewest') }}</span>
+          </li>
+        </ul>
+        @if (dishAdded()) {
+          <p class="dish-line">
+            <span
+              class="plate cooked"
+              aria-hidden="true"
+              [style.--dish]="dishColors[stage().stage - 1].color"
+              [style.--top]="dishColors[stage().stage - 1].top"
+            ></span>
+            {{ t('dishAdded') }} {{ t(dishKey(stage().stage - 1)) }}
+          </p>
+        }
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        </p>
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('nextLevel') }}<ui-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<ui-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <ol
+        class="slots"
+        [attr.aria-label]="t('hud', { n: round().results.length, total: lineSlots.length })"
+      >
+        @for (slot of lineSlots; track slot) {
+          <li
+            class="slot"
+            [class.done]="slot < round().results.length"
+            [class.current]="slot === round().index"
+            [class.feast]="slot === lines"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              @if (slot === lines) {
+                <path class="feast-icon" d="M3 15h18M5 15q0-8 7-8t7 8M12 7V5" />
+              } @else {
+                <path class="pot-icon" d="M4 10h16q0 10-8 10T4 10z" />
+                <path class="steam-icon" d="M9 7q-1-2 0-3M13 7q-1-2 0-3" />
+              }
+            </svg>
+          </li>
+        }
+      </ol>
+      <p class="points" [class.bump]="line().done">
+        <span>{{ t('points') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (golden()) {
+        <p class="golden-chip">{{ t('hearty') }}</p>
+      }
+      @if (timed() && soupTotal() && !line().done) {
+        <div
+          class="soup-chip"
+          [class.urgent]="!round().bubbled && secondsLeft() <= 5"
+          [class.bubbled]="round().bubbled"
+        >
+          <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
+            <circle class="ring-track" cx="18" cy="18" r="15" />
+            <circle
+              class="ring-fill"
+              cx="18"
+              cy="18"
+              r="15"
+              pathLength="100"
+              [attr.stroke-dasharray]="(round().bubbled ? 100 : (1 - soupShare()) * 100) + ' 100'"
+            />
+          </svg>
+          <span class="sr-only">{{ t('soupTimer') }}</span>
+          <span class="seconds" role="timer" aria-live="off">{{
+            round().bubbled ? '0' : t('secondsLeft', { n: secondsLeft() })
+          }}</span>
+          <button
+            type="button"
+            class="timer-off"
+            (click)="selectPace('off')"
+            [attr.aria-label]="t('timerOff')"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+      }
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openCoach()"
+      >
+        ?
+      </button>
+    </div>
+    <div class="play-area">
+      <section class="board-wrap" [attr.aria-label]="t('boardLabel')">
+        <div class="board" [class.golden]="golden()" [class.feast]="feast()">
+          <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
+            <app-scales-scene [frame]="frame()" />
+          </app-three-stage>
+          @if (recipe(); as card) {
+            <p class="recipe-chip">
+              <app-scales-item [item]="card.item" />
+              <span class="sr-only">{{ t('recipe') }}:</span>
+              <span>{{ t(card.item) }}</span>
+              <strong>{{ card.amount }}</strong>
+            </p>
+          }
+          @if (equation(); as sum) {
+            <p class="equation" [class.solved]="line().done">
+              <span class="sr-only">{{ t('recipe') }}:</span>{{ sum }}
+            </p>
+          }
+          @if (banner(); as banner) {
+            <p class="banner" [class.gold]="banner === 'heartyBanner'" aria-hidden="true">
+              {{ t(banner) }}
+            </p>
+          }
+          @if (reward(); as reward) {
+            <ui-reward-burst
+              [cheer]="reward.cheer"
+              [tags]="reward.tags"
+              [points]="reward.points"
+              [big]="reward.kind === 'feast'"
+              [golden]="reward.kind === 'hearty'"
+              [wait]="scene.ready() ? 0.7 : 0"
+            />
+          }
+        </div>
+      </section>
+      <div class="controls" [attr.data-guide]="nextTap()">
+        <p class="line-count">
+          {{ feast() ? t('feastLine') : t('lineCount', { n: round().index + 1, total: lines }) }}
+        </p>
+        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+          {{ statusText() }}
+        </p>
+        <p class="sr-only">{{ sceneText() }}</p>
+        @if (line().verdict && !line().done) {
+          <p class="hint" role="alert">
+            <strong>{{ t('hintLead') }}</strong> {{ helpText() }}
+          </p>
+        }
+
+        @if (line().done) {
+          <div class="after-cook">
+            <button type="button" class="button primary" (click)="next()">
+              {{ t('nextLine') }}<ui-icon kind="arrow" />
+            </button>
+          </div>
+        } @else {
+          @switch (task().kind) {
+            @case ('compare') {
+              @if (claimTask()) {
+                <div class="picks" role="group" [attr.aria-label]="t('askClaim')">
+                  <button type="button" class="pick yes" (click)="pick('yes')">
+                    <span aria-hidden="true">✓</span> {{ t('yes') }}
+                  </button>
+                  <button type="button" class="pick no" (click)="pick('no')">
+                    <span aria-hidden="true">✗</span> {{ t('no') }}
+                  </button>
+                </div>
+              } @else {
+                <div class="picks" role="group" [attr.aria-label]="question()">
+                  @for (item of compareItems(); track $index) {
+                    <button
+                      type="button"
+                      class="pick"
+                      (click)="pick($index === 0 ? 'left' : 'right')"
+                    >
+                      <app-scales-item [item]="item" />
+                      {{ t(item) }}
+                    </button>
+                  }
+                </div>
+              }
+            }
+            @case ('balance') {
+              <div class="weights" role="group" [attr.aria-label]="t('weightsLabel')">
+                @for (size of sizes(); track size) {
+                  <button
+                    type="button"
+                    class="weight-button"
+                    [style.--s]="size / sizes()[0]"
+                    [attr.aria-label]="t('addWeight', { w: weightLabel(size) })"
+                    [disabled]="line().placed.length >= maxPieces"
+                    (click)="add(size)"
+                  >
+                    <span aria-hidden="true">{{ weightLabel(size) }}</span>
+                  </button>
+                }
+              </div>
+              <div class="pan-row">
+                <span class="pan-title">{{ t('panLabel') }}</span>
+                <ul class="pan-chips">
+                  @for (amount of line().placed; track $index) {
+                    <li>
+                      <button
+                        type="button"
+                        class="pan-chip"
+                        [attr.aria-label]="t('removeWeight', { w: weightLabel(amount) })"
+                        (click)="remove($index)"
+                      >
+                        {{ weightLabel(amount) }}<span aria-hidden="true" class="x">×</span>
+                      </button>
+                    </li>
+                  } @empty {
+                    <li class="pan-empty">{{ t('panEmpty') }}</li>
+                  }
+                </ul>
+              </div>
+              <button
+                type="button"
+                class="button primary weigh"
+                [disabled]="!line().placed.length || !line().held"
+                (click)="weighIt()"
+              >
+                {{ t('weigh') }}
+              </button>
+            }
+            @case ('pour') {
+              <div class="jugs" role="group" [attr.aria-label]="t('jugsLabel')">
+                @for (jug of jugs(); track jug) {
+                  <button
+                    type="button"
+                    class="jug-button"
+                    [attr.aria-label]="t('pourJug', { w: weightLabel(jug) })"
+                    [disabled]="!canPourJug(jug)"
+                    (click)="pourJug(jug)"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 21V6q0-2 2-2h7l3 3v14z" />
+                      <path class="jug-water" d="M6 21v-8h12v8z" />
+                    </svg>
+                    <span aria-hidden="true">{{ weightLabel(jug) }}</span>
+                  </button>
+                }
+              </div>
+              <div class="pour-row">
+                <button
+                  type="button"
+                  class="button secondary"
+                  [disabled]="!line().placed.length"
+                  (click)="empty()"
+                >
+                  {{ t('emptyPot') }}
+                </button>
+                <button
+                  type="button"
+                  class="button primary done-pour"
+                  [disabled]="!line().placed.length"
+                  (click)="donePouring()"
+                >
+                  {{ t('donePouring') }}
+                </button>
+              </div>
+            }
+            @default {
+              <div class="answer">
+                <output class="answer-box" [attr.aria-label]="t('answerLabel')">{{
+                  line().entry || '?'
+                }}</output>
+                <span class="answer-unit">{{ unitText() }}</span>
+              </div>
+              <div class="pad" role="group" [attr.aria-label]="t('answerLabel')">
+                @for (digit of digits; track digit) {
+                  <button type="button" class="pad-key" (click)="type(digit)">{{ digit }}</button>
+                }
+                <button
+                  type="button"
+                  class="pad-key erase"
+                  [attr.aria-label]="t('clear')"
+                  (click)="erase()"
+                >
+                  <ui-icon kind="back" />
+                </button>
+                <button
+                  type="button"
+                  class="pad-key check"
+                  [disabled]="!line().entry"
+                  (click)="submit()"
+                >
+                  {{ t('check') }}
+                </button>
+              </div>
+            }
+          }
+        }
+      </div>
+    </div>
+    @if (coachOpen()) {
+      <ui-film-dialog [heading]="t('demoTitle')" [go]="t('coachGo')" (done)="closeCoach()">
+        <app-scales-demo [kind]="demoKind()" />
+      </ui-film-dialog>
+    }
+  }
+</section>

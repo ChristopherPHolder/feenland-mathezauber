@@ -9,6 +9,7 @@ import { drumLevels } from '../pages/drums/drum-patterns';
 import { starLevels } from '../pages/star-catcher/star-levels';
 import { fireworkCatalogLevels } from '../pages/fireworks/firework-levels';
 import { gondolaLevels } from '../pages/gondola/gondola-levels';
+import { scalesLevels } from '../pages/scales/scales-levels';
 import { MessageKey } from './messages';
 export interface Level {
   readonly practice?: PracticeConfig;
@@ -153,6 +154,13 @@ export const worlds: readonly World[] = [
         description: 'gondolaChapterHelp',
         emblem: '🚡',
         levels: gondolaLevels,
+      },
+      {
+        id: 'scales',
+        title: 'scalesChapter',
+        description: 'scalesChapterHelp',
+        emblem: '⚖️',
+        levels: scalesLevels,
       },
     ],
   },

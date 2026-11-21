@@ -1,0 +1,384 @@
+<svg
+  viewBox="0 0 400 300"
+  preserveAspectRatio="xMidYMid meet"
+  [class.quick]="quick()"
+  [class.golden]="frame().golden"
+>
+  <defs>
+    <linearGradient id="scales-brass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d77a" />
+      <stop offset="1" stop-color="#b8861f" />
+    </linearGradient>
+    <linearGradient id="scales-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cfe9f7" />
+      <stop offset="1" stop-color="#fdf1dc" />
+    </linearGradient>
+  </defs>
+  <!-- Sky and grass reach past the picture, so a tall or wide board is filled edge to edge. -->
+  <rect x="-400" y="-600" width="1200" height="900" fill="#cfe9f7" />
+  <rect width="400" height="300" fill="url(#scales-sky)" />
+  <path d="M-400 236h400q100-22 200-8t200-6h400V900H-400z" fill="#9fcb72" />
+  <path d="M-400 262h400q120-14 220-4t180-6h400V900H-400z" fill="#86b95c" />
+
+  <!-- Bramble peeks in from the top right. -->
+  <g class="giant" [attr.data-mood]="frame().mood">
+    <path d="M300 120q4-40 50-44q46 4 50 44z" fill="#5d8a5a" />
+    <ellipse cx="350" cy="52" rx="34" ry="38" fill="#e9b48a" />
+    <path d="M318 62q32 48 64 0q-4 30-32 36q-28-6-32-36z" fill="#a0603a" />
+    <path d="M314 26q36-34 72 0q-36-9-72 0z" fill="#5a3f8c" />
+    <rect x="312" y="22" width="76" height="8" rx="4" fill="#7c5bb5" />
+    <circle cx="338" cy="48" r="4" fill="#3a2418" />
+    <circle cx="362" cy="48" r="4" fill="#3a2418" />
+    <ellipse cx="350" cy="58" rx="6" ry="5" fill="#d98e6a" />
+    <path class="mouth" d="M341 69q9 7 18 0" fill="none" stroke="#3a2418" stroke-width="3" />
+  </g>
+
+  <!-- The soup pot in the corner: it fills one share per line and glows on a streak. -->
+  <g class="cauldron" [class.bubbling]="frame().bubbling" [class.away]="frame().mode === 'pour'">
+    <ellipse cx="54" cy="290" rx="44" ry="10" fill="#0003" />
+    <path d="M14 254h80q2 34-40 36q-42-2-40-36z" fill="#3b3b46" />
+    <ellipse cx="54" cy="254" rx="40" ry="9" fill="#25252e" />
+    <ellipse
+      class="soup"
+      cx="54"
+      cy="255"
+      rx="36"
+      ry="7"
+      [attr.fill]="frame().soupColor"
+      [style.opacity]="frame().soup > 0 ? 1 : 0.35"
+    />
+    @if (frame().bubbling) {
+      <circle class="foam" cx="34" cy="248" r="8" />
+      <circle class="foam" cx="56" cy="244" r="10" />
+      <circle class="foam" cx="76" cy="249" r="7" />
+    }
+  </g>
+
+  @switch (frame().mode) {
+    @case ('balance') {
+      <!-- The stand -->
+      <path d="M170 286h60l-8-12h-44z" fill="#8a6421" />
+      <rect x="194" [attr.y]="pivot.y" width="12" height="166" fill="url(#scales-brass)" />
+      <circle [attr.cx]="pivot.x" [attr.cy]="pivot.y" r="10" fill="#8a6421" />
+      <g class="beam" [style.--a]="degrees() + 'deg'">
+        <rect
+          [attr.x]="pivot.x - arm - 6"
+          [attr.y]="pivot.y - 5"
+          [attr.width]="arm * 2 + 12"
+          height="10"
+          rx="5"
+          fill="url(#scales-brass)"
+          stroke="#7a5512"
+          stroke-width="1.5"
+        />
+        <path
+          [attr.d]="'M' + (pivot.x - 14) + ' ' + (pivot.y - 4) + 'l14-22l14 22z'"
+          fill="#c99a2e"
+        />
+        @for (side of ['left', 'right']; track side) {
+          <g
+            class="hang"
+            [style.transform-origin]="
+              (side === 'left' ? pivot.x - arm : pivot.x + arm) + 'px ' + pivot.y + 'px'
+            "
+          >
+            <g
+              [attr.transform]="
+                'translate(' +
+                (side === 'left' ? pivot.x - arm : pivot.x + arm) +
+                ' ' +
+                pivot.y +
+                ')'
+              "
+            >
+              <path d="M0 0L-50 64M0 0L50 64M0 0v64" stroke="#7a5512" stroke-width="1.6" />
+              <circle r="4" fill="#8a6421" />
+              <path
+                d="M-58 63h116q-10 14-58 14t-58-14z"
+                fill="url(#scales-brass)"
+                stroke="#7a5512"
+                stroke-width="1.5"
+              />
+              @for (spot of side === 'left' ? leftPan() : rightPan(); track $index) {
+                <g
+                  class="thing"
+                  [class.added]="spot.thing.added"
+                  [attr.transform]="'translate(' + spot.x + ' ' + spot.y + ')'"
+                >
+                  @switch (spot.thing.kind) {
+                    @case ('item') {
+                      <g [attr.transform]="'scale(' + spot.w / 100 + ' ' + spot.h / 80 + ')'">
+                        @for (shape of art[spot.thing.item!]; track $index) {
+                          @if ('e' in shape) {
+                            <ellipse
+                              [attr.cx]="shape.e[0]"
+                              [attr.cy]="shape.e[1]"
+                              [attr.rx]="shape.e[2]"
+                              [attr.ry]="shape.e[3]"
+                              [attr.fill]="shape.fill"
+                            />
+                          } @else if ('r' in shape) {
+                            <rect
+                              [attr.x]="shape.r[0]"
+                              [attr.y]="shape.r[1]"
+                              [attr.width]="shape.r[2]"
+                              [attr.height]="shape.r[3]"
+                              [attr.rx]="shape.r[4]"
+                              [attr.fill]="shape.fill"
+                            />
+                          } @else {
+                            <path [attr.d]="shape.d" [attr.fill]="shape.fill" />
+                          }
+                        }
+                      </g>
+                      @if (spot.thing.label) {
+                        <text class="tag" [attr.y]="-spot.h - 4">{{ spot.thing.label }}</text>
+                      }
+                    }
+                    @case ('weight') {
+                      <path
+                        class="weight"
+                        [attr.d]="
+                          'M' +
+                          -spot.w / 2 +
+                          ' 0h' +
+                          spot.w +
+                          'l-' +
+                          spot.w * 0.12 +
+                          ' -' +
+                          spot.h * 0.8 +
+                          'h-' +
+                          spot.w * 0.76 +
+                          'z'
+                        "
+                      />
+                      <rect
+                        [attr.x]="-spot.w * 0.15"
+                        [attr.y]="-spot.h"
+                        [attr.width]="spot.w * 0.3"
+                        [attr.height]="spot.h * 0.22"
+                        rx="2"
+                        class="knob"
+                      />
+                      <text
+                        class="weight-label"
+                        [attr.y]="-spot.h * 0.32"
+                        [style.font-size.px]="Math.max(7, spot.w * 0.3)"
+                      >
+                        {{ spot.thing.label }}
+                      </text>
+                    }
+                    @case ('mystery') {
+                      <rect
+                        class="mystery"
+                        [attr.x]="-spot.w / 2"
+                        [attr.y]="-spot.h"
+                        [attr.width]="spot.w"
+                        [attr.height]="spot.h"
+                        rx="4"
+                      />
+                      <text class="box-label" [attr.y]="-spot.h * 0.3">{{ spot.thing.label }}</text>
+                    }
+                    @case ('sack') {
+                      <path
+                        class="sack"
+                        [attr.d]="
+                          'M' +
+                          -spot.w / 2 +
+                          ' 0q-3-' +
+                          spot.h * 0.7 +
+                          ' ' +
+                          spot.w * 0.2 +
+                          '-' +
+                          spot.h * 0.85 +
+                          'h' +
+                          spot.w * 0.6 +
+                          'q' +
+                          spot.w * 0.3 +
+                          ' ' +
+                          spot.h * 0.15 +
+                          ' ' +
+                          spot.w * 0.2 +
+                          ' ' +
+                          spot.h * 0.85 +
+                          'z'
+                        "
+                      />
+                      <text class="weight-label sack-label" [attr.y]="-spot.h * 0.3">
+                        {{ spot.thing.label }}
+                      </text>
+                    }
+                  }
+                </g>
+              }
+            </g>
+          </g>
+        }
+      </g>
+      @if (frame().held) {
+        <!-- Bramble's big hand comes down and steadies the beam. -->
+        <g class="hand">
+          <path d="M186 0h28v52h-28z" fill="#5d8a5a" />
+          <path
+            d="M180 54q20-12 40 0q4 22-6 30h-28q-10-8-6-30z"
+            fill="#e9b48a"
+            stroke="#a8714b"
+            stroke-width="2"
+          />
+          <path d="M190 70v12M200 70v13M210 70v12" stroke="#a8714b" stroke-width="1.5" />
+        </g>
+      }
+    }
+    @case ('dial') {
+      @if (frame().dial; as view) {
+        <rect
+          x="104"
+          y="96"
+          width="192"
+          height="182"
+          rx="26"
+          fill="#e2467c"
+          stroke="#8c1f49"
+          stroke-width="3"
+        />
+        <path
+          d="M112 92h176l-14-12H126z"
+          fill="url(#scales-brass)"
+          stroke="#7a5512"
+          stroke-width="1.5"
+        />
+        <g [attr.transform]="'translate(200 80) scale(0.9 0.75)'">
+          @for (shape of art[view.item]; track $index) {
+            @if ('e' in shape) {
+              <ellipse
+                [attr.cx]="shape.e[0]"
+                [attr.cy]="shape.e[1]"
+                [attr.rx]="shape.e[2]"
+                [attr.ry]="shape.e[3]"
+                [attr.fill]="shape.fill"
+              />
+            } @else if ('r' in shape) {
+              <rect
+                [attr.x]="shape.r[0]"
+                [attr.y]="shape.r[1]"
+                [attr.width]="shape.r[2]"
+                [attr.height]="shape.r[3]"
+                [attr.rx]="shape.r[4]"
+                [attr.fill]="shape.fill"
+              />
+            } @else {
+              <path [attr.d]="shape.d" [attr.fill]="shape.fill" />
+            }
+          }
+        </g>
+        <circle
+          [attr.cx]="dialBox.x"
+          [attr.cy]="dialBox.y"
+          [attr.r]="dialBox.r + 6"
+          fill="#fff7e6"
+          stroke="#8c1f49"
+          stroke-width="4"
+        />
+        @for (mark of marks(); track mark.value) {
+          <line
+            class="mark"
+            [class.long]="mark.labelled"
+            [attr.x1]="mark.inner.x"
+            [attr.y1]="mark.inner.y"
+            [attr.x2]="mark.outer.x"
+            [attr.y2]="mark.outer.y"
+          />
+          @if (mark.label) {
+            <text class="dial-label" [attr.x]="mark.text.x" [attr.y]="mark.text.y">
+              {{ mark.label }}
+            </text>
+          }
+        }
+        <text class="dial-unit" [attr.x]="dialBox.x" [attr.y]="dialBox.y + 44">
+          {{ view.unit }}
+        </text>
+        <g
+          class="needle"
+          [style.--n]="needle() + 'deg'"
+          [style.transform-origin]="dialBox.x + 'px ' + dialBox.y + 'px'"
+        >
+          <path
+            [attr.d]="
+              'M' +
+              (dialBox.x - 4) +
+              ' ' +
+              dialBox.y +
+              'L' +
+              dialBox.x +
+              ' ' +
+              (dialBox.y - dialBox.r + 8) +
+              'L' +
+              (dialBox.x + 4) +
+              ' ' +
+              dialBox.y +
+              'z'
+            "
+          />
+        </g>
+        <circle [attr.cx]="dialBox.x" [attr.cy]="dialBox.y" r="7" fill="#3a2418" />
+      }
+    }
+    @case ('pour') {
+      @if (pot(); as view) {
+        @for (jug of jugs(); track jug.amount) {
+          <g
+            class="jug"
+            [class.tipped]="jug.tipped && frame().pours > 0"
+            [attr.transform]="'translate(' + jug.x + ' 262) scale(' + jug.scale + ')'"
+          >
+            <path
+              d="M-20 0v-70q0-6 6-8h22l10 10v68z"
+              fill="#dff1fb"
+              stroke="#4d7f9e"
+              stroke-width="2.5"
+            />
+            <path d="M-18 0v-34h34v34z" fill="#5fb2e6" />
+            <path d="M18-60q12 4 10 26q-4 8-10 6" fill="none" stroke="#4d7f9e" stroke-width="3" />
+          </g>
+          <text class="jug-label" [attr.x]="jug.x" y="284">{{ jug.label }}</text>
+        }
+        <rect
+          [attr.x]="potBox.x - potBox.width / 2"
+          [attr.y]="potBox.top"
+          [attr.width]="potBox.width"
+          [attr.height]="potBox.bottom - potBox.top"
+          rx="18"
+          fill="#e9f6fd88"
+          stroke="#4d7f9e"
+          stroke-width="4"
+        />
+        <rect
+          class="water"
+          [class.over]="view.over"
+          [attr.x]="potBox.x - potBox.width / 2 + 6"
+          [attr.y]="potBox.bottom - 6 - view.water"
+          [attr.width]="potBox.width - 12"
+          [attr.height]="view.water"
+          rx="12"
+          [attr.fill]="
+            view.item === 'milk' ? '#fbfaf5' : view.item === 'juice' ? '#c2357a' : '#5fb2e6'
+          "
+        />
+        <line
+          class="target"
+          [attr.x1]="potBox.x - potBox.width / 2 - 8"
+          [attr.x2]="potBox.x + potBox.width / 2 + 8"
+          [attr.y1]="view.lineY"
+          [attr.y2]="view.lineY"
+        />
+        <text
+          class="line-label"
+          [attr.x]="potBox.x + potBox.width / 2 + 12"
+          [attr.y]="view.lineY + 5"
+        >
+          {{ view.line }}
+        </text>
+      }
+    }
+  }
+</svg>

@@ -49,6 +49,7 @@ Switching levels never requires leaving the game:
 - **The Mushroom Drums** has twelve level routes (`/adventure/drums-1` … `-12`); its intro has a level strip 1–12 in two rows of six with the current level marked `aria-current="page"`, the pause dialog can go back to the intro, and the finish offers the next level.
 - **The Star Catcher** has twelve level routes (`/adventure/star-catcher-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **The Mountain Gondola** has twelve level routes (`/adventure/gondola-1` … `-12`); its intro has a level strip 1–12 with the current level marked `aria-current="page"`, and the finish offers the next level.
+- **The Giant’s Scales** has twelve level routes (`/adventure/scales-1` … `-12`); its intro has a level strip 1–12 in two rows of six on a phone with the current level marked `aria-current="page"`, and the finish offers the next level.
 - **Defend the Fairy Castle** keeps its wave path (all twenty waves open) and the picture cards for the thirty practice stages, grouped under a heading per topic. Those stages belong to the castle chapter, so Home shows one castle card and the hub lists them under the castle section.
 - Finishing a round offers Next level, Play again and All games.
 

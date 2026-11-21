@@ -5,7 +5,9 @@
  */
 export { DragonFace, type DragonFaceColors } from './dragon-face';
 export { Emblem } from './emblem';
+export { FilmDialog } from './film-dialog';
 export { GameBar } from './game-bar';
 export { Icon, type IconKind } from './icon';
+export { RewardBurst } from './reward-burst';
 export { SoundToggle } from './sound-toggle';
 export { StarRating } from './star-rating';
