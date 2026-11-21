@@ -163,7 +163,7 @@ export class GondolaLoaderWorld extends Stage implements StateWorld<null> {
     }
     this.cabin.root.position.lerpVectors(FROM, TO, along);
     this.cabin.root.scale.setScalar(CABIN_SCALE * Math.max(0.001, shown));
-    this.cabin.body.rotation.z = swing;
+    this.cabin.swing.rotation.z = swing;
     this.bunny.paw.rotation.z = calm ? 0 : Math.sin(t * 10) * 0.45;
     this.bunny.ears[0].rotation.x = -0.22 + (calm ? 0 : Math.sin(t * 3) * 0.12);
   }
