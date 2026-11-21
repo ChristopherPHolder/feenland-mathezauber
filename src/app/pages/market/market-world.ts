@@ -35,19 +35,23 @@ import type { StateWorld } from '../../shared/three/three-stage';
 import { MarketFrame, MONEY_LOOK } from './market-frame';
 import { GOOD_IDS, GoodId } from './market-levels';
 import {
+  buildCustomer,
   buildGood,
   buildLumi,
   buildMoney,
   buildOlli,
   buildPriceTag,
+  COIN_RADIUS,
+  CustomerModel,
   Kit,
   Lumi,
   moneyWidth,
+  NOTE_SIZE,
   Olli,
   PriceTag,
   roundedBox,
 } from './market-models';
-import { Denomination } from './market-money';
+import { Denomination, isNote } from './market-money';
 
 /** The counter's top surface. */
 const TOP = 1.07;
@@ -58,6 +62,44 @@ const TILL_AT = new Vector3(-1.72, TOP, 0.3);
 const TRAY_AT = new Vector3(-0.42, TOP, 0.42);
 const OLLI_AT = new Vector3(-0.45, 0.22, -0.62);
 const LUMI_AT = new Vector3(2.55, 0.78, 0.78);
+/** The role swap: Lumi floats behind the counter at the till, Olli watches by the window. */
+const LUMI_TILL = new Vector3(-0.45, 0.86, -0.5);
+const OLLI_ASIDE = new Vector3(-1.85, 0.22, -1.45);
+/** The customer stands on a little wooden step so they can see over the counter. */
+const STEP_HEIGHT = 0.42;
+const CUSTOMER_SCALE = 0.95;
+/** The note handed over to pay leans on the till's front. */
+const NOTE_AT = new Vector3(-1.72, TOP, 0.76);
+/** Where Olli counts the change out onto the counter, from left to right. */
+const CHANGE_AT = new Vector3(-1.3, TOP, 0.74);
+
+/**
+ * Paying with a note and getting change (shopper role), in seconds after `pays`: the note goes
+ * into the till, Olli counts the change out one coin at a time, then it slides over to Lumi's
+ * basket. The treat still flies as in `PAY_SECONDS`.
+ */
+export const CHANGE_SECONDS = {
+  /** The note is in the drawer. */
+  noteIn: 0.5,
+  /** The first change coin lands on the counter; the others follow this far apart. */
+  firstCoin: 0.8,
+  coinGap: 0.15,
+  /** The change starts sliding to Lumi (later if there are more than four pieces). */
+  slide: 1.3,
+  /** It is in her basket. */
+  done: 1.75,
+} as const;
+
+/** A row of two or three treats along the counter; each gets its own tag on the front edge. */
+const ROW_X: Readonly<Record<number, readonly number[]>> = {
+  2: [1.05, 1.7],
+  3: [0.95, 1.47, 1.99],
+};
+/** The counter's front edge, where the row's tags clip on. */
+const EDGE_Z = 0.885;
+/** Treats in a row pop on and fly off one after another, this many seconds apart. */
+const POP_STAGGER = 0.12;
+const FLY_STAGGER = 0.08;
 /** The tray's inner size, in its own plane, and how far it leans back. */
 const TRAY_W = 2.05;
 const TRAY_H = 0.64;
@@ -87,7 +129,10 @@ export const PAY_SECONDS = {
   ring: 0.35,
   /** The treat starts its hop into the basket (or back to the shelf). */
   lift: 0.5,
-  /** It lands; Lumi does a little hop. */
+  /**
+   * It lands; Lumi does a little hop. With two or three treats they leave 0.08 s apart from
+   * 0.45 s and the last one lands by about 1.23 s.
+   */
   landed: 1.2,
   /** Everything has settled. */
   done: 1.55,
@@ -149,6 +194,14 @@ interface Flight {
   readonly start: number;
   readonly end: number;
   readonly lift: number;
+  /** Stays in the scene when it lands, because it has another flight to make. */
+  readonly keep?: boolean;
+  /** Coins and notes keep their face to the child instead of spinning. */
+  readonly flat?: boolean;
+  /** A treat on its way into someone's basket. */
+  readonly into?: 'lumi' | 'customer';
+  /** Runs once when it lands. */
+  readonly land?: () => void;
 }
 
 const SKY_STOPS = [
@@ -235,7 +288,28 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
   private frame?: MarketFrame;
   private pieces: TrayPiece[] = [];
   private paying: { mesh: Group; from: Vector3 }[] = [];
-  private counterGood: Group | null = null;
+  /** The treats on the counter: the main one first, then the extras. */
+  private counterGoods: Group[] = [];
+  /** Tags on the counter's edge, one per treat in a row. */
+  private readonly edgeTags: PriceTag[] = [];
+  private goodCount = 1;
+  /** When the last treat lands in the basket: Lumi hops then. */
+  private hopAt = -10;
+  private role: MarketFrame['role'] = 'shopper';
+  private narrow = false;
+  /** Where Lumi floats when nothing moves her, so her bob starts there. */
+  private lumiBaseY = LUMI_AT.y;
+  private customer: CustomerModel | null = null;
+  private readonly customerAt = new Vector3();
+  private customerEnterAt = -10;
+  private readonly step: Mesh;
+  /** The note or notes handed over to pay, lying by the till. */
+  private notes: Group[] = [];
+  private notesKey = '';
+  /** The `pays` count whose change was counted out, so it is counted once. */
+  private changeFor = -1;
+  /** Until when the till's drawer stays open; 0 for the short ring. */
+  private drawerUntil = 0;
   private goodKey = '';
   private popAt = -10;
   private paidTurn = -1;
@@ -483,12 +557,22 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     this.tag = buildPriceTag(kit);
     this.tag.root.position.copy(TAG_AT);
     this.scene.add(this.tag.root);
+    for (let index = 0; index < 3; index++) {
+      const edge = buildPriceTag(kit, 'edge');
+      edge.root.visible = false;
+      this.edgeTags.push(edge);
+      this.scene.add(edge.root);
+    }
 
     // Lumi floats at the end of the counter with her basket.
     this.lumi = buildLumi(kit);
     this.lumi.root.position.copy(LUMI_AT);
     this.lumi.root.rotation.y = -0.45;
     this.scene.add(this.lumi.root);
+    // The customer's step, for the role swap.
+    this.step = new Mesh(roundedBox(0.66, STEP_HEIGHT, 0.56, 0.06), kit.mat('#b97a45'));
+    this.step.visible = false;
+    this.scene.add(this.step);
 
     // The big buy's sparkle ring round the treat.
     const ring2 = new Mesh(
@@ -557,28 +641,58 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     this.frame = frame;
     const shopping = frame.phase === 'shop';
 
+    if (frame.role !== this.role) {
+      this.role = frame.role;
+      // The cast moves, so the camera reframes.
+      if (this.width > 1) this.layout(this.width / this.height);
+      else this.placeCast();
+    }
+    this.syncCustomer(frame, previous, now);
     if (this.payCount.take(frame.pays)) this.startPay(frame, now);
     const dropped = this.coinCount.take(frame.coins) > 0;
     if (this.slipCount.take(frame.slips)) this.slipAt = now;
     if (this.cheerCount.take(frame.cheers)) this.startCheer(now);
 
-    // A new treat on the counter for a new turn (or a new level card).
-    const key = `${frame.turn}|${frame.good}|${frame.big}|${frame.phase === 'intro' || frame.phase === 'complete'}`;
+    // New treats on the counter for a new turn (or a new level card).
+    const goods = [{ good: frame.good, priceText: frame.priceText }, ...frame.extras].slice(0, 3);
+    const key = `${frame.turn}|${goods.map((item) => item.good).join(',')}|${frame.big}|${frame.phase === 'intro' || frame.phase === 'complete'}`;
     const paidThisTurn = this.paidTurn === frame.turn && frame.phase !== 'intro';
     if (key !== this.goodKey && !(paidThisTurn && previous?.turn === frame.turn)) {
       this.goodKey = key;
-      this.placeGood(frame.good, frame.big, previous ? Math.max(now, this.payAt + 0.95) : -10);
+      this.placeGoods(
+        goods.map((item) => item.good),
+        frame.big,
+        previous ? Math.max(now, this.payAt + 0.95) : -10,
+      );
       if (previous && previous.turn !== frame.turn) this.paidTurn = -1;
     }
-    this.tag.setText(frame.priceText, frame.big);
-    this.tag.root.visible = !!frame.priceText && !!this.counterGood;
-    this.sparkles.visible = frame.big && !!this.counterGood;
+    if (goods.length === 1) this.tag.setText(frame.priceText, frame.big);
+    else
+      goods.forEach((item, index) =>
+        this.edgeTags[index].setText(item.priceText, frame.big && !index),
+      );
+    this.showTags();
 
     // Coins on the tray: only while shopping, never after this turn's purchase went through.
     this.syncTray(
       shopping && this.paidTurn !== frame.turn ? frame.tray : [],
       dropped ? now : -Infinity,
     );
+
+    // The note handed over waits by the till until the purchase goes through.
+    this.syncNotes(
+      this.paidTurn !== frame.turn && frame.phase === 'shop' ? frame.paid : [],
+      frame.turn,
+    );
+    if (
+      frame.role === 'shopper' &&
+      frame.change.length &&
+      this.paidTurn === frame.turn &&
+      this.changeFor !== frame.pays
+    ) {
+      this.changeFor = frame.pays;
+      this.countChange(frame.change, Math.max(this.payAt, now - 0.3));
+    }
 
     this.syncBasket();
     if (frame.shelf !== this.shelfCount) this.fillShelf(frame.shelf);
@@ -599,58 +713,261 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     return { position, angle };
   }
 
-  private placeGood(id: GoodId, big: boolean, popAt: number) {
-    if (this.counterGood) this.counterGood.removeFromParent();
-    const good = buildGood(this.kit, id);
-    good.position.copy(GOOD_AT);
-    good.userData['size'] = big ? 1.5 : 1.15;
-    good.scale.setScalar(popAt < 0 ? good.userData['size'] : 0.001);
-    this.scene.add(good);
-    this.counterGood = good;
+  private placeGoods(ids: readonly GoodId[], big: boolean, popAt: number) {
+    for (const good of this.counterGoods) good.removeFromParent();
+    const row = ids.length > 1 ? ROW_X[ids.length] : [GOOD_AT.x];
+    this.counterGoods = ids.map((id, index) => {
+      const good = buildGood(this.kit, id);
+      good.userData['id'] = id;
+      good.position.set(row[index], GOOD_AT.y, GOOD_AT.z);
+      good.userData['size'] = ids.length === 1 ? (big ? 1.5 : 1.15) : big && !index ? 1.2 : 1;
+      good.userData['popAt'] = popAt < 0 ? popAt : popAt + index * POP_STAGGER;
+      good.scale.setScalar(popAt < 0 ? good.userData['size'] : 0.001);
+      this.scene.add(good);
+      return good;
+    });
+    row.forEach((x, index) => {
+      if (ids.length > 1) this.edgeTags[index].root.position.set(x, GOOD_AT.y, EDGE_Z);
+    });
+    this.sparkles.position.set(row[0], GOOD_AT.y, GOOD_AT.z);
+    this.sparkles.scale.setScalar(ids.length > 1 ? 0.75 : 1);
     this.popAt = popAt;
+    if (ids.length !== this.goodCount) {
+      // Lumi makes room for a row of treats, so the camera reframes.
+      this.goodCount = ids.length;
+      if (this.width > 1) this.layout(this.width / this.height);
+    }
+  }
+
+  /** Each treat's tag shows once its treat has popped on; the big buy's ring with the first. */
+  private showTags() {
+    const t = this.elapsed;
+    const goods = this.counterGoods;
+    const shown = (index: number) =>
+      !!goods[index] && t >= (goods[index].userData['popAt'] as number);
+    const texts = this.frame
+      ? [this.frame.priceText, ...this.frame.extras.map((item) => item.priceText)]
+      : [];
+    const row = goods.length > 1;
+    this.tag.root.visible = !row && shown(0) && !!texts[0];
+    this.edgeTags.forEach((edge, index) => {
+      edge.root.visible = row && shown(index) && !!texts[index];
+    });
+    this.sparkles.visible = !!this.frame?.big && shown(0);
   }
 
   private startPay(frame: MarketFrame, now: number) {
     this.payAt = now;
     this.payOutcome = frame.outcome;
     this.paidTurn = frame.turn;
-    // The coins on the tray go into the till.
-    for (const piece of this.pieces)
-      this.paying.push({ mesh: piece.mesh, from: piece.mesh.position.clone() });
+    const till = this.role === 'till' && !!this.customer;
+    const putBack = frame.outcome === 'putBack';
+    const basket = new Vector3();
+    (till ? this.customer!.basketItems : this.lumi.basketItems).getWorldPosition(basket);
+    basket.y += 0.08;
+    // The coins on the tray go into the till, or, at Lumi's till, over to the customer.
+    this.pieces.forEach((piece, index) => {
+      if (!till || putBack) {
+        this.paying.push({ mesh: piece.mesh, from: piece.mesh.position.clone() });
+        return;
+      }
+      this.scene.attach(piece.mesh);
+      const start = now + 0.3 + index * 0.06;
+      this.flights.push({
+        object: piece.mesh,
+        from: piece.mesh.position.clone(),
+        to: basket.clone(),
+        scaleFrom: piece.mesh.scale.x,
+        scaleTo: 0.2,
+        start,
+        end: start + 0.6,
+        lift: 0.5,
+        flat: true,
+      });
+    });
     this.pieces = [];
-    const good = this.counterGood;
-    this.counterGood = null;
-    this.tag.root.visible = false;
-    this.sparkles.visible = false;
-    if (!good) return;
-    const from = good.position.clone();
-    const size = good.scale.x;
-    if (frame.outcome === 'putBack') {
+    // The note slides into the till's open drawer.
+    const drawer = this.till.localToWorld(new Vector3(0, 0.12, 0.42));
+    this.notes.forEach((note, index) => {
+      const start = now + 0.1 + index * 0.08;
+      this.flights.push({
+        object: note,
+        from: note.position.clone(),
+        to: drawer.clone(),
+        scaleFrom: note.scale.x,
+        scaleTo: 0.25,
+        start,
+        end: start + CHANGE_SECONDS.noteIn - 0.1,
+        lift: 0.12,
+        flat: true,
+      });
+    });
+    const changing = this.notes.length > 0 && !till && !putBack;
+    this.drawerUntil = this.notes.length && !putBack ? now + (changing ? 1.4 : 0.8) : 0;
+    this.notes = [];
+
+    const goods = this.counterGoods;
+    this.counterGoods = [];
+    this.showTags();
+    const single = goods.length === 1;
+    this.hopAt = now + PAY_SECONDS.landed;
+    goods.forEach((good, index) => {
+      const start = putBack
+        ? now + 0.25 + index * 0.1
+        : single
+          ? now + PAY_SECONDS.lift
+          : now + 0.45 + index * FLY_STAGGER;
+      const end = single ? now + PAY_SECONDS.landed : start + (putBack ? 0.85 : 0.7);
+      const id = good.userData['id'] as GoodId;
       this.flights.push({
         object: good,
-        from,
-        to: this.shelfSlots[0].clone(),
-        scaleFrom: size,
-        scaleTo: 0.0,
-        start: now + 0.25,
-        end: now + PAY_SECONDS.landed,
-        lift: 0.9,
+        from: good.position.clone(),
+        to: putBack
+          ? this.shelfSlots[0].clone().add(new Vector3((index - 1) * 0.15, 0, 0))
+          : basket.clone(),
+        scaleFrom: good.scale.x,
+        scaleTo: putBack ? 0 : 0.4,
+        start,
+        end,
+        lift: 0.9 + index * 0.1,
+        into: putBack ? undefined : till ? 'customer' : 'lumi',
+        land: till && !putBack ? () => this.addToCustomerBasket(id) : undefined,
       });
+      if (!putBack) this.hopAt = Math.max(this.hopAt, end);
+    });
+  }
+
+  /**
+   * Olli counts the change out of the drawer onto the counter, one piece after another, and
+   * then it all slides over into Lumi's basket.
+   */
+  private countChange(values: readonly Denomination[], base: number) {
+    const drawer = this.till.localToWorld(new Vector3(0, 0.16, 0.42));
+    const basket = new Vector3();
+    this.lumi.basketItems.getWorldPosition(basket);
+    basket.y += 0.1;
+    const scale = 0.85;
+    let x = CHANGE_AT.x;
+    let landed = base + CHANGE_SECONDS.firstCoin;
+    const placed = values.map((value, index) => {
+      const half = (moneyWidth(value) * scale) / 2;
+      const high = (isNote(value) ? NOTE_SIZE[value][1] / 2 : COIN_RADIUS[value]) * scale;
+      const spot = new Vector3(x + half, CHANGE_AT.y + high * 0.85 + 0.02, CHANGE_AT.z);
+      x += half * 2 + 0.06;
+      const mesh = buildMoney(this.kit, value);
+      mesh.rotation.x = -0.55;
+      mesh.scale.setScalar(0.001);
+      this.scene.add(mesh);
+      const start = base + CHANGE_SECONDS.firstCoin - 0.25 + index * CHANGE_SECONDS.coinGap;
+      landed = start + 0.25;
+      this.flights.push({
+        object: mesh,
+        from: drawer.clone(),
+        to: spot,
+        scaleFrom: 0.3,
+        scaleTo: scale,
+        start,
+        end: landed,
+        lift: 0.3,
+        flat: true,
+        keep: true,
+      });
+      return { mesh, spot };
+    });
+    const slide = Math.max(base + CHANGE_SECONDS.slide, landed + 0.08);
+    placed.forEach(({ mesh, spot }, index) => {
+      const start = slide + index * 0.03;
+      this.flights.push({
+        object: mesh,
+        from: spot,
+        to: basket.clone(),
+        scaleFrom: scale,
+        scaleTo: 0.15,
+        start,
+        end: start + 0.42,
+        lift: 0.45,
+        flat: true,
+      });
+    });
+  }
+
+  /** The note or notes handed over to pay, leaning on the till's front. */
+  private syncNotes(values: readonly Denomination[], turn: number) {
+    const key = `${turn}|${values.join(',')}`;
+    if (key === this.notesKey) return;
+    this.notesKey = key;
+    for (const note of this.notes) note.removeFromParent();
+    this.notes = values.map((value, index) => {
+      const note = buildMoney(this.kit, value);
+      note.position.set(
+        NOTE_AT.x + index * 0.08,
+        NOTE_AT.y + 0.15 + index * 0.02,
+        NOTE_AT.z + index * 0.03,
+      );
+      note.rotation.set(-0.35, 0, index * 0.06);
+      this.scene.add(note);
+      return note;
+    });
+  }
+
+  /** At Lumi's till: the animal who is buying, walking in when a new one comes. */
+  private syncCustomer(frame: MarketFrame, previous: MarketFrame | undefined, now: number) {
+    const kind = this.role === 'till' ? frame.customer : null;
+    if (kind === (this.customer?.kind ?? null)) {
+      if (this.customer && previous && previous.turn !== frame.turn)
+        for (const child of [...this.customer.basketItems.children]) child.removeFromParent();
       return;
     }
-    const to = new Vector3();
-    this.lumi.basketItems.getWorldPosition(to);
-    to.y += 0.08;
-    this.flights.push({
-      object: good,
-      from,
-      to,
-      scaleFrom: size,
-      scaleTo: 0.4,
-      start: now + PAY_SECONDS.lift,
-      end: now + PAY_SECONDS.landed,
-      lift: 0.9,
-    });
+    this.customer?.root.removeFromParent();
+    this.customer = null;
+    this.step.visible = !!kind;
+    if (!kind) return;
+    const customer = buildCustomer(this.kit, kind);
+    customer.root.scale.setScalar(CUSTOMER_SCALE);
+    customer.root.position.copy(this.customerAt);
+    customer.root.rotation.y = -0.4;
+    this.scene.add(customer.root);
+    this.customer = customer;
+    this.customerEnterAt = previous && previous.phase !== 'intro' ? now : -10;
+  }
+
+  private addToCustomerBasket(id: GoodId) {
+    const items = this.customer?.basketItems;
+    if (!items) return;
+    const good = buildGood(this.kit, id);
+    const [x, y, z] = BASKET_SLOTS[Math.min(items.children.length, BASKET_SLOTS.length - 1)];
+    good.scale.setScalar(0.4);
+    good.position.set(x, y, z);
+    items.add(good);
+  }
+
+  /**
+   * Puts everyone in their place for the role: Lumi at the end of the counter with Olli at his
+   * till, or Lumi at the till with Olli watching by the window and the customer on their step.
+   * A row of treats or a narrow board moves the spot at the end of the counter.
+   */
+  private placeCast() {
+    const row = this.goodCount > 1;
+    const spot = new Vector3(
+      this.narrow ? (row ? 2.5 : 2.05) : row && this.goodCount > 2 ? 2.75 : LUMI_AT.x,
+      LUMI_AT.y,
+      this.narrow ? (row ? 1.0 : 1.2) : LUMI_AT.z,
+    );
+    const till = this.role === 'till';
+    this.lumi.root.position.copy(till ? LUMI_TILL : spot);
+    this.lumi.root.rotation.y = till ? 0 : -0.45;
+    this.lumi.root.scale.setScalar(till ? 1.12 : 1);
+    this.lumi.basket.visible = !till;
+    this.lumiBaseY = this.lumi.root.position.y;
+    this.olli.root.position.copy(till ? OLLI_ASIDE : OLLI_AT);
+    this.olli.root.rotation.y = till ? 0.45 : 0;
+    this.customerAt.set(spot.x, STEP_HEIGHT, spot.z + 0.1);
+    this.step.position.set(spot.x, STEP_HEIGHT / 2, spot.z + 0.1);
+    this.customer?.root.position.copy(this.customerAt);
+    // The customer and their step need a little more room than Lumi.
+    const right = spot.x + (till ? 0.6 : 0.45);
+    this.frameBox[3].set(right, till ? STEP_HEIGHT : 0.45, spot.z + (till ? 0.1 : 0));
+    this.frameBox[4].set(right, 2.25, spot.z);
   }
 
   private startCheer(now: number) {
@@ -692,12 +1009,10 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
   private syncBasket() {
     const frame = this.frame;
     if (!frame) return;
-    const flying = this.flights.some(
-      (flight) => flight.to.y > 1 && flight.scaleTo > 0 && this.elapsed < flight.end,
-    );
-    const shown = frame.basket
-      .slice(0, Math.max(0, frame.basket.length - (flying ? 1 : 0)))
-      .slice(-6);
+    const flying = this.flights.filter(
+      (flight) => flight.into === 'lumi' && this.elapsed < flight.end,
+    ).length;
+    const shown = frame.basket.slice(0, Math.max(0, frame.basket.length - flying)).slice(-6);
     const key = shown.join(',');
     if (key === this.basketKey) return;
     this.basketKey = key;
@@ -793,13 +1108,10 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     this.camera.clearViewOffset();
     super.layout(aspect);
     const { width, height } = this;
-    // On narrow boards Lumi floats in front of the counter's end, so the shop can come closer.
-    const narrow = aspect < 1.45;
-    this.lumi.root.position.x = narrow ? 2.05 : LUMI_AT.x;
-    this.lumi.root.position.z = narrow ? 1.2 : LUMI_AT.z;
-    const right = this.lumi.root.position.x + 0.42;
-    this.frameBox[3].set(right, 0.45, this.lumi.root.position.z);
-    this.frameBox[4].set(right, 2.25, this.lumi.root.position.z);
+    // On narrow boards Lumi (or the customer) stands in front of the counter's end, so the
+    // shop can come closer.
+    this.narrow = aspect < 1.45;
+    this.placeCast();
     const room = { x: width * 0.97, y: height * 0.92 };
     let distance = 5;
     let box = this.aim(distance);
@@ -838,42 +1150,89 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     const slip = t - this.slipAt;
     const cheer = t - this.cheerAt;
 
-    // Olli: a gentle bob, reaching for the till, a kind head shake, arms up to cheer.
+    const tillRole = this.role === 'till';
+    const bought = this.payOutcome === 'bought';
+    const cheering = cheer >= 0 && cheer < 2.4 ? Math.sin(clamp01(cheer / 2.4) * Math.PI) : 0;
+    // At Lumi's till, everyone is glad when a customer pays.
+    const glad =
+      tillRole && bought && pay >= 0.9 && pay < 2.1 ? Math.sin(((pay - 0.9) / 1.2) * Math.PI) : 0;
+    const slipping = slip >= 0 && slip < 0.9 ? Math.sin(clamp01(slip / 0.9) * Math.PI) : 0;
+
+    // Olli: a gentle bob, reaching for the till, a kind head shake, arms up to cheer. When Lumi
+    // works the till he only watches proudly and cheers.
     const olli = this.olli;
     olli.body.position.y = calm ? 0 : Math.sin(t * 1.7) * 0.02;
     let reachTill = 0;
     let reachGood = 0;
-    if (pay >= 0 && pay < 0.9 && this.payOutcome !== 'putBack')
+    if (!tillRole && pay >= 0 && pay < 0.9 && this.payOutcome !== 'putBack')
       reachTill = Math.sin(clamp01(pay / 0.9) * Math.PI);
-    if (pay >= 0 && pay < 1.2 && this.payOutcome === 'putBack')
+    if (!tillRole && this.drawerUntil && pay >= 0.5 && pay < 1.4)
+      reachTill = Math.max(reachTill, Math.sin(clamp01((pay - 0.5) / 0.9) * Math.PI) * 0.8);
+    if (!tillRole && pay >= 0 && pay < 1.2 && this.payOutcome === 'putBack')
       reachGood = Math.sin(clamp01(pay / 1.2) * Math.PI);
-    const cheering = cheer >= 0 && cheer < 2.4 ? Math.sin(clamp01(cheer / 2.4) * Math.PI) : 0;
-    const wave = calm ? 0 : Math.sin(t * 9) * 0.25 * cheering;
-    olli.arms[0].rotation.z = -0.22 - reachTill * 0.9 - cheering * 2.3 + wave;
+    const olliCheer = Math.max(cheering, glad);
+    const wave = calm ? 0 : Math.sin(t * 9) * 0.25 * olliCheer;
+    olli.arms[0].rotation.z = -0.22 - reachTill * 0.9 - olliCheer * 2.3 + wave;
     olli.arms[0].rotation.x = -reachTill * 0.6;
-    olli.arms[1].rotation.z = 0.22 + reachGood * 2.2 + cheering * 2.3 - wave;
+    olli.arms[1].rotation.z = 0.22 + reachGood * 2.2 + olliCheer * 2.3 - wave;
     olli.arms[1].rotation.x = -reachGood * 0.3;
-    olli.head.rotation.y = shake(t, this.slipAt, 0.9, 0.35) + (calm ? 0 : Math.sin(t * 0.6) * 0.06);
+    olli.head.rotation.y =
+      (tillRole ? 0.25 : shake(t, this.slipAt, 0.9, 0.35)) + (calm ? 0 : Math.sin(t * 0.6) * 0.06);
     olli.head.rotation.z =
-      slip >= 0 && slip < 0.9
-        ? 0.1 * Math.sin(clamp01(slip / 0.9) * Math.PI)
-        : calm
-          ? 0
-          : Math.sin(t * 0.9) * 0.03;
-    if (cheering && !calm) olli.body.position.y += Math.abs(Math.sin(cheer * 6)) * 0.08 * cheering;
+      !tillRole && slipping ? 0.1 * slipping : calm ? 0 : Math.sin(t * 0.9) * 0.03;
+    if (olliCheer && !calm) olli.body.position.y += Math.abs(Math.sin(t * 6)) * 0.08 * olliCheer;
 
-    // Lumi: floating, wings fluttering, a hop when a treat lands, a spin for the cheer.
+    // Lumi: floating, wings fluttering, a hop when a treat lands, a spin for the cheer. At the
+    // till she reaches for the drawer and shrugs kindly at a slip.
     const lumi = this.lumi;
+    const hopLength = PAY_SECONDS.done - PAY_SECONDS.landed;
     const hop =
-      this.payOutcome === 'bought' && pay > PAY_SECONDS.landed && pay < PAY_SECONDS.done
-        ? Math.sin(((pay - PAY_SECONDS.landed) / (PAY_SECONDS.done - PAY_SECONDS.landed)) * Math.PI)
+      bought && t > this.hopAt && t < this.hopAt + hopLength
+        ? Math.sin(((t - this.hopAt) / hopLength) * Math.PI)
         : 0;
     lumi.root.position.y =
-      LUMI_AT.y + (calm ? 0 : Math.sin(t * 2.1) * 0.05) + hop * 0.22 + cheering * 0.15;
+      this.lumiBaseY +
+      (calm ? 0 : Math.sin(t * 2.1) * 0.05) +
+      (tillRole ? 0 : hop * 0.22) +
+      cheering * 0.15;
     lumi.body.rotation.y =
       cheer >= 0 && cheer < 1.2 && !calm ? smooth(cheer / 1.2) * Math.PI * 2 : 0;
-    lumi.head.rotation.z = calm ? 0 : Math.sin(t * 1.3) * 0.06;
-    lumi.arms[1].rotation.z = 0.25 + cheering * 2.4 + (calm ? 0 : Math.sin(t * 8) * 0.2 * cheering);
+    const shrug = tillRole ? slipping : 0;
+    lumi.head.rotation.z = shrug * 0.2 + (calm ? 0 : Math.sin(t * 1.3) * 0.06);
+    if (tillRole) {
+      const reach = pay >= 0 && pay < 0.9 ? Math.sin(clamp01(pay / 0.9) * Math.PI) : 0;
+      lumi.arms[0].rotation.set(
+        -reach * 0.5,
+        0,
+        -0.25 - reach * 0.9 - shrug * 0.9 - cheering * 2.4,
+      );
+    } else lumi.arms[0].rotation.set(-0.7, 0, -0.15);
+    lumi.arms[1].rotation.z =
+      0.25 + shrug * 0.9 + cheering * 2.4 + (calm ? 0 : Math.sin(t * 8) * 0.2 * cheering);
+
+    // The customer hops in on a new turn, hops for joy when the treat lands, waves, tilts their
+    // head at a slip and wags their tail.
+    const customer = this.customer;
+    if (customer) {
+      const enter = clamp01((t - this.customerEnterAt) / 0.9);
+      const away = calm ? 0 : 1 - easeOut(enter);
+      const hopIn =
+        calm || enter >= 1 ? 0 : Math.abs(Math.sin(enter * Math.PI * 3)) * 0.22 * (1 - enter);
+      const joy = Math.max(glad, cheering);
+      customer.root.position.set(
+        this.customerAt.x + away * 3.2,
+        this.customerAt.y + hopIn + hop * 0.25,
+        this.customerAt.z,
+      );
+      customer.body.position.y = calm ? 0 : Math.sin(t * 2) * 0.012;
+      customer.arms[1].rotation.set(
+        -0.95 * (1 - joy),
+        0,
+        0.35 + joy * 2.1 + (calm ? 0 : Math.sin(t * 10) * 0.3 * joy),
+      );
+      customer.head.rotation.z = slipping ? 0.35 * slipping : calm ? 0 : Math.sin(t * 1.1) * 0.04;
+      customer.tail.rotation.y = calm ? 0 : Math.sin(t * (3 + joy * 8)) * (0.15 + joy * 0.3);
+    }
     const flap = calm ? 0 : Math.sin(t * 16) * 0.35;
     lumi.wings.forEach((wing, index) => {
       const side = index < 2 ? -1 : 1;
@@ -908,7 +1267,11 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     }
     // The till: the drawer pops out with a ring.
     const ring = this.payOutcome === 'putBack' ? -1 : pay - PAY_SECONDS.ring;
-    const drawer = ring >= 0 && ring < 0.6 ? Math.sin(clamp01(ring / 0.6) * Math.PI) : 0;
+    const drawer = this.drawerUntil
+      ? clamp01(pay / 0.15) * clamp01((this.drawerUntil - t) / 0.2)
+      : ring >= 0 && ring < 0.6
+        ? Math.sin(clamp01(ring / 0.6) * Math.PI)
+        : 0;
     this.drawer.position.z = 0.02 + drawer * 0.26;
     this.bell.scale.setScalar(0.08 * (1 + drawer * 0.4));
     this.till.rotation.z = calm ? 0 : shake(t, this.payAt + PAY_SECONDS.ring, 0.35, 0.03);
@@ -916,6 +1279,8 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     // Treats in flight: into the basket or back to the shelf.
     if (this.flights.length) {
       this.flights = this.flights.filter((flight) => {
+        // A flight waiting for its turn leaves the object where it is.
+        if (t < flight.start) return true;
         const p = clamp01((t - flight.start) / (flight.end - flight.start));
         const k = easeOut(p);
         flight.object.position.lerpVectors(flight.from, flight.to, k);
@@ -923,19 +1288,19 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
         flight.object.scale.setScalar(
           Math.max(0.001, flight.scaleFrom + (flight.scaleTo - flight.scaleFrom) * k),
         );
-        flight.object.rotation.y = calm ? 0 : p * Math.PI * 2;
+        if (!flight.flat) flight.object.rotation.y = calm ? 0 : p * Math.PI * 2;
         if (t < flight.end) return true;
-        flight.object.removeFromParent();
+        if (!flight.keep) flight.object.removeFromParent();
+        flight.land?.();
         return false;
       });
       this.syncBasket();
     }
 
     // The new treat pops onto the counter; the big buy turns in its sparkle ring.
-    const good = this.counterGood;
-    if (good) {
+    for (const good of this.counterGoods) {
       const size = good.userData['size'] as number;
-      const pop = t - this.popAt;
+      const pop = t - (good.userData['popAt'] as number);
       good.scale.setScalar(
         pop < 0
           ? 0.001
@@ -943,14 +1308,18 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
             ? Math.max(0.001, easeOutBack(pop / 0.45) * size)
             : size,
       );
-      good.rotation.y = calm ? 0 : Math.sin(t * 0.8) * 0.15;
+      good.rotation.y = calm ? 0 : Math.sin(t * 0.8 + good.position.x) * 0.15;
       good.position.y = GOOD_AT.y + shake(t, this.slipAt, 0.5, 0.04);
-      this.tag.root.visible = pop >= 0 && !!this.frame?.priceText;
-      this.sparkles.visible = !!this.frame?.big && pop >= 0;
     }
+    if (this.counterGoods.length) this.showTags();
     this.tag.card.rotation.z = calm
       ? 0
       : Math.sin(t * 1.4) * 0.05 + shake(t, this.slipAt, 0.8, 0.2);
+    this.edgeTags.forEach((edge, index) => {
+      edge.card.rotation.z = calm
+        ? 0
+        : Math.sin(t * 1.4 + index) * 0.03 + shake(t, this.slipAt, 0.8, 0.12);
+    });
     if (this.sparkles.visible) {
       this.sparkles.rotation.y = calm ? 0 : t * 0.8;
       this.sparkles.children.forEach((star, index) => {

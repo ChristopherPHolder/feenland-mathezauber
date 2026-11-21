@@ -1,10 +1,13 @@
 import { afterNextRender, Component, ElementRef, input, output, viewChild } from '@angular/core';
 
 /**
- * "How to play" over a game: a full-screen modal dialog with a title, the game's demo film
- * projected inside, and one button to go back to playing. It opens as soon as it renders and
- * puts focus on the button. Escape closes it the same way the button does (`done`), so the
- * game can resume its timers in one place. Text arrives already translated.
+ * "How to play" over a game: a modal dialog with the game's demo film projected inside, a
+ * title and one big button. It opens itself when shown; Escape and the button both emit
+ * `done`, and the game removes it. Text arrives already translated.
+ *
+ *     <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeHelp()">
+ *       <app-market-demo [skill]="..." />
+ *     </ui-coach-dialog>
  */
 @Component({
   selector: 'ui-coach-dialog',
@@ -82,6 +85,7 @@ export class CoachDialog {
     });
   }
 
+  /** Escape closes the coach the same way the button does. */
   protected cancel(event: Event) {
     event.preventDefault();
     this.done.emit();

@@ -21,12 +21,29 @@ import {
 
 export type Random = () => number;
 
-/** What the child does on a turn, in order: pay with coins, judge "enough?", type what's left. */
-export type Step = 'pay' | 'enough' | 'left';
+/**
+ * What the child does on a turn, in order: add up a shopping list ("total"), pay with coins,
+ * judge "enough?", type what's left.
+ */
+export type Step = 'total' | 'pay' | 'enough' | 'left' | 'change' | 'give';
 /** How the purse looks: every coin on show, or only a tag with its amount. */
 export type Look = 'coins' | 'tag';
 /** The skill a level is about; it also picks the level's tip card. */
-export type MarketSkill = 'coinByCoin' | 'notes' | 'enough' | 'left' | 'spree';
+export type MarketSkill =
+  | 'coinByCoin'
+  | 'notes'
+  | 'enough'
+  | 'left'
+  | 'spree'
+  | 'twoTreats'
+  | 'list'
+  | 'change10'
+  | 'change20'
+  | 'till';
+
+/** The animals who come to buy when Lumi works the till. */
+export const CUSTOMERS = ['fox', 'rabbit', 'hedgehog', 'squirrel'] as const;
+export type Customer = (typeof CUSTOMERS)[number];
 
 /** The treats on Olli's shelves, each with the prices it may carry (whole euros). */
 export const GOODS = [
@@ -46,10 +63,25 @@ export const GOODS = [
 export type GoodId = (typeof GOODS)[number]['id'];
 export const GOOD_IDS: readonly GoodId[] = GOODS.map((good) => good.id);
 
-export interface MarketTurn {
+/** One treat on a shopping list and its own price, in cents. */
+export interface Item {
   readonly good: GoodId;
-  /** In cents. */
   readonly price: number;
+}
+
+export interface MarketTurn {
+  /** The treat on the counter; on a shopping list, the first one. */
+  readonly good: GoodId;
+  /** In cents: what everything on the counter costs together. */
+  readonly price: number;
+  /** A shopping list of two or three treats, `good` first; absent for a single treat. */
+  readonly items?: readonly Item[];
+  /** The note handed over to pay, on change turns: by Lumi, or by the customer at the till. */
+  readonly paid?: readonly Denomination[];
+  /** The coins in the till drawer Lumi gives change from, when she works the till. */
+  readonly till?: readonly Denomination[];
+  /** Who is buying, when Lumi works the till. */
+  readonly customer?: Customer;
   /** The coins and notes in Lumi's purse before she buys. */
   readonly purse: readonly Denomination[];
   /** What the child does, in order. A turn whose purse is too small stops after "enough". */
@@ -223,6 +255,110 @@ function spreeRound(random: Random, turns: number): MarketTurn[] {
   return round;
 }
 
+/** Different treats for each price on a list, none the same as the last turn's first one. */
+function listItems(random: Random, prices: readonly number[], previous?: GoodId): Item[] {
+  const items: Item[] = [];
+  for (const price of prices) {
+    const fits = GOODS.filter((good) => price >= euros(good.from) && price <= euros(good.to));
+    const unused = fits.filter((good) => !items.some((item) => item.good === good.id));
+    const fresh = unused.filter((good) => good.id !== previous);
+    const choice = fresh.length ? fresh : unused.length ? unused : fits;
+    items.push({ good: pick(random, choice).id, price });
+  }
+  return items;
+}
+
+/** Level 6: two treats. Add the prices, then pay the total with coins and notes. */
+function twoTreatsTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  let a = 0;
+  let b = 0;
+  do {
+    a = big ? int(random, 5, 12) : int(random, 1, 9);
+    b = big ? int(random, 4, 10) : int(random, 1, 9);
+  } while (big ? a + b < 14 || a + b > 20 : a + b < 5 || a + b > 18);
+  const items = listItems(random, [euros(a), euros(b)], previous);
+  const price = euros(a + b);
+  const tidy = fewestCoins(price, [1000, 500, 200, 100])!;
+  const spare = randomSplit(random, euros(int(random, 1, 3)), [200, 100]);
+  return {
+    good: items[0].good,
+    price,
+    items,
+    purse: sortCoins([...tidy, ...spare]),
+    steps: ['total', 'pay'],
+    look: 'coins',
+  };
+}
+
+/** Level 7: a list of three treats from a 20 € purse. Add them up, then say what is left. */
+function listTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  let prices: number[] = [];
+  do {
+    prices = [0, 1, 2].map(() => (big ? int(random, 3, 9) : int(random, 1, 7)));
+  } while (
+    big
+      ? prices.reduce((a, b) => a + b) < 15 || prices.reduce((a, b) => a + b) > 19
+      : prices.reduce((a, b) => a + b) > 16
+  );
+  const items = listItems(random, prices.map(euros), previous);
+  return {
+    good: items[0].good,
+    price: euros(prices.reduce((a, b) => a + b)),
+    items,
+    purse: tidyPurse(euros(20)),
+    steps: ['total', 'left'],
+    look: 'tag',
+  };
+}
+
+/** Level 8: Lumi pays with a 10 € note. How much change comes back? */
+function change10Turn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  const price = euros(big ? int(random, 1, 3) : int(random, 2, 9));
+  return {
+    good: pickGood(random, price, previous),
+    price,
+    paid: [1000],
+    purse: [1000],
+    steps: ['change'],
+    look: 'tag',
+  };
+}
+
+/** Level 9: change from 20 €, mostly from prices that make the count cross 10. */
+function change20Turn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  const teens = [11, 12, 13, 14, 15, 16, 17, 18, 19];
+  const price = euros(
+    big ? int(random, 3, 7) : random() < 0.6 ? pick(random, teens) : int(random, 3, 9),
+  );
+  return {
+    good: pickGood(random, price, previous),
+    price,
+    paid: [2000],
+    purse: [2000],
+    steps: ['change'],
+    look: 'tag',
+  };
+}
+
+/** The till drawer: enough of every coin and note to give any change under 20 €. */
+const TILL: readonly Denomination[] = [1000, 500, 200, 200, 100, 100, 100];
+
+/** Level 10: Lumi works the till. A customer pays with a note; Lumi counts out the change. */
+function tillTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  const price = euros(big ? int(random, 2, 8) : int(random, 1, 18));
+  const note: Denomination = big ? 2000 : price < 500 ? 500 : price < 1000 ? 1000 : 2000;
+  return {
+    good: pickGood(random, price, previous),
+    price,
+    paid: [note],
+    till: TILL,
+    customer: pick(random, CUSTOMERS),
+    purse: [],
+    steps: ['give'],
+    look: 'coins',
+  };
+}
+
 function eachTurn(
   turns: number,
   make: (index: number, big: boolean, previous?: GoodId) => MarketTurn,
@@ -277,6 +413,48 @@ export const marketStages: readonly MarketStage[] = [
     strict: true,
     round: (random) => spreeRound(random, 7),
   },
+  {
+    stage: 6,
+    group: 'marketAdding',
+    skill: 'twoTreats',
+    example: '4 € + 7 €',
+    turns: 7,
+    round: (random) => eachTurn(7, (_, big, previous) => twoTreatsTurn(random, big, previous)),
+  },
+  {
+    stage: 7,
+    group: 'marketAdding',
+    skill: 'list',
+    example: '3 € + 5 € + 2 €',
+    turns: 6,
+    round: (random) => eachTurn(6, (_, big, previous) => listTurn(random, big, previous)),
+  },
+  {
+    stage: 8,
+    group: 'marketChange',
+    skill: 'change10',
+    example: '10 € − 7 €',
+    turns: 7,
+    round: (random) => eachTurn(7, (_, big, previous) => change10Turn(random, big, previous)),
+  },
+  {
+    stage: 9,
+    group: 'marketChange',
+    skill: 'change20',
+    example: '20 € − 13 €',
+    turns: 7,
+    round: (random) => eachTurn(7, (_, big, previous) => change20Turn(random, big, previous)),
+  },
+  {
+    stage: 10,
+    group: 'marketChange',
+    skill: 'till',
+    example: '7 € → 10 €',
+    turns: 7,
+    fewest: true,
+    strict: true,
+    round: (random) => eachTurn(7, (_, big, previous) => tillTurn(random, big, previous)),
+  },
 ];
 
 export const TOTAL_STAGES = marketStages.length;
@@ -320,6 +498,41 @@ export function isFewest(turn: MarketTurn, tray: readonly Denomination[]): boole
   return fewest !== null && tray.length === fewest;
 }
 
+export type TotalResult = 'ok' | 'oneOnly' | 'missing' | 'off';
+/**
+ * A typed total for a shopping list. Typing one treat's price, or forgetting one treat on a
+ * longer list, get their own help.
+ */
+export function checkTotal(turn: MarketTurn, typed: number): TotalResult {
+  const cents = typed * EURO;
+  if (cents === turn.price) return 'ok';
+  const items = turn.items ?? [];
+  if (items.some((item) => item.price === cents)) return 'oneOnly';
+  if (items.length > 2 && items.some((item) => turn.price - item.price === cents)) return 'missing';
+  return 'off';
+}
+
+/** The change due on a turn paid with a note. */
+export const changeDue = (turn: MarketTurn) => total(turn.paid ?? []) - turn.price;
+
+export type ChangeResult = 'ok' | 'added' | 'price' | 'paid' | 'off';
+/** A typed change. Adding instead, typing the price or typing the note get their own help. */
+export function checkChange(turn: MarketTurn, typed: number): ChangeResult {
+  const cents = typed * EURO;
+  const paid = total(turn.paid ?? []);
+  if (cents === paid - turn.price) return 'ok';
+  if (cents === paid + turn.price) return 'added';
+  if (cents === turn.price) return 'price';
+  if (cents === paid) return 'paid';
+  return 'off';
+}
+
+/** The change counted out at the till: the fewest coins the drawer allows earn the bonus. */
+export function isFewestChange(turn: MarketTurn, tray: readonly Denomination[]): boolean {
+  const fewest = fewestFromPurse(turn.till ?? [], changeDue(turn));
+  return fewest !== null && tray.length === fewest;
+}
+
 export type LeftResult = 'ok' | 'added' | 'price' | 'purse' | 'off';
 /**
  * A typed "what's left" answer. The common slips get their own help: adding the price on,
@@ -336,6 +549,9 @@ export function checkLeft(turn: MarketTurn, typed: number): LeftResult {
 
 /** Every turn can be done: an exact pay is possible, a "what's left" is never negative. */
 export function isPlayable(turn: MarketTurn): boolean {
+  if (turn.steps.includes('change') && changeDue(turn) <= 0) return false;
+  if (turn.steps.includes('give'))
+    return changeDue(turn) > 0 && canPayExactly(turn.till ?? [], changeDue(turn));
   if (turn.steps.includes('pay') && !canPayExactly(turn.purse, turn.price)) return false;
   if (turn.steps.includes('left') && !affordable(turn)) return false;
   if (!turn.steps.includes('enough') && !affordable(turn)) return false;
@@ -357,7 +573,10 @@ export function replayMissed(
   if (stage.skill === 'spree' || target >= round.length - 1) return [...round];
   const missed = round[index];
   const copy = [...round];
-  copy[target] = { ...missed, good: pickGood(random, missed.price, round[target - 1]?.good) };
+  // A shopping list comes back as it was; a single treat comes back as another treat.
+  copy[target] = missed.items
+    ? missed
+    : { ...missed, good: pickGood(random, missed.price, round[target - 1]?.good) };
   return copy;
 }
 

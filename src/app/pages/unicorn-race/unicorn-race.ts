@@ -67,6 +67,7 @@ import { RaceScene } from './race-scene';
 import { RaceSounds } from './race-sounds';
 import { RacerArt } from './racer-art';
 import { HorseStable } from './stable/horse-stable';
+import { cupTitleKey, outfitEmblem, outfitNameKey } from './outfits';
 import { stableText } from './stable/stable-messages';
 import { Cup, cupFor, Outfit, OUTFIT_CUP, outfits, RaceStore } from './race-store';
 import type { Course } from './race-world';
@@ -82,7 +83,8 @@ type Feedback =
 export const TICK_MS = 100;
 const COUNT_MS = 800;
 const FEEDBACK_MS = 900;
-const FINISH_HOLD_MS = 1300;
+/** How long the race holds on the finish line, so the winner's rear is seen before the summary. */
+export const FINISH_HOLD_MS = 2100;
 const LOCK_MS = 350;
 const CUP_EMBLEM: Readonly<Record<RaceCup, string>> = {
   meadow: '🌸',
@@ -90,13 +92,6 @@ const CUP_EMBLEM: Readonly<Record<RaceCup, string>> = {
   star: '🌙',
   castle: '🏰',
   rainbow: '🌈',
-};
-const OUTFIT_EMBLEM: Readonly<Record<Outfit, string>> = {
-  wreath: '🌸',
-  wings: '🕊️',
-  tiara: '✨',
-  crown: '👑',
-  cape: '🌈',
 };
 const MODE_EMBLEM: Readonly<Record<RaceMode, string>> = { race: '🏁', chase: '🗝️', shadow: '👻' };
 /**
@@ -142,7 +137,6 @@ export class UnicornRace {
       `${this.t('level', { n: trackPosition(this.level()) })} · ${this.i.t(this.levelTitle(this.level()))} · ${this.t('heatLabel', { n: this.heat() })}`,
   );
   protected readonly totalHeats = TOTAL_HEATS;
-  protected readonly outfits = outfits;
   protected readonly paces = paces;
   protected readonly stars = [1, 2, 3] as const;
   protected readonly total = TOTAL_STAGES;
@@ -398,7 +392,7 @@ export class UnicornRace {
     this.heat.set(heat);
   }
   protected cupTitle(cup: RaceCup): RaceMessageKey {
-    return `cup${cup.charAt(0).toUpperCase()}${cup.slice(1)}` as RaceMessageKey;
+    return cupTitleKey(cup);
   }
   protected cupEmblem(cup: RaceCup): string {
     return CUP_EMBLEM[cup];
@@ -413,22 +407,10 @@ export class UnicornRace {
     return `pace${pace.charAt(0).toUpperCase()}${pace.slice(1)}` as RaceMessageKey;
   }
   protected outfitName(outfit: Outfit | null): RaceMessageKey {
-    return outfit
-      ? (`outfit${outfit.charAt(0).toUpperCase()}${outfit.slice(1)}` as RaceMessageKey)
-      : 'outfitNone';
+    return outfitNameKey(outfit);
   }
   protected outfitEmblem(outfit: Outfit): string {
-    return OUTFIT_EMBLEM[outfit];
-  }
-  protected outfitCup(outfit: Outfit): RaceCup {
-    return OUTFIT_CUP[outfit];
-  }
-  protected outfitEarned(outfit: Outfit): boolean {
-    this.store.save();
-    return this.store.earned(outfit);
-  }
-  protected wear(outfit: Outfit | null) {
-    this.store.wear(outfit);
+    return outfitEmblem(outfit);
   }
   protected starsOf(level: RaceLevel): number {
     return this.progress.progress().stars?.[`unicorn-race-${level}`] ?? 0;

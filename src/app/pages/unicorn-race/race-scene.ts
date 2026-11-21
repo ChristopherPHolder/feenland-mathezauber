@@ -81,6 +81,12 @@ import { sameHorse } from './horse';
       animation: count-pop 0.8s ease-out;
       pointer-events: none;
     }
+    /* Once the race is over the banner moves up, out of the way of the winner on the line. */
+    :host(.finished) .countdown {
+      place-items: start center;
+      padding: clamp(8px, 4%, 40px) 0 0;
+      font-size: clamp(48px, 13vmin, 110px);
+    }
     @keyframes count-pop {
       0% {
         transform: scale(0.4);

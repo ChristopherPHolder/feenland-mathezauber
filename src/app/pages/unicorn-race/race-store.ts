@@ -11,17 +11,10 @@ import {
   RaceLevel,
   raceLevels,
 } from './race-questions';
-import { Horse, LUMI, readHorse } from './horse';
-/** One keepsake per cup; Lumi wears the chosen one in every race. */
-export type Outfit = 'wreath' | 'wings' | 'tiara' | 'crown' | 'cape';
-export const outfits: readonly Outfit[] = ['wreath', 'wings', 'tiara', 'crown', 'cape'];
-export const OUTFIT_CUP: Readonly<Record<Outfit, RaceCup>> = {
-  wreath: 'meadow',
-  wings: 'sky',
-  tiara: 'star',
-  crown: 'castle',
-  cape: 'rainbow',
-};
+import { Horse, LUMI, readHorse, SpecialId, specialIds, specialPrice, specialsOf } from './horse';
+import { Outfit, OUTFIT_CUP, outfits } from './outfits';
+import { RACE_SAVE_KEY } from './saved-look';
+export { type Outfit, OUTFIT_CUP, outfits } from './outfits';
 export type Cup = 'gold' | 'silver' | 'bronze';
 export interface RaceRecord {
   readonly cup: Cup;
@@ -43,8 +36,10 @@ export interface RaceSave {
   readonly horse: Horse;
   /** The Stable opens by itself once, the first time a child comes to the race. */
   readonly stableSeen: boolean;
+  /** Sparkle specials bought in the Stable, and the sparkles spent on them. */
+  readonly owned: readonly SpecialId[];
+  readonly spent: number;
 }
-const STORAGE_KEY = 'feenland.unicorn-race.v1';
 const empty: RaceSave = {
   version: 2,
   records: {},
@@ -53,6 +48,8 @@ const empty: RaceSave = {
   outfit: null,
   horse: LUMI,
   stableSeen: false,
+  owned: [],
+  spent: 0,
 };
 const CUP_RANK: Readonly<Record<Cup, number>> = { gold: 3, silver: 2, bronze: 1 };
 export function cupFor(place: 1 | 2 | 3 | 4): Cup {
@@ -126,10 +123,31 @@ export class RaceStore {
     this.state.update((save) => ({ ...save, outfit }));
     this.persist();
   }
-  /** Saves the horse the child made in the Stable. */
+  /** Sparkles earned and not yet spent in the Stable. */
+  balance(): number {
+    return Math.max(0, this.save().sparkles - this.save().spent);
+  }
+  owns(id: SpecialId): boolean {
+    return this.save().owned.includes(id);
+  }
+  /** Saves the horse the child made in the Stable; a special not bought yet is not taken on. */
   setHorse(horse: Horse) {
-    this.state.update((save) => ({ ...save, horse: readHorse(horse) }));
+    const clean = readHorse(horse);
+    if (specialsOf(clean).some((id) => !this.owns(id))) return;
+    this.state.update((save) => ({ ...save, horse: clean }));
     this.persist();
+  }
+  /** Buys a special once; false when it is not for sale, already owned, or too dear. */
+  buy(id: SpecialId): boolean {
+    const price = specialPrice(id);
+    if (price === undefined || this.owns(id) || this.balance() < price) return false;
+    this.state.update((save) => ({
+      ...save,
+      owned: [...save.owned, id],
+      spent: save.spent + price,
+    }));
+    this.persist();
+    return true;
   }
   /** Remembers that the child has been to the Stable, so it no longer opens by itself. */
   leaveStable() {
@@ -139,7 +157,7 @@ export class RaceStore {
   }
   private persist() {
     try {
-      this.document.defaultView?.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.save()));
+      this.document.defaultView?.localStorage.setItem(RACE_SAVE_KEY, JSON.stringify(this.save()));
       this.saveFailed.set(false);
     } catch {
       this.saveFailed.set(true);
@@ -148,7 +166,7 @@ export class RaceStore {
   private load(): RaceSave {
     try {
       const value: unknown = JSON.parse(
-        this.document.defaultView?.localStorage.getItem(STORAGE_KEY) ?? 'null',
+        this.document.defaultView?.localStorage.getItem(RACE_SAVE_KEY) ?? 'null',
       );
       if (
         !value ||
@@ -182,9 +200,27 @@ export class RaceStore {
           : 0;
       const pace = paces.find((pace) => pace === record['pace']) ?? empty.pace;
       const outfit = outfits.find((outfit) => outfit === record['outfit']) ?? null;
-      const horse = readHorse(record['horse']);
+      const bought = record['owned'];
+      const owned = specialIds.filter((id) => Array.isArray(bought) && bought.includes(id));
+      const spent =
+        typeof record['spent'] === 'number' && record['spent'] >= 0
+          ? Math.min(sparkles, Math.floor(record['spent']))
+          : 0;
+      // A horse wearing a special the save does not own goes back to Lumi's coat or mane.
+      const read = readHorse(record['horse']);
+      const horse = {
+        ...read,
+        coat:
+          owned.includes(`coat:${read.coat}`) || !specialPrice(`coat:${read.coat}`)
+            ? read.coat
+            : LUMI.coat,
+        mane:
+          owned.includes(`mane:${read.mane}`) || !specialPrice(`mane:${read.mane}`)
+            ? read.mane
+            : LUMI.mane,
+      };
       const stableSeen = record['stableSeen'] === true;
-      return { version: 2, records, sparkles, pace, outfit, horse, stableSeen };
+      return { version: 2, records, sparkles, pace, outfit, horse, stableSeen, owned, spent };
     } catch {
       return empty;
     }

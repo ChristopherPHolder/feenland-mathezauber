@@ -98,43 +98,6 @@
           </div>
           <p class="help">{{ t('stumbleHelp') }}</p>
         </fieldset>
-        <fieldset class="pace wardrobe">
-          <legend>{{ t('wardrobe') }}</legend>
-          <div class="pace-options">
-            <button
-              type="button"
-              class="chip"
-              [attr.aria-pressed]="outfit() === null"
-              (click)="wear(null)"
-            >
-              {{ t('outfitNone') }}
-            </button>
-            @for (item of outfits; track item) {
-              @if (outfitEarned(item)) {
-                <button
-                  type="button"
-                  class="chip"
-                  [attr.aria-pressed]="outfit() === item"
-                  (click)="wear(item)"
-                >
-                  <span aria-hidden="true">{{ outfitEmblem(item) }}</span>
-                  {{ t(outfitName(item)) }}
-                </button>
-              } @else {
-                <span class="chip locked">
-                  <span aria-hidden="true">🔒</span>
-                  {{
-                    t('outfitLocked', {
-                      name: t(outfitName(item)),
-                      cup: t(cupTitle(outfitCup(item))),
-                    })
-                  }}
-                </span>
-              }
-            }
-          </div>
-          <p class="help">{{ t('wardrobeHelp') }}</p>
-        </fieldset>
         <div class="races">
           <h2 class="choose-title">{{ t('chooseRace') }}</h2>
           <p class="cups-done">

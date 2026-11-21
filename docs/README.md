@@ -16,6 +16,7 @@
 ## Games
 
 - [Defend the Fairy Castle](games/fairy-castle-campaign.md): the twenty-wave campaign, saving, stars, local play and browser checks.
+- [The Stable](games/unicorn-race-stable.md): the unicorn race's horse creator, the horse model, where it is drawn, and sparkle specials.
 
 ## History
 

@@ -110,7 +110,10 @@ describe('The Fairy Market', () => {
     expect(text).toContain(en.coinByCoin);
     expect(text).toContain(en.paceTitle);
     expect(text).toContain(en.shelfEmpty);
-    expect(element(fixture).querySelectorAll('.level-pill')).toHaveLength(5);
+    expect(element(fixture).querySelectorAll('.level-pill')).toHaveLength(10);
+    expect(element(fixture).querySelector('app-market-demo .caption')!.textContent).toContain(
+      en.demoPay1,
+    );
   });
 
   it('plays level 1 by paying exactly, and helps without saying how much is missing', () => {
@@ -207,5 +210,93 @@ describe('The Fairy Market', () => {
       next(fixture);
     }
     expect(element(fixture).textContent).toContain(en.perfectRound);
+  });
+
+  it('adds up two treats on level 6, then pays the total', () => {
+    const fixture = setup('market-6');
+    start(fixture);
+    const turn = current(fixture);
+    expect(element(fixture).querySelectorAll('.list li')).toHaveLength(2);
+    type(fixture, turn.items![0].price / 100);
+    expect(status(fixture)).toBe(en.oneOnly);
+    type(fixture, turn.price / 100);
+    expect(status(fixture)).toContain('Right! All together');
+    expect(element(fixture).querySelector('.ask')!.textContent).toContain(`€${turn.price / 100}`);
+    payExactly(fixture);
+    expect(internals(fixture).round().phase).toBe('solved');
+  });
+
+  it('adds up a list of three on level 7, then says what is left', () => {
+    const fixture = setup('market-7');
+    start(fixture);
+    for (let index = 0; index < 6; index++) {
+      const turn = current(fixture);
+      type(fixture, turn.price / 100);
+      type(fixture, leftAfter(turn) / 100);
+      next(fixture);
+    }
+    expect(element(fixture).textContent).toContain(en.perfectRound);
+  });
+
+  it('opens the how-to film from ? and pauses the sun while it is open', () => {
+    localStorage.setItem('feenland.market-pace.v1', 'fast');
+    const fixture = setup('market-1');
+    start(fixture);
+    vi.advanceTimersByTime(5000);
+    fixture.detectChanges();
+    click(fixture, '.help');
+    expect(element(fixture).querySelector('ui-coach-dialog')).not.toBeNull();
+    const sun = element(fixture)
+      .querySelector<HTMLElement>('.sun-chip')!
+      .style.getPropertyValue('--sunset');
+    vi.advanceTimersByTime(20000);
+    fixture.detectChanges();
+    expect(
+      element(fixture).querySelector<HTMLElement>('.sun-chip')!.style.getPropertyValue('--sunset'),
+    ).toBe(sun);
+    click(fixture, 'ui-coach-dialog .button.primary');
+    expect(element(fixture).querySelector('ui-coach-dialog')).toBeNull();
+  });
+
+  it('asks for the change from a 10 € note on level 8', () => {
+    const fixture = setup('market-8');
+    start(fixture);
+    const turn = current(fixture);
+    expect(element(fixture).querySelector('.ask')!.textContent).toContain('Lumi pays with €10');
+    type(fixture, 10);
+    expect(status(fixture)).toBe(en.changePaid);
+    type(fixture, (1000 - turn.price) / 100);
+    expect(status(fixture)).toContain('Right!');
+    expect(internals(fixture).round().phase).toBe('solved');
+  });
+
+  it('lets Lumi count out change at the till on level 10', () => {
+    const fixture = setup('market-10');
+    start(fixture);
+    for (let index = 0; index < 7; index++) {
+      const turn = current(fixture);
+      expect(element(fixture).querySelector('.till')).not.toBeNull();
+      let left = turn.paid![0] - turn.price;
+      for (const coin of [...turn.till!].sort((a, b) => b - a))
+        if (coin <= left) {
+          tapCoin(fixture, coin);
+          left -= coin;
+        }
+      click(fixture, '.pay');
+      expect(internals(fixture).round().phase).toBe('solved');
+      next(fixture);
+    }
+    expect(element(fixture).textContent).toContain(en.perfectRound);
+  });
+
+  it('says when the change at the till is short', () => {
+    const fixture = setup('market-10');
+    start(fixture);
+    const turn = current(fixture);
+    const due = turn.paid![0] - turn.price;
+    const coin = [...turn.till!].sort((a, b) => a - b).find((value) => value < due)!;
+    tapCoin(fixture, coin);
+    click(fixture, '.pay');
+    expect(status(fixture)).toBe(en.giveShort);
   });
 });
