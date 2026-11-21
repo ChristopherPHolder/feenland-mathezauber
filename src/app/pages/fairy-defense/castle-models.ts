@@ -29,6 +29,7 @@ import {
   SRGBColorSpace,
   Texture,
   TextureLoader,
+  Vector3,
 } from 'three';
 
 /** Where each painting's figure sits inside its image, so feet land on the path. */
@@ -169,6 +170,118 @@ export function glowTexture(): CanvasTexture {
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
   return texture;
+}
+
+/** A four-pointed twinkle with a soft core, for sparkle bursts. */
+export function starTexture(): CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  const c = canvas.getContext('2d')!;
+  const core = c.createRadialGradient(32, 32, 0, 32, 32, 14);
+  core.addColorStop(0, 'rgba(255,255,255,1)');
+  core.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = core;
+  c.fillRect(0, 0, 64, 64);
+  c.fillStyle = '#ffffff';
+  c.beginPath();
+  c.moveTo(32, 2);
+  c.quadraticCurveTo(35, 29, 62, 32);
+  c.quadraticCurveTo(35, 35, 32, 62);
+  c.quadraticCurveTo(29, 35, 2, 32);
+  c.quadraticCurveTo(29, 29, 32, 2);
+  c.fill();
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  return texture;
+}
+
+/**
+ * A comet tail: a camera-facing strip through the last few positions of something flying,
+ * wide and bright at the head, thin and clear at the tail. One draw call, no allocations.
+ */
+export class Ribbon {
+  readonly mesh: Mesh<BufferGeometry, MeshBasicMaterial>;
+  private readonly trail: Vector3[] = [];
+  private readonly positions: Float32Array;
+  private readonly colours: Float32Array;
+  private readonly tangent = new Vector3();
+  private readonly toEye = new Vector3();
+  private readonly side = new Vector3();
+  private readonly tint = new Color();
+
+  constructor(
+    private readonly length: number,
+    private readonly width: number,
+  ) {
+    for (let i = 0; i < length; i++) this.trail.push(new Vector3());
+    this.positions = new Float32Array(length * 6);
+    this.colours = new Float32Array(length * 8);
+    const index: number[] = [];
+    for (let i = 0; i < length - 1; i++) {
+      const a = i * 2;
+      index.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new BufferAttribute(this.positions, 3));
+    geometry.setAttribute('color', new BufferAttribute(this.colours, 4));
+    geometry.setIndex(index);
+    this.mesh = new Mesh(
+      geometry,
+      new MeshBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        depthWrite: false,
+        side: DoubleSide,
+        blending: AdditiveBlending,
+      }),
+    );
+    this.mesh.frustumCulled = false;
+    this.mesh.visible = false;
+    this.mesh.renderOrder = 10;
+  }
+
+  /** Collapses the whole tail onto one point, before a new flight. */
+  reset(at: Vector3) {
+    for (const point of this.trail) point.copy(at);
+  }
+
+  /** Adds the newest position at the head; the oldest drops off the tail. */
+  push(at: Vector3) {
+    const oldest = this.trail.pop()!;
+    this.trail.unshift(oldest.copy(at));
+  }
+
+  /** Rebuilds the strip to face `eye`, fading from `head` to `tail` colour. */
+  draw(eye: Vector3, head: Color, tail: Color, strength: number) {
+    const { trail, length, positions, colours } = this;
+    for (let i = 0; i < length; i++) {
+      const point = trail[i];
+      this.tangent.subVectors(trail[Math.max(0, i - 1)], trail[Math.min(length - 1, i + 1)]);
+      this.toEye.subVectors(eye, point);
+      this.side.crossVectors(this.tangent, this.toEye);
+      const size = this.side.length();
+      const u = i / (length - 1);
+      const half = (this.width / 2) * (1 - u) ** 0.7;
+      if (size > 1e-6) this.side.multiplyScalar(half / size);
+      else this.side.set(0, 0, 0);
+      positions[i * 6] = point.x + this.side.x;
+      positions[i * 6 + 1] = point.y + this.side.y;
+      positions[i * 6 + 2] = point.z + this.side.z;
+      positions[i * 6 + 3] = point.x - this.side.x;
+      positions[i * 6 + 4] = point.y - this.side.y;
+      positions[i * 6 + 5] = point.z - this.side.z;
+      this.tint.copy(head).lerp(tail, Math.min(1, u * 1.6));
+      const alpha = strength * (1 - u) ** 1.4;
+      for (let edge = 0; edge < 8; edge += 4) {
+        colours[i * 8 + edge] = this.tint.r;
+        colours[i * 8 + edge + 1] = this.tint.g;
+        colours[i * 8 + edge + 2] = this.tint.b;
+        colours[i * 8 + edge + 3] = alpha;
+      }
+    }
+    this.mesh.geometry.getAttribute('position').needsUpdate = true;
+    this.mesh.geometry.getAttribute('color').needsUpdate = true;
+  }
 }
 
 /** A dark soft disc laid under a character instead of a real shadow. */
@@ -342,6 +455,9 @@ export function buildGround(length: number, angle: number, from: { x: number; z:
 const lambert = (color: string, flat = true) =>
   new MeshLambertMaterial({ color, flatShading: flat });
 
+/** Columns in a pennant, for its ripple. */
+export const FLAG_SEGMENTS = 8;
+
 /** The castle's outer gate: two round towers with pink cone roofs and an arched wall. */
 export function buildGate(): Group {
   const gate = new Group();
@@ -352,9 +468,15 @@ export function buildGate(): Group {
   const towerGeometry = new CylinderGeometry(0.5, 0.56, 2.7, 14);
   const roofGeometry = new ConeGeometry(0.68, 1.2, 14);
   const ballGeometry = new SphereGeometry(0.09, 8, 6);
-  const flagGeometry = new PlaneGeometry(0.42, 0.24);
+  // Segmented so the world can ripple it like cloth; both pennants share it.
+  const flagGeometry = new PlaneGeometry(0.42, 0.24, FLAG_SEGMENTS, 1);
   flagGeometry.translate(0.21, 0, 0);
   const flag = new MeshLambertMaterial({ color: COLOURS.roofDeep, side: DoubleSide });
+  // Candle-lit windows: one shared material the world tints (warm, alarmed, dark).
+  const windowGeometry = new PlaneGeometry(0.16, 0.36);
+  const windowLight = new MeshBasicMaterial({ color: '#ffc65a' });
+  const frame = lambert('#6b5a7b');
+  const frameGeometry = new PlaneGeometry(0.22, 0.42);
   for (const side of [-1, 1]) {
     const tower = new Mesh(towerGeometry, stone);
     tower.position.set(side * 1.35, 1.35, 0);
@@ -367,10 +489,16 @@ export function buildGate(): Group {
     const pennant = new Mesh(flagGeometry, flag);
     pennant.position.set(side * 1.35, 3.85, 0);
     pennant.name = 'flag';
-    // A window slit on each tower.
-    const window = new Mesh(new PlaneGeometry(0.16, 0.36), lambert('#5b4a6b'));
-    window.position.set(side * 1.35, 1.95, 0.565);
-    gate.add(tower, cap, ball, pennant, window);
+    // Two glowing window slits on each tower, in a dark stone frame.
+    gate.add(tower, cap, ball, pennant);
+    for (const y of [1.95, 1.05]) {
+      const surround = new Mesh(frameGeometry, frame);
+      surround.position.set(side * 1.35, y, 0.562);
+      const window = new Mesh(windowGeometry, windowLight);
+      window.position.set(side * 1.35, y, 0.566);
+      window.name = 'window';
+      gate.add(surround, window);
+    }
   }
   // The arched wall between the towers.
   const outline = new Shape();
@@ -402,7 +530,7 @@ export function buildGate(): Group {
     gate.add(block);
   }
   // Warm light glowing inside the arch, and a wooden door swung open.
-  const glow = new Mesh(new PlaneGeometry(1.1, 1.7), new MeshBasicMaterial({ color: '#ffe9a8' }));
+  const glow = new Mesh(new PlaneGeometry(1.1, 1.7), windowLight);
   glow.position.set(0, 0.85, -0.2);
   const door = new Mesh(new PlaneGeometry(0.55, 1.5), lambert(COLOURS.wood));
   door.position.set(-0.5, 0.75, 0.25);
@@ -557,9 +685,18 @@ export class Sparks {
   ) {
     const i = this.cursor;
     this.cursor = (this.cursor + 1) % this.capacity;
-    this.position.set([x, y, z], i * 3);
-    this.velocity.set([vx, vy, vz], i * 3);
-    this.colour.set([colour.r, colour.g, colour.b, alpha], i * 4);
+    const p = i * 3;
+    const c = i * 4;
+    this.position[p] = x;
+    this.position[p + 1] = y;
+    this.position[p + 2] = z;
+    this.velocity[p] = vx;
+    this.velocity[p + 1] = vy;
+    this.velocity[p + 2] = vz;
+    this.colour[c] = colour.r;
+    this.colour[c + 1] = colour.g;
+    this.colour[c + 2] = colour.b;
+    this.colour[c + 3] = alpha;
     this.life[i] = life;
     this.age[i] = 0;
     this.weight[i] = gravity;
