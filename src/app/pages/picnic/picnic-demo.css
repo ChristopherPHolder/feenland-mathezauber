@@ -1,0 +1,221 @@
+/* The film draws the picnic's own pieces small: friends, the food, plates and a finger. */
+:host {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+.film {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
+  width: min(100%, 320px);
+  aspect-ratio: 4 / 3;
+  padding: 8px;
+  border-radius: var(--radius-surface);
+  background:
+    repeating-linear-gradient(90deg, #e2526e22 0 16px, transparent 16px 32px),
+    repeating-linear-gradient(0deg, #e2526e22 0 16px, #fff9f2 16px 32px);
+  overflow: hidden;
+}
+.faces {
+  display: flex;
+  gap: 4px;
+}
+.faces app-picnic-face {
+  width: 28px;
+  height: 28px;
+}
+.faces.mini app-picnic-face {
+  width: 16px;
+  height: 16px;
+}
+.faces.mini {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px;
+  max-width: 100%;
+}
+.food {
+  width: 46%;
+}
+.food.strip {
+  width: 80%;
+}
+.food.small {
+  width: 52%;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+.row .food.small {
+  width: 46%;
+}
+.blankets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.blanket {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 6px 4px;
+  border: 3px solid transparent;
+  border-radius: 14px;
+  background: #fff5;
+  font-size: 18px;
+}
+.blanket .food.small {
+  width: 70%;
+}
+.blanket.lit,
+.chip.lit,
+.pill.lit {
+  border-color: var(--gold-deep);
+  background: #fff2b3;
+}
+.chips {
+  display: flex;
+  gap: 8px;
+}
+.chip,
+.pill {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 40px;
+  padding: 2px 10px;
+  border: 3px solid #d6c3a8;
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 18px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.pill {
+  position: absolute;
+  right: 10%;
+  bottom: 8%;
+  font-size: 15px;
+  border-color: var(--pink);
+}
+.finger {
+  position: absolute;
+  width: 34px;
+  margin: -6px 0 0 -14px;
+  fill: #fff;
+  stroke: #3a2318;
+  stroke-width: 2;
+  transition:
+    left 0.6s ease-in-out,
+    top 0.6s ease-in-out;
+  pointer-events: none;
+}
+.heart {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  color: #e2526e;
+  font-size: 34px;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.steps {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f0e3d0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.steps li.on {
+  background: var(--pink);
+  color: var(--paper);
+}
+.steps li.done {
+  background: #f8c9d6;
+}
+.replay {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid var(--pink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--pink-deep);
+}
+.replay svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.caption {
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .heart {
+    animation: float 1.6s ease-out infinite;
+  }
+  .munch {
+    animation: munch 0.3s ease-in-out 6 alternate;
+  }
+}
+@keyframes float {
+  from {
+    transform: translate(-50%, 20px) scale(0.5);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -20px) scale(1.1);
+    opacity: 0;
+  }
+}
+@keyframes munch {
+  to {
+    transform: translateY(-3px) scaleY(0.92);
+  }
+}
+:host-context(.calm-motion) :is(.heart, .munch) {
+  animation: none;
+}

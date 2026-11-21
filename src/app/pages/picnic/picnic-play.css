@@ -1,0 +1,288 @@
+/* A round fills one screen: the header, the HUD, then the picnic scene and the work area,
+   stacked on a tall screen and side by side on a wide one. */
+.game.playing {
+  height: calc(100dvh - var(--safe-y) - 28px);
+  min-height: 560px;
+}
+/* HUD: the seven shares, points, the golden spoon, the ants and the ? button, in one row */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+}
+.slots {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.slot {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  max-width: 52px;
+  height: 34px;
+  border-radius: var(--radius-chip);
+  background: #ffffffb3;
+  border: 2px solid #d6e6c3;
+}
+.slot svg {
+  width: 20px;
+  height: 20px;
+}
+.pie-icon {
+  fill: #f6e3c0;
+  stroke: #c9a46f;
+  stroke-width: 1.5;
+}
+.slice-icon {
+  fill: #fff;
+  stroke: #c9a46f;
+  stroke-width: 1.5;
+}
+.cake-icon {
+  fill: #f7c6d9;
+  stroke: #b3456f;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.slot.cake {
+  max-width: 66px;
+  border-color: var(--pink);
+}
+.slot.current {
+  border-color: var(--success-strong);
+  background: var(--paper);
+  box-shadow: 0 0 0 3px #3f8a4f33;
+}
+.slot.done {
+  background: var(--warm-ground);
+  border-color: var(--sun);
+}
+.slot.done .pie-icon,
+.slot.done .slice-icon {
+  fill: #e2a64a;
+  stroke: #8c5a2b;
+}
+.points {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: none;
+  margin: 0;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+}
+.points span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.points strong {
+  min-width: 2.5ch;
+  font-size: 22px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.golden-chip {
+  flex: none;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(#ffe680, #ffc21a);
+  border: 2px solid var(--gold-deep);
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ant-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 3px 4px 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+}
+.ant-track {
+  width: 44px;
+  height: 16px;
+  fill: #3a2a20;
+}
+.ant-track .track {
+  fill: #e9e0cf;
+}
+.ant-track .walked {
+  fill: #c9a46f;
+}
+.ant-chip.urgent .walked {
+  fill: var(--pink);
+}
+.ant-chip.arrived .walked {
+  fill: #8c5a2b;
+}
+.seconds {
+  min-width: 3ch;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.timer-off {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 2px solid #d6e6c3;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+}
+.timer-off svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.help {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--pink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--pink-deep);
+  font: 600 24px var(--font-sans);
+  box-shadow: var(--shadow-rest);
+  cursor: pointer;
+}
+.help:hover {
+  background: var(--warm-ground);
+}
+.help:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.play-area {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(120px, 34%) minmax(0, 1fr);
+  gap: 10px;
+}
+.board {
+  position: relative;
+  min-height: 0;
+  border-radius: var(--radius-panel);
+  background: #bfe6ff;
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+.board.golden {
+  box-shadow:
+    0 0 0 4px var(--gold),
+    0 0 28px #ffc21a99;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+}
+.banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 3;
+  margin: 0;
+  padding: 6px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--shadow-rest);
+}
+.banner.gold {
+  background: linear-gradient(#ffe680, #ffc21a);
+  color: var(--ink);
+  border: 2px solid var(--gold-deep);
+}
+
+/* Wide screens: the picnic on the left, the work on the right. */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .play-area {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 1fr);
+  }
+}
+/* Sideways phones: a short scene beside the work. */
+@media (max-height: 520px) and (orientation: landscape) {
+  :host {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .game {
+    gap: 6px;
+  }
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 12px);
+    min-height: 0;
+  }
+  .play-area {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+}
+@media (max-width: 520px) {
+  .game.playing {
+    height: calc(100dvh - var(--safe-y) - 24px);
+    min-height: 0;
+  }
+  .hud {
+    gap: 6px;
+  }
+  .points {
+    padding: 4px 10px;
+  }
+  .points span {
+    display: none;
+  }
+  .golden-chip {
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+  /* The seven shares shrink to dots so the points, the ants and ? keep their room. */
+  .slots {
+    gap: 3px;
+  }
+  .slot {
+    min-width: 6px;
+    height: 12px;
+    border-width: 2px;
+    border-radius: 6px;
+  }
+  .slot svg {
+    display: none;
+  }
+  .slot.done {
+    background: var(--sun);
+  }
+  .ant-track {
+    width: 30px;
+  }
+  .play-area {
+    grid-template-rows: minmax(110px, 28%) minmax(0, 1fr);
+    gap: 8px;
+  }
+}

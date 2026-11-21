@@ -43,6 +43,9 @@ long-standing base classes listed below.
 | `src/emblem.ts`       | `ui-emblem`: a game's or world's illustrated emblem, by catalog id, with an emoji fallback.                                                         |
 | `src/star-rating.ts`  | `ui-star-rating`: three star slots and one spoken label.                                                                                            |
 | `src/game-bar.ts`     | `ui-game-bar`: the way out, title and actions above a game.                                                                                         |
+| `src/fraction.ts`     | `ui-fraction`: a stacked fraction (numerator over a bar over the denominator) that screen readers hear as words.                                    |
+| `src/reward-burst.ts` | `ui-reward-burst`: the glow, sparkles and points card over a board after a win.                                                                     |
+| `src/coach-dialog.ts` | `ui-coach-dialog`: the full-screen "how to play" modal; the game projects its demo film into it.                                                    |
 | `src/sound-toggle.ts` | `ui-sound-toggle`: the round speaker button.                                                                                                        |
 | `src/index.ts`        | The public API. Export every new component here.                                                                                                    |
 

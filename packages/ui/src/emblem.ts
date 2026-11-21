@@ -206,6 +206,25 @@ import { Component, input } from '@angular/core';
         <path d="M4 58h56" />
       </svg>
     }
+    @case ('picnic') {
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M4 44 32 30l28 14-28 14z" fill="#fff6ee" />
+        <path
+          d="m11 40.5 28 14M18 37l28 14M25 33.5l28 14M53 40.5l-28 14M46 37 18 51M39 33.5 11 47.5"
+          stroke="#e2526e"
+          stroke-width="3"
+          opacity="0.75"
+        />
+        <ellipse cx="32" cy="36" rx="15" ry="7" fill="#fff" />
+        <path d="M17 34a15 7 0 0 0 30 0v-3H17z" fill="#d99a4e" />
+        <ellipse cx="32" cy="31" rx="15" ry="7" fill="#f4c77d" />
+        <path d="M32 31 32 24M32 31l13 3M32 31l-13 3" stroke="#a86d12" stroke-width="1.6" />
+        <path d="M32 31V24a15 7 0 0 1 13 3.5z" fill="#e2526e" />
+        <circle cx="22" cy="14" r="5" fill="#c4234a" />
+        <circle cx="30" cy="11" r="4" fill="#c4234a" />
+        <path d="M22 9q2-4 6-4M30 7q1-3 4-3" stroke="#3f7d2c" stroke-width="1.6" />
+      </svg>
+    }
     @case ('numbers') {
       <svg viewBox="0 0 64 64" aria-hidden="true">
         <path d="M32 58V30" class="stem" stroke-width="5" />

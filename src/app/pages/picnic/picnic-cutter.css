@@ -1,0 +1,137 @@
+/* The food to cut and its marks. Round foods sit in a square with a ring of marks around them;
+   bars and ribbons lie long with a tall tap band at every mark. */
+:host {
+  display: block;
+  width: 100%;
+}
+.board {
+  position: relative;
+  margin: auto;
+  touch-action: manipulation;
+}
+:host(.round) .board {
+  aspect-ratio: 1;
+  width: min(100%, var(--cut-size, 260px));
+}
+:host(:not(.round)) .board {
+  width: min(100%, var(--strip-width, 520px));
+  padding: 26px 0;
+}
+.food {
+  position: relative;
+}
+:host(.round) .food {
+  position: absolute;
+  inset: calc(12 / 124 * 100%);
+}
+.marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.given {
+  stroke: #7a4a1c;
+  stroke-width: 1.6;
+  stroke-dasharray: 3 2;
+}
+.mark {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+:host(:not(.round)) .mark {
+  top: 0 !important;
+  bottom: 0;
+  height: auto;
+  width: max(24px, calc(100% / 12 - 2px));
+  margin: 0;
+  translate: -50% 0;
+  border-radius: 12px;
+}
+.notch {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 3px solid #a07a52;
+  border-radius: 50%;
+  background: var(--paper);
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+:host(:not(.round)) .notch {
+  width: 6px;
+  height: 100%;
+  border: 0;
+  border-radius: 4px;
+  background: repeating-linear-gradient(#a07a5299 0 6px, transparent 6px 11px);
+}
+.mark:hover .notch {
+  transform: scale(1.2);
+  background: var(--warm-ground);
+}
+:host(:not(.round)) .mark:hover .notch {
+  transform: scaleX(1.5);
+  background: repeating-linear-gradient(#7a4a1c 0 6px, transparent 6px 11px);
+}
+.mark.cut .notch {
+  border-color: var(--pink-deep);
+  background: var(--pink);
+  transform: scale(1.25);
+}
+:host(:not(.round)) .mark.cut .notch {
+  width: 5px;
+  background: var(--pink-deep);
+  transform: none;
+}
+.mark:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 0;
+}
+.mark:disabled {
+  cursor: default;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :host(.wobble-a) .food {
+    animation: wobble-a 0.6s ease-in-out;
+  }
+  :host(.wobble-b) .food {
+    animation: wobble-b 0.6s ease-in-out;
+  }
+}
+@keyframes wobble-a {
+  20% {
+    transform: rotate(-4deg);
+  }
+  45% {
+    transform: rotate(3deg);
+  }
+  70% {
+    transform: rotate(-2deg);
+  }
+}
+@keyframes wobble-b {
+  20% {
+    transform: rotate(4deg);
+  }
+  45% {
+    transform: rotate(-3deg);
+  }
+  70% {
+    transform: rotate(2deg);
+  }
+}
+:host-context(.calm-motion) .food {
+  animation: none;
+}

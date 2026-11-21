@@ -1,0 +1,453 @@
+/* The work area: the question, the thing to cut, pick or deal, and the answers. It is a size
+   container so the food can grow to whatever room the screen leaves. */
+.work {
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: safe center;
+  min-height: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-panel);
+  background: var(--cream);
+  box-shadow: var(--shadow-panel);
+  overflow: auto;
+}
+.share-count {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.ask {
+  margin: 0;
+  font-size: clamp(18px, 2.4vw, 23px);
+  line-height: 1.35;
+}
+.ask ui-fraction,
+.status ui-fraction,
+.hint ui-fraction {
+  font-size: 1.15em;
+  margin: 0 0.1em;
+}
+.status {
+  margin: 0;
+  min-height: 1.4em;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+/* Cutting */
+.cutter {
+  --cut-size: min(420px, 58cqh, 100cqw);
+  --strip-width: min(560px, 100cqw);
+  flex: none;
+}
+.has-help .cutter {
+  --cut-size: min(300px, 34cqh, 100cqw);
+}
+.has-help .work-food {
+  width: min(40%, 26cqh, 200px);
+}
+.cut-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.piece-count {
+  flex: 1;
+  font-weight: 600;
+  color: var(--amber-ink);
+}
+.cut-row .button {
+  min-height: 48px;
+  width: auto;
+  padding-inline: 16px;
+}
+.share-button {
+  min-width: 120px;
+  font-size: 20px;
+}
+.button[disabled] {
+  opacity: 0.5;
+}
+
+/* The food for judging and naming */
+.work-food {
+  width: min(60%, 44cqh, 320px);
+  margin: 0 auto;
+}
+.work-food.strip {
+  width: min(100%, 520px);
+}
+.name-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.name-row .work-food {
+  margin: 0;
+}
+.name-row .hero {
+  width: 52px;
+  height: 52px;
+}
+
+/* Answers */
+.choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.choices.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.choice {
+  min-height: 64px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-tile);
+  background: #3f7d4f;
+  color: var(--paper);
+  font: 600 28px var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 5px 0 #23502f;
+  cursor: pointer;
+}
+.choice:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #23502f;
+}
+.choice:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.choice[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+.fraction-choice ui-fraction {
+  font-size: 34px;
+}
+.fair-yes,
+.fair-no {
+  font-size: 22px;
+}
+.fair-no {
+  background: #9b4a62;
+  box-shadow: 0 5px 0 #5c2536;
+}
+.choices.plates {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.choices.plates:has(.strip) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.plate-choice,
+.blanket-choice,
+.same-choice {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: var(--paper);
+  border-color: #d6c3a8;
+  color: var(--ink);
+  box-shadow: 0 5px 0 #c8b496;
+}
+.plate-choice:active,
+.blanket-choice:active,
+.same-choice:active {
+  box-shadow: 0 2px 0 #c8b496;
+}
+.plate-choice app-picnic-food {
+  width: min(100%, 22cqh, 140px);
+}
+.plate-choice.strip app-picnic-food {
+  width: 100%;
+}
+.choices.blankets {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+.choices.blankets:has(.same-choice) {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+.blanket-choice {
+  align-content: center;
+  background:
+    repeating-linear-gradient(90deg, #e2526e1f 0 14px, transparent 14px 28px),
+    repeating-linear-gradient(0deg, #e2526e1f 0 14px, #fffaf3 14px 28px);
+}
+.blanket-friends {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px;
+}
+.blanket-friends app-picnic-face {
+  width: 22px;
+  height: 22px;
+}
+.blanket-food {
+  width: min(80%, 28cqh, 180px);
+}
+.blanket-food.strip {
+  width: 100%;
+}
+.cloth {
+  width: min(70%, 24cqh, 150px);
+  aspect-ratio: 1.2;
+  border-radius: 50% 50% 14px 14px;
+  background: repeating-linear-gradient(45deg, #7fb5e8 0 8px, #a9cff2 8px 16px);
+  box-shadow: inset 0 -6px 0 #5a8fc4;
+}
+.blanket-fraction {
+  font-size: 30px;
+}
+.same-choice {
+  align-self: center;
+  padding: 10px 12px;
+  font-size: 18px;
+}
+.same-choice span {
+  font-size: 28px;
+}
+
+/* Berries */
+.dealer {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.handfuls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.handful {
+  width: auto;
+  min-width: 96px;
+  min-height: 52px;
+  font-size: 19px;
+}
+.number-choice {
+  font-size: 30px;
+}
+
+/* Help: never the answer */
+.hint {
+  padding: 10px 14px;
+  border-radius: var(--radius-surface);
+  background: #fff3c4;
+  border: 2px solid var(--sun);
+}
+.hint p {
+  margin: 0;
+  line-height: 1.4;
+}
+.hint strong {
+  margin-right: 0.3em;
+}
+.side-by-side {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 6px;
+}
+.side-by-side svg {
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+}
+.side-by-side svg.strip {
+  width: 45%;
+  height: auto;
+}
+.side-by-side path {
+  fill: #f4c77d;
+  stroke: #b9792f;
+  stroke-width: 2;
+}
+.side-by-side [data-food='cake'] path {
+  fill: #fbd3e2;
+  stroke: #c4567f;
+}
+.side-by-side [data-food='bar'] path {
+  fill: #f6c24a;
+}
+.side-by-side [data-food='ribbon'] path {
+  fill: #9fd6f5;
+  stroke: #2f7fb0;
+}
+.finish-thought {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.finish-thought .button {
+  flex: 1;
+  min-height: 48px;
+}
+.thought {
+  margin-top: 6px !important;
+  font-weight: 600;
+}
+.after {
+  display: flex;
+  justify-content: flex-end;
+}
+.after .button {
+  width: auto;
+  min-width: 200px;
+}
+
+/* "Use one of these": a gold halo on the group, never on one answer, and a little hop. */
+[data-guide='cut'] .share-button:not([disabled]),
+[data-guide='deal'] .handful:not([disabled]),
+[data-guide='choices'] .choice:not([disabled]),
+[data-guide='next'] .after .button {
+  box-shadow:
+    0 0 0 4px var(--sun),
+    0 5px 0 #4f2f12;
+}
+[data-guide='cut'] .share-button[disabled] ~ *,
+[data-guide='cut'] .cutter {
+  --notch-glow: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-guide='deal'] .handful:not([disabled]),
+  [data-guide='choices'] .choice:not([disabled]),
+  [data-guide='next'] .after .button {
+    animation: tap-me 1.6s ease-in-out infinite;
+  }
+  [data-guide='choices'] .choice:nth-of-type(2) {
+    animation-delay: 0.12s;
+  }
+  [data-guide='choices'] .choice:nth-of-type(3) {
+    animation-delay: 0.24s;
+  }
+  [data-guide='choices'] .choice:nth-of-type(4) {
+    animation-delay: 0.36s;
+  }
+  [data-guide='cut'] .cutter {
+    animation: ring-pulse 1.6s ease-in-out infinite;
+  }
+}
+@keyframes tap-me {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  70% {
+    transform: translateY(-9px);
+  }
+  80% {
+    transform: translateY(0);
+  }
+  88% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes ring-pulse {
+  0%,
+  60%,
+  100% {
+    filter: none;
+  }
+  75% {
+    filter: drop-shadow(0 0 8px var(--sun));
+  }
+}
+:host-context(.calm-motion) [data-guide] :is(.choice, .handful, .button, .cutter) {
+  animation: none;
+}
+
+@media (max-width: 700px) {
+  .choices.blankets:has(.same-choice) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .same-choice {
+    order: 3;
+    grid-column: 1 / -1;
+    min-height: 52px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+}
+@media (max-width: 520px) {
+  .side-by-side svg {
+    width: 48px;
+    height: 48px;
+  }
+  .work {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .ask {
+    font-size: 17px;
+  }
+  .status {
+    font-size: 14px;
+  }
+  .choice {
+    min-height: 56px;
+    font-size: 24px;
+  }
+  .fraction-choice ui-fraction {
+    font-size: 28px;
+  }
+  .choices.plates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Sideways phones: a short work area, so everything shrinks to fit without scrolling. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .work {
+    gap: 4px;
+    padding: 8px 12px;
+  }
+  .share-count,
+  .piece-count {
+    display: none;
+  }
+  .ask {
+    font-size: 16px;
+  }
+  .cutter {
+    --cut-size: min(46cqh, 100cqw);
+  }
+  .has-help .cutter {
+    --cut-size: min(30cqh, 100cqw);
+  }
+  .cut-row .button,
+  .handful {
+    min-height: 44px;
+  }
+  .choice {
+    min-height: 48px;
+    font-size: 22px;
+  }
+  .fraction-choice ui-fraction {
+    font-size: 24px;
+  }
+  .work-food {
+    width: min(40%, 34cqh);
+  }
+  .plate-choice app-picnic-food {
+    width: min(100%, 18cqh);
+  }
+  .blanket-food {
+    width: min(70%, 22cqh);
+  }
+}

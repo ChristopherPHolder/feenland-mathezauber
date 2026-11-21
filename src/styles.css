@@ -342,6 +342,11 @@ main.focused-game {
   --loader-star: var(--sky-deep);
   --loader-dot: var(--pink);
 }
+.is-route-tone[data-tone='picnic'] {
+  --loader-ground: linear-gradient(#cdeaff, #e9f8e0 45%, #dff3cf);
+  --loader-star: var(--pink);
+  --loader-dot: var(--success);
+}
 .is-route-tone[data-tone='potion'] {
   --loader-ground: linear-gradient(#e6e0ff, #f4eefc 40%, #e9f6ee);
   --loader-star: var(--violet);

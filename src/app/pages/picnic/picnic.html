@@ -1,0 +1,602 @@
+<ng-template #text let-line>
+  @for (segment of line; track $index) {
+    @if (isText(segment)) {
+      <span>{{ segment.text }}</span>
+    } @else {
+      <ui-fraction
+        [numerator]="segment.fraction.n"
+        [denominator]="segment.fraction.d"
+        [label]="segment.words"
+      />
+    }
+  }
+</ng-template>
+
+<section class="game" [class.playing]="started() && !round().complete" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: position(), total: total }) + ' · ' + i.t(levelKey(stage().stage))"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (!started()) {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === stage().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.position, total: total }) + ' · ' + i.t(levelKey(link.stage))
+            "
+            >{{ link.position }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <div class="intro-demo">
+          <app-picnic-demo [card]="demoCard()" />
+        </div>
+        <div class="intro-copy">
+          <h2 id="intro-title">{{ i.t(levelKey(stage().stage)) }}</h2>
+          <p class="sr-only">{{ t('story') }}</p>
+          <div class="trick-card">
+            <h3>{{ t('trickTitle') }}</h3>
+            <p>{{ t(tipKey(stage().stage)) }}</p>
+          </div>
+          @if (best() > 0) {
+            <p class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</p>
+          }
+        </div>
+      </div>
+      <fieldset class="pace" aria-describedby="pace-help">
+        <legend>{{ t('paceTitle') }}</legend>
+        <p id="pace-help" class="sr-only">{{ t('paceHelp') }}</p>
+        <div class="pace-options">
+          @for (option of paces; track option.id) {
+            <label class="pace-choice" [class.selected]="pace() === option.id">
+              <input
+                type="radio"
+                name="picnic-pace"
+                [value]="option.id"
+                [checked]="pace() === option.id"
+                (change)="selectPace(option.id)"
+              />
+              <svg class="pace-icon" viewBox="0 0 40 24" aria-hidden="true">
+                @if (option.id === 'off') {
+                  <path class="pace-leaf" d="M6 18q14-18 28-8-12 14-28 8z" />
+                } @else {
+                  @for (
+                    ant of option.id === 'fast' ? [0, 1, 2] : option.id === 'normal' ? [0, 1] : [0];
+                    track ant
+                  ) {
+                    <g [attr.transform]="'translate(' + (1 + ant * 13) + ' 6) scale(1.4)'">
+                      <circle cx="2.5" cy="4" r="2.5" />
+                      <circle cx="6.5" cy="4" r="2" />
+                      <circle cx="10.5" cy="3.4" r="2.5" />
+                    </g>
+                  }
+                }
+              </svg>
+              <strong>{{ t(option.label) }}</strong>
+              <span>{{
+                option.id === 'off'
+                  ? t('paceUnlimited')
+                  : t('paceSeconds', { n: paceSeconds(option.id) })
+              }}</span>
+            </label>
+          }
+        </div>
+        <p class="pace-rule">{{ t(timed() ? 'paceTimed' : 'paceCalm') }}</p>
+      </fieldset>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="play()">
+          {{ t('start') }}<ui-icon kind="arrow" />
+        </button>
+      </div>
+      <div class="friends-strip">
+        <ul class="friend-row" [attr.aria-label]="t('friendsTitle')">
+          @for (friend of friends; track friend) {
+            <li [class.away]="!scores.joined().includes(friend)">
+              <app-picnic-face [kind]="friend" />
+              @if (scores.joined().includes(friend)) {
+                <span class="sr-only">{{ t(friend) }}</span>
+              }
+            </li>
+          }
+        </ul>
+        <p>
+          <strong>{{ t('friendsProgress', { n: scores.joined().length }) }}</strong>
+          <span>{{ t('friendsHelp') }}</span>
+        </p>
+      </div>
+    </section>
+  } @else if (round().complete) {
+    <section
+      #outcome
+      class="panel outcome"
+      [class.perfect]="stars() === 3"
+      tabindex="-1"
+      [attr.aria-label]="t('done')"
+    >
+      <div class="outcome-art">
+        <app-three-stage class="outcome-scene" [world]="loadWorld" [state]="frame()">
+          <app-picnic-scene [frame]="frame()" />
+        </app-three-stage>
+      </div>
+      <div class="outcome-copy">
+        <h2>{{ t(stars() === 3 ? 'perfectRound' : 'done') }}</h2>
+        <div class="stars" role="img" [attr.aria-label]="t('starsLabel', { n: stars() })">
+          @for (star of starSlots; track star) {
+            <span class="star" [class.earned]="star <= stars()" [style.--i]="star"
+              ><ui-icon kind="star"
+            /></span>
+          }
+        </div>
+        <p class="score-line">
+          <strong>{{ t('score', { n: i.format(round().score) }) }}</strong>
+          @if (newBest()) {
+            <span class="new-best">{{ t('newBest') }}</span>
+          } @else {
+            <span class="best-line">{{ t('bestScore', { n: i.format(best()) }) }}</span>
+          }
+        </p>
+        <ul class="tiles">
+          <li [style.--i]="1">
+            <strong>{{ round().counters.rights }}</strong
+            ><span>{{ t('tileShares') }}</span>
+          </li>
+          <li [style.--i]="2">
+            <strong>{{ round().firstTries }}</strong
+            ><span>{{ t('tileFirst') }}</span>
+          </li>
+          <li [style.--i]="3">
+            <strong>{{ round().bestStreak }}</strong
+            ><span>{{ t('tileStreak') }}</span>
+          </li>
+          <li [style.--i]="4">
+            <strong>{{ round().crumbs }}</strong
+            ><span>{{ t('tileCrumbs') }}</span>
+          </li>
+        </ul>
+        @if (newFriend(); as friend) {
+          <p class="friend-line">
+            <app-picnic-face [kind]="friend" />
+            {{ t('friendJoined', { name: t(friend) }) }}
+          </p>
+        }
+        <p class="outcome-help">
+          {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+        </p>
+        @if (saveFailed()) {
+          <p class="save-note" role="alert">{{ t('save') }}</p>
+        }
+        <div class="outcome-actions">
+          @if (nextLink(); as next) {
+            <a class="button primary" [routerLink]="next"
+              >{{ t('nextLevel') }}<ui-icon kind="arrow"
+            /></a>
+            <button class="button secondary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}
+            </button>
+          } @else {
+            <button class="button primary" type="button" (click)="celebrate()">
+              {{ t('celebrate') }}<ui-icon kind="arrow" />
+            </button>
+          }
+          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="hud">
+      <ol class="slots" [attr.aria-label]="t('hud', { n: round().index + 1, total: slots.length })">
+        @for (slot of slots; track slot) {
+          <li
+            class="slot"
+            [class.done]="slot < round().index || (slot === round().index && phase() === 'done')"
+            [class.current]="slot === round().index"
+            [class.cake]="slot === slots.length - 1"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              @if (slot === slots.length - 1) {
+                <path class="cake-icon" d="M4 20h16v-7H4zM6 13V9h12v4M12 9V5" />
+              } @else {
+                <path class="pie-icon" d="M12 12V4a8 8 0 1 1-8 8z" />
+                <path class="slice-icon" d="M12 12V4a8 8 0 0 0-8 8z" />
+              }
+            </svg>
+          </li>
+        }
+      </ol>
+      <p class="points">
+        <span>{{ t('points') }}</span>
+        <strong>{{ i.format(round().score) }}</strong>
+      </p>
+      @if (golden()) {
+        <p class="golden-chip">{{ t('golden') }}</p>
+      }
+      @if (timed() && antTotal() && phase() !== 'done') {
+        <div
+          class="ant-chip"
+          [class.urgent]="!round().antsCame && secondsLeft() <= 5"
+          [class.arrived]="round().antsCame"
+        >
+          <svg class="ant-track" viewBox="0 0 44 16" aria-hidden="true">
+            <rect class="track" x="1" y="11" width="42" height="3" rx="1.5" />
+            <rect class="walked" x="1" y="11" [attr.width]="42 * antShare()" height="3" rx="1.5" />
+            <g [attr.transform]="'translate(' + (2 + 30 * antShare()) + ' 2)'">
+              <circle cx="2.5" cy="5" r="2.5" />
+              <circle cx="6.5" cy="5" r="2" />
+              <circle cx="10.5" cy="4.4" r="2.5" />
+            </g>
+          </svg>
+          <span class="sr-only">{{ t('ants') }}</span>
+          <span class="seconds" role="timer" aria-live="off">{{
+            round().antsCame ? '0' : t('secondsLeft', { n: secondsLeft() })
+          }}</span>
+          <button
+            type="button"
+            class="timer-off"
+            (click)="selectPace('off')"
+            [attr.aria-label]="t('timerOff')"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+      }
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openCoach()"
+      >
+        ?
+      </button>
+    </div>
+    <div class="play-area">
+      <section
+        class="board"
+        [class.golden]="golden()"
+        [class.cake]="cake()"
+        [attr.aria-label]="t('sceneLabel')"
+      >
+        <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
+          <app-picnic-scene [frame]="frame()" />
+        </app-three-stage>
+        @if (banner(); as banner) {
+          <p class="banner" [class.gold]="banner === 'goldenBanner'" aria-hidden="true">
+            {{ t(banner) }}
+          </p>
+        }
+        @if (reward(); as reward) {
+          <ui-reward-burst
+            [tone]="reward.tone"
+            [cheer]="reward.cheer"
+            [tags]="reward.tags"
+            [points]="reward.points"
+            [delay]="scene.ready() ? 0.9 : 0"
+          />
+        }
+      </section>
+      <div
+        class="work"
+        [class.has-help]="!!round().help"
+        [attr.data-guide]="nextTap()"
+        [attr.data-kind]="task().kind"
+      >
+        <p class="share-count">
+          {{ cake() ? t('cakeShare') : t('shareCount', { n: round().index + 1, total: shares }) }}
+        </p>
+        <h2 class="ask" id="ask">
+          <ng-container *ngTemplateOutlet="text; context: { $implicit: ask() }" />
+        </h2>
+
+        @switch (task().kind) {
+          @case ('cut') {
+            @if (task(); as cut) {
+              @if (cut.kind === 'cut') {
+                <p id="cut-help" class="sr-only">{{ t('cutHelp') }}</p>
+                <app-picnic-cutter
+                  class="cutter"
+                  [food]="cut.food"
+                  [cuts]="state().cuts"
+                  [preset]="cut.preset"
+                  [labels]="markLabels()"
+                  [groupLabel]="
+                    t(
+                      cut.food === 'pie'
+                        ? 'foodPie'
+                        : cut.food === 'bar'
+                          ? 'foodBar'
+                          : cut.food === 'ribbon'
+                            ? 'foodRibbon'
+                            : 'foodCake'
+                    )
+                  "
+                  describedBy="cut-help"
+                  [disabled]="phase() === 'done'"
+                  [wobble]="round().wobble"
+                  (toggle)="cutAt($event)"
+                />
+                @if (phase() !== 'done') {
+                  <div class="cut-row">
+                    <span class="piece-count" aria-hidden="true">{{
+                      pieceCount() > 1 ? t('piecesNow', { n: pieceCount() }) : t('wholeNow')
+                    }}</span>
+                    <button
+                      type="button"
+                      class="button secondary"
+                      [disabled]="state().cuts.length === cut.preset.length"
+                      (click)="startOver()"
+                    >
+                      {{ t('clearCuts') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="button primary share-button"
+                      [disabled]="pieceCount() < 2"
+                      (click)="shareCut()"
+                    >
+                      {{ t('shareButton') }}
+                    </button>
+                  </div>
+                }
+              }
+            }
+          }
+          @case ('fair') {
+            @if (fairDrawing(); as drawing) {
+              <app-picnic-food
+                class="work-food"
+                [class.strip]="drawing.food === 'bar' || drawing.food === 'ribbon'"
+                role="img"
+                [attr.aria-label]="drawingLabel(drawing)"
+                [food]="drawing.food"
+                [sizes]="drawing.sizes"
+              />
+            }
+            <fieldset class="choices two" [disabled]="phase() === 'done'">
+              <legend class="sr-only">{{ t('choicesLabel') }}</legend>
+              <button
+                type="button"
+                class="choice fair-yes"
+                [disabled]="tried('true')"
+                (click)="answerFair(true)"
+              >
+                <span aria-hidden="true">✓</span> {{ t('fairYes') }}
+              </button>
+              <button
+                type="button"
+                class="choice fair-no"
+                [disabled]="tried('false')"
+                (click)="answerFair(false)"
+              >
+                <span aria-hidden="true">✗</span> {{ t('fairNo') }}
+              </button>
+            </fieldset>
+          }
+          @case ('name') {
+            @if (task(); as name) {
+              @if (name.kind === 'name' && nameDrawing(); as drawing) {
+                <div class="name-row">
+                  <app-picnic-face class="hero" [kind]="hero()" />
+                  <app-picnic-food
+                    class="work-food"
+                    [class.strip]="drawing.food === 'bar' || drawing.food === 'ribbon'"
+                    role="img"
+                    [attr.aria-label]="drawingLabel(drawing)"
+                    [food]="drawing.food"
+                    [sizes]="drawing.sizes"
+                    [shaded]="drawing.shaded"
+                  />
+                </div>
+                <fieldset class="choices" [disabled]="phase() === 'done'">
+                  <legend class="sr-only">{{ t('choicesLabel') }}</legend>
+                  @for (choice of name.choices; track fractionKey(choice)) {
+                    <button
+                      type="button"
+                      class="choice fraction-choice"
+                      [disabled]="tried(fractionKey(choice))"
+                      (click)="answerName(choice)"
+                    >
+                      <ui-fraction
+                        [numerator]="choice.n"
+                        [denominator]="choice.d"
+                        [label]="words(choice)"
+                      />
+                    </button>
+                  }
+                </fieldset>
+              }
+            }
+          }
+          @case ('pick') {
+            @if (task(); as pick) {
+              @if (pick.kind === 'pick') {
+                <fieldset class="choices plates" [disabled]="phase() === 'done'">
+                  <legend class="sr-only">{{ t('choicesLabel') }}</legend>
+                  @for (plate of pick.plates; track $index) {
+                    <button
+                      type="button"
+                      class="choice plate-choice"
+                      [class.strip]="plate.food === 'bar' || plate.food === 'ribbon'"
+                      [attr.aria-label]="plateLabel($index, plate)"
+                      [disabled]="tried('' + $index)"
+                      (click)="answerPick($index)"
+                    >
+                      <app-picnic-food
+                        [food]="plate.food"
+                        [sizes]="plate.sizes"
+                        [shaded]="plate.shaded"
+                      />
+                    </button>
+                  }
+                </fieldset>
+              }
+            }
+          }
+          @case ('compare') {
+            @if (task(); as compare) {
+              @if (compare.kind === 'compare') {
+                <fieldset class="choices blankets" [disabled]="phase() === 'done'">
+                  <legend class="sr-only">{{ t('choicesLabel') }}</legend>
+                  @for (blanket of blankets(); track blanket.side) {
+                    <button
+                      type="button"
+                      class="choice blanket-choice"
+                      [disabled]="tried(blanket.side)"
+                      (click)="answerCompare(blanket.side)"
+                    >
+                      <span class="sr-only">{{ blanket.lead }}</span>
+                      @if (blanket.friends.length) {
+                        <span class="blanket-friends" aria-hidden="true">
+                          @for (friend of blanket.friends; track $index) {
+                            <app-picnic-face [kind]="friend" />
+                          }
+                        </span>
+                      }
+                      @if (compare.covered && phase() !== 'done') {
+                        <span class="cloth" aria-hidden="true"></span>
+                      } @else {
+                        <app-picnic-food
+                          class="blanket-food"
+                          [class.strip]="
+                            blanket.drawing.food === 'bar' || blanket.drawing.food === 'ribbon'
+                          "
+                          [food]="blanket.drawing.food"
+                          [sizes]="blanket.drawing.sizes"
+                          [shaded]="blanket.drawing.shaded"
+                        />
+                      }
+                      <span class="blanket-fraction">
+                        <ui-fraction
+                          [numerator]="blanket.fraction.n"
+                          [denominator]="blanket.fraction.d"
+                          [label]="blanket.words"
+                        />
+                      </span>
+                    </button>
+                    @if ($index === 0 && compare.same) {
+                      <button
+                        type="button"
+                        class="choice same-choice"
+                        [disabled]="tried('same')"
+                        (click)="answerCompare('same')"
+                      >
+                        <span aria-hidden="true">=</span> {{ t('sameButton') }}
+                      </button>
+                    }
+                  }
+                </fieldset>
+              }
+            }
+          }
+          @case ('deal') {
+            @if (dealPlates(); as deal) {
+              <app-picnic-deal
+                class="dealer"
+                [total]="deal.total"
+                [dealt]="deal.dealt"
+                [before]="deal.before"
+                [guests]="deal.guests"
+                [later]="deal.later"
+                [basketLabel]="deal.basketLabel"
+                [plateLabels]="deal.plateLabels"
+              />
+              @if (phase() === 'work') {
+                <div class="handfuls" role="group" [attr.aria-label]="deal.basketLabel">
+                  @for (option of deal.handfuls; track option.handful) {
+                    <button
+                      type="button"
+                      class="button secondary handful"
+                      [disabled]="!option.ok"
+                      (click)="dealHandful(option.handful)"
+                    >
+                      {{ t('dealHandful', { n: option.handful }) }}
+                    </button>
+                  }
+                </div>
+              } @else {
+                @if (task(); as dealTask) {
+                  @if (dealTask.kind === 'deal') {
+                    <fieldset class="choices" [disabled]="phase() === 'done'">
+                      <legend class="sr-only">{{ t('choicesLabel') }}</legend>
+                      @for (choice of dealTask.choices; track choice) {
+                        <button
+                          type="button"
+                          class="choice number-choice"
+                          [disabled]="tried('' + choice)"
+                          (click)="answerDeal(choice)"
+                        >
+                          {{ choice }}
+                        </button>
+                      }
+                    </fieldset>
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        <p class="status" role="status" aria-live="polite" aria-atomic="true">
+          <ng-container *ngTemplateOutlet="text; context: { $implicit: status() }" />
+        </p>
+        @if (round().help; as help) {
+          <div class="hint" role="alert">
+            <p>
+              <strong>{{ t('hintLead') }}</strong>
+              <ng-container *ngTemplateOutlet="text; context: { $implicit: helpLine() }" />
+            </p>
+            @if (helpPieces(); as pieces) {
+              <div class="side-by-side" aria-hidden="true">
+                @for (path of pieces.pieces; track $index) {
+                  <svg
+                    [attr.viewBox]="pieces.box"
+                    [class.strip]="!pieces.round"
+                    [attr.data-food]="pieces.food"
+                  >
+                    <path [attr.d]="path" />
+                  </svg>
+                }
+              </div>
+            }
+            @if (help.key === 'helpMoreFriends') {
+              @if (round().more === null) {
+                <div class="finish-thought">
+                  <button type="button" class="button secondary" (click)="finishThought('bigger')">
+                    {{ t('moreBigger') }}
+                  </button>
+                  <button type="button" class="button secondary" (click)="finishThought('smaller')">
+                    {{ t('moreSmaller') }}
+                  </button>
+                </div>
+              } @else {
+                <p class="thought">
+                  {{ t(round().more === 'smaller' ? 'moreRight' : 'moreWrong') }}
+                </p>
+              }
+            }
+          </div>
+        }
+        @if (phase() === 'done') {
+          <div class="after">
+            <button type="button" class="button primary" (click)="next()">
+              {{ t('nextShare') }}<ui-icon kind="arrow" />
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+    @if (coachOpen()) {
+      <ui-coach-dialog [heading]="t('demoTitle')" [go]="t('coachGo')" (done)="closeCoach()">
+        <app-picnic-demo [card]="demoCard()" />
+      </ui-coach-dialog>
+    }
+  }
+</section>

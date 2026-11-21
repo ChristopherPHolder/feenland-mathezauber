@@ -1,0 +1,161 @@
+:host {
+  position: relative;
+  display: block;
+  height: 100%;
+  min-height: 150px;
+  overflow: hidden;
+  background: #bfe6ff;
+}
+.sky {
+  position: absolute;
+  inset: 0 0 45%;
+  background: linear-gradient(#a9dcff, #e4f6ff);
+}
+.hill {
+  position: absolute;
+  inset: 40% -10% -10%;
+  border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+  background: linear-gradient(#8fd16a, #5fae46);
+}
+.joined {
+  position: absolute;
+  top: 8%;
+  left: 4%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 40%;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: #ffe9a8cc;
+}
+.joined app-picnic-face {
+  width: 20px;
+  height: 20px;
+}
+.guests {
+  position: absolute;
+  left: 50%;
+  bottom: 52%;
+  translate: -50% 0;
+  display: flex;
+  gap: 4px;
+}
+.guests app-picnic-face {
+  width: clamp(24px, 9cqmin, 40px);
+  height: clamp(24px, 9cqmin, 40px);
+}
+.blanket {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  width: min(78%, 420px);
+  height: 46%;
+  translate: -50% 0;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(90deg, #e2526e55 0 18px, transparent 18px 36px),
+    repeating-linear-gradient(0deg, #e2526e55 0 18px, #fff7f0 18px 36px);
+  box-shadow: 0 6px 0 #c9405a55;
+  transform: perspective(400px) rotateX(28deg);
+}
+.foods {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8%;
+  height: 100%;
+  padding: 4% 6%;
+}
+.food {
+  height: 92%;
+  aspect-ratio: 1;
+}
+.food.strip {
+  height: auto;
+  width: 70%;
+  aspect-ratio: auto;
+}
+.cloth {
+  width: 34%;
+  height: 80%;
+  border-radius: 50% 50% 12px 12px;
+  background: repeating-linear-gradient(45deg, #7fb5e8 0 8px, #a9cff2 8px 16px);
+}
+.basket {
+  width: 34%;
+}
+.basket path {
+  fill: #d9a35b;
+  stroke: #9b6a35;
+}
+.basket circle {
+  fill: #c4234a;
+}
+.ants {
+  position: absolute;
+  right: calc(-60px + var(--walk) * (11% + 60px));
+  bottom: 10%;
+  display: flex;
+  gap: 2px;
+  transition: right 0.4s linear;
+}
+.ant {
+  width: 20px;
+  height: 12px;
+  fill: #2b1d14;
+}
+.crumb {
+  fill: #f4c77d;
+}
+.spoon {
+  position: absolute;
+  top: 10%;
+  right: 8%;
+  width: 22px;
+  fill: var(--gold);
+  stroke: #b8860b;
+  rotate: 25deg;
+}
+.hearts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.heart {
+  position: absolute;
+  left: calc(38% + var(--i) * 12%);
+  top: 30%;
+  color: #e2526e;
+  font-size: 28px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .heart {
+    animation: float-up 1.4s ease-out both;
+    animation-delay: calc(var(--i) * 0.15s);
+  }
+  .munch {
+    animation: munch 0.3s ease-in-out 4 alternate;
+  }
+}
+@keyframes float-up {
+  from {
+    transform: translateY(30px) scale(0.4);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-30px) scale(1.1);
+    opacity: 0;
+  }
+}
+@keyframes munch {
+  to {
+    transform: translateY(-4px) scaleY(0.92);
+  }
+}
+:host-context(.calm-motion) :is(.heart, .munch) {
+  animation: none;
+}

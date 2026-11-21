@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 156 selectable levels across eleven games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 168 selectable levels across twelve games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -30,6 +30,7 @@ These estimates assume a seven-year-old answering steadily, animations included.
 | The Mushroom Drums   | 3 verses of 7–10 drums plus a 4-drum solo, about 34 answers      | 34 × 2.5–3.5 s + demos and titles ≈ 2.5–3.5 min       |
 | The Fairy Bakery     | 6 trays and the party cake (cut, two pieces, a total)            | 7 × 25–35 s ≈ 3–4 min; level 1 (no cut) ≈ 2 min       |
 | The Mountain Gondola | 8–10 cabins (8 on two-digit levels), the big summit cabin last   | 10 × 12–15 s ≈ 2.5 min; 8 × 18–25 s ≈ 3 min           |
+| The Fairy Picnic     | 6 shares and the big cake (cut, name, compare or deal)           | 7 × 15–30 s ≈ 2–3.5 min                               |
 
 The race heats stay at 60–90 seconds because their pace is tuned by simulation (see the race balance notes). A track's six heats are its sub-levels.
 
@@ -159,6 +160,18 @@ The generator spreads a round's numbers across the bridge, one from each equal s
 | Clever tricks     | the express 34 + 9 → 44 − 1 · express both ways 63 − 9 → 53 + 1 · mountain master (mixed, numbers only)         |
 
 Every cabin holds ten, in two rows of five. Every item crosses a ten (the generator filters for it), no item repeats in a round, and the last cabin is a big summit cabin from a harder pool that pays double. Single-digit levels (1–6) play 8 or 10 cabins with four answer buttons; levels 1 and 2 have only 8 different sums, so they play 8. Two-digit levels play 8 cabins with a number pad laid out in fives. The split must fill the cabin exactly (or, from level 6, take everything from a full ten; from level 10, send the express): a wrong split bounces a bunny off or jams the door, and after two slips Gusti shows a picture card with other numbers. Levels 1–6 show bunnies, 7–9 show full tens as "10" cabins, and 10–12 show numbers with a split diagram and a "Show the bunnies" button. Within a level, three quick first-try turns in a row bring a snow tarp over the cabins until the next miss. Level 10 asks for +9 and +8 rather than the issue's +11, because +11 only crosses a ten after a number ending in 9. Round stars come from first-try splits (three for 75%, two for half), and the master level needs three to be mastered.
+
+### The Fairy Picnic: 12 levels (`pages/picnic/picnic-levels.ts`)
+
+| Topic          | Levels, easiest first                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| Fair halves    | halves (cut in two, and "is it fair?") · quarters (halve the halves) · thirds and sixths                   |
+| Name the piece | one of many ½ ⅓ ¼ ⅙ ⅛ · more than one piece ¾ ⅔ ⅝ · ribbons (fractions of a length, fifths and tenths too) |
+| Who gets more? | more friends, smaller slices ⅓ > ⅙ (pictures, then under a cloth) · same size? ½ = 2⁄4, ⅓ = 2⁄6            |
+| Sharing groups | berries for everyone (½ ⅓ ¼ of a group to 24) · bigger baskets (to 60) · some for later ¾ of 12            |
+| The big picnic | picnic master (everything mixed; needs ★★★)                                                                |
+
+The picnic is the first fractions game and leads with cutting and sharing objects, not number lines (a fraction number-line game showed no transfer in a 2022 randomised trial). Pies, cakes, honey bars and ribbons have twelve cut marks, so every cut task (2, 3, 4 or 6 friends) snaps to a fair answer and an unfair one is always possible; a pie keeps its top cut, so n friends take n − 1 taps, the same as a bar. Quarters start halved on their first two shares ("halve the halves"). Naming offers four fractions that are real slips (the shares the other way round, one piece more or fewer, a neighbour unit fraction) and never one that is the same amount as the answer; picking a plate always offers the share cut unfairly, the wrong number of pieces and the wrong jam. Comparisons on level 7 are unit fractions only, the last three under a cloth so the child reasons from the number of friends; level 8 mixes three equal pairs with three pairs that only look alike, and offers "the same". Berries are dealt in handfuls to every plate at once (1 or 2 each, 5 and 10 on the bigger baskets), so a share is always fair and the question is what one plate, or the friends' plates when some are kept for later, holds. Help names what to look at, never the answer: the smallest and biggest piece side by side after an unfair cut, the bottom or top number after a wrong name, "More friends, so each slice is …" for the child to finish after a unit comparison, and "count one plate" after a wrong group answer. Fractions are always stacked (`ui-fraction`) and spoken as words in all four languages.
 
 ## Adding a level
 

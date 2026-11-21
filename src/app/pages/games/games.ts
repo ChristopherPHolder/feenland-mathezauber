@@ -34,6 +34,8 @@ import { fireworkLevel } from '../fireworks/firework-levels';
 import { FireworkScores } from '../fireworks/firework-scores';
 import { gondolaStage } from '../gondola/gondola-levels';
 import { GondolaScores } from '../gondola/gondola-scores';
+import { picnicExample, picnicStage } from '../picnic/picnic-levels';
+import { PicnicScores } from '../picnic/picnic-scores';
 import {
   levelPosition,
   levels as wallLevels,
@@ -102,6 +104,7 @@ export class Games {
   private readonly starScores = inject(StarScores);
   private readonly fireworkScores = inject(FireworkScores);
   private readonly gondolaScores = inject(GondolaScores);
+  private readonly picnicScores = inject(PicnicScores);
   protected readonly walls = inject(NumberWallStore);
   protected readonly totalWaves = TOTAL_WAVES;
   protected readonly nextId = computed(() => this.p.next()?.id);
@@ -257,6 +260,7 @@ export class Games {
         this.starScores.best()[level.id] ??
         this.fireworkScores.best()[level.id] ??
         this.gondolaScores.best()[level.id] ??
+        this.picnicScores.best()[level.id] ??
         0,
       state: mastered ? 'mastered' : progress.completed?.includes(level.id) ? 'completed' : null,
       recommended: level.id === this.nextId(),
@@ -304,6 +308,8 @@ export class Games {
     if (firework) return firework;
     const gondola = gondolaStage(level.id)?.example;
     if (gondola) return gondola;
+    const picnic = picnicStage(level.id);
+    if (picnic) return picnicExample(picnic, this.i.t('picnicOf'));
     return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {

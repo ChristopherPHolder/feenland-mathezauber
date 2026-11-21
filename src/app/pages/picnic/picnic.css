@@ -1,0 +1,437 @@
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  display: block;
+  min-height: calc(100dvh - var(--safe-y));
+  background: linear-gradient(#dff3cf, #fbf8e8 45%, #f1ecd9);
+  padding: 12px max(14px, env(safe-area-inset-right)) 16px max(14px, env(safe-area-inset-left));
+  color: var(--ink);
+}
+.game {
+  max-width: 1120px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: 22px;
+  box-shadow: var(--shadow-panel);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+
+/* Intro */
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 14px;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--violet);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--warm-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) 1fr;
+  align-items: center;
+  gap: 22px;
+}
+.intro-demo {
+  width: 100%;
+  max-width: 340px;
+  margin: auto;
+}
+.intro h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  margin: 0 0 8px;
+}
+.intro p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.trick-card {
+  margin: 12px 0 6px;
+  padding: 12px 16px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.trick-card h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.trick-card p {
+  font-size: 19px;
+  font-weight: 600;
+}
+.pace {
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+}
+.pace legend {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 0;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice:hover {
+  background: var(--ground);
+}
+.pace-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.pace-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--success-strong);
+}
+.pace-choice strong {
+  font-size: 18px;
+}
+.pace-choice span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.pace-icon {
+  width: 44px;
+  height: 26px;
+  fill: #3a2a20;
+}
+.pace-leaf {
+  fill: #7cc25a;
+  stroke: #3f7d2c;
+  stroke-width: 1.5;
+}
+.pace-rule {
+  color: var(--muted);
+}
+.start-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 6px;
+  padding: 14px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(#fffdf500, var(--cream) 24px);
+}
+.start-dock .button {
+  margin: 0 auto;
+  max-width: 360px;
+}
+/* The friends who joined, under Start: decoration a child may scroll to. */
+.friends-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 4px;
+  padding: 10px 14px;
+  border-radius: var(--radius-surface);
+  background: #fff4cf;
+  border: 2px solid #f0d27a;
+}
+.friend-row {
+  display: grid;
+  grid-template-columns: repeat(6, 28px);
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.friend-row app-picnic-face {
+  width: 28px;
+  height: 28px;
+}
+.friend-row .away app-picnic-face {
+  filter: grayscale(1) brightness(1.6);
+  opacity: 0.45;
+}
+.friends-strip p {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  line-height: 1.35;
+}
+.friends-strip strong {
+  font-size: 18px;
+  color: var(--amber-ink);
+}
+
+/* Outcome */
+.outcome {
+  display: grid;
+  grid-template-columns: minmax(220px, 380px) 1fr;
+  align-items: center;
+  gap: 22px;
+}
+.outcome:focus {
+  outline: none;
+}
+.outcome-art {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  max-width: 380px;
+  margin: auto;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 3px #cfe5b8;
+}
+.outcome-scene {
+  position: absolute;
+  inset: 0;
+}
+.outcome h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.stars {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+.star {
+  width: 52px;
+  height: 52px;
+  color: var(--star-empty);
+}
+.star ui-icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.star.earned {
+  color: var(--star-earned-big);
+}
+.score-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 24px;
+  margin: 6px 0;
+}
+.new-best {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 600;
+}
+.outcome-help {
+  color: var(--muted);
+}
+.save-note {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: #fff2d2;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+}
+.tiles li {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  border-radius: var(--radius-chip);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+  text-align: center;
+}
+.tiles strong {
+  font-size: 26px;
+  color: var(--amber-ink);
+  font-variant-numeric: tabular-nums;
+}
+.tiles span {
+  font-size: 13px;
+  line-height: 1.25;
+}
+.friend-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--pink-deep);
+}
+.friend-line app-picnic-face {
+  width: 40px;
+  height: 40px;
+}
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+@media (max-width: 700px) {
+  .intro-grid,
+  .outcome {
+    grid-template-columns: 1fr;
+  }
+  .outcome-art {
+    max-width: 320px;
+  }
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Twelve levels wrap into two even rows of six so no pill pokes past the panel on a phone. */
+  .level-strip {
+    gap: 6px;
+    max-width: calc(6 * 44px + 5 * 6px);
+    padding: 0;
+  }
+  .level-pill {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    font-size: 18px;
+  }
+  .panel {
+    padding: 16px;
+  }
+}
+/* The phone intro fits one screen: the film, today's picnic and the ant choice. */
+@media (max-width: 520px) {
+  :host {
+    padding-top: 8px;
+  }
+  .intro h2,
+  .intro .trick-card h3 {
+    display: none;
+  }
+  .intro-grid {
+    gap: 6px;
+  }
+  .trick-card {
+    margin: 4px 0 0;
+    padding: 8px 12px;
+  }
+  .trick-card p {
+    margin: 0;
+    font-size: 16px;
+  }
+  .pace {
+    margin-top: 8px;
+  }
+  .pace legend {
+    font-size: 17px;
+  }
+  .pace-options {
+    gap: 6px;
+  }
+  .pace-choice {
+    padding: 8px 4px;
+  }
+  .pace-choice strong {
+    font-size: 14px;
+  }
+  .pace-choice span,
+  .pace-rule {
+    display: none;
+  }
+  .intro .level-strip {
+    margin-bottom: 8px;
+  }
+  .panel.intro {
+    padding: 12px 14px 0;
+  }
+  .intro .start-dock {
+    padding-top: 10px;
+  }
+  .friend-row {
+    grid-template-columns: repeat(6, 22px);
+  }
+  .friend-row app-picnic-face {
+    width: 22px;
+    height: 22px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tiles li {
+    animation: star-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    animation-delay: calc(0.4s + var(--i) * 140ms);
+  }
+  .star.earned {
+    animation: star-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    animation-delay: calc(var(--i) * 160ms);
+  }
+}
+@keyframes star-pop {
+  from {
+    transform: scale(0);
+  }
+}
+:host-context(.calm-motion) :is(.tiles li, .star.earned) {
+  animation: none;
+}

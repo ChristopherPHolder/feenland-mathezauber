@@ -1,0 +1,92 @@
+:host {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
+  width: 100%;
+}
+.basket {
+  width: min(52%, 200px);
+}
+.basket svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.handle {
+  fill: none;
+  stroke: #9b6a35;
+  stroke-width: 4;
+}
+.weave {
+  fill: #d9a35b;
+  stroke: #9b6a35;
+  stroke-width: 2;
+}
+.berry {
+  fill: #c4234a;
+  stroke: #7d1230;
+  stroke-width: 0.8;
+}
+.plates {
+  display: grid;
+  grid-template-columns: repeat(min(var(--plates), 5), minmax(0, 1fr));
+  gap: 4px 6px;
+  width: 100%;
+  max-width: 460px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.plate {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0;
+}
+.plate app-picnic-face,
+.lid {
+  width: 32px;
+  height: 32px;
+  margin-bottom: -6px;
+  z-index: 1;
+}
+.lid path {
+  fill: #c9d6e8;
+  stroke: #6a7f9e;
+  stroke-width: 1.5;
+}
+.lid circle {
+  fill: #6a7f9e;
+}
+.dish {
+  display: block;
+  width: 100%;
+  max-width: 92px;
+  height: auto;
+}
+.rim {
+  fill: var(--paper);
+  stroke: #d0c3b3;
+  stroke-width: 2;
+}
+.later .rim {
+  fill: #eef3fa;
+  stroke: #9fb2cc;
+  stroke-dasharray: 4 3;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .berry.new {
+    animation: drop-in 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  }
+}
+@keyframes drop-in {
+  from {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+:host-context(.calm-motion) .berry.new {
+  animation: none;
+}

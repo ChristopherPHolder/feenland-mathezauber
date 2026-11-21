@@ -53,7 +53,7 @@ Each new game has copied the same building blocks from the last one. They are ca
 
 | Piece                                | Copies                                                                               | Destination                                              |
 | ------------------------------------ | ------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| `*-guide.ts` "tap here next" counter | bakery, drums, fireworks, gondola, potions, star-catcher (identical but for the key) | one `core` helper taking the storage key                 |
-| `*-coach.ts` demo-film dialog        | bakery, crocodile, fireworks, gondola, potions                                       | a `ui` full-screen dialog with the demo projected        |
-| `*-reward.ts` / `.css` burst card    | bakery, fireworks, gondola, lock, potions, star-catcher (~160 lines of CSS each)     | a `ui` reward burst with slots for stars, tags and coins |
+| `*-guide.ts` "tap here next" counter | bakery, drums, fireworks, gondola, potions, star-catcher (identical but for the key) | `core/guide-counter.ts` (`GuideCounter`; picnic uses it) |
+| `*-coach.ts` demo-film dialog        | bakery, crocodile, fireworks, gondola, potions                                       | `ui-coach-dialog` (picnic uses it)                       |
+| `*-reward.ts` / `.css` burst card    | bakery, fireworks, gondola, lock, potions, star-catcher (~160 lines of CSS each)     | `ui-reward-burst` (picnic uses it)                       |
 | local `.sr-only` rules               | about 20 stylesheets                                                                 | the global `.sr-only` in `base.css`                      |
