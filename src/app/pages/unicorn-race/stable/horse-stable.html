@@ -2,7 +2,7 @@
   <div class="preview">
     <h2 id="stable-title" class="sr-only" tabindex="-1" #heading>{{ s('title') }}</h2>
     <app-three-stage class="stand" [world]="loadWorld" [state]="world()">
-      <div class="flat"><app-racer kind="player" [horse]="horse()" /></div>
+      <div class="flat"><app-racer kind="player" [horse]="horse()" [outfit]="outfit()" /></div>
     </app-three-stage>
     <p class="tag">
       <span class="sr-only">{{ s('title') }}: </span>{{ shownName() }}
@@ -102,6 +102,23 @@
             </label>
           }
         </fieldset>
+        <!-- Kept in the layout while hidden, so switching to a pony does not move anything. -->
+        <fieldset class="options swatches horns" [class.is-hidden]="!horned()">
+          <legend class="horns-title">{{ s('hornTitle') }}</legend>
+          @for (horn of horns; track horn) {
+            <label class="option swatch small" [style.--fill]="hornFill(horn)">
+              <input
+                type="radio"
+                name="horse-horn"
+                [disabled]="!horned()"
+                [checked]="horse().horn === horn"
+                (change)="change({ horn })"
+              />
+              <span class="dot" aria-hidden="true"></span>
+              <span class="sr-only">{{ s(hornKey(horn)) }}</span>
+            </label>
+          }
+        </fieldset>
       }
       @case ('coat') {
         <fieldset class="options swatches">
@@ -138,6 +155,62 @@
               <span class="dot" aria-hidden="true"></span>
               <span class="sr-only">{{ s(maneKey(mane)) }}</span>
             </label>
+          }
+        </fieldset>
+      }
+      @case ('marking') {
+        <fieldset class="options kinds marks">
+          <legend class="sr-only">{{ s('tabMarking') }}</legend>
+          @for (marking of markings; track marking) {
+            <label class="option kind">
+              <input
+                type="radio"
+                name="horse-marking"
+                [checked]="horse().marking === marking"
+                (change)="change({ marking })"
+              />
+              <span class="kind-art" aria-hidden="true"
+                ><app-racer kind="player" [horse]="withMarking(marking)"
+              /></span>
+              <span class="kind-name">{{ s(markingKey(marking)) }}</span>
+            </label>
+          }
+        </fieldset>
+      }
+      @case ('dress') {
+        <fieldset class="options dresses">
+          <legend class="sr-only">{{ s('tabDress') }}</legend>
+          <label class="option dress">
+            <input
+              type="radio"
+              name="horse-outfit"
+              [checked]="outfit() === null"
+              (change)="wear(null)"
+            />
+            <span class="dress-emblem" aria-hidden="true">🐴</span>
+            <span class="dress-name">{{ outfitName(null) }}</span>
+          </label>
+          @for (item of outfits; track item) {
+            @if (earned(item)) {
+              <label class="option dress">
+                <input
+                  type="radio"
+                  name="horse-outfit"
+                  [checked]="outfit() === item"
+                  (change)="wear(item)"
+                />
+                <span class="dress-emblem" aria-hidden="true">{{ outfitEmblem(item) }}</span>
+                <span class="dress-name">{{ outfitName(item) }}</span>
+              </label>
+            } @else {
+              <label class="option dress locked">
+                <input type="radio" name="horse-outfit" disabled />
+                <span class="dress-emblem" aria-hidden="true"
+                  >{{ outfitEmblem(item) }}<span class="lock">🔒</span></span
+                >
+                <span class="dress-name">{{ outfitLocked(item) }}</span>
+              </label>
+            }
           }
         </fieldset>
       }

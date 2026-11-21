@@ -140,7 +140,7 @@
 .tabs {
   grid-area: tabs;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
   padding: 5px;
   border-radius: var(--radius-panel);
@@ -152,13 +152,13 @@
   justify-items: center;
   align-content: center;
   gap: 1px;
-  min-height: 52px;
-  padding: 4px 2px;
+  min-height: 56px;
+  padding: 4px 1px;
   border: 0;
   border-radius: calc(var(--radius-panel) - 5px);
   background: transparent;
   color: var(--race-violet-ink, var(--ink));
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.1;
   cursor: pointer;
@@ -267,6 +267,82 @@
 .kinds {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+.marks {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.horns {
+  grid-template-columns: auto repeat(4, minmax(0, 52px));
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  column-gap: 12px;
+}
+.horns.is-hidden {
+  visibility: hidden;
+}
+/* A fieldset's legend will not sit in a grid cell, so it floats into the first column. */
+.horns-title {
+  float: left;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--race-violet-ink, var(--ink));
+}
+.swatch.small {
+  max-width: 48px;
+}
+.dresses {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.dress {
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 4px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-tile);
+  background: var(--paper);
+  box-shadow: var(--shadow-rest);
+  text-align: center;
+}
+.dress:has(:checked) {
+  border-color: var(--pink);
+  background: var(--pink-tint);
+}
+.dress.locked {
+  background: transparent;
+  box-shadow: none;
+  border: 2px dashed var(--muted);
+  cursor: default;
+}
+.dress.locked input {
+  cursor: default;
+}
+.dress-emblem {
+  position: relative;
+  font-size: 24px;
+  line-height: 1.1;
+}
+.dress.locked .dress-emblem {
+  opacity: 0.55;
+}
+.lock {
+  position: absolute;
+  right: -12px;
+  bottom: -4px;
+  font-size: 14px;
+}
+.dress-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.dress.locked .dress-name {
+  color: var(--muted);
+  font-size: 11px;
+}
 .kind {
   align-content: start;
   gap: 2px;
@@ -361,12 +437,21 @@
     gap: 8px;
   }
   .tab {
-    min-height: 44px;
-    grid-auto-flow: column;
-    gap: 4px;
+    min-height: 46px;
+    font-size: 11px;
   }
   .tab-icon {
+    font-size: 17px;
+  }
+  .dress {
+    min-height: 0;
+    padding: 2px 4px;
+  }
+  .dress-emblem {
     font-size: 18px;
+  }
+  .horns {
+    margin-top: 4px;
   }
   .panel {
     padding: 8px;

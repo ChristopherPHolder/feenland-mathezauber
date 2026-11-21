@@ -113,7 +113,53 @@ describe('the Stable', () => {
       kind: 'alicorn',
       coat: 'midnight',
       mane: 'ocean',
+      marking: 'none',
+      horn: 'gold',
     });
+  });
+
+  it('adds markings and a horn colour, and keeps the horn row in place for a pony', () => {
+    const { store, tab, choose, find, element } = setup();
+    tab('Markings');
+    const names = [...element.querySelectorAll('.kind-name')].map((name) => name.textContent);
+    expect(names).toEqual(['None', 'Star', 'Blaze', 'Socks', 'Spots']);
+    choose('marking', 2);
+    expect(store.save().horse.marking).toBe('blaze');
+    expect(find('.flat app-racer .blaze')).toBeTruthy();
+    choose('marking', 3);
+    const flat = find<HTMLElement>('.flat app-racer');
+    expect(flat.style.getPropertyValue('--sock-near')).toMatch(/^url\(#racer-sock-\d+-near\)$/);
+    expect(flat.querySelector('linearGradient')).toBeTruthy();
+    tab('Horn & wings');
+    expect(find('.horns-title').textContent).toContain('Horn colour');
+    choose('horn', 3);
+    expect(store.save().horse.horn).toBe('crystal');
+    expect(flat.style.getPropertyValue('--horn')).toBe('#c4f4ff');
+    choose('kind', 3);
+    expect(find('.horns').classList).toContain('is-hidden');
+    expect(element.querySelector<HTMLInputElement>('input[name="horse-horn"]')!.disabled).toBe(
+      true,
+    );
+    // The horn colour is kept for when the horn comes back.
+    expect(store.save().horse.horn).toBe('crystal');
+  });
+
+  it('dresses the horse in earned keepsakes and shows how to earn the rest', () => {
+    const { store, tab, find, fixture, element } = setup();
+    store.recordRace(1, 1, 'gold', 10, 50000);
+    store.recordRace(2, 1, 'gold', 10, 50000);
+    store.recordRace(3, 1, 'gold', 10, 50000);
+    tab('Dress up');
+    const dresses = [...element.querySelectorAll('.dress')];
+    expect(dresses).toHaveLength(6);
+    expect(dresses[0].textContent).toContain('Just Lumi');
+    expect(element.querySelectorAll('.dress.locked')).toHaveLength(4);
+    expect(find('.dress.locked').textContent).toContain('Cloud wings: finish the Sky Cup');
+    expect(find<HTMLInputElement>('.dress.locked input').disabled).toBe(true);
+    element.querySelectorAll<HTMLInputElement>('input[name="horse-outfit"]')[1].click();
+    fixture.detectChanges();
+    expect(store.save().outfit).toBe('wreath');
+    expect(find('.flat app-racer .wreath')).toBeTruthy();
   });
 
   it('names the horse by typing or with one tap on an idea', () => {
@@ -166,12 +212,12 @@ describe('the Stable', () => {
     expect(find('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe('stable-tab-name');
     tabs()[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
     fixture.detectChanges();
-    expect(tabs()[3].getAttribute('aria-selected')).toBe('true');
-    expect(tabs()[3].tabIndex).toBe(0);
+    expect(tabs()[5].getAttribute('aria-selected')).toBe('true');
+    expect(tabs()[5].tabIndex).toBe(0);
     expect(tabs()[0].tabIndex).toBe(-1);
-    expect(document.activeElement).toBe(tabs()[3]);
-    expect(find('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe('stable-tab-mane');
-    tabs()[3].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    expect(document.activeElement).toBe(tabs()[5]);
+    expect(find('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe('stable-tab-dress');
+    tabs()[5].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
     fixture.detectChanges();
     expect(tabs()[0].getAttribute('aria-selected')).toBe('true');
   });
