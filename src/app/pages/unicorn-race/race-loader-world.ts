@@ -20,6 +20,7 @@ import {
 import { Stage } from '../../shared/three/stage';
 import type { StateWorld } from '../../shared/three/three-stage';
 import { Pony, RAINBOW } from './race-pony';
+import { savedLook } from './saved-look';
 
 /** How fast Lumi gallops, in track units a second: a happy canter, not a flat-out sprint. */
 const GALLOP = 4.2;
@@ -61,7 +62,7 @@ const NARROW = { width: 3.7, x: 0.05 };
  * Under calm motion she holds one pleasant mid-gallop pose and nothing moves.
  */
 export class RaceLoaderWorld extends Stage implements StateWorld<null> {
-  private readonly pony = new Pony('player');
+  private readonly pony: Pony;
   private readonly lane: CanvasTexture;
   private readonly ribbon: Mesh<BufferGeometry, MeshBasicMaterial>;
   private readonly ribbonRest: Float32Array;
@@ -72,6 +73,9 @@ export class RaceLoaderWorld extends Stage implements StateWorld<null> {
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { fov: 36 });
+    // The child's own horse gallops here, so the loader already shows the horse they made.
+    const { horse, outfit } = savedLook(this.storage(host));
+    this.pony = new Pony('player', outfit, horse);
     this.sun.position.set(-3, 9, 7);
     this.sun.intensity = 2.1;
     this.fill.intensity = 0.7;
@@ -132,6 +136,15 @@ export class RaceLoaderWorld extends Stage implements StateWorld<null> {
   }
 
   setState(_: null) {}
+
+  /** Storage can be blocked (private mode, site settings); the loader then shows Lumi. */
+  private storage(host: HTMLElement): Storage | undefined {
+    try {
+      return host.ownerDocument.defaultView?.localStorage;
+    } catch {
+      return undefined;
+    }
+  }
 
   protected update(dt: number, t: number) {
     if (this.calm) return;

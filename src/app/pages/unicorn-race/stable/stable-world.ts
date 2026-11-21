@@ -20,6 +20,8 @@ export interface StableState {
   readonly outfit: Outfit | null;
   /** Goes up on every change; each new value makes the horse hop and toss its head. */
   readonly hop: number;
+  /** How far the child has turned the stand by dragging it, in radians. */
+  readonly spin: number;
 }
 /** Three-quarter view, face to the left and turned toward the child. */
 const FACING = Math.PI / 2 + 0.38;
@@ -44,6 +46,8 @@ export class StableWorld extends Stage implements StateWorld<StableState> {
   private built?: StableState;
   private seenHop?: number;
   private hopUntil = 0;
+  private spin = 0;
+  private shownSpin = 0;
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { fov: 30, shadows: true });
@@ -93,6 +97,7 @@ export class StableWorld extends Stage implements StateWorld<StableState> {
     if (this.seenHop !== undefined && state.hop !== this.seenHop)
       this.hopUntil = this.elapsed + HOP_SECONDS;
     this.seenHop = state.hop;
+    this.spin = state.spin;
     this.built = state;
     this.animate(0, this.elapsed);
     this.draw();
@@ -125,9 +130,10 @@ export class StableWorld extends Stage implements StateWorld<StableState> {
 
   private animate(dt: number, t: number) {
     const calm = this.calm;
-    this.stand.rotation.y = calm
-      ? FACING
-      : FACING + Math.sin((t / SWAY_SECONDS) * Math.PI * 2) * SWAY;
+    // A drag turns the stand straight away; the gentle sway carries on around it.
+    this.shownSpin += (this.spin - this.shownSpin) * (calm || dt === 0 ? 1 : Math.min(1, dt * 18));
+    this.stand.rotation.y =
+      FACING + this.shownSpin + (calm ? 0 : Math.sin((t / SWAY_SECONDS) * Math.PI * 2) * SWAY);
     this.pony?.update({
       now: t,
       dt,

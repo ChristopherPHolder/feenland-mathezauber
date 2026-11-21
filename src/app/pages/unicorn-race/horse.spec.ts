@@ -1,17 +1,20 @@
 import {
   cleanName,
   coatIds,
+  freeCoatIds,
+  freeManeIds,
   hasHorn,
   hasWings,
   hornIds,
   horseKinds,
   LUMI,
-  maneIds,
   markings,
   NAME_MAX,
   randomHorse,
   readHorse,
   sameHorse,
+  SPECIALS,
+  specialsOf,
 } from './horse';
 
 describe('the horse a child races with', () => {
@@ -49,8 +52,8 @@ describe('the horse a child races with', () => {
     expect(horse).toEqual({
       name: 'Pip',
       kind: horseKinds[0],
-      coat: coatIds[coatIds.length - 1],
-      mane: maneIds[Math.floor(0.5 * maneIds.length)],
+      coat: freeCoatIds[freeCoatIds.length - 1],
+      mane: freeManeIds[Math.floor(0.5 * freeManeIds.length)],
       marking: markings[markings.length - 1],
       horn: hornIds[1],
     });
@@ -96,5 +99,20 @@ describe('the horse a child races with', () => {
     expect(sameHorse(LUMI, { ...LUMI, mane: 'night' })).toBe(false);
     expect(sameHorse(LUMI, { ...LUMI, marking: 'star' })).toBe(false);
     expect(sameHorse(LUMI, { ...LUMI, horn: 'rose' })).toBe(false);
+  });
+  it('keeps sparkle specials out of a surprise until they are bought', () => {
+    expect(Object.keys(SPECIALS)).toHaveLength(6);
+    expect(freeCoatIds).not.toContain('golden');
+    expect(coatIds).toContain('golden');
+    for (let n = 0; n < 60; n++) {
+      const horse = randomHorse('Pip');
+      expect(specialsOf(horse)).toEqual([]);
+    }
+    const high = () => 0.999;
+    expect(randomHorse('Pip', high, ['coat:galaxy', 'mane:glitter'])).toMatchObject({
+      coat: 'galaxy',
+      mane: 'glitter',
+    });
+    expect(specialsOf({ coat: 'golden', mane: 'fire' })).toEqual(['coat:golden', 'mane:fire']);
   });
 });
