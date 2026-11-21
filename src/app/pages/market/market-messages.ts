@@ -1,6 +1,12 @@
 import { Locale } from '../../core/messages';
 
 const en = {
+  freeTrip: 'Choose my own shopping',
+  chooseGoods: 'Choose what goes in your basket.',
+  checkout: 'Go to checkout',
+  overBudget: 'That costs more than your pocket money. Put something back.',
+  editBasket: 'Edit basket',
+  backLevels: 'Back to levels',
   title: 'The Fairy Market',
   level: 'Level {n} of {total}',
   allLevels: 'All levels',
@@ -176,6 +182,12 @@ export type MarketMessageKey = keyof typeof en;
 type Messages = Record<MarketMessageKey, string>;
 
 const de: Messages = {
+  freeTrip: 'Selbst einkaufen',
+  chooseGoods: 'Wähle aus, was in deinen Korb kommt.',
+  checkout: 'Zur Kasse',
+  overBudget: 'Das kostet mehr als dein Taschengeld. Lege etwas zurück.',
+  editBasket: 'Korb ändern',
+  backLevels: 'Zurück zu den Stufen',
   title: 'Der Feenmarkt',
   level: 'Level {n} von {total}',
   allLevels: 'Alle Level',
@@ -349,6 +361,12 @@ const de: Messages = {
 };
 
 const es: Messages = {
+  freeTrip: 'Elegir mis compras',
+  chooseGoods: 'Elige qué poner en tu cesta.',
+  checkout: 'Ir a la caja',
+  overBudget: 'La cesta cuesta más que tu paga. Devuelve algo al estante.',
+  editBasket: 'Cambiar la cesta',
+  backLevels: 'Volver a los niveles',
   title: 'El mercado de las hadas',
   level: 'Nivel {n} de {total}',
   allLevels: 'Todos los niveles',
@@ -521,6 +539,12 @@ const es: Messages = {
 };
 
 const fr: Messages = {
+  freeTrip: 'Choisir mes achats',
+  chooseGoods: 'Choisis ce que tu mets dans ton panier.',
+  checkout: 'Passer en caisse',
+  overBudget: 'Ton panier coûte plus que ton argent de poche. Remets un article en rayon.',
+  editBasket: 'Modifier le panier',
+  backLevels: 'Retour aux niveaux',
   title: 'Le marché des fées',
   level: 'Niveau {n} sur {total}',
   allLevels: 'Tous les niveaux',

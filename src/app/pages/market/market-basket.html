@@ -1,0 +1,93 @@
+<h2 #heading tabindex="-1">
+  {{
+    t(
+      step() === 'choose'
+        ? 'freeTrip'
+        : step() === 'total'
+          ? 'askTotal'
+          : step() === 'left'
+            ? 'askLeft'
+            : 'done'
+    )
+  }}
+</h2>
+<p class="wallet">
+  {{ t('purseTag', { amount: money(step() === 'receipt' ? budget - total() : budget) }) }}
+</p>
+@if (step() === 'choose') {
+  <fieldset>
+    <legend>{{ t('chooseGoods') }}</legend>
+    <div class="goods">
+      @for (item of goods; track item.id) {
+        <label [for]="'basket-' + item.id">
+          <input
+            [id]="'basket-' + item.id"
+            type="checkbox"
+            [checked]="selected().includes(item.id)"
+            (change)="toggle(item.id)"
+          />
+          <span class="art" aria-hidden="true">{{ emoji[item.id] }}</span>
+          <span>{{ name(item.id) }}</span
+          ><strong>{{ money(item.price) }}</strong>
+        </label>
+      }
+    </div>
+  </fieldset>
+  <p role="status">{{ total() > budget ? t('overBudget') : '' }}</p>
+  <button
+    class="button primary"
+    type="button"
+    [disabled]="!items().length || total() > budget"
+    (click)="go('total')"
+  >
+    {{ t('checkout') }}
+  </button>
+} @else {
+  <ul>
+    @for (item of items(); track item.id) {
+      <li>
+        <span
+          ><span aria-hidden="true">{{ emoji[item.id] }}</span> {{ name(item.id) }}</span
+        ><strong>{{ money(item.price) }}</strong>
+      </li>
+    }
+  </ul>
+  @if (step() === 'receipt') {
+    <p>
+      {{ addition() }} = <strong>{{ money(total()) }}</strong>
+    </p>
+    <p>
+      {{ money(budget) }} − {{ money(total()) }} = <strong>{{ money(budget - total()) }}</strong>
+    </p>
+    <button class="button primary" type="button" (click)="selected.set([]); go('choose')">
+      {{ t('again') }}
+    </button>
+  } @else {
+    <form (submit)="check($event, answer)">
+      <label for="basket-answer"
+        >{{ step() === 'total' ? addition() : money(budget) + ' − ' + money(total()) }} =
+      </label>
+      <input
+        #answer
+        id="basket-answer"
+        type="text"
+        inputmode="numeric"
+        maxlength="2"
+        required
+        autocomplete="off"
+        aria-describedby="basket-feedback"
+        [attr.aria-invalid]="error()"
+        (input)="error.set(false)"
+      />
+      €
+      <button class="button primary" type="submit">{{ t('ok') }}</button>
+    </form>
+    <p id="basket-feedback" role="status">
+      {{ error() ? t(step() === 'total' ? 'totalOff' : 'off') : '' }}
+    </p>
+    <button class="button secondary" type="button" (click)="go('choose')">
+      {{ t('editBasket') }}
+    </button>
+  }
+}
+<button class="button secondary" type="button" (click)="leave.emit()">{{ t('backLevels') }}</button>

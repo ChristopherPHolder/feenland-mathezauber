@@ -1,0 +1,73 @@
+:host {
+  display: block;
+  width: min(100%, 52rem);
+  box-sizing: border-box;
+  margin: auto;
+}
+h2 {
+  margin: 0;
+}
+.wallet {
+  font-weight: bold;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+legend {
+  margin-bottom: 0.75rem;
+}
+.goods {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+.goods label {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto auto 1fr;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border: 2px solid var(--sky-deep);
+  border-radius: 12px;
+  background: var(--paper);
+  cursor: pointer;
+}
+.goods label:has(:checked) {
+  background: var(--lagoon-ground);
+}
+.goods strong {
+  grid-column: 3;
+}
+.art {
+  font-size: 1.5rem;
+}
+ul {
+  padding: 0;
+  list-style: none;
+  max-width: 32rem;
+}
+li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--sky-deep);
+}
+form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-weight: bold;
+}
+#basket-answer {
+  width: 3.5em;
+  min-height: 44px;
+  font: inherit;
+  text-align: center;
+}
+.button {
+  margin: 0.25rem;
+}

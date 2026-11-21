@@ -104,6 +104,36 @@ describe('The Fairy Market', () => {
     TestBed.resetTestingModule();
   });
 
+  it('checks out the chosen basket, retries arithmetic, and starts a fresh trip', () => {
+    const fixture = setup('market-1');
+    const root = element(fixture);
+    click(fixture, '.start-dock .secondary');
+    const checkout = root.querySelector<HTMLButtonElement>('app-market-basket .primary')!;
+    expect(checkout.disabled).toBe(true);
+    for (const id of ['kite', 'dragon', 'book', 'apple']) click(fixture, '#basket-' + id);
+    expect(checkout.disabled).toBe(true);
+    expect(root.textContent).toContain(en.overBudget);
+    click(fixture, '#basket-apple');
+    expect(checkout.disabled).toBe(false);
+    click(fixture, 'app-market-basket .primary');
+    const answer = (value: string) => {
+      root.querySelector<HTMLInputElement>('#basket-answer')!.value = value;
+      click(fixture, 'button[type="submit"]');
+    };
+    answer('49');
+    expect(root.textContent).toContain(en.totalOff);
+    answer('50');
+    expect(root.textContent).toContain(en.askLeft);
+    answer('0');
+    expect(root.textContent).toContain(en.done);
+    expect(root.querySelector('.wallet')?.textContent).toContain('€0');
+    click(fixture, 'app-market-basket .primary');
+    expect(root.querySelector('input:checked')).toBeNull();
+    click(fixture, 'app-market-basket .secondary');
+    start(fixture);
+    expect(root.querySelector('.hud')).toBeTruthy();
+  });
+
   it('shows the level card with the tip, the timer choice and Lumi’s empty shelf', () => {
     const fixture = setup('market-1');
     const text = element(fixture).textContent!;
