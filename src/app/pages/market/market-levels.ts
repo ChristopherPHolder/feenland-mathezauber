@@ -21,12 +21,22 @@ import {
 
 export type Random = () => number;
 
-/** What the child does on a turn, in order: pay with coins, judge "enough?", type what's left. */
-export type Step = 'pay' | 'enough' | 'left';
+/**
+ * What the child does on a turn, in order: add up a shopping list ("total"), pay with coins,
+ * judge "enough?", type what's left.
+ */
+export type Step = 'total' | 'pay' | 'enough' | 'left';
 /** How the purse looks: every coin on show, or only a tag with its amount. */
 export type Look = 'coins' | 'tag';
 /** The skill a level is about; it also picks the level's tip card. */
-export type MarketSkill = 'coinByCoin' | 'notes' | 'enough' | 'left' | 'spree';
+export type MarketSkill =
+  | 'coinByCoin'
+  | 'notes'
+  | 'enough'
+  | 'left'
+  | 'spree'
+  | 'twoTreats'
+  | 'list';
 
 /** The treats on Olli's shelves, each with the prices it may carry (whole euros). */
 export const GOODS = [
@@ -46,10 +56,19 @@ export const GOODS = [
 export type GoodId = (typeof GOODS)[number]['id'];
 export const GOOD_IDS: readonly GoodId[] = GOODS.map((good) => good.id);
 
-export interface MarketTurn {
+/** One treat on a shopping list and its own price, in cents. */
+export interface Item {
   readonly good: GoodId;
-  /** In cents. */
   readonly price: number;
+}
+
+export interface MarketTurn {
+  /** The treat on the counter; on a shopping list, the first one. */
+  readonly good: GoodId;
+  /** In cents: what everything on the counter costs together. */
+  readonly price: number;
+  /** A shopping list of two or three treats, `good` first; absent for a single treat. */
+  readonly items?: readonly Item[];
   /** The coins and notes in Lumi's purse before she buys. */
   readonly purse: readonly Denomination[];
   /** What the child does, in order. A turn whose purse is too small stops after "enough". */
@@ -223,6 +242,62 @@ function spreeRound(random: Random, turns: number): MarketTurn[] {
   return round;
 }
 
+/** Different treats for each price on a list, none the same as the last turn's first one. */
+function listItems(random: Random, prices: readonly number[], previous?: GoodId): Item[] {
+  const items: Item[] = [];
+  for (const price of prices) {
+    const fits = GOODS.filter((good) => price >= euros(good.from) && price <= euros(good.to));
+    const unused = fits.filter((good) => !items.some((item) => item.good === good.id));
+    const fresh = unused.filter((good) => good.id !== previous);
+    const choice = fresh.length ? fresh : unused.length ? unused : fits;
+    items.push({ good: pick(random, choice).id, price });
+  }
+  return items;
+}
+
+/** Level 6: two treats. Add the prices, then pay the total with coins and notes. */
+function twoTreatsTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  let a = 0;
+  let b = 0;
+  do {
+    a = big ? int(random, 5, 12) : int(random, 1, 9);
+    b = big ? int(random, 4, 10) : int(random, 1, 9);
+  } while (big ? a + b < 14 || a + b > 20 : a + b < 5 || a + b > 18);
+  const items = listItems(random, [euros(a), euros(b)], previous);
+  const price = euros(a + b);
+  const tidy = fewestCoins(price, [1000, 500, 200, 100])!;
+  const spare = randomSplit(random, euros(int(random, 1, 3)), [200, 100]);
+  return {
+    good: items[0].good,
+    price,
+    items,
+    purse: sortCoins([...tidy, ...spare]),
+    steps: ['total', 'pay'],
+    look: 'coins',
+  };
+}
+
+/** Level 7: a list of three treats from a 20 € purse. Add them up, then say what is left. */
+function listTurn(random: Random, big: boolean, previous?: GoodId): MarketTurn {
+  let prices: number[] = [];
+  do {
+    prices = [0, 1, 2].map(() => (big ? int(random, 3, 9) : int(random, 1, 7)));
+  } while (
+    big
+      ? prices.reduce((a, b) => a + b) < 15 || prices.reduce((a, b) => a + b) > 19
+      : prices.reduce((a, b) => a + b) > 16
+  );
+  const items = listItems(random, prices.map(euros), previous);
+  return {
+    good: items[0].good,
+    price: euros(prices.reduce((a, b) => a + b)),
+    items,
+    purse: tidyPurse(euros(20)),
+    steps: ['total', 'left'],
+    look: 'tag',
+  };
+}
+
 function eachTurn(
   turns: number,
   make: (index: number, big: boolean, previous?: GoodId) => MarketTurn,
@@ -277,6 +352,22 @@ export const marketStages: readonly MarketStage[] = [
     strict: true,
     round: (random) => spreeRound(random, 7),
   },
+  {
+    stage: 6,
+    group: 'marketAdding',
+    skill: 'twoTreats',
+    example: '4 € + 7 €',
+    turns: 7,
+    round: (random) => eachTurn(7, (_, big, previous) => twoTreatsTurn(random, big, previous)),
+  },
+  {
+    stage: 7,
+    group: 'marketAdding',
+    skill: 'list',
+    example: '3 € + 5 € + 2 €',
+    turns: 6,
+    round: (random) => eachTurn(6, (_, big, previous) => listTurn(random, big, previous)),
+  },
 ];
 
 export const TOTAL_STAGES = marketStages.length;
@@ -320,6 +411,20 @@ export function isFewest(turn: MarketTurn, tray: readonly Denomination[]): boole
   return fewest !== null && tray.length === fewest;
 }
 
+export type TotalResult = 'ok' | 'oneOnly' | 'missing' | 'off';
+/**
+ * A typed total for a shopping list. Typing one treat's price, or forgetting one treat on a
+ * longer list, get their own help.
+ */
+export function checkTotal(turn: MarketTurn, typed: number): TotalResult {
+  const cents = typed * EURO;
+  if (cents === turn.price) return 'ok';
+  const items = turn.items ?? [];
+  if (items.some((item) => item.price === cents)) return 'oneOnly';
+  if (items.length > 2 && items.some((item) => turn.price - item.price === cents)) return 'missing';
+  return 'off';
+}
+
 export type LeftResult = 'ok' | 'added' | 'price' | 'purse' | 'off';
 /**
  * A typed "what's left" answer. The common slips get their own help: adding the price on,
@@ -357,7 +462,10 @@ export function replayMissed(
   if (stage.skill === 'spree' || target >= round.length - 1) return [...round];
   const missed = round[index];
   const copy = [...round];
-  copy[target] = { ...missed, good: pickGood(random, missed.price, round[target - 1]?.good) };
+  // A shopping list comes back as it was; a single treat comes back as another treat.
+  copy[target] = missed.items
+    ? missed
+    : { ...missed, good: pickGood(random, missed.price, round[target - 1]?.good) };
   return copy;
 }
 

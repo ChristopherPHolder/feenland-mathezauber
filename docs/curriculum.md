@@ -1,6 +1,6 @@
 # Curriculum and level design
 
-Feenland has 161 selectable levels across twelve games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
+Feenland has 163 selectable levels across twelve games (plus the castle's twenty waves and six heats per race track). Every level practises one thing, takes about two to four minutes, and sits in a topic inside its game. Inside each game, levels are listed easiest first.
 
 ## How long a level should be
 
@@ -161,15 +161,16 @@ The generator spreads a round's numbers across the bridge, one from each equal s
 
 Every cabin holds ten, in two rows of five. Every item crosses a ten (the generator filters for it), no item repeats in a round, and the last cabin is a big summit cabin from a harder pool that pays double. Single-digit levels (1–6) play 8 or 10 cabins with four answer buttons; levels 1 and 2 have only 8 different sums, so they play 8. Two-digit levels play 8 cabins with a number pad laid out in fives. The split must fill the cabin exactly (or, from level 6, take everything from a full ten; from level 10, send the express): a wrong split bounces a bunny off or jams the door, and after two slips Gusti shows a picture card with other numbers. Levels 1–6 show bunnies, 7–9 show full tens as "10" cabins, and 10–12 show numbers with a split diagram and a "Show the bunnies" button. Within a level, three quick first-try turns in a row bring a snow tarp over the cabins until the next miss. Level 10 asks for +9 and +8 rather than the issue's +11, because +11 only crosses a ten after a number ending in 9. Round stars come from first-try splits (three for 75%, two for half), and the master level needs three to be mastered.
 
-### The Fairy Market: 5 levels (`pages/market/market-levels.ts`)
+### The Fairy Market: 7 levels (`pages/market/market-levels.ts`)
 
-| Topic           | Levels, easiest first                                                             |
-| --------------- | --------------------------------------------------------------------------------- |
-| Coins and notes | coin by coin (1 € and 2 € up to 10 €) · notes join in (up to 20 €, fewest coins)  |
-| Enough money?   | can Lumi buy it? (purse against price up to 20 €)                                 |
-| What's left?    | what's left? (purse up to 10 €) · shopping spree (20 €, enough? then what's left) |
+| Topic           | Levels, easiest first                                                                                                        |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Coins and notes | coin by coin (1 € and 2 € up to 10 €) · notes join in (up to 20 €, fewest coins)                                             |
+| Enough money?   | can Lumi buy it? (purse against price up to 20 €)                                                                            |
+| What's left?    | what's left? (purse up to 10 €) · shopping spree (20 €, enough? then what's left)                                            |
+| Adding up       | two treats (add two prices up to 20 €, then pay the total) · shopping list (three treats from 20 €: total, then what's left) |
 
-Money is in euro values drawn in the game's own style, whole euros first; cents come in a later topic. The purse shows every coin on the coin levels and the first three "enough?" turns, then only a tag with its amount, so the child moves from counting coins to working with numbers. The tray never shows a running total and screen readers hear the coins on it, not their sum, because counting is the skill. Paying too little or too much gets a rule ("Olli needs a little more", "take a coin back"), never an amount; typing the price, the whole purse or purse + price for "what's left" each get their own hint. A missed turn comes back two turns later with a different treat (the spree keeps its order, because its purse carries over). Level 2 pays a bonus for the fewest coins; level 5 refills the purse to 20 € after a treat that costs too much, and needs three stars to be mastered. The plan for the next topics (adding up, change, plan and save with a wish jar, cents) is in issue #264.
+Money is in euro values drawn in the game's own style, whole euros first; cents come in a later topic. The purse shows every coin on the coin levels and the first three "enough?" turns, then only a tag with its amount, so the child moves from counting coins to working with numbers. The tray never shows a running total and screen readers hear the coins on it, not their sum, because counting is the skill. Paying too little or too much gets a rule ("Olli needs a little more", "take a coin back"), never an amount; typing the price, the whole purse or purse + price for "what's left" each get their own hint. A missed turn comes back two turns later with a different treat (the spree keeps its order, because its purse carries over). Level 2 pays a bonus for the fewest coins; level 5 refills the purse to 20 € after a treat that costs too much, and needs three stars to be mastered. Adding up shows the list with each price; typing one treat's price or forgetting one treat on a list of three get their own hints, and once the total is right the game says it, since the child found it. Each level card plays a short film with made-up numbers (coins counted onto the tray, a purse against two prices, hops counted up to the purse, a price counted on), and `?` opens it during play while the sun waits; when the turn on screen uses the film's numbers the film shows another set. The plan for the next topics (change, plan and save with a wish jar, cents) is in issue #264.
 
 ## Adding a level
 

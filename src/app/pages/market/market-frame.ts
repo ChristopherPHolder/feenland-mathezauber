@@ -19,6 +19,11 @@ export interface MarketFrame {
   readonly good: GoodId;
   readonly price: number;
   readonly priceText: string;
+  /**
+   * More treats on the counter beside the main one (a two- or three-treat shopping list), each
+   * with its own price tag. Empty on single-treat levels.
+   */
+  readonly extras: readonly { readonly good: GoodId; readonly priceText: string }[];
   /** Coins and notes the child has put on the counter tray, in the order they went down. */
   readonly tray: readonly Denomination[];
   /** How the turn ended: the treat went into Lumi's basket, or Olli put it back on the shelf. */
@@ -51,6 +56,7 @@ export function stillFrame(partial: Partial<MarketFrame> = {}): MarketFrame {
     good: 'honey',
     price: 0,
     priceText: '',
+    extras: [],
     tray: [],
     outcome: 'none',
     basket: [],

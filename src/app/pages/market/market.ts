@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Icon, NumberPad, RewardBurst, RewardBurstKind } from '@feenland/ui';
+import { CoachDialog, Icon, NumberPad, RewardBurst, RewardBurstKind } from '@feenland/ui';
 import { CompletionService } from '../../core/completion';
 import { guideCounter } from '../../core/guide-counter';
 import { LocaleService } from '../../core/locale';
@@ -25,6 +25,7 @@ import { GOOD_EMOJI, MarketFrame, stillFrame } from './market-frame';
 import {
   affordable,
   checkLeft,
+  checkTotal,
   checkPay,
   daylightSeconds,
   GOLDEN_STREAK,
@@ -49,6 +50,7 @@ import {
 } from './market-levels';
 import { capitalise, marketText, MarketMessageKey } from './market-messages';
 import { Denomination, formatMoney, isNote } from './market-money';
+import { filmClash, filmFor, MarketDemo } from './market-demo';
 import { MarketMoney } from './market-money-art';
 import { MarketScores } from './market-scores';
 import { MarketShop } from './market-shop';
@@ -113,10 +115,12 @@ const GOOD_KEY = (good: GoodId) => capitalise(good) as Capitalize<GoodId>;
     Icon,
     NumberPad,
     RewardBurst,
+    CoachDialog,
     GameHeader,
     ThreeStage,
     MarketShop,
     MarketMoney,
+    MarketDemo,
   ],
   providers: [MarketSounds],
   templateUrl: './market.html',
@@ -173,6 +177,8 @@ export class Market {
   protected readonly newTreats = signal(0);
   protected readonly guided = signal(guide.count() < GUIDED_TURNS);
   protected readonly idle = signal(false);
+  /** The "how to shop" film is open over the game; the sun waits. */
+  protected readonly coaching = signal(false);
 
   protected readonly turn = computed(() => this.round().turns[this.round().index]);
   protected readonly turnsTotal = computed(() => this.stage().turns);
@@ -196,10 +202,31 @@ export class Market {
   protected readonly question = computed(() =>
     this.t('costs', { good: capitalise(this.goodName()), price: this.priceText() }),
   );
-  protected readonly ask = computed<MarketMessageKey>(() => {
+  /** The shopping list of a multi-treat turn, with each price written out. */
+  protected readonly listItems = computed(() =>
+    (this.turn().items ?? []).map((item) => ({
+      ...item,
+      name: this.goodLabel(item.good),
+      priceText: this.money(item.price),
+    })),
+  );
+  /** What to do now. After a list is added up, the total is said, since the child found it. */
+  protected readonly askText = computed(() => {
     const step = this.step();
-    return step === 'pay' ? 'askPay' : step === 'enough' ? 'askEnough' : 'askLeft';
+    const list = !!this.turn().items;
+    if (step === 'total') return this.t('askTotal');
+    if (step === 'pay')
+      return list ? this.t('payTotal', { amount: this.priceText() }) : this.t('askPay');
+    if (step === 'enough') return this.t('askEnough');
+    return list ? this.t('leftTotal', { amount: this.priceText() }) : this.t('askLeft');
   });
+  protected readonly typing = computed(() => this.step() === 'total' || this.step() === 'left');
+  protected readonly film = computed(() => filmFor(this.stage().skill));
+  protected readonly filmAlternate = computed(
+    () =>
+      this.started() &&
+      filmClash(this.film(), [this.turn().price, ...(this.turn().items ?? []).map((i) => i.price)]),
+  );
   /** The purse shows its coins on coin levels and while paying; later only its tag. */
   protected readonly showCoins = computed(
     () => this.step() === 'pay' || this.turn().look === 'coins',
@@ -223,7 +250,10 @@ export class Market {
       phase: round.phase === 'complete' ? 'complete' : round.phase,
       good: turn.good,
       price: turn.price,
-      priceText: this.priceText(),
+      priceText: this.money(this.turn().items?.[0]?.price ?? this.turn().price),
+      extras: (this.turn().items ?? [])
+        .slice(1)
+        .map((item) => ({ good: item.good, priceText: this.money(item.price) })),
       tray: this.trayCoins(),
       outcome: round.outcome,
       basket: round.bought.map((item) => item.good),
@@ -418,7 +448,7 @@ export class Market {
   }
 
   protected typeDigit(digit: number) {
-    if (!this.shopping() || this.step() !== 'left') return;
+    if (!this.shopping() || !this.typing()) return;
     this.round.update((round) =>
       round.typed.length >= 2
         ? round
@@ -432,13 +462,25 @@ export class Market {
   }
 
   protected submitTyped() {
-    if (!this.shopping() || this.step() !== 'left' || !this.round().typed) return;
+    if (!this.shopping() || !this.typing() || !this.round().typed) return;
+    if (this.step() === 'total') return this.submitTotal(Number(this.round().typed));
     const result = checkLeft(this.turn(), Number(this.round().typed));
     if (result === 'ok') this.solve('bought', false);
     else {
       this.round.update((round) => ({ ...round, typed: '' }));
       this.slip(result);
     }
+  }
+
+  /** A right total moves the list on to paying or to "what's left?". */
+  private submitTotal(typed: number) {
+    const result = checkTotal(this.turn(), typed);
+    this.round.update((round) => ({ ...round, typed: '' }));
+    if (result !== 'ok') return this.slip(result === 'off' ? 'totalOff' : result);
+    this.round.update((round) => ({ ...round, step: round.step + 1 }));
+    this.sounds.play('coin');
+    this.status.set({ key: 'together', values: { amount: this.priceText() } });
+    this.armIdle();
   }
 
   private slip(key: MarketMessageKey) {
@@ -489,9 +531,10 @@ export class Market {
       gain,
       badges,
       cheer,
+      // A shopping list goes into the basket, and onto the receipt, treat by treat.
       bought:
         outcome === 'bought'
-          ? [...round.bought, { good: turn.good, price: turn.price }]
+          ? [...round.bought, ...(turn.items ?? [{ good: turn.good, price: turn.price }])]
           : round.bought,
       pays: round.pays + 1,
     });
@@ -602,6 +645,24 @@ export class Market {
     } else if (!this.tick && this.sunLeft > 0 && this.sunset() < 1) this.armSun();
   }
 
+  protected openHelp() {
+    if (this.coaching()) return;
+    this.stopIdle();
+    if (this.tick) {
+      clearInterval(this.tick);
+      this.tick = undefined;
+      this.sunLeft = Math.max(0, this.sunDue - Date.now());
+    }
+    this.coaching.set(true);
+  }
+
+  protected closeHelp() {
+    this.coaching.set(false);
+    if (this.daylight && this.sunLeft > 0 && this.sunset() < 1 && this.round().phase !== 'complete')
+      this.armSun();
+    if (this.round().phase === 'shop') this.armIdle();
+  }
+
   private armIdle() {
     this.stopIdle();
     this.idle.set(false);
@@ -630,7 +691,7 @@ export class Market {
       this.advance();
       return;
     }
-    if (!this.shopping() || this.step() !== 'left') return;
+    if (!this.shopping() || !this.typing() || this.coaching()) return;
     if (/^\d$/.test(event.key)) {
       event.preventDefault();
       this.typeDigit(Number(event.key));
