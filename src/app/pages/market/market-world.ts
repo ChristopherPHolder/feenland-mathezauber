@@ -58,6 +58,16 @@ const TILL_AT = new Vector3(-1.72, TOP, 0.3);
 const TRAY_AT = new Vector3(-0.42, TOP, 0.42);
 const OLLI_AT = new Vector3(-0.45, 0.22, -0.62);
 const LUMI_AT = new Vector3(2.55, 0.78, 0.78);
+/** A row of two or three treats along the counter; each gets its own tag on the front edge. */
+const ROW_X: Readonly<Record<number, readonly number[]>> = {
+  2: [1.05, 1.7],
+  3: [0.95, 1.47, 1.99],
+};
+/** The counter's front edge, where the row's tags clip on. */
+const EDGE_Z = 0.885;
+/** Treats in a row pop on and fly off one after another, this many seconds apart. */
+const POP_STAGGER = 0.12;
+const FLY_STAGGER = 0.08;
 /** The tray's inner size, in its own plane, and how far it leans back. */
 const TRAY_W = 2.05;
 const TRAY_H = 0.64;
@@ -87,7 +97,10 @@ export const PAY_SECONDS = {
   ring: 0.35,
   /** The treat starts its hop into the basket (or back to the shelf). */
   lift: 0.5,
-  /** It lands; Lumi does a little hop. */
+  /**
+   * It lands; Lumi does a little hop. With two or three treats they leave 0.08 s apart from
+   * 0.45 s and the last one lands by about 1.23 s.
+   */
   landed: 1.2,
   /** Everything has settled. */
   done: 1.55,
@@ -235,7 +248,13 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
   private frame?: MarketFrame;
   private pieces: TrayPiece[] = [];
   private paying: { mesh: Group; from: Vector3 }[] = [];
-  private counterGood: Group | null = null;
+  /** The treats on the counter: the main one first, then the extras. */
+  private counterGoods: Group[] = [];
+  /** Tags on the counter's edge, one per treat in a row. */
+  private readonly edgeTags: PriceTag[] = [];
+  private goodCount = 1;
+  /** When the last treat lands in the basket: Lumi hops then. */
+  private hopAt = -10;
   private goodKey = '';
   private popAt = -10;
   private paidTurn = -1;
@@ -483,6 +502,12 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     this.tag = buildPriceTag(kit);
     this.tag.root.position.copy(TAG_AT);
     this.scene.add(this.tag.root);
+    for (let index = 0; index < 3; index++) {
+      const edge = buildPriceTag(kit, 'edge');
+      edge.root.visible = false;
+      this.edgeTags.push(edge);
+      this.scene.add(edge.root);
+    }
 
     // Lumi floats at the end of the counter with her basket.
     this.lumi = buildLumi(kit);
@@ -562,17 +587,25 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     if (this.slipCount.take(frame.slips)) this.slipAt = now;
     if (this.cheerCount.take(frame.cheers)) this.startCheer(now);
 
-    // A new treat on the counter for a new turn (or a new level card).
-    const key = `${frame.turn}|${frame.good}|${frame.big}|${frame.phase === 'intro' || frame.phase === 'complete'}`;
+    // New treats on the counter for a new turn (or a new level card).
+    const goods = [{ good: frame.good, priceText: frame.priceText }, ...frame.extras].slice(0, 3);
+    const key = `${frame.turn}|${goods.map((item) => item.good).join(',')}|${frame.big}|${frame.phase === 'intro' || frame.phase === 'complete'}`;
     const paidThisTurn = this.paidTurn === frame.turn && frame.phase !== 'intro';
     if (key !== this.goodKey && !(paidThisTurn && previous?.turn === frame.turn)) {
       this.goodKey = key;
-      this.placeGood(frame.good, frame.big, previous ? Math.max(now, this.payAt + 0.95) : -10);
+      this.placeGoods(
+        goods.map((item) => item.good),
+        frame.big,
+        previous ? Math.max(now, this.payAt + 0.95) : -10,
+      );
       if (previous && previous.turn !== frame.turn) this.paidTurn = -1;
     }
-    this.tag.setText(frame.priceText, frame.big);
-    this.tag.root.visible = !!frame.priceText && !!this.counterGood;
-    this.sparkles.visible = frame.big && !!this.counterGood;
+    if (goods.length === 1) this.tag.setText(frame.priceText, frame.big);
+    else
+      goods.forEach((item, index) =>
+        this.edgeTags[index].setText(item.priceText, frame.big && !index),
+      );
+    this.showTags();
 
     // Coins on the tray: only while shopping, never after this turn's purchase went through.
     this.syncTray(
@@ -599,15 +632,46 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     return { position, angle };
   }
 
-  private placeGood(id: GoodId, big: boolean, popAt: number) {
-    if (this.counterGood) this.counterGood.removeFromParent();
-    const good = buildGood(this.kit, id);
-    good.position.copy(GOOD_AT);
-    good.userData['size'] = big ? 1.5 : 1.15;
-    good.scale.setScalar(popAt < 0 ? good.userData['size'] : 0.001);
-    this.scene.add(good);
-    this.counterGood = good;
+  private placeGoods(ids: readonly GoodId[], big: boolean, popAt: number) {
+    for (const good of this.counterGoods) good.removeFromParent();
+    const row = ids.length > 1 ? ROW_X[ids.length] : [GOOD_AT.x];
+    this.counterGoods = ids.map((id, index) => {
+      const good = buildGood(this.kit, id);
+      good.position.set(row[index], GOOD_AT.y, GOOD_AT.z);
+      good.userData['size'] = ids.length === 1 ? (big ? 1.5 : 1.15) : big && !index ? 1.2 : 1;
+      good.userData['popAt'] = popAt < 0 ? popAt : popAt + index * POP_STAGGER;
+      good.scale.setScalar(popAt < 0 ? good.userData['size'] : 0.001);
+      this.scene.add(good);
+      return good;
+    });
+    row.forEach((x, index) => {
+      if (ids.length > 1) this.edgeTags[index].root.position.set(x, GOOD_AT.y, EDGE_Z);
+    });
+    this.sparkles.position.set(row[0], GOOD_AT.y, GOOD_AT.z);
+    this.sparkles.scale.setScalar(ids.length > 1 ? 0.75 : 1);
     this.popAt = popAt;
+    if (ids.length !== this.goodCount) {
+      // Lumi makes room for a row of treats, so the camera reframes.
+      this.goodCount = ids.length;
+      if (this.width > 1) this.layout(this.width / this.height);
+    }
+  }
+
+  /** Each treat's tag shows once its treat has popped on; the big buy's ring with the first. */
+  private showTags() {
+    const t = this.elapsed;
+    const goods = this.counterGoods;
+    const shown = (index: number) =>
+      !!goods[index] && t >= (goods[index].userData['popAt'] as number);
+    const texts = this.frame
+      ? [this.frame.priceText, ...this.frame.extras.map((item) => item.priceText)]
+      : [];
+    const row = goods.length > 1;
+    this.tag.root.visible = !row && shown(0) && !!texts[0];
+    this.edgeTags.forEach((edge, index) => {
+      edge.root.visible = row && shown(index) && !!texts[index];
+    });
+    this.sparkles.visible = !!this.frame?.big && shown(0);
   }
 
   private startPay(frame: MarketFrame, now: number) {
@@ -618,38 +682,35 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     for (const piece of this.pieces)
       this.paying.push({ mesh: piece.mesh, from: piece.mesh.position.clone() });
     this.pieces = [];
-    const good = this.counterGood;
-    this.counterGood = null;
-    this.tag.root.visible = false;
-    this.sparkles.visible = false;
-    if (!good) return;
-    const from = good.position.clone();
-    const size = good.scale.x;
-    if (frame.outcome === 'putBack') {
+    const goods = this.counterGoods;
+    this.counterGoods = [];
+    this.showTags();
+    const single = goods.length === 1;
+    const basket = new Vector3();
+    this.lumi.basketItems.getWorldPosition(basket);
+    basket.y += 0.08;
+    this.hopAt = now + PAY_SECONDS.landed;
+    goods.forEach((good, index) => {
+      const putBack = frame.outcome === 'putBack';
+      const start = putBack
+        ? now + 0.25 + index * 0.1
+        : single
+          ? now + PAY_SECONDS.lift
+          : now + 0.45 + index * FLY_STAGGER;
+      const end = single ? now + PAY_SECONDS.landed : start + (putBack ? 0.85 : 0.7);
       this.flights.push({
         object: good,
-        from,
-        to: this.shelfSlots[0].clone(),
-        scaleFrom: size,
-        scaleTo: 0.0,
-        start: now + 0.25,
-        end: now + PAY_SECONDS.landed,
-        lift: 0.9,
+        from: good.position.clone(),
+        to: putBack
+          ? this.shelfSlots[0].clone().add(new Vector3((index - 1) * 0.15, 0, 0))
+          : basket.clone(),
+        scaleFrom: good.scale.x,
+        scaleTo: putBack ? 0 : 0.4,
+        start,
+        end,
+        lift: 0.9 + index * 0.1,
       });
-      return;
-    }
-    const to = new Vector3();
-    this.lumi.basketItems.getWorldPosition(to);
-    to.y += 0.08;
-    this.flights.push({
-      object: good,
-      from,
-      to,
-      scaleFrom: size,
-      scaleTo: 0.4,
-      start: now + PAY_SECONDS.lift,
-      end: now + PAY_SECONDS.landed,
-      lift: 0.9,
+      if (!putBack) this.hopAt = Math.max(this.hopAt, end);
     });
   }
 
@@ -692,12 +753,10 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
   private syncBasket() {
     const frame = this.frame;
     if (!frame) return;
-    const flying = this.flights.some(
-      (flight) => flight.to.y > 1 && flight.scaleTo > 0 && this.elapsed < flight.end,
-    );
-    const shown = frame.basket
-      .slice(0, Math.max(0, frame.basket.length - (flying ? 1 : 0)))
-      .slice(-6);
+    const flying = this.flights.filter(
+      (flight) => flight.scaleTo > 0 && this.elapsed < flight.end,
+    ).length;
+    const shown = frame.basket.slice(0, Math.max(0, frame.basket.length - flying)).slice(-6);
     const key = shown.join(',');
     if (key === this.basketKey) return;
     this.basketKey = key;
@@ -795,8 +854,16 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     const { width, height } = this;
     // On narrow boards Lumi floats in front of the counter's end, so the shop can come closer.
     const narrow = aspect < 1.45;
-    this.lumi.root.position.x = narrow ? 2.05 : LUMI_AT.x;
-    this.lumi.root.position.z = narrow ? 1.2 : LUMI_AT.z;
+    // A row of treats needs the counter's end, so Lumi floats a little further out.
+    const row = this.goodCount > 1;
+    this.lumi.root.position.x = narrow
+      ? row
+        ? 2.5
+        : 2.05
+      : row && this.goodCount > 2
+        ? 2.75
+        : LUMI_AT.x;
+    this.lumi.root.position.z = narrow ? (row ? 1.0 : 1.2) : LUMI_AT.z;
     const right = this.lumi.root.position.x + 0.42;
     this.frameBox[3].set(right, 0.45, this.lumi.root.position.z);
     this.frameBox[4].set(right, 2.25, this.lumi.root.position.z);
@@ -864,9 +931,10 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
 
     // Lumi: floating, wings fluttering, a hop when a treat lands, a spin for the cheer.
     const lumi = this.lumi;
+    const hopLength = PAY_SECONDS.done - PAY_SECONDS.landed;
     const hop =
-      this.payOutcome === 'bought' && pay > PAY_SECONDS.landed && pay < PAY_SECONDS.done
-        ? Math.sin(((pay - PAY_SECONDS.landed) / (PAY_SECONDS.done - PAY_SECONDS.landed)) * Math.PI)
+      this.payOutcome === 'bought' && t > this.hopAt && t < this.hopAt + hopLength
+        ? Math.sin(((t - this.hopAt) / hopLength) * Math.PI)
         : 0;
     lumi.root.position.y =
       LUMI_AT.y + (calm ? 0 : Math.sin(t * 2.1) * 0.05) + hop * 0.22 + cheering * 0.15;
@@ -932,10 +1000,9 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
     }
 
     // The new treat pops onto the counter; the big buy turns in its sparkle ring.
-    const good = this.counterGood;
-    if (good) {
+    for (const good of this.counterGoods) {
       const size = good.userData['size'] as number;
-      const pop = t - this.popAt;
+      const pop = t - (good.userData['popAt'] as number);
       good.scale.setScalar(
         pop < 0
           ? 0.001
@@ -943,14 +1010,18 @@ export class MarketWorld extends Stage implements StateWorld<MarketFrame> {
             ? Math.max(0.001, easeOutBack(pop / 0.45) * size)
             : size,
       );
-      good.rotation.y = calm ? 0 : Math.sin(t * 0.8) * 0.15;
+      good.rotation.y = calm ? 0 : Math.sin(t * 0.8 + good.position.x) * 0.15;
       good.position.y = GOOD_AT.y + shake(t, this.slipAt, 0.5, 0.04);
-      this.tag.root.visible = pop >= 0 && !!this.frame?.priceText;
-      this.sparkles.visible = !!this.frame?.big && pop >= 0;
     }
+    if (this.counterGoods.length) this.showTags();
     this.tag.card.rotation.z = calm
       ? 0
       : Math.sin(t * 1.4) * 0.05 + shake(t, this.slipAt, 0.8, 0.2);
+    this.edgeTags.forEach((edge, index) => {
+      edge.card.rotation.z = calm
+        ? 0
+        : Math.sin(t * 1.4 + index) * 0.03 + shake(t, this.slipAt, 0.8, 0.12);
+    });
     if (this.sparkles.visible) {
       this.sparkles.rotation.y = calm ? 0 : t * 0.8;
       this.sparkles.children.forEach((star, index) => {

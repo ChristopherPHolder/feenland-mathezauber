@@ -606,42 +606,45 @@ export interface PriceTag {
   setText(text: string, big: boolean): void;
 }
 
-/** A cream card with a pink border hanging on a string from a little brass hook. */
-export function buildPriceTag(kit: Kit): PriceTag {
+/**
+ * A cream card with a pink border. `hook`: it hangs on a string from a little brass hook that
+ * stands on the counter. `edge`: a squarer card clipped to the counter's front edge, for a row
+ * of treats that each need their own price.
+ */
+export function buildPriceTag(kit: Kit, mount: 'hook' | 'edge' = 'hook'): PriceTag {
   const root = new Group();
   const brass = kit.mat('#c99a3a', { metalness: 0.5, roughness: 0.35 });
-  root.add(
-    kit.can(brass, 0.06, 0.03, 0, 0.015, 0),
-    kit.rod(brass, v(0, 0, 0), v(0, 0.86, 0), 0.016),
-    kit.rod(brass, v(0, 0.86, 0), v(-0.12, 0.86, 0), 0.014),
-  );
   const card = new Group();
-  card.position.set(-0.12, 0.86, 0.02);
-  const string = kit.rod(kit.mat('#7a5a3a'), v(0, 0, 0), v(0, -0.2, 0), 0.006);
-  const body = new Mesh(roundedBox(0.72, 0.42, 0.025, 0.07), kit.mat('#fff6e4'));
-  body.position.y = -0.41;
-  const plain = new TextLabel('', {
-    fill: '#fff6e4',
-    border: '#e0457b',
-    ink: '#16264f',
-    width: 320,
-    height: 186,
-    radius: 0.2,
-  });
-  const golden = new TextLabel('', {
-    fill: '#ffe08a',
-    border: '#c99a1c',
-    ink: '#4a3200',
-    width: 320,
-    height: 186,
-    radius: 0.2,
-  });
+  const [w, h] = mount === 'hook' ? [0.72, 0.42] : [0.5, 0.38];
+  const string = kit.mat('#7a5a3a');
+  if (mount === 'hook') {
+    root.add(
+      kit.can(brass, 0.06, 0.03, 0, 0.015, 0),
+      kit.rod(brass, v(0, 0, 0), v(0, 0.86, 0), 0.016),
+      kit.rod(brass, v(0, 0.86, 0), v(-0.12, 0.86, 0), 0.014),
+    );
+    card.position.set(-0.12, 0.86, 0.02);
+    card.add(
+      kit.rod(string, v(0, 0, 0), v(0, -0.2, 0), 0.006),
+      kit.blob(string, 0.02, 0.02, 0.01, 0, -0.23, 0.014),
+    );
+  } else {
+    // A little brass clip over the edge.
+    const clip = new Mesh(roundedBox(0.12, 0.09, 0.06, 0.02), brass);
+    clip.position.set(0, -0.02, -0.01);
+    card.add(clip);
+  }
+  const top = mount === 'hook' ? -0.2 : -0.04;
+  const body = new Mesh(roundedBox(w, h, 0.025, 0.07), kit.mat('#fff6e4'));
+  body.position.y = top - h / 2;
+  const size = { width: 320, height: Math.round((320 * h) / w), radius: 0.2 };
+  const plain = new TextLabel('', { fill: '#fff6e4', border: '#e0457b', ink: '#16264f', ...size });
+  const golden = new TextLabel('', { fill: '#ffe08a', border: '#c99a1c', ink: '#4a3200', ...size });
   const face = new MeshBasicMaterial({ map: plain.texture, transparent: true });
   const front = new Mesh(kit.plane, face);
-  front.scale.set(0.7, 0.4, 1);
-  front.position.set(0, -0.41, 0.014);
-  const hole = kit.blob(kit.mat('#7a5a3a'), 0.02, 0.02, 0.01, 0, -0.23, 0.014);
-  card.add(string, body, front, hole);
+  front.scale.set(w - 0.02, h - 0.02, 1);
+  front.position.set(0, top - h / 2, 0.014);
+  card.add(body, front);
   root.add(card);
   return {
     root,

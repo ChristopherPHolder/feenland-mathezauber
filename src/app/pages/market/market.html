@@ -28,9 +28,7 @@
         }
       </nav>
       <div class="intro-grid">
-        <app-three-stage class="intro-art" [world]="loadWorld" [state]="introFrame()">
-          <app-market-shop [frame]="introFrame()" />
-        </app-three-stage>
+        <app-market-demo class="intro-art" [film]="film()" />
         <div class="intro-side">
           <div class="tip-card">
             <h3>
@@ -220,6 +218,15 @@
           </li>
         }
       </ol>
+      <button
+        type="button"
+        class="help"
+        [attr.aria-label]="t('help')"
+        [title]="t('help')"
+        (click)="openHelp()"
+      >
+        ?
+      </button>
       <p class="points" [class.bump]="round().phase === 'solved'">
         <span>{{ t('points') }}</span>
         <strong>{{ i.format(round().score) }}</strong>
@@ -264,11 +271,23 @@
               big() ? t('bigTurn') : t('turnCount', { n: round().index + 1, total: turnsTotal() })
             }}
           </p>
-          <p class="price-line">
-            <span class="good-emoji" aria-hidden="true">{{ emoji[turn().good] }}</span>
-            <span>{{ question() }}</span>
-          </p>
-          <p class="ask">{{ t(ask()) }}</p>
+          @if (listItems().length) {
+            <ul class="list" [attr.aria-label]="t('listLabel')">
+              @for (item of listItems(); track $index) {
+                <li>
+                  <span class="good-emoji" aria-hidden="true">{{ emoji[item.good] }}</span>
+                  <span class="list-name">{{ item.name }}</span>
+                  <strong class="list-price">{{ item.priceText }}</strong>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="price-line">
+              <span class="good-emoji" aria-hidden="true">{{ emoji[turn().good] }}</span>
+              <span>{{ question() }}</span>
+            </p>
+          }
+          <p class="ask">{{ askText() }}</p>
         </div>
         <p class="status" role="status" aria-live="polite" aria-atomic="true">
           {{ statusText() }}
@@ -381,5 +400,10 @@
         }
       </div>
     </div>
+    @if (coaching()) {
+      <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeHelp()">
+        <app-market-demo [film]="film()" [alternate]="filmAlternate()" />
+      </ui-coach-dialog>
+    }
   }
 </section>
