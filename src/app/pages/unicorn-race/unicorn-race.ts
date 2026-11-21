@@ -66,10 +66,12 @@ import { RaceOverview } from './race-overview';
 import { RaceScene } from './race-scene';
 import { RaceSounds } from './race-sounds';
 import { RacerArt } from './racer-art';
+import { HorseStable } from './stable/horse-stable';
+import { stableText } from './stable/stable-messages';
 import { Cup, cupFor, Outfit, OUTFIT_CUP, outfits, RaceStore } from './race-store';
 import type { Course } from './race-world';
 import type { Horse } from './horse';
-type Phase = 'intro' | 'countdown' | 'racing' | 'finished';
+type Phase = 'stable' | 'intro' | 'countdown' | 'racing' | 'finished';
 type Feedback =
   | { readonly kind: 'idle' }
   | { readonly kind: 'gallop' }
@@ -105,12 +107,13 @@ const MODE_EMBLEM: Readonly<Record<RaceMode, string>> = { race: '🏁', chase: '
  */
 @Component({
   selector: 'app-unicorn-race',
-  imports: [RouterLink, Icon, GameHeader, RaceScene, RaceOverview, RacerArt],
+  imports: [RouterLink, Icon, GameHeader, RaceScene, RaceOverview, RacerArt, HorseStable],
   providers: [RaceSounds],
   templateUrl: './unicorn-race.html',
   styleUrls: ['./unicorn-race.css', './race-intro.css', './race-play.css', './race-themes.css'],
   host: {
     '[class.playing]': 'phase() !== "intro"',
+    '[class.in-stable]': 'phase() === "stable"',
     '[class.is-meadow]': 'cup() === "meadow"',
     '[class.is-sky]': 'cup() === "sky"',
     '[class.is-star]': 'cup() === "star"',
@@ -174,11 +177,18 @@ export class UnicornRace {
   protected readonly newOutfit = signal<Outfit | null>(null);
   /** Rainbow streak pips: how many of the three steps toward a dash are lit. */
   protected readonly pips = computed(() => Math.min(3, this.race().streak));
-  /** Every route change (next race, level strip) lands back on that race's intro. */
+  /**
+   * Every route change (next race, level strip) lands back on that race's intro; the very first
+   * visit opens the Stable instead, so a new player starts by making a horse.
+   */
   protected readonly phase = linkedSignal<string, Phase>({
     source: this.levelId,
-    computation: () => 'intro',
+    computation: () => (untracked(() => this.store.save().stableSeen) ? 'intro' : 'stable'),
   });
+  protected readonly editLabel = computed(() =>
+    stableText(this.i.locale(), 'edit', { name: this.horseName() }),
+  );
+  private readonly editButton = viewChild<ElementRef<HTMLButtonElement>>('editHorse');
   protected readonly race = signal<RaceState>(createRace('normal', stageFor(raceTracks[0], 1)));
   protected readonly question = signal<RaceQuestion>({ text: '', answer: 0, choices: [] });
   protected readonly struck = signal<readonly number[]>([]);
@@ -611,6 +621,17 @@ export class UnicornRace {
     }
     this.heat.set(heat);
     this.start();
+  }
+  protected openStable() {
+    this.stopTimers();
+    this.countdown.set(null);
+    this.phase.set('stable');
+  }
+  /** Back to the intro, with focus on the horse the child just made. */
+  protected closeStable() {
+    this.store.leaveStable();
+    this.phase.set('intro');
+    requestAnimationFrame(() => this.editButton()?.nativeElement.focus({ preventScroll: true }));
   }
   protected chooseRace() {
     this.stopTimers();

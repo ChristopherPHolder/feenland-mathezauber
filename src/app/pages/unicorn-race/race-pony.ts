@@ -235,6 +235,8 @@ export interface PonyPose {
   readonly celebrating: boolean;
   /** Standing on the finish line, pleased with the race: little hops and a nodding head. */
   readonly cheering: boolean;
+  /** Extra lift for the wings, in radians, to show them off on the Stable's stand. */
+  readonly wingLift?: number;
 }
 /**
  * One racer, modelled like a real horse: a lofted body, an arched neck and a long face,
@@ -422,7 +424,7 @@ export class Pony {
     });
     for (const wing of this.wings) {
       const flap = moving ? Math.sin(this.phase * 1.5) * 0.5 : Math.sin(now * 2) * 0.07;
-      wing.rotation.z = (moving ? 0.35 : 0.1) + flap;
+      wing.rotation.z = (moving ? 0.35 : 0.1) + flap + (pose.wingLift ?? 0);
     }
   }
   /** A standing pose, so a pony that has not been animated yet still looks right. */
