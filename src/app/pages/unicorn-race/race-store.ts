@@ -11,6 +11,7 @@ import {
   RaceLevel,
   raceLevels,
 } from './race-questions';
+import { Horse, LUMI, readHorse } from './horse';
 /** One keepsake per cup; Lumi wears the chosen one in every race. */
 export type Outfit = 'wreath' | 'wings' | 'tiara' | 'crown' | 'cape';
 export const outfits: readonly Outfit[] = ['wreath', 'wings', 'tiara', 'crown', 'cape'];
@@ -35,9 +36,21 @@ export interface RaceSave {
   readonly sparkles: number;
   readonly pace: Pace;
   readonly outfit: Outfit | null;
+  /**
+   * The horse the child races with. It came after version 2 and stays inside it, so a tab still
+   * running an older build reads the save instead of wiping it as unknown.
+   */
+  readonly horse: Horse;
 }
 const STORAGE_KEY = 'feenland.unicorn-race.v1';
-const empty: RaceSave = { version: 2, records: {}, sparkles: 0, pace: 'normal', outfit: null };
+const empty: RaceSave = {
+  version: 2,
+  records: {},
+  sparkles: 0,
+  pace: 'normal',
+  outfit: null,
+  horse: LUMI,
+};
 const CUP_RANK: Readonly<Record<Cup, number>> = { gold: 3, silver: 2, bronze: 1 };
 export function cupFor(place: 1 | 2 | 3 | 4): Cup {
   return place === 1 ? 'gold' : place === 2 ? 'silver' : 'bronze';
@@ -110,6 +123,11 @@ export class RaceStore {
     this.state.update((save) => ({ ...save, outfit }));
     this.persist();
   }
+  /** Saves the horse the child made in the Stable. */
+  setHorse(horse: Horse) {
+    this.state.update((save) => ({ ...save, horse: readHorse(horse) }));
+    this.persist();
+  }
   private persist() {
     try {
       this.document.defaultView?.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.save()));
@@ -155,7 +173,8 @@ export class RaceStore {
           : 0;
       const pace = paces.find((pace) => pace === record['pace']) ?? empty.pace;
       const outfit = outfits.find((outfit) => outfit === record['outfit']) ?? null;
-      return { version: 2, records, sparkles, pace, outfit };
+      const horse = readHorse(record['horse']);
+      return { version: 2, records, sparkles, pace, outfit, horse };
     } catch {
       return empty;
     }

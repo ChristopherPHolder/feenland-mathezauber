@@ -377,7 +377,7 @@ describe('Unicorn race game', () => {
   it('races the shadow at par and asks to beat it', () => {
     const { element, component, start, chooseHeat } = setup('en', 'unicorn-race-5');
     chooseHeat(3);
-    expect(element.textContent).toContain('Lumi races her own shadow');
+    expect(element.textContent).toContain('Lumi races a shadow that runs your best time');
     start();
     expect(component.race().shadowMs).toBe(81000);
     expect(element.querySelector('.hud .rival')?.textContent).toContain('Shadow 81 s');
@@ -402,6 +402,70 @@ describe('Unicorn race game', () => {
     );
     expect(element.querySelector('.cup-tag')?.textContent).toContain('Key chase');
     expect([...element.querySelectorAll('.level-card')][1].textContent).toContain('1 of 6 heats');
+  });
+  it('races with the horse from the Stable: its name in the lineup, messages and standings', () => {
+    localStorage.setItem(
+      'feenland.unicorn-race.v1',
+      JSON.stringify({
+        version: 2,
+        records: {},
+        sparkles: 0,
+        pace: 'normal',
+        outfit: null,
+        horse: { name: 'Sternchen', kind: 'pegasus', coat: 'midnight', mane: 'ocean' },
+      }),
+    );
+    const { element, start, answerRight, wait } = setup();
+    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent).toBe('Sternchen');
+    expect(element.textContent).toContain('Sternchen and friends gallop');
+    expect(element.textContent).toContain('Right answer: Sternchen gallops');
+    const art = element.querySelector<HTMLElement>('.lineup .is-lumi app-racer')!;
+    expect(art.style.getPropertyValue('--coat')).toBe('#48437a');
+    expect(art.style.getPropertyValue('--mane-1')).toBe('#5fb8ff');
+    expect(art.querySelector('.wing')).toBeTruthy();
+    expect(art.querySelector('.horn')).toBeNull();
+    // A rival keeps its own colours.
+    expect(
+      element
+        .querySelector<HTMLElement>('.lineup app-racer.racer-cloud')!
+        .style.getPropertyValue('--coat'),
+    ).toBe('');
+    start();
+    answerRight();
+    wait(100);
+    expect(element.querySelector('.standings')?.textContent).toContain('Sternchen');
+  });
+  it('keeps Lumi for a save from before the Stable, and a bad horse falls back part by part', () => {
+    localStorage.setItem(
+      'feenland.unicorn-race.v1',
+      JSON.stringify({
+        version: 2,
+        records: {},
+        sparkles: 5,
+        pace: 'normal',
+        outfit: null,
+        horse: { name: 42, kind: 'dragon', coat: 'mint', mane: 'plaid' },
+      }),
+    );
+    const { element } = setup();
+    const store = TestBed.inject(RaceStore);
+    expect(store.save().horse).toEqual({
+      name: '',
+      kind: 'unicorn',
+      coat: 'mint',
+      mane: 'rainbow',
+    });
+    expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent).toBe('Lumi');
+    store.setHorse({ name: '  Blitz   der   Wind  ', kind: 'pony', coat: 'cocoa', mane: 'night' });
+    const saved = JSON.parse(localStorage.getItem('feenland.unicorn-race.v1')!);
+    expect(saved.version).toBe(2);
+    expect(saved.sparkles).toBe(5);
+    expect(saved.horse).toEqual({
+      name: 'Blitz der Wi',
+      kind: 'pony',
+      coat: 'cocoa',
+      mane: 'night',
+    });
   });
   it('speaks German on the intro and during the race', () => {
     const { element, status, start } = setup('de');

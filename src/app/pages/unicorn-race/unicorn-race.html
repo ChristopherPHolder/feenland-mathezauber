@@ -21,6 +21,7 @@
                 <app-racer
                   [kind]="id"
                   [outfit]="id === 'player' ? outfit() : null"
+                  [horse]="horse()"
                   [running]="id === 'player'"
                 />
                 <span class="lineup-name">{{ names()[id] }}</span>
@@ -237,6 +238,7 @@
         />
         <app-race-overview
           [racers]="race().racers"
+          [horse]="horse()"
           [length]="race().length"
           [names]="names()"
           [labels]="labels()"

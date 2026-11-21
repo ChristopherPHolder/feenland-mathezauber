@@ -1,12 +1,14 @@
-import { booleanAttribute, Component, input } from '@angular/core';
+import { booleanAttribute, Component, computed, input } from '@angular/core';
 import type { RacerId } from './race';
 import type { Outfit } from './race-store';
+import { COATS, hasHorn, hasWings, Horse, LUMI, MANES } from './horse';
 /**
  * One side-view pony, facing the finish, with the same outline as the ponies on the track:
  * the body, neck, head and legs are that model seen from the side. Each racer is the same
  * horse in its own colours: Lumi is the white unicorn with the rainbow mane, Cloud a lavender
  * pegasus, Minty a mint unicorn, Peach a peach pony with a bow, Storm a dusky pegasus with
- * a crown and the stolen key, and Shadow a see-through Lumi.
+ * a crown and the stolen key, and Shadow a see-through Lumi. The child's racer takes the
+ * kind and colours of the horse made in the Stable, and the shadow takes its shape.
  */
 @Component({
   selector: 'app-racer',
@@ -123,11 +125,16 @@ import type { Outfit } from './race-store';
         </g>
       }
       @case ('wings') {
-        <path
-          class="feather"
-          d="M100 51C96 39 84 29.5 68 27.5C73.5 31.5 76.5 35.5 77.5 39.5C69.5 36.5 60.5 37.5 53.5 42.5C61.5 43 67.5 46 71 50C64.5 50.5 59 53.5 55.5 58.5C72 62 90 60.5 100 51z"
-        />
-        <path class="wing-line" d="M96 50.5C88 44 79 40.5 69 39.5M94 53.5C86 51 78 50.5 70 51.5" />
+        @if (!wings()) {
+          <path
+            class="feather"
+            d="M100 51C96 39 84 29.5 68 27.5C73.5 31.5 76.5 35.5 77.5 39.5C69.5 36.5 60.5 37.5 53.5 42.5C61.5 43 67.5 46 71 50C64.5 50.5 59 53.5 55.5 58.5C72 62 90 60.5 100 51z"
+          />
+          <path
+            class="wing-line"
+            d="M96 50.5C88 44 79 40.5 69 39.5M94 53.5C86 51 78 50.5 70 51.5"
+          />
+        }
       }
       @case ('tiara') {
         <g class="tiara">
@@ -179,7 +186,7 @@ import type { Outfit } from './race-store';
         <path class="hoof" d="M106.9 110.9L112.6 110.9L114.4 115.5L106.5 115.5z" />
       </g>
     </g>
-    @if (kind() === 'cloud' || kind() === 'storm') {
+    @if (wings()) {
       <path
         class="wing"
         d="M100 51C96 39 84 29.5 68 27.5C73.5 31.5 76.5 35.5 77.5 39.5C69.5 36.5 60.5 37.5 53.5 42.5C61.5 43 67.5 46 71 50C64.5 50.5 59 53.5 55.5 58.5C72 62 90 60.5 100 51z"
@@ -193,6 +200,11 @@ import type { Outfit } from './race-store';
     '[class.is-stumbling]': 'stumbling()',
     '[class.is-rainbow]': 'rainbow()',
     '[class.is-bust]': 'bust()',
+    '[style.--coat]': 'paint()?.coat',
+    '[style.--shade]': 'paint()?.shade',
+    '[style.--mane-1]': 'paint()?.mane?.[0]',
+    '[style.--mane-2]': 'paint()?.mane?.[1]',
+    '[style.--mane-3]': 'paint()?.mane?.[2]',
   },
   styles: `
     :host {
@@ -421,12 +433,26 @@ export class RacerArt {
   readonly kind = input.required<RacerId>();
   /** Lumi's keepsake from a finished cup; ignored for the other racers. */
   readonly outfit = input<Outfit | null>(null);
+  /** The child's horse from the Stable: the player's colours and kind, and the shadow's kind. */
+  readonly horse = input<Horse>(LUMI);
   readonly running = input(false);
   readonly stumbling = input(false);
   readonly rainbow = input(false);
   /** Head and neck only, for sizes where a whole pony would be a smudge. */
   readonly bust = input(false, { transform: booleanAttribute });
+  private readonly mine = computed(() => this.kind() === 'player' || this.kind() === 'shadow');
+  /** The player's own colours; every other racer keeps the ones in the stylesheet. */
+  protected readonly paint = computed(() => {
+    if (this.kind() !== 'player') return null;
+    const horse = this.horse();
+    return { ...COATS[horse.coat], mane: MANES[horse.mane] };
+  });
   protected horn() {
-    return this.kind() === 'player' || this.kind() === 'mint' || this.kind() === 'shadow';
+    return this.mine() ? hasHorn(this.horse().kind) : this.kind() === 'mint';
+  }
+  protected wings() {
+    return this.mine()
+      ? hasWings(this.horse().kind)
+      : this.kind() === 'cloud' || this.kind() === 'storm';
   }
 }

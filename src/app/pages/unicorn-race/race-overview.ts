@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { RacerId, RacerState, standings } from './race';
 import { RacerArt } from './racer-art';
+import { Horse, LUMI } from './horse';
 /** The least room between two badges on the rail, as a share of its length. */
 const BADGE_GAP = 0.09;
 /**
@@ -39,7 +40,7 @@ export function spreadBadges(sorted: readonly number[], gap = BADGE_GAP): number
           [style.--p]="marker.shown"
           [style.z-index]="marker.layer"
         >
-          <app-racer [kind]="marker.id" bust />
+          <app-racer [kind]="marker.id" [horse]="horse()" bust />
           @if (started()) {
             <span class="place">{{ marker.place }}</span>
           }
@@ -200,6 +201,8 @@ export class RaceOverview {
   readonly title = input.required<string>();
   /** False on the start line, where everyone is level and a place would mean nothing. */
   readonly started = input(false);
+  /** The child's horse, so its badge and its shadow's look like it. */
+  readonly horse = input<Horse>(LUMI);
   protected readonly order = computed(() => standings({ racers: this.racers() }));
   protected readonly markers = computed(() => {
     const racers = this.racers();
