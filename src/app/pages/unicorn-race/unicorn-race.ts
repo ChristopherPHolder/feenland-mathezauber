@@ -68,6 +68,7 @@ import { RaceSounds } from './race-sounds';
 import { RacerArt } from './racer-art';
 import { Cup, cupFor, Outfit, OUTFIT_CUP, outfits, RaceStore } from './race-store';
 import type { Course } from './race-world';
+import type { Horse } from './horse';
 type Phase = 'intro' | 'countdown' | 'racing' | 'finished';
 type Feedback =
   | { readonly kind: 'idle' }
@@ -160,9 +161,15 @@ export class UnicornRace {
     length: this.stage().length,
     racers: this.lineup(),
     outfit: this.outfit(),
+    horse: this.horse(),
     sky: this.sky(),
   }));
   protected readonly outfit = computed(() => this.store.save().outfit);
+  /** The child's horse from the Stable, and its name or, until it has one, Lumi's. */
+  protected readonly horse = computed<Horse>(() => this.store.save().horse);
+  protected readonly horseName = computed(
+    () => this.horse().name || raceText(this.i.locale(), 'racerPlayer'),
+  );
   /** The keepsake just earned by finishing this race's cup, if any. */
   protected readonly newOutfit = signal<Outfit | null>(null);
   /** Rainbow streak pips: how many of the three steps toward a dash are lit. */
@@ -238,7 +245,7 @@ export class UnicornRace {
     }),
   );
   protected readonly names = computed<Readonly<Record<RacerId, string>>>(() => ({
-    player: this.t('racerPlayer'),
+    player: this.horseName(),
     cloud: this.t('racerCloud'),
     mint: this.t('racerMint'),
     peach: this.t('racerPeach'),
@@ -340,7 +347,11 @@ export class UnicornRace {
         typeof value === 'number' ? this.i.format(value) : value,
       ]),
     );
-    return raceText(this.i.locale(), key, { total: TOTAL_STAGES, ...formatted });
+    return raceText(this.i.locale(), key, {
+      total: TOTAL_STAGES,
+      name: this.horseName(),
+      ...formatted,
+    });
   }
   protected levelTitle(level: RaceLevel): MessageKey {
     return `race${level}` as MessageKey;
