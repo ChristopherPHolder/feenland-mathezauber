@@ -1,12 +1,16 @@
-import { booleanAttribute, Component, input } from '@angular/core';
+import { booleanAttribute, Component, computed, input } from '@angular/core';
 import type { RacerId } from './race';
 import type { Outfit } from './race-store';
+import { COATS, hasHorn, hasWings, Horse, HORNS, LUMI, MANES, spotColour } from './horse';
+/** Each pony draws its socks with its own gradients, so every instance needs unique ids. */
+let nextSockId = 0;
 /**
  * One side-view pony, facing the finish, with the same outline as the ponies on the track:
  * the body, neck, head and legs are that model seen from the side. Each racer is the same
  * horse in its own colours: Lumi is the white unicorn with the rainbow mane, Cloud a lavender
  * pegasus, Minty a mint unicorn, Peach a peach pony with a bow, Storm a dusky pegasus with
- * a crown and the stolen key, and Shadow a see-through Lumi.
+ * a crown and the stolen key, and Shadow a see-through Lumi. The child's racer takes the
+ * kind and colours of the horse made in the Stable, and the shadow takes its shape.
  */
 @Component({
   selector: 'app-racer',
@@ -15,6 +19,18 @@ import type { Outfit } from './race-store';
     aria-hidden="true"
     focusable="false"
   >
+    @if (marking() === 'socks') {
+      <defs>
+        <linearGradient [attr.id]="sockId + '-near'" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0.67" style="stop-color: var(--coat)" />
+          <stop offset="0.67" style="stop-color: var(--mark)" />
+        </linearGradient>
+        <linearGradient [attr.id]="sockId + '-far'" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0.67" style="stop-color: var(--shade)" />
+          <stop offset="0.67" style="stop-color: var(--mark)" />
+        </linearGradient>
+      </defs>
+    }
     <g class="tail">
       <path
         class="mane-1"
@@ -123,11 +139,16 @@ import type { Outfit } from './race-store';
         </g>
       }
       @case ('wings') {
-        <path
-          class="feather"
-          d="M100 51C96 39 84 29.5 68 27.5C73.5 31.5 76.5 35.5 77.5 39.5C69.5 36.5 60.5 37.5 53.5 42.5C61.5 43 67.5 46 71 50C64.5 50.5 59 53.5 55.5 58.5C72 62 90 60.5 100 51z"
-        />
-        <path class="wing-line" d="M96 50.5C88 44 79 40.5 69 39.5M94 53.5C86 51 78 50.5 70 51.5" />
+        @if (!wings()) {
+          <path
+            class="feather"
+            d="M100 51C96 39 84 29.5 68 27.5C73.5 31.5 76.5 35.5 77.5 39.5C69.5 36.5 60.5 37.5 53.5 42.5C61.5 43 67.5 46 71 50C64.5 50.5 59 53.5 55.5 58.5C72 62 90 60.5 100 51z"
+          />
+          <path
+            class="wing-line"
+            d="M96 50.5C88 44 79 40.5 69 39.5M94 53.5C86 51 78 50.5 70 51.5"
+          />
+        }
       }
       @case ('tiara') {
         <g class="tiara">
@@ -163,6 +184,25 @@ import type { Outfit } from './race-store';
       <circle class="crown" cx="88" cy="60" r="4.2" />
       <rect class="crown" x="86.5" y="63" width="3" height="11" rx="1.2" />
     }
+    @switch (marking()) {
+      @case ('star') {
+        <path class="mark" d="m139.4 24.4 1.9 3.4-1.9 3.4-1.9-3.4z" />
+      }
+      @case ('blaze') {
+        <path class="blaze" d="M138.4 25.4 148 39.4" />
+      }
+      @case ('spots') {
+        <g class="spots">
+          <circle cx="58" cy="55" r="2.6" />
+          <circle cx="65.5" cy="51.5" r="2.2" />
+          <circle cx="64" cy="61.5" r="3" />
+          <circle cx="72.5" cy="56.5" r="2.4" />
+          <circle cx="56.5" cy="64.5" r="2" />
+          <circle cx="71" cy="66" r="2.2" />
+          <circle cx="79" cy="51.5" r="1.8" />
+        </g>
+      }
+    }
     <ellipse class="eye" cx="134.9" cy="28.6" rx="2" ry="2.4" />
     <circle class="shine" cx="135.6" cy="27.7" r=".75" />
     <g class="legs">
@@ -179,7 +219,7 @@ import type { Outfit } from './race-store';
         <path class="hoof" d="M106.9 110.9L112.6 110.9L114.4 115.5L106.5 115.5z" />
       </g>
     </g>
-    @if (kind() === 'cloud' || kind() === 'storm') {
+    @if (wings()) {
       <path
         class="wing"
         d="M100 51C96 39 84 29.5 68 27.5C73.5 31.5 76.5 35.5 77.5 39.5C69.5 36.5 60.5 37.5 53.5 42.5C61.5 43 67.5 46 71 50C64.5 50.5 59 53.5 55.5 58.5C72 62 90 60.5 100 51z"
@@ -193,6 +233,17 @@ import type { Outfit } from './race-store';
     '[class.is-stumbling]': 'stumbling()',
     '[class.is-rainbow]': 'rainbow()',
     '[class.is-bust]': 'bust()',
+    '[style.--coat]': 'paint()?.coat',
+    '[style.--shade]': 'paint()?.shade',
+    '[style.--mane-1]': 'paint()?.mane?.[0]',
+    '[style.--mane-2]': 'paint()?.mane?.[1]',
+    '[style.--mane-3]': 'paint()?.mane?.[2]',
+    '[style.--mark]': 'paint()?.mark',
+    '[style.--spot]': 'paint()?.spot',
+    '[style.--horn]': 'paint()?.horn?.[0]',
+    '[style.--groove]': 'paint()?.horn?.[1]',
+    '[style.--sock-near]': 'marking() === "socks" ? "url(#" + sockId + "-near)" : null',
+    '[style.--sock-far]': 'marking() === "socks" ? "url(#" + sockId + "-far)" : null',
   },
   styles: `
     :host {
@@ -284,11 +335,29 @@ import type { Outfit } from './race-store';
       opacity: 0.7;
     }
     .horn {
-      fill: #ffd54a;
+      fill: var(--horn, #ffd54a);
+    }
+    .mark {
+      fill: var(--mark);
+    }
+    .spots {
+      fill: var(--spot);
+    }
+    .blaze {
+      fill: none;
+      stroke: var(--mark);
+      stroke-width: 2.8;
+      stroke-linecap: round;
+    }
+    .legs .leg path:not(.hoof) {
+      fill: var(--sock-near, var(--coat));
+    }
+    .far .leg path:not(.hoof) {
+      fill: var(--sock-far, var(--shade));
     }
     .horn-stripe {
       fill: none;
-      stroke: #e2a400;
+      stroke: var(--groove, #e2a400);
       stroke-width: 1.1;
       stroke-linecap: round;
     }
@@ -421,12 +490,36 @@ export class RacerArt {
   readonly kind = input.required<RacerId>();
   /** Lumi's keepsake from a finished cup; ignored for the other racers. */
   readonly outfit = input<Outfit | null>(null);
+  /** The child's horse from the Stable: the player's colours and kind, and the shadow's kind. */
+  readonly horse = input<Horse>(LUMI);
   readonly running = input(false);
   readonly stumbling = input(false);
   readonly rainbow = input(false);
   /** Head and neck only, for sizes where a whole pony would be a smudge. */
   readonly bust = input(false, { transform: booleanAttribute });
+  private readonly mine = computed(() => this.kind() === 'player' || this.kind() === 'shadow');
+  /** The player's own colours; every other racer keeps the ones in the stylesheet. */
+  protected readonly paint = computed(() => {
+    if (this.kind() !== 'player') return null;
+    const horse = this.horse();
+    return {
+      ...COATS[horse.coat],
+      spot: spotColour(horse.coat),
+      mane: MANES[horse.mane],
+      horn: HORNS[horse.horn],
+    };
+  });
+  /** Markings are the player's own; the shadow is a plain ghost. */
+  protected readonly marking = computed(() =>
+    this.kind() === 'player' ? this.horse().marking : 'none',
+  );
+  protected readonly sockId = `racer-sock-${nextSockId++}`;
   protected horn() {
-    return this.kind() === 'player' || this.kind() === 'mint' || this.kind() === 'shadow';
+    return this.mine() ? hasHorn(this.horse().kind) : this.kind() === 'mint';
+  }
+  protected wings() {
+    return this.mine()
+      ? hasWings(this.horse().kind)
+      : this.kind() === 'cloud' || this.kind() === 'storm';
   }
 }

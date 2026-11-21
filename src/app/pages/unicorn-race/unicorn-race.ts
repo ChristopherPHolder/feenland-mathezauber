@@ -66,9 +66,13 @@ import { RaceOverview } from './race-overview';
 import { RaceScene } from './race-scene';
 import { RaceSounds } from './race-sounds';
 import { RacerArt } from './racer-art';
+import { HorseStable } from './stable/horse-stable';
+import { cupTitleKey, outfitEmblem, outfitNameKey } from './outfits';
+import { stableText } from './stable/stable-messages';
 import { Cup, cupFor, Outfit, OUTFIT_CUP, outfits, RaceStore } from './race-store';
 import type { Course } from './race-world';
-type Phase = 'intro' | 'countdown' | 'racing' | 'finished';
+import type { Horse } from './horse';
+type Phase = 'stable' | 'intro' | 'countdown' | 'racing' | 'finished';
 type Feedback =
   | { readonly kind: 'idle' }
   | { readonly kind: 'gallop' }
@@ -88,13 +92,6 @@ const CUP_EMBLEM: Readonly<Record<RaceCup, string>> = {
   castle: '🏰',
   rainbow: '🌈',
 };
-const OUTFIT_EMBLEM: Readonly<Record<Outfit, string>> = {
-  wreath: '🌸',
-  wings: '🕊️',
-  tiara: '✨',
-  crown: '👑',
-  cape: '🌈',
-};
 const MODE_EMBLEM: Readonly<Record<RaceMode, string>> = { race: '🏁', chase: '🗝️', shadow: '👻' };
 /**
  * The unicorn race: Lumi gallops to the rainbow castle through four cups of three races.
@@ -104,12 +101,13 @@ const MODE_EMBLEM: Readonly<Record<RaceMode, string>> = { race: '🏁', chase: '
  */
 @Component({
   selector: 'app-unicorn-race',
-  imports: [RouterLink, Icon, GameHeader, RaceScene, RaceOverview, RacerArt],
+  imports: [RouterLink, Icon, GameHeader, RaceScene, RaceOverview, RacerArt, HorseStable],
   providers: [RaceSounds],
   templateUrl: './unicorn-race.html',
   styleUrls: ['./unicorn-race.css', './race-intro.css', './race-play.css', './race-themes.css'],
   host: {
     '[class.playing]': 'phase() !== "intro"',
+    '[class.in-stable]': 'phase() === "stable"',
     '[class.is-meadow]': 'cup() === "meadow"',
     '[class.is-sky]': 'cup() === "sky"',
     '[class.is-star]': 'cup() === "star"',
@@ -138,7 +136,6 @@ export class UnicornRace {
       `${this.t('level', { n: trackPosition(this.level()) })} · ${this.i.t(this.levelTitle(this.level()))} · ${this.t('heatLabel', { n: this.heat() })}`,
   );
   protected readonly totalHeats = TOTAL_HEATS;
-  protected readonly outfits = outfits;
   protected readonly paces = paces;
   protected readonly stars = [1, 2, 3] as const;
   protected readonly total = TOTAL_STAGES;
@@ -160,18 +157,31 @@ export class UnicornRace {
     length: this.stage().length,
     racers: this.lineup(),
     outfit: this.outfit(),
+    horse: this.horse(),
     sky: this.sky(),
   }));
   protected readonly outfit = computed(() => this.store.save().outfit);
+  /** The child's horse from the Stable, and its name or, until it has one, Lumi's. */
+  protected readonly horse = computed<Horse>(() => this.store.save().horse);
+  protected readonly horseName = computed(
+    () => this.horse().name || raceText(this.i.locale(), 'racerPlayer'),
+  );
   /** The keepsake just earned by finishing this race's cup, if any. */
   protected readonly newOutfit = signal<Outfit | null>(null);
   /** Rainbow streak pips: how many of the three steps toward a dash are lit. */
   protected readonly pips = computed(() => Math.min(3, this.race().streak));
-  /** Every route change (next race, level strip) lands back on that race's intro. */
+  /**
+   * Every route change (next race, level strip) lands back on that race's intro; the very first
+   * visit opens the Stable instead, so a new player starts by making a horse.
+   */
   protected readonly phase = linkedSignal<string, Phase>({
     source: this.levelId,
-    computation: () => 'intro',
+    computation: () => (untracked(() => this.store.save().stableSeen) ? 'intro' : 'stable'),
   });
+  protected readonly editLabel = computed(() =>
+    stableText(this.i.locale(), 'edit', { name: this.horseName() }),
+  );
+  private readonly editButton = viewChild<ElementRef<HTMLButtonElement>>('editHorse');
   protected readonly race = signal<RaceState>(createRace('normal', stageFor(raceTracks[0], 1)));
   protected readonly question = signal<RaceQuestion>({ text: '', answer: 0, choices: [] });
   protected readonly struck = signal<readonly number[]>([]);
@@ -238,7 +248,7 @@ export class UnicornRace {
     }),
   );
   protected readonly names = computed<Readonly<Record<RacerId, string>>>(() => ({
-    player: this.t('racerPlayer'),
+    player: this.horseName(),
     cloud: this.t('racerCloud'),
     mint: this.t('racerMint'),
     peach: this.t('racerPeach'),
@@ -340,7 +350,11 @@ export class UnicornRace {
         typeof value === 'number' ? this.i.format(value) : value,
       ]),
     );
-    return raceText(this.i.locale(), key, { total: TOTAL_STAGES, ...formatted });
+    return raceText(this.i.locale(), key, {
+      total: TOTAL_STAGES,
+      name: this.horseName(),
+      ...formatted,
+    });
   }
   protected levelTitle(level: RaceLevel): MessageKey {
     return `race${level}` as MessageKey;
@@ -377,7 +391,7 @@ export class UnicornRace {
     this.heat.set(heat);
   }
   protected cupTitle(cup: RaceCup): RaceMessageKey {
-    return `cup${cup.charAt(0).toUpperCase()}${cup.slice(1)}` as RaceMessageKey;
+    return cupTitleKey(cup);
   }
   protected cupEmblem(cup: RaceCup): string {
     return CUP_EMBLEM[cup];
@@ -392,22 +406,10 @@ export class UnicornRace {
     return `pace${pace.charAt(0).toUpperCase()}${pace.slice(1)}` as RaceMessageKey;
   }
   protected outfitName(outfit: Outfit | null): RaceMessageKey {
-    return outfit
-      ? (`outfit${outfit.charAt(0).toUpperCase()}${outfit.slice(1)}` as RaceMessageKey)
-      : 'outfitNone';
+    return outfitNameKey(outfit);
   }
   protected outfitEmblem(outfit: Outfit): string {
-    return OUTFIT_EMBLEM[outfit];
-  }
-  protected outfitCup(outfit: Outfit): RaceCup {
-    return OUTFIT_CUP[outfit];
-  }
-  protected outfitEarned(outfit: Outfit): boolean {
-    this.store.save();
-    return this.store.earned(outfit);
-  }
-  protected wear(outfit: Outfit | null) {
-    this.store.wear(outfit);
+    return outfitEmblem(outfit);
   }
   protected starsOf(level: RaceLevel): number {
     return this.progress.progress().stars?.[`unicorn-race-${level}`] ?? 0;
@@ -600,6 +602,17 @@ export class UnicornRace {
     }
     this.heat.set(heat);
     this.start();
+  }
+  protected openStable() {
+    this.stopTimers();
+    this.countdown.set(null);
+    this.phase.set('stable');
+  }
+  /** Back to the intro, with focus on the horse the child just made. */
+  protected closeStable() {
+    this.store.leaveStable();
+    this.phase.set('intro');
+    requestAnimationFrame(() => this.editButton()?.nativeElement.focus({ preventScroll: true }));
   }
   protected chooseRace() {
     this.stopTimers();

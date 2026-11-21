@@ -15,34 +15,50 @@ import {
 } from 'three';
 import type { RacerId } from './race';
 import type { Outfit } from './race-store';
+import {
+  COATS,
+  hasHorn,
+  hasWings,
+  Horse,
+  HORNS,
+  HornPaint,
+  LUMI,
+  MANES,
+  Marking,
+  spotColour,
+} from './horse';
 interface Look {
   readonly coat: string;
   readonly shade: string;
   readonly mane: readonly [string, string, string];
   readonly horn: boolean;
+  /** The horn's colour and its groove. */
+  readonly hornPaint: HornPaint;
   readonly wings: boolean;
+  readonly marking: Marking;
+  /** The colour of the markings, and of spots, which are dark on a pale coat. */
+  readonly mark: string;
+  readonly spot: string;
+  /** The flight feathers; the coverts above them take the coat's shade. */
+  readonly feather: string;
   readonly bow: boolean;
   readonly crown: boolean;
   /** Below 1 the pony is see-through, like a shadow. */
   readonly opacity: number;
 }
-const LOOK: Readonly<Record<RacerId, Look>> = {
-  player: {
-    coat: '#fffdfd',
-    shade: '#e7d8ee',
-    mane: ['#ff8fb8', '#ffd36b', '#8fd3ff'],
-    horn: true,
-    wings: false,
-    bow: false,
-    crown: false,
-    opacity: 1,
-  },
+type Rival = Exclude<RacerId, 'player' | 'shadow'>;
+const RIVALS: Readonly<Record<Rival, Look>> = {
   cloud: {
     coat: '#dccbff',
     shade: '#b9a3ef',
     mane: ['#fdf6ff', '#ead9ff', '#c9b1ff'],
     horn: false,
+    hornPaint: HORNS.gold,
     wings: true,
+    marking: 'none',
+    mark: '#fffdfd',
+    spot: '#fffdfd',
+    feather: '#fdf6ff',
     bow: false,
     crown: false,
     opacity: 1,
@@ -52,7 +68,12 @@ const LOOK: Readonly<Record<RacerId, Look>> = {
     shade: '#9fd9b6',
     mane: ['#ff9ed1', '#ffc3e3', '#ff7bbd'],
     horn: true,
+    hornPaint: HORNS.gold,
     wings: false,
+    marking: 'none',
+    mark: '#fffdfd',
+    spot: '#fffdfd',
+    feather: '#fdf6ff',
     bow: false,
     crown: false,
     opacity: 1,
@@ -62,7 +83,12 @@ const LOOK: Readonly<Record<RacerId, Look>> = {
     shade: '#f0b48e',
     mane: ['#fff0b8', '#ffe58a', '#ffd766'],
     horn: false,
+    hornPaint: HORNS.gold,
     wings: false,
+    marking: 'none',
+    mark: '#fffdfd',
+    spot: '#fffdfd',
+    feather: '#fdf6ff',
     bow: true,
     crown: false,
     opacity: 1,
@@ -72,22 +98,43 @@ const LOOK: Readonly<Record<RacerId, Look>> = {
     shade: '#6b739e',
     mane: ['#4b3a70', '#6d4a9a', '#3a2f5c'],
     horn: false,
+    hornPaint: HORNS.gold,
     wings: true,
+    marking: 'none',
+    mark: '#fffdfd',
+    spot: '#fffdfd',
+    feather: '#c3c9e6',
     bow: false,
     crown: true,
     opacity: 1,
   },
-  shadow: {
-    coat: '#c9b8ff',
-    shade: '#b09cf2',
-    mane: ['#e2d6ff', '#d2c2ff', '#efe8ff'],
-    horn: true,
-    wings: false,
+};
+/** The shadow keeps its ghostly lilac but takes the shape of the child's horse. */
+const GHOST = {
+  coat: '#c9b8ff',
+  shade: '#b09cf2',
+  mark: '#c9b8ff',
+  mane: ['#e2d6ff', '#d2c2ff', '#efe8ff'],
+} as const;
+/** How a racer looks: the rivals are fixed, the child's horse and its shadow follow the Stable. */
+function lookFor(id: RacerId, horse: Horse): Look {
+  if (id !== 'player' && id !== 'shadow') return RIVALS[id];
+  const paint = id === 'shadow' ? GHOST : { ...COATS[horse.coat], mane: MANES[horse.mane] };
+  const ghost = id === 'shadow';
+  return {
+    ...paint,
+    horn: hasHorn(horse.kind),
+    hornPaint: ghost ? HORNS.gold : HORNS[horse.horn],
+    wings: hasWings(horse.kind),
+    marking: ghost ? 'none' : horse.marking,
+    spot: ghost ? GHOST.mark : spotColour(horse.coat),
+    // Pale feathers on any coat: a lighter take on the coat, so a dark horse has dusky wings.
+    feather: new Color(paint.coat).lerp(new Color('#ffffff'), 0.7).getStyle(),
     bow: false,
     crown: false,
-    opacity: 0.5,
-  },
-};
+    opacity: ghost ? 0.5 : 1,
+  };
+}
 export const RAINBOW = ['#ff6f91', '#ffb347', '#ffe066', '#7ddf9b', '#7cc7ff', '#b79bff'];
 const INK = '#26224a';
 const GOLD = '#ffd54a';
@@ -226,6 +273,8 @@ export interface PonyPose {
   readonly celebrating: boolean;
   /** Standing on the finish line, pleased with the race: little hops and a nodding head. */
   readonly cheering: boolean;
+  /** Extra lift for the wings, in radians, to show them off on the Stable's stand. */
+  readonly wingLift?: number;
 }
 /**
  * One racer, modelled like a real horse: a lofted body, an arched neck and a long face,
@@ -249,8 +298,9 @@ export class Pony {
   constructor(
     readonly id: RacerId,
     outfit: Outfit | null = null,
+    horse: Horse = LUMI,
   ) {
-    const look = LOOK[id];
+    const look = lookFor(id, horse);
     this.ghost = look.opacity < 1;
     const skin = (color: string, roughness = 0.62) =>
       new MeshStandardMaterial({
@@ -263,6 +313,7 @@ export class Pony {
     const coat = skin(look.coat);
     const shade = skin(look.shade);
     const hoof = skin(new Color(look.shade).multiplyScalar(0.55).getStyle(), 0.4);
+    const mark = skin(look.mark);
     const hair = look.mane.map((color) => skin(color, 0.48));
     const ink = skin(INK, 0.3);
     // Everything hangs off a frame that rocks around the hips.
@@ -277,17 +328,18 @@ export class Pony {
     body.add(this.neck);
     this.head.position.copy(HEAD_PIVOT);
     this.neck.add(this.head);
-    this.buildHead(look, coat, shade, ink, hair);
+    this.buildHead(look, coat, shade, ink, hair, mark);
     this.buildMane(hair);
     this.buildTail(body, hair);
     for (const front of [true, false])
       for (const side of [-1, 1]) {
-        const leg = makeLeg(front, side, coat, hoof);
+        const leg = makeLeg(front, side, coat, hoof, look.marking === 'socks' ? mark : coat);
         body.add(leg.hip);
         this.legs.push(leg);
       }
+    if (look.marking === 'spots') addSpots(body, skin(look.spot));
     if (look.wings) {
-      const feather = skin(id === 'storm' ? '#c3c9e6' : '#fdf6ff', 0.7);
+      const feather = skin(look.feather, 0.7);
       for (const side of [-1, 1]) this.addWing(body, side, feather, shade);
     }
     if (look.bow) {
@@ -309,7 +361,8 @@ export class Pony {
       key.position.set(0.33, 1.12, -0.05);
       body.add(key);
     }
-    if (outfit) this.dress(body, outfit, skin);
+    // A horse with wings of its own keeps them rather than wearing a second pair.
+    if (outfit && !(outfit === 'wings' && look.wings)) this.dress(body, outfit, skin);
     this.root.traverse((part) => {
       if (part instanceof Mesh) part.castShadow = !this.ghost;
     });
@@ -411,7 +464,7 @@ export class Pony {
     });
     for (const wing of this.wings) {
       const flap = moving ? Math.sin(this.phase * 1.5) * 0.5 : Math.sin(now * 2) * 0.07;
-      wing.rotation.z = (moving ? 0.35 : 0.1) + flap;
+      wing.rotation.z = (moving ? 0.35 : 0.1) + flap + (pose.wingLift ?? 0);
     }
   }
   /** A standing pose, so a pony that has not been animated yet still looks right. */
@@ -433,9 +486,13 @@ export class Pony {
     shade: Material,
     ink: Material,
     hair: readonly Material[],
+    mark: Material,
   ) {
     const head = this.head;
     head.add(new Mesh(loft(HEAD), coat));
+    // A star sits between the eyes; a blaze runs from there down to the nose.
+    if (look.marking === 'star') head.add(new Mesh(faceStripe(2, 3, 0.05), mark));
+    if (look.marking === 'blaze') head.add(new Mesh(faceStripe(1.6, 5.2, 0.045), mark));
     head.add(blob(0.09, 0.1, 0.105, shade, 0, -0.415, -0.435));
     const glint = new MeshBasicMaterial({
       color: '#ffffff',
@@ -456,7 +513,7 @@ export class Pony {
       // A spiralled horn: a slim cone wound with a few darker turns.
       const horn = new Group();
       const gold = new MeshStandardMaterial({
-        color: GOLD,
+        color: look.hornPaint[0],
         roughness: 0.3,
         transparent: this.ghost,
         opacity: look.opacity,
@@ -465,7 +522,7 @@ export class Pony {
       cone.position.y = 0.23;
       horn.add(cone);
       const groove = new MeshStandardMaterial({
-        color: '#e2a400',
+        color: look.hornPaint[1],
         roughness: 0.4,
         transparent: this.ghost,
         opacity: look.opacity,
@@ -669,7 +726,13 @@ export class Pony {
     }
   }
 }
-function makeLeg(front: boolean, side: number, coat: Material, hoof: Material): Leg {
+function makeLeg(
+  front: boolean,
+  side: number,
+  coat: Material,
+  hoof: Material,
+  sock: Material,
+): Leg {
   const hip = new Group();
   const knee = new Group();
   const at = (y: number, z = 0) => new Vector3(0, y, z);
@@ -679,8 +742,8 @@ function makeLeg(front: boolean, side: number, coat: Material, hoof: Material): 
     hip.add(limb(at(0), at(-0.46), 0.11, 0.07, coat));
     knee.position.set(0, -0.46, 0);
     knee.add(blob(0.073, 0.08, 0.073, coat));
-    knee.add(limb(at(0), at(-0.36), 0.064, 0.05, coat));
-    knee.add(blob(0.06, 0.065, 0.062, coat, 0, -0.37, 0.004));
+    knee.add(limb(at(0), at(-0.36), 0.064, 0.05, sock));
+    knee.add(blob(0.06, 0.065, 0.062, sock, 0, -0.37, 0.004));
     const shoe = new Mesh(new CylinderGeometry(0.058, 0.08, 0.12, 12), hoof);
     shoe.position.set(0, -0.45, -0.01);
     knee.add(shoe);
@@ -695,8 +758,8 @@ function makeLeg(front: boolean, side: number, coat: Material, hoof: Material): 
     hip.add(limb(stifle, hock, 0.105, 0.066, coat));
     knee.position.copy(hock);
     knee.add(blob(0.068, 0.075, 0.07, coat));
-    knee.add(limb(at(0), at(-0.37, -0.03), 0.062, 0.05, coat));
-    knee.add(blob(0.06, 0.065, 0.062, coat, 0, -0.38, -0.028));
+    knee.add(limb(at(0), at(-0.37, -0.03), 0.062, 0.05, sock));
+    knee.add(blob(0.06, 0.065, 0.062, sock, 0, -0.38, -0.028));
     const shoe = new Mesh(new CylinderGeometry(0.058, 0.08, 0.12, 12), hoof);
     shoe.position.set(0, -0.46, -0.04);
     knee.add(shoe);
@@ -705,4 +768,68 @@ function makeLeg(front: boolean, side: number, coat: Material, hoof: Material): 
   // A gallop: the hind pair lands, then the front pair, each a beat apart.
   const offset = front ? (side < 0 ? -2.3 : -2.9) : side < 0 ? 0 : -0.6;
   return { hip, knee, front, offset };
+}
+/**
+ * A white stripe down the front of the face, from one point along the head's rings to another
+ * (fractional, so it can start between rings). It is a slim loft lifted just proud of the face.
+ */
+function faceStripe(from: number, to: number, width: number): BufferGeometry {
+  const rings: Ring[] = [];
+  const steps = 8;
+  for (let step = 0; step <= steps; step++) {
+    const at = from + ((to - from) * step) / steps;
+    const index = Math.min(HEAD.length - 2, Math.floor(at));
+    const a = HEAD[index];
+    const b = HEAD[index + 1];
+    const t = at - index;
+    const y = a.y + (b.y - a.y) * t;
+    const z = a.z + (b.z - a.z) * t;
+    const ry = a.ry + (b.ry - a.ry) * t;
+    const rx = a.rx + (b.rx - a.rx) * t;
+    // The face's outward normal in the y-z plane, from the head's spine at this point.
+    const length = Math.hypot(b.y - a.y, b.z - a.z) || 1;
+    const ny = -(b.z - a.z) / length;
+    const nz = (b.y - a.y) / length;
+    // Taper both ends so a star is a diamond and a blaze narrows at the top.
+    const taper = Math.sin((step / steps) * Math.PI) * 0.85 + 0.15;
+    const half = Math.min(width, rx * 0.6) * taper;
+    const lift = ry * 0.84;
+    rings.push({ y: y + ny * lift, z: z + nz * lift, rx: half, ry: ry * 0.22 });
+  }
+  return loft(rings, 10);
+}
+/** Appaloosa spots over the rump and loins, set into the coat on both sides of the back. */
+function addSpots(body: Group, mark: Material) {
+  // Each spot: how far along the back (z), how high up the flank (0 at the side, 1.5 at the top), size.
+  const spots: readonly (readonly [number, number, number])[] = [
+    [0.62, 0.9, 0.06],
+    [0.55, 0.45, 0.05],
+    [0.5, 1.3, 0.05],
+    [0.44, 0.7, 0.055],
+    [0.36, 1.05, 0.045],
+    [0.3, 0.4, 0.05],
+    [0.24, 1.35, 0.04],
+    [0.18, 0.75, 0.045],
+    [0.68, 0.35, 0.04],
+    [0.1, 1.05, 0.035],
+  ];
+  for (const side of [-1, 1])
+    for (const [z, rise, size] of spots) {
+      // Find the body's ring at this point along the back and sit the spot on its surface.
+      const index = BODY.findIndex((ring) => ring.z <= z);
+      const after = BODY[Math.max(1, index)];
+      const before = BODY[Math.max(0, index - 1)];
+      const t = (before.z - z) / (before.z - after.z || 1);
+      const rx = before.rx + (after.rx - before.rx) * t;
+      const ry = before.ry + (after.ry - before.ry) * t;
+      const y = before.y + (after.y - before.y) * t;
+      // Mostly sunk into the coat, so each spot reads as a patch, not a bead.
+      const spot = blob(size, size * 0.8, size, mark);
+      spot.position.set(
+        side * Math.cos(rise) * rx * 0.9,
+        y + Math.sin(rise) * ry * 0.9,
+        z + side * 0.013,
+      );
+      body.add(spot);
+    }
 }

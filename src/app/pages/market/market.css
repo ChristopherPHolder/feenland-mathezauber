@@ -1,0 +1,510 @@
+/* The page, the intro and the finish card. Play layout lives in market-play.css. */
+:host {
+  --safe-y: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  display: block;
+  min-height: calc(100dvh - var(--safe-y));
+  background: linear-gradient(#fde7c8, #fff4e2 45%, #fffaf0);
+  padding: 12px max(12px, env(safe-area-inset-right)) 20px max(12px, env(safe-area-inset-left));
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.game {
+  max-width: 1240px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel {
+  background: var(--cream);
+  border-radius: var(--radius-panel);
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow-panel);
+}
+.best-line {
+  color: var(--pink-deep);
+  font-weight: 600;
+}
+
+/* Intro */
+.level-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(7 * 46px + 6 * 8px);
+  margin: 0 auto 16px;
+  padding: 0;
+}
+.level-pill {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  min-height: 46px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--sky-deep);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.level-pill:hover {
+  background: var(--lagoon-ground);
+}
+.level-pill[aria-current='page'] {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+@media (min-width: 760px) {
+  .level-strip {
+    max-width: none;
+  }
+}
+.outcome {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(16px, 3vw, 28px);
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(12px, 3vw, 28px);
+}
+.intro-side {
+  display: grid;
+  gap: 12px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.outcome-art {
+  aspect-ratio: 8 / 5;
+  width: 100%;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  background: linear-gradient(#f3dcb8, #fdf1de);
+}
+.tip-card {
+  padding: 12px 16px;
+  border-radius: var(--radius-surface);
+  background: var(--warm-ground);
+  border: 2px solid var(--sun);
+}
+.tip-card h3,
+.shelf h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--amber-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.shelf h3 {
+  color: var(--sky-deep);
+}
+.tip-card p {
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+.tip-card .example {
+  margin-left: 8px;
+  font-size: 20px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--sky-deep);
+}
+.shelf {
+  margin-top: 4px;
+}
+.shelf h3 span {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.pace {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pace legend {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 0;
+}
+.pace-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.pace-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 2px solid var(--lagoon);
+  border-radius: var(--radius-surface);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+}
+.pace-choice:hover {
+  background: var(--ground);
+}
+.pace-choice.selected {
+  background: var(--success-ground);
+  border-color: var(--success-strong);
+}
+.pace-choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.pace-choice input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--success-strong);
+}
+.pace-art {
+  width: 56px;
+  height: 32px;
+}
+.pace-art .sun {
+  fill: var(--sun);
+}
+.pace-choice strong {
+  font-size: 16px;
+}
+.pace-time {
+  font-size: 13px;
+  line-height: 1.3;
+}
+.pace-help {
+  margin: 2px 0 8px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.start-dock {
+  margin-top: 12px;
+}
+.start-dock .button {
+  margin: 0 auto;
+  max-width: 360px;
+}
+
+/* Outcome */
+.outcome:focus {
+  outline: none;
+}
+.outcome h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.stars {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+.star {
+  width: 52px;
+  height: 52px;
+  color: var(--star-empty);
+}
+.star ui-icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.star.earned {
+  color: var(--star-earned-big);
+}
+.score-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+}
+.new-best {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 600;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin: 14px 0 6px;
+}
+.tile {
+  padding: 8px 12px;
+  border-radius: var(--radius-chip);
+  background: var(--lagoon-ground);
+  border: 2px solid #b9d9e8;
+}
+.tile dt {
+  font-size: 14px;
+  color: var(--muted);
+}
+.tile dd {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.treats-line {
+  padding: 8px 14px;
+  border-radius: var(--radius-chip);
+  background: var(--warm-ground);
+  font-weight: 600;
+}
+.outcome-help {
+  color: var(--muted);
+}
+.save-note {
+  padding: 10px 14px;
+  border-radius: var(--radius-chip);
+  background: #fff2d2;
+}
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 720px) {
+  .intro-grid,
+  .outcome {
+    grid-template-columns: 1fr;
+  }
+  .outcome-art {
+    max-width: 420px;
+    margin: auto;
+  }
+  .intro-art {
+    max-width: 440px;
+    width: 100%;
+    margin: auto;
+  }
+}
+/* Phones: the whole card fits one screen, so nothing needs reading past the fold. */
+@media (max-width: 520px) {
+  .panel.intro {
+    padding: 12px;
+  }
+  .level-strip {
+    gap: 6px;
+    max-width: calc(7 * 36px + 6 * 6px);
+    margin-bottom: 10px;
+  }
+  .level-pill {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    font-size: 16px;
+  }
+  .tip-card p,
+  .pace-help,
+  .pace-time {
+    display: none;
+  }
+  .tip-card {
+    padding: 8px 12px;
+  }
+  .pace legend {
+    font-size: 17px;
+  }
+  .pace-options {
+    gap: 6px;
+  }
+  .pace-choice input {
+    top: 4px;
+    right: 4px;
+    width: 14px;
+    height: 14px;
+  }
+  .pace-choice strong {
+    font-size: 14px;
+  }
+  .intro-side {
+    gap: 8px;
+  }
+  .start-dock {
+    margin-top: 10px;
+  }
+}
+/* A phone on its side: film and choices side by side, Start always in reach. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .panel.intro {
+    padding: 10px 14px;
+  }
+  .level-strip {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .level-pill {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    font-size: 15px;
+  }
+  .intro-grid {
+    grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
+  }
+  .tip-card p,
+  .pace-help,
+  .pace-time {
+    display: none;
+  }
+  .tip-card {
+    padding: 6px 12px;
+  }
+  .pace legend {
+    font-size: 16px;
+  }
+  .start-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 6px;
+    padding: 8px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(#fffdf500, var(--cream) 16px);
+  }
+}
+
+/* The level card's "how to shop" film. */
+.intro-art {
+  width: 100%;
+}
+.pace-art .hill {
+  fill: #9fd28a;
+}
+.pace-art .sun.setting {
+  fill: #ffb066;
+}
+/* Lumi's shelf: one slot per treat, filled once she has bought it. */
+.shelf-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.shelf-slot {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 2px dashed #d9b88f;
+  color: #a2835e;
+  font-size: 15px;
+  font-weight: 600;
+}
+.shelf-slot.owned {
+  border: 2px solid var(--sun);
+  background: var(--warm-ground);
+  font-size: 20px;
+}
+/* The finish: the shop and the receipt on one side, stars and buttons on the other. */
+.outcome-side {
+  display: grid;
+  gap: 12px;
+}
+.receipt {
+  position: relative;
+  padding: 12px 16px 16px;
+  background: var(--paper);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px #0002;
+  font-variant-numeric: tabular-nums;
+  mask-image:
+    linear-gradient(#000, #000),
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg);
+  mask-size:
+    100% calc(100% - 8px),
+    16px 8px;
+  mask-position: top, bottom;
+  mask-repeat: no-repeat, repeat-x;
+}
+.receipt h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.receipt ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 2px dashed #d8cdb8;
+}
+.receipt li,
+.receipt-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+.receipt-total {
+  margin: 6px 0 0;
+  font-size: 18px;
+}
+@media (max-width: 720px) {
+  .intro-art {
+    max-width: 440px;
+    margin: auto;
+  }
+  .outcome-art {
+    max-width: 420px;
+  }
+}
+@media (max-width: 520px) {
+  .tip-card p {
+    display: block;
+    font-size: 14px;
+    line-height: 1.35;
+    margin-top: 2px;
+  }
+  .shelf-slot {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  .shelf-slot.owned {
+    font-size: 16px;
+  }
+}
+/* Phones: the film stays short enough that Start is on the first screen. */
+@media (max-width: 520px) {
+  .intro-art {
+    max-width: 300px;
+  }
+}

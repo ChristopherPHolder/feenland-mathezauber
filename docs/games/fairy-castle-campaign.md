@@ -36,6 +36,19 @@ Full-level completion is awarded only after all twenty waves. The first four tea
 
 Requested help and automatic help after mistakes are both tracked. Retries reset the current wave's attempt results. Saved campaign results keep the best independent score for each completed wave, so children can improve by replaying a specific wave. Existing earned stars and mastery never decrease. Two or three stars mark the level mastered; one star records completion and encourages practice. The final screen uses the existing completion flow with Castle saved, localized encouragement, and replay/chapter actions. Demo preview completions cannot enter this real campaign or grant real progress.
 
+## The 3D battlefield
+
+`castle-world.ts` draws the battle in 3D over the painted 2D scene, which stays as the fallback without WebGL. It only reads the game's state; every control stays in the page.
+
+- **A spell:** the fairy winds up while the gem gathers on her wand, flings it on an arc with a comet trail, and it lands with a small glint just before the game decides.
+- **A right answer:** a white flash, a ring of light and a slight camera shake; the creature recoils, pops up spinning and vanishes in a puff of cloud and stars, and a butterfly flutters out. A boss only staggers while a shield ring shatters.
+- **A wrong answer:** no flash; the gem glances off and tumbles away in a grey puff, the creature puffs itself up and giggles, then waddles to the next stone. Nothing points at the right spell.
+- **Monsters walk:** the walk cycle runs on the distance covered, so they bob over each foot, rock from side to side, squash as the weight lands and kick up dust, at any speed. Idle monsters breathe and grow restless as the thinking ring runs down.
+- **The castle lives:** pennants ripple, windows flicker with candlelight and two small fairies circle the towers. As a monster nears, the windows flash red, the flags whip and the small fairies fly out to guard the gate.
+- **Wave won:** the castle glows, stars burst from the towers, petals and glitter rain down and fireworks go up. **Wave lost:** the monster stomps a little dance at the gate while dusk falls, the windows go dark and the flags droop. The outcome card waits 1.2 s so the moment can be seen.
+
+Calm motion (the device setting or the Settings switch) keeps every reaction that carries meaning and drops idle wobble, spins, flutter and camera shake; the outcome card then shows at once.
+
 ## Play locally
 
 ```sh
