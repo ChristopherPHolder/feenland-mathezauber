@@ -79,7 +79,8 @@ type Feedback =
 export const TICK_MS = 100;
 const COUNT_MS = 800;
 const FEEDBACK_MS = 900;
-const FINISH_HOLD_MS = 1300;
+/** How long the race holds on the finish line, so the winner's rear is seen before the summary. */
+export const FINISH_HOLD_MS = 2100;
 const LOCK_MS = 350;
 const CUP_EMBLEM: Readonly<Record<RaceCup, string>> = {
   meadow: '🌸',
