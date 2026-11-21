@@ -147,11 +147,8 @@ describe('Unicorn race game', () => {
     expect(cards[21].getAttribute('href')).toBe('/adventure/unicorn-race-15');
     expect(cards[5].getAttribute('href')).toBe('/adventure/unicorn-race-20');
     expect(element.textContent).toContain('0 of 5 cups complete');
-    // Keepsakes stay locked until a whole cup is finished.
-    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(5);
-    expect(element.querySelector('.wardrobe .chip[aria-pressed="true"]')?.textContent).toContain(
-      'Just Lumi',
-    );
+    // The keepsakes moved into the Stable, so the intro no longer lists them.
+    expect(element.querySelector('.wardrobe')).toBeNull();
   });
   it('hands out the cup keepsake once three races of a cup are finished and lets Lumi wear it', () => {
     const { element, component, wait, answerRight, start, click, fixture } = setup(
@@ -172,11 +169,16 @@ describe('Unicorn race game', () => {
     expect(store.completedCups()).toBe(1);
     click('Choose a race');
     expect(element.textContent).toContain('1 of 5 cups complete');
-    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(4);
     expect(element.querySelector('.lineup app-racer .wreath')).toBeTruthy();
-    click('Just Lumi');
+    // In the Stable's dress-up tab the earned wreath is on, the other four are still locked.
+    click('Change Lumi');
+    click('👑');
+    expect(element.querySelectorAll('.dress.locked')).toHaveLength(4);
+    expect(element.querySelector('.dress:has(:checked)')?.textContent).toContain('Flower wreath');
+    element.querySelector<HTMLInputElement>('input[name="horse-outfit"]')!.click();
     fixture.detectChanges();
     expect(store.save().outfit).toBeNull();
+    click('✓ Done');
     expect(element.querySelector('.lineup app-racer .wreath')).toBeNull();
     expect(
       [...element.querySelectorAll('.level-card')][3].querySelectorAll('.level-stars .earned'),
@@ -466,11 +468,20 @@ describe('Unicorn race game', () => {
       kind: 'unicorn',
       coat: 'mint',
       mane: 'rainbow',
+      marking: 'none',
+      horn: 'gold',
     });
     expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent?.trim()).toBe(
       'Lumi',
     );
-    store.setHorse({ name: '  Blitz   der   Wind  ', kind: 'pony', coat: 'cocoa', mane: 'night' });
+    store.setHorse({
+      name: '  Blitz   der   Wind  ',
+      kind: 'pony',
+      coat: 'cocoa',
+      mane: 'night',
+      marking: 'socks',
+      horn: 'silver',
+    });
     const saved = JSON.parse(localStorage.getItem('feenland.unicorn-race.v1')!);
     expect(saved.version).toBe(2);
     expect(saved.sparkles).toBe(5);
@@ -479,6 +490,8 @@ describe('Unicorn race game', () => {
       kind: 'pony',
       coat: 'cocoa',
       mane: 'night',
+      marking: 'socks',
+      horn: 'silver',
     });
   });
   it('speaks German on the intro and during the race', () => {
