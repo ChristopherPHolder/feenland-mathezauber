@@ -249,7 +249,7 @@
       </div>
     </div>
     @if (coachOpen()) {
-      <ui-coach-dialog [heading]="t('demoTitle')" [doneLabel]="t('coachGo')" (done)="closeCoach()">
+      <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeCoach()">
         <app-duel-demo [alternate]="question().text === '4 + 3'" />
       </ui-coach-dialog>
     }

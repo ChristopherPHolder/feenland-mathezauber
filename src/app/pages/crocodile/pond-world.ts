@@ -2,7 +2,6 @@ import {
   AdditiveBlending,
   CanvasTexture,
   Color,
-  CylinderGeometry,
   Fog,
   Group,
   Mesh,
@@ -12,7 +11,6 @@ import {
   PlaneGeometry,
   Raycaster,
   RingGeometry,
-  SphereGeometry,
   Sprite,
   SpriteMaterial,
   Vector2,
@@ -35,14 +33,27 @@ import { heronLapAngle, heronLoop } from './heron-flight';
 import { Kiki } from './pond-kiki';
 import {
   Butterfly,
+  Dragonfly,
   Frog,
   HeronModel,
   makeBigFish,
   makeFish,
   makeGoldenPad,
   makeLilyPad,
-  makeReeds,
 } from './pond-life';
+import {
+  chompPose,
+  hopPose,
+  type KikiPose,
+  refusePose,
+  refuseShake,
+  REST,
+  SNAP,
+  tileHop,
+  widthOf,
+} from './pond-chomp';
+import { PondFx } from './pond-fx';
+import { LotusKit, padVeins, ReedBed } from './pond-plants';
 
 const INK = '#172555';
 const FOV = 40;
@@ -63,11 +74,16 @@ const SUNSET_WATER = new Color('#ffa486');
 const FRENZY_SPARKS = ['#ffe27a', '#ff9fc0', '#ffb36b'] as const;
 const NO_GLOW = new Color('#000000');
 const STEAL_SECONDS = 1.3;
+/** The heron's dive on the snack, before it climbs away with it. */
+const DIVE_SECONDS = 0.45;
 const SHOO_SECONDS = 0.8;
-/** The highest the waves reach; ripples float just above them so no wave cuts them in half. */
-const WAVE_TOP = 0.1;
 /** How long Kiki's "no thanks" lasts after a wrong pick. */
 const WRONG_SECONDS = 1.1;
+/** A hop for "both the same" lands this long after the tap. */
+const HOP_LANDS = 0.56;
+const GLINT = new Color('#fff8e0');
+const SUNSET_GLINT = new Color('#ffd0a0');
+const UP = new Vector3(0, 1, 0);
 
 type Side = 'left' | 'right';
 interface Anchor {
@@ -97,26 +113,20 @@ interface Raft {
   nextSpark: number;
   tokens: Token[];
   text: string;
-  home: Vector3;
-  padHome: Vector3;
+  readonly home: Vector3;
+  readonly padHome: Vector3;
+  /** Where the tiles are heading this frame. */
+  readonly target: Vector3;
   padRadius: number;
   born: number;
   wobbleAt: number;
 }
-interface Burst {
-  readonly mesh: Mesh | Sprite;
-  readonly velocity: Vector3;
-  born: number;
-  life: number;
-  size: number;
-  readonly opacity: number;
-  kind: 'drop' | 'ring' | 'spark' | 'coin';
-}
 
 /**
- * Kiki's pond in 3D: gently moving water with ripples, lily pads, reeds, a frog, butterflies
- * and fish; Kiki in the middle; the two sides as number tiles on lily pads; and the heron in
- * race modes. It only draws: every decision comes in through `setState`.
+ * Kiki's pond in 3D: gently moving water with ripples and sun glints, lily pads with water
+ * lilies, swaying reeds, a frog, a dragonfly, butterflies and fish; Kiki in the middle; the two
+ * sides as number tiles on lily pads; and the heron in race modes. It only draws: every decision
+ * comes in through `setState`.
  */
 export class PondWorld extends Stage implements StateWorld<PondFrame> {
   private frame: PondFrame | null = null;
@@ -130,10 +140,10 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
   private readonly waterBase: Float32Array;
   private readonly waterColor = WATER.plain.clone();
   private readonly kiki = new Kiki();
-  private kikiHome = new Vector3();
+  private readonly kikiHome = new Vector3();
   private kikiScale = 1;
   private kikiYaw = 0;
-  private kikiLunge = new Vector3();
+  private readonly kikiLunge = new Vector3();
   private readonly rafts: Record<Side, Raft>;
   private readonly tileGeometry = new PlaneGeometry(1, 1);
 
@@ -142,7 +152,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
   private heronProgress = 0;
   private heronSnack = -1;
   private heronStateAt = 0;
-  private heronFrom = new Vector3();
+  private readonly heronFrom = new Vector3();
   private heronScale = 1;
   /** Where the instruction bubble starts, in the host's pixels: the loop stays above it. */
   private floor = 0;
@@ -151,44 +161,49 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
 
   private readonly decor = new Group();
   private readonly frog = new Frog();
+  private readonly dragonfly = new Dragonfly();
+  private readonly dragonSpots = [new Vector3(), new Vector3(), new Vector3(), new Vector3()];
   private readonly butterflies = [new Butterfly('#ff8fb6'), new Butterfly('#ffd166')];
   private readonly fish = [makeFish(), makeFish('#ffb347', 0.8), makeFish('#f08a24', 0.9)];
   private readonly bigFish = makeBigFish();
-  private reeds: Group[] = [];
+  private readonly reedBed = new ReedBed();
+  private readonly reeds: Mesh[];
+  private readonly veins = padVeins();
+  private readonly lotus = new LotusKit();
+  private readonly decorPads: Group[];
   private viewWidth = 10;
-  private viewCenter = new Vector3();
-  private topRow = new Vector3();
+  private readonly viewCenter = new Vector3();
+  private readonly topRow = new Vector3();
 
-  private readonly bursts: Burst[] = [];
-  private readonly dropGeometry = new SphereGeometry(1, 8, 6);
-  private readonly ringGeometry = new RingGeometry(0.82, 1, 40);
-  private readonly dropMaterial = new MeshBasicMaterial({
-    color: '#ffffff',
-    transparent: true,
-    opacity: 0.9,
-  });
   private readonly sparkTexture = sparkTexture();
   private readonly glowTexture = glowTexture();
-  private readonly coinGeometry = new CylinderGeometry(1, 1, 0.22, 20);
-  private readonly coinMaterial = new MeshStandardMaterial({
-    color: '#ffc93c',
-    metalness: 0.5,
-    roughness: 0.3,
-    emissive: '#b8740a',
-    emissiveIntensity: 0.9,
-  });
+  private readonly fx = new PondFx(this.sparkTexture);
   private golden = 0;
   private sunset = 0;
   private nextRipple = 0;
+  private nextBloop = 2;
   private nextSpark = 0;
+  private nextWake = 0;
 
   private readonly tries = new EventCounter();
   private chompAt = -10;
   private chompSide: Comparison | null = null;
+  /** The bite's splash and the hop's landing play once per answer. */
+  private landed = true;
   private wrongAt = -10;
+  /** The little snort after a wrong pick plays once per pick. */
+  private snorted = true;
   private wrongSide: Comparison | null = null;
   private snack = -1;
   private phase: PondFrame['phase'] = 'ready';
+
+  // Scratch vectors, so nothing is allocated per frame.
+  private readonly v1 = new Vector3();
+  private readonly v2 = new Vector3();
+  private readonly v3 = new Vector3();
+  private readonly mouthAt = new Vector3();
+  private readonly beakAt = new Vector3();
+  private readonly glintTint = new Color();
 
   constructor(canvas: HTMLCanvasElement, host: HTMLElement) {
     super(canvas, host, { shadows: true, fov: FOV, background: '#cfeaf7' });
@@ -214,7 +229,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       geometry,
       new MeshStandardMaterial({
         color: WATER.plain,
-        roughness: 0.35,
+        roughness: 0.3,
+        metalness: 0.05,
+        // Flat shading lights each facet from its own slope, so the waves need no normals.
         flatShading: true,
         transparent: true,
         opacity: 0.86,
@@ -229,6 +246,8 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     this.rafts = { left: this.makeRaft('left'), right: this.makeRaft('right') };
     this.scene.add(this.kiki.root);
     this.kiki.root.traverse((object) => (object.castShadow = true));
+    // Pitch in her own frame first, then turn: a lunge to the side never rolls her over.
+    this.kiki.body.rotation.order = 'YXZ';
 
     this.heronShadow = new Mesh(
       new RingGeometry(0, 1, 24),
@@ -241,12 +260,35 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     );
     this.heronShadow.rotation.x = -Math.PI / 2;
     this.heron.root.visible = this.heronShadow.visible = false;
+    this.heron.root.rotation.order = 'YXZ';
     this.scene.add(this.heron.root, this.heronShadow);
 
+    this.decorPads = DECOR_PADS.map(([, , , tone]) => {
+      const pad = makeLilyPad(tone ? '#5fb86c' : '#4ca25f', '#2f7a44', this.veins);
+      this.decor.add(pad);
+      return pad;
+    });
+    // Water lilies bloom on two of the pads.
+    for (const index of LOTUS_PADS) {
+      const flower = this.lotus.flower();
+      flower.position.set(0.25, 0.03, -0.15);
+      flower.scale.setScalar(1.5);
+      this.decorPads[index]!.add(flower);
+    }
+    this.reeds = REED_SPOTS.map((_, index) => {
+      const clump = this.reedBed.clump(index + 1);
+      this.decor.add(clump);
+      return clump;
+    });
     for (const fish of this.fish) this.decor.add(fish);
     this.bigFish.visible = false;
-    this.decor.add(this.bigFish, this.frog.root, ...this.butterflies.map((b) => b.root));
-    this.scene.add(this.decor);
+    this.decor.add(
+      this.bigFish,
+      this.frog.root,
+      this.dragonfly.root,
+      ...this.butterflies.map((b) => b.root),
+    );
+    this.scene.add(this.decor, this.fx.root);
   }
 
   setState(frame: PondFrame) {
@@ -266,24 +308,28 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
         // The new numbers grow out of their own pad, not from wherever the last ones went
         // (Kiki's mouth, or off-screen in the heron's beak).
         raft.tiles.position.copy(raft.home);
+        // A fresh pad bobs up out of the water with a ripple.
+        if (fresh) this.fx.ring(raft.padHome, raft.padRadius * 1.05, 0.9, 0.3);
       }
       this.tries.take(0);
     }
     if (this.tries.take(frame.tries) > 0 && frame.wrong) {
       this.wrongAt = this.elapsed;
       this.wrongSide = frame.wrong;
-      const raft =
-        frame.wrong === '>' ? this.rafts.left : frame.wrong === '<' ? this.rafts.right : null;
+      this.snorted = false;
+      const raft = this.raftFor(frame.wrong);
       if (raft) {
         raft.wobbleAt = this.elapsed;
-        this.splash(raft.padHome, raft.padRadius * 0.6, 5);
+        this.fx.splash(raft.padHome, raft.padRadius * 0.6, 5, this.calm);
       }
     }
     if (frame.phase === 'chomping' && this.phase !== 'chomping' && frame.chosen) {
       this.chompAt = this.elapsed;
       this.chompSide = frame.chosen;
-      if (frame.chosen === '=') this.sparkle(this.kikiHome, this.kikiScale * 1.2, 14);
+      this.landed = false;
       if (frame.kind === 'golden') this.goldRush(frame.chosen);
+      // The round's last and biggest snack: a ring of party sparkles round Kiki.
+      if (frame.kind === 'boss') this.sparkle(this.kikiHome, this.kikiScale * 1.5, 18, true);
     }
     if (frame.heron?.state !== previous?.heron?.state || frame.snack !== previous?.snack)
       this.heronChanged(frame);
@@ -306,10 +352,12 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     const calm = this.calm;
     this.animateWater(t, calm, frame);
     this.animateKiki(t, dt, calm, frame);
-    for (const raft of Object.values(this.rafts)) this.animateRaft(raft, t, calm, frame);
+    // The heron moves first, so a snack in its beak hangs from where the beak is this frame.
     this.animateHeron(t, dt, frame);
+    for (const raft of Object.values(this.rafts)) this.animateRaft(raft, t, calm, frame);
     this.animateDecor(t, calm, frame);
-    this.animateBursts(t, dt);
+    this.glintTint.copy(GLINT).lerp(SUNSET_GLINT, this.sunset);
+    this.fx.update(t, dt, frame?.kind === 'boss' ? 0.5 : 1, calm, this.glintTint);
   }
 
   // ---------------------------------------------------------------- layout from the DOM
@@ -320,7 +368,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     if (!board) return;
     const base = this.host.getBoundingClientRect();
     const instruction = board.querySelector<HTMLElement>('.instruction');
-    this.floor = instruction ? instruction.getBoundingClientRect().top - base.top : this.height;
+    const floor = instruction ? instruction.getBoundingClientRect().top - base.top : this.height;
     const read = (side: string): Anchor | null => {
       const element = board.querySelector<HTMLElement>(`[data-side="${side}"]`);
       if (!element) return null;
@@ -339,18 +387,20 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       Math.abs(a.h - b.h) < 1;
     if (
       before &&
+      Math.abs(floor - this.floor) < 1 &&
       same(before.left, left) &&
       same(before.center, center) &&
       same(before.right, right)
     )
       return;
+    this.floor = floor;
     const first = !before;
     this.anchors = { left, center, right };
     this.place(first);
   }
 
   /** The point on the horizontal plane at height `y` under a pixel of the host. */
-  private ground(px: number, py: number, y = 0, out = new Vector3()): Vector3 {
+  private ground(px: number, py: number, y: number, out: Vector3): Vector3 {
     this.ndc.set((px / this.width) * 2 - 1, -(py / this.height) * 2 + 1);
     this.raycaster.setFromCamera(this.ndc, this.camera);
     this.plane.constant = -y;
@@ -359,7 +409,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
 
   /** World units per screen pixel at a point. */
   private perPixel(point: Vector3): number {
-    const depth = -point.clone().applyMatrix4(this.camera.matrixWorldInverse).z;
+    const depth = -this.v3.copy(point).applyMatrix4(this.camera.matrixWorldInverse).z;
     return (2 * depth * Math.tan((FOV / 2) * DEG)) / this.height;
   }
 
@@ -367,7 +417,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     const anchors = this.anchors;
     if (!anchors) return;
     const { center } = anchors;
-    this.kikiHome = this.ground(center.x + center.w / 2, center.y + center.h * 0.55);
+    this.ground(center.x + center.w / 2, center.y + center.h * 0.55, 0, this.kikiHome);
     this.kikiScale =
       (Math.min(center.w * 1.15, center.h * 1.3) * this.perPixel(this.kikiHome)) / 1.25;
     this.kiki.root.scale.setScalar(this.kikiScale);
@@ -376,14 +426,18 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       this.placeRaft(this.rafts[side], anchors[side], snap);
 
     // The rest of the pond is framed from what the camera sees.
-    const corner = (x: number, y: number) => this.ground(x * this.width, y * this.height);
-    const bottomLeft = corner(0, 1);
-    const bottomRight = corner(1, 1);
-    this.viewCenter = corner(0.5, 0.55);
-    this.topRow = corner(0.5, 0.18);
+    const bottomLeft = this.ground(0, this.height, 0, this.v1);
+    const bottomRight = this.ground(this.width, this.height, 0, this.v2);
     this.viewWidth = bottomRight.x - bottomLeft.x;
+    this.ground(this.width * 0.5, this.height * 0.55, 0, this.viewCenter);
+    this.ground(this.width * 0.5, this.height * 0.18, 0, this.topRow);
     const unit = this.perPixel(this.viewCenter) * Math.min(this.width, this.height * 1.4);
     this.placeDecor(unit);
+    // Glints over the open water between the top edge and the instruction.
+    const top = this.ground(this.width * 0.5, 0, 0, this.v1);
+    const bottom = this.ground(this.width * 0.5, this.floor || this.height, 0, this.v2);
+    this.v3.addVectors(top, bottom).multiplyScalar(0.5);
+    this.fx.placeGlints(this.v3, this.viewWidth * 0.95, Math.abs(bottom.z - top.z) * 0.95);
 
     this.heronScale = unit * 0.11;
     this.heron.root.scale.setScalar(this.heronScale);
@@ -398,13 +452,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     const cx = anchor.x + anchor.w / 2 + lean;
     const cy = anchor.y + anchor.h / 2;
     const lift = 0.05;
-    const tileCenter = this.ground(
-      cx,
-      cy,
-      lift + sizes.height * 0.5 * this.perPixel(this.ground(cx, cy)),
-    );
-    const unit = this.perPixel(tileCenter);
-    raft.home = tileCenter;
+    const below = this.perPixel(this.ground(cx, cy, 0, this.v1));
+    this.ground(cx, cy, lift + sizes.height * 0.5 * below, raft.home);
+    const unit = this.perPixel(raft.home);
     raft.tiles.quaternion.copy(this.camera.quaternion);
     let x = -sizes.total / 2;
     raft.tokens.forEach((token, index) => {
@@ -423,7 +473,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     raft.stars[0]!.position.set(half - starSize * 0.15, top - starSize * 0.1, 0.02);
     raft.stars[1]!.position.set(-half + starSize * 0.2, -top + starSize * 0.25, 0.02);
     for (const star of raft.stars) star.userData['size'] = starSize;
-    raft.padHome = this.ground(cx, cy + sizes.height * 0.18);
+    this.ground(cx, cy + sizes.height * 0.18, 0, raft.padHome);
     raft.padRadius = anchor.w * 0.46 * this.perPixel(raft.padHome);
     raft.pad.scale.set(
       raft.padRadius,
@@ -460,49 +510,49 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     return { ...sizes, height };
   }
 
+  /**
+   * Puts the reeds, the decorative pads, the frog and the dragonfly's hovering spots round the
+   * edge of what the camera sees. Things meant to be watched (the frog, the water lilies) stay
+   * above the instruction bubble, so it never hides them.
+   */
   private placeDecor(unit: number) {
-    for (const clump of this.reeds) this.decor.remove(clump);
-    this.reeds = [];
-    const spots: readonly [number, number, number][] = [
-      [0.04, 0.98, 1],
-      [0.12, 1.02, 0.8],
-      [0.96, 0.97, 1.1],
-      [0.02, 0.12, 0.8],
-      [0.99, 0.2, 0.7],
-    ];
-    spots.forEach(([x, y, size], index) => {
-      const clump = makeReeds(index + 1);
-      clump.position.copy(this.ground(x * this.width, y * this.height));
+    const open = this.floor || this.height;
+    REED_SPOTS.forEach(([x, y, size], index) => {
+      const clump = this.reeds[index]!;
+      this.ground(x * this.width, y * this.height, 0, clump.position);
       clump.scale.setScalar(unit * 0.16 * size);
-      this.reeds.push(clump);
-      this.decor.add(clump);
+      clump.rotation.y = index * 1.3;
     });
     this.decorPads.forEach((pad, index) => {
       const [x, y, size] = DECOR_PADS[index]!;
-      pad.position.copy(this.ground(x * this.width, y * this.height));
+      // Pads above the bubble are placed in the open water's height; the rest in the view's.
+      const py = y <= 1 ? y * open : open + (y - 1) * (this.height - open);
+      this.ground(x * this.width, py, 0, pad.position);
       pad.scale.setScalar(unit * 0.07 * size);
       pad.rotation.y = index * 1.9;
+      pad.userData['spin'] = pad.rotation.y;
     });
-    const frogPad = this.decorPads[1]!;
+    const frogPad = this.decorPads[FROG_PAD]!;
     this.frog.root.position.copy(frogPad.position).setY(0.05);
     this.frog.root.scale.setScalar(unit * 0.12);
-    this.frog.root.rotation.y = -0.6;
+    // Turned toward the middle of the pond, three-quarters to the camera.
+    this.frog.root.rotation.y = frogPad.position.x > this.viewCenter.x ? -0.7 : 0.7;
     for (const fish of this.fish) fish.scale.setScalar(unit * 0.22);
     this.bigFish.scale.setScalar(unit * 0.11);
-    for (const butterfly of this.butterflies) butterfly.root.scale.setScalar(unit * 0.14);
+    for (const butterfly of this.butterflies) butterfly.root.scale.setScalar(unit * 0.17);
+    // The dragonfly hovers over the reeds and the pads at the edges, above the water.
+    this.dragonfly.root.scale.setScalar(unit * 0.24);
+    DRAGON_SPOTS.forEach(([x, y], index) => {
+      this.ground(x * this.width, y * open, unit * 0.09, this.dragonSpots[index]!);
+    });
+    this.dragonfly.setSpots(this.dragonSpots);
   }
-
-  private readonly decorPads: Group[] = DECOR_PADS.map(([, , , tone]) => {
-    const pad = makeLilyPad(tone ? '#5fb86c' : '#4ca25f');
-    this.decor.add(pad);
-    return pad;
-  });
 
   // ---------------------------------------------------------------- sides
 
   private makeRaft(side: Side): Raft {
     const pad = new Group();
-    const green = makeLilyPad();
+    const green = makeLilyPad('#4ca25f', '#2f7a44', this.veins);
     const gold = makeGoldenPad();
     gold.visible = false;
     // The question's pads float a little above the waves, so the water never washes over them
@@ -559,6 +609,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       text: '',
       home: new Vector3(),
       padHome: new Vector3(),
+      target: new Vector3(),
       padRadius: 1,
       born: -10,
       wobbleAt: -10,
@@ -627,6 +678,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     raft.pad.position.y = bob * 0.5 - (1 - grow) * 0.2;
     const wobbleAge = t - raft.wobbleAt;
     const wobble = wobbleAge < 0.9 ? Math.sin(wobbleAge * 22) * 0.28 * (1 - wobbleAge / 0.9) : 0;
+    // An offered pad that was turned down dips under the weight of the "no", then bobs back.
+    const dip = wobbleAge < 0.9 ? Math.sin(Math.min(1, wobbleAge / 0.9) * Math.PI) * 0.06 : 0;
+    raft.pad.position.y -= dip * raft.padRadius;
     raft.pad.rotation.set(wobble * 0.4, raft.side === 'left' ? 0.6 : -2.4, wobble * 0.3);
 
     const eaten =
@@ -634,28 +688,40 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       ((raft.side === 'left' && this.chompSide === '>') ||
         (raft.side === 'right' && this.chompSide === '<'));
     const chompAge = t - this.chompAt;
-    const target = raft.home.clone();
-    target.y += bob;
+    const target = raft.target.copy(raft.home);
+    target.y += bob - dip * raft.padRadius;
     let scale = grow;
+    let spin = 0;
+    let follow = 0.25;
     if (eaten) {
-      // Gulped: the tiles fly into Kiki's mouth as her jaws snap shut.
-      const gulp = smooth((chompAge - 0.18) / 0.32);
-      target.lerp(this.mouth(), gulp);
-      scale *= 1 - gulp * 0.92;
-      raft.tiles.visible = gulp < 0.98;
+      // Gulped: the tiles hop off the pad on an arc and drop into Kiki's open jaws just as
+      // they snap shut, shrinking as they go in.
+      const hop = tileHop(chompAge);
+      const mouth = this.mouth();
+      const span = this.v1.copy(mouth).sub(raft.home).length();
+      target.lerp(mouth, hop.along).addScaledVector(UP, hop.arc * span);
+      scale *= 1 - hop.along ** 2 * 0.9;
+      spin = hop.along * (raft.side === 'left' ? -0.5 : 0.5);
+      raft.tiles.visible = chompAge < SNAP + 0.02;
+      follow = 1;
       if (chompAge > 0.3 && chompAge < 0.3 + 1 / 30)
-        this.splash(raft.padHome, raft.padRadius * 0.8, 10);
+        this.fx.splash(raft.padHome, raft.padRadius * 0.8, 10, calm);
     } else if (this.carried === raft && frame?.heron) {
-      target.copy(this.heronBeak());
-      scale *= 0.75;
+      // The snack waits on its pad until the beak gets there, then hangs from it.
+      if (t - this.heronStateAt >= DIVE_SECONDS * 0.9) {
+        target.copy(this.heronBeak());
+        scale *= 0.75;
+        follow = 1;
+      }
     } else if (frame?.phase === 'chomping' && this.chompSide === '=') {
-      target.y +=
-        Math.abs(Math.sin(chompAge * 9)) * 0.12 * raft.padRadius * (1 - clamp01(chompAge / 1.2));
+      // Both the same: each pad bounces once as Kiki lands from her happy hop.
+      const age = chompAge - HOP_LANDS;
+      target.y += age > 0 ? Math.sin(Math.min(1, age / 0.35) * Math.PI) * 0.18 * raft.padRadius : 0;
     }
-    raft.tiles.position.lerp(target, eaten || this.carried === raft ? 0.5 : 0.25);
+    raft.tiles.position.lerp(target, follow);
     raft.tiles.scale.setScalar(Math.max(0.001, scale));
     raft.tiles.rotation.setFromQuaternion(this.camera.quaternion);
-    raft.tiles.rotateZ(wobble * 0.5);
+    raft.tiles.rotateZ(wobble * 0.5 + spin);
     raft.pad.visible = true;
 
     this.animateGolden(raft, t, calm, frame, eaten ? chompAge : -1);
@@ -690,16 +756,12 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     });
     if (ready && !calm && t > raft.nextSpark) {
       raft.nextSpark = t + 0.16;
-      const spot = raft.padHome
-        .clone()
-        .add(
-          new Vector3(
-            (Math.random() - 0.5) * raft.padRadius * 1.8,
-            raft.padRadius * (0.1 + Math.random() * 0.3),
-            (Math.random() - 0.5) * raft.padRadius * 1.2,
-          ),
-        );
-      this.spark(spot, raft.padRadius * 0.22, 0.9);
+      const spot = this.v1.set(
+        raft.padHome.x + (Math.random() - 0.5) * raft.padRadius * 1.8,
+        raft.padHome.y + raft.padRadius * (0.1 + Math.random() * 0.3),
+        raft.padHome.z + (Math.random() - 0.5) * raft.padRadius * 1.2,
+      );
+      this.fx.spark(spot, raft.padRadius * 0.22, 0.9);
     }
   }
 
@@ -707,10 +769,10 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
 
   /** Where Kiki's mouth is in the world right now. */
   private mouth(): Vector3 {
-    const forward = new Vector3(Math.sin(this.kikiYaw), 0, Math.cos(this.kikiYaw));
-    return this.kiki.root.position
-      .clone()
-      .addScaledVector(forward, this.kikiScale * 0.85)
+    return this.mouthAt
+      .set(Math.sin(this.kikiYaw), 0, Math.cos(this.kikiYaw))
+      .multiplyScalar(this.kikiScale * 0.85)
+      .add(this.kiki.root.position)
       .setY(this.kikiScale * 0.2);
   }
 
@@ -718,70 +780,68 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     return choice === '>' ? this.rafts.left : choice === '<' ? this.rafts.right : null;
   }
 
+  /** Heading from Kiki's home toward a point, in radians. */
+  private headingTo(point: Vector3): number {
+    return Math.atan2(point.x - this.kikiHome.x, point.z - this.kikiHome.z);
+  }
+
   private animateKiki(t: number, dt: number, calm: boolean, frame: PondFrame | null) {
     const kiki = this.kiki;
-    const pose = frame?.pose ?? null;
-    const facing = this.raftFor(pose);
+    const facing = this.raftFor(frame?.pose ?? null);
     const chompAge = t - this.chompAt;
     const chomping = frame?.phase === 'chomping' && this.chompSide !== null;
-    let yawTarget = 0;
-    if (facing) {
-      const toward = facing.padHome.clone().sub(this.kikiHome);
-      yawTarget = Math.atan2(toward.x, toward.z);
-    }
-    // A stolen snack: she watches the heron go.
-    if (frame?.phase === 'stolen' && this.heron.root.visible) {
-      const toward = this.heron.root.position.clone().sub(kiki.root.position);
-      yawTarget = Math.atan2(toward.x, Math.max(0.2, toward.z));
-    }
-    // A wrong pick: she glances at the side she was offered, then shakes her head, no thanks.
     const wrongAge = t - this.wrongAt;
     const refusing = wrongAge < WRONG_SECONDS && frame?.phase === 'ready';
     const refused = refusing ? this.raftFor(this.wrongSide) : null;
-    if (refused) {
-      const toward = refused.padHome.clone().sub(this.kikiHome);
-      yawTarget = Math.atan2(toward.x, toward.z) * 0.45;
-    }
-    this.kikiYaw = approach(this.kikiYaw, yawTarget, chomping ? 14 : 7, dt);
 
-    // Lunge: surge toward the chosen pad, snap, chew, drift home.
-    let jaw = 0;
-    let lungeAmount = 0;
-    let rise = 0;
-    if (chomping && facing) {
-      const toward = facing.padHome.clone().sub(this.kikiHome).setY(0);
-      const reach = Math.max(0, toward.length() - facing.padRadius * 0.9 - this.kikiScale * 0.75);
-      lungeAmount =
-        chompAge < 0.25
-          ? easeOut(chompAge / 0.25)
-          : chompAge < 0.9
-            ? 1
-            : 1 - smooth((chompAge - 0.9) / 0.5);
-      this.kikiLunge.copy(toward.normalize().multiplyScalar(reach * lungeAmount));
-      jaw =
-        chompAge < 0.2
-          ? smooth(chompAge / 0.2)
-          : chompAge < 0.32
-            ? 1 - smooth((chompAge - 0.2) / 0.12)
-            : chompAge < 0.9
-              ? Math.max(0, Math.sin((chompAge - 0.32) * 18)) * 0.25
-              : 0;
-    } else {
-      this.kikiLunge.multiplyScalar(Math.exp(-6 * dt));
-      if (chomping && this.chompSide === '=') {
-        // Both sides the same: mouth shut, a happy hop and a smile.
-        rise = Math.sin(clamp01(chompAge / 0.6) * Math.PI) * 0.45 * this.kikiScale;
-      } else if (facing && frame?.phase === 'ready' && !refusing) {
-        jaw = 0.5;
-      }
+    let yawTarget = facing ? this.headingTo(facing.padHome) : 0;
+    // A stolen snack: she watches the heron go.
+    if (frame?.phase === 'stolen' && this.heron.root.visible) {
+      const heron = this.heron.root.position;
+      yawTarget = Math.atan2(
+        heron.x - kiki.root.position.x,
+        Math.max(0.2, heron.z - kiki.root.position.z),
+      );
     }
-    if (frame?.phase === 'stolen') jaw = 0.25;
-    kiki.jaw = approach(kiki.jaw, jaw, chomping ? 40 : 10, dt);
+    // A wrong pick: she glances at the side she was offered, then shakes her head, no thanks.
+    if (refused) yawTarget = this.headingTo(refused.padHome) * 0.45;
+    this.kikiYaw = approach(this.kikiYaw, yawTarget, chomping ? 16 : 7, dt);
+
+    let pose: KikiPose = REST;
+    if (chomping && facing) pose = chompPose(chompAge);
+    else if (chomping && this.chompSide === '=') pose = hopPose(chompAge);
+    else if (refusing) pose = refusePose(wrongAge, WRONG_SECONDS);
+
+    // Lunge: surge toward the chosen pad (after pulling back to wind up), and drift home.
+    const lunge = this.kikiLunge;
+    if (chomping && facing) {
+      const toward = this.v1.copy(facing.padHome).sub(this.kikiHome).setY(0);
+      const reach = Math.max(0, toward.length() - facing.padRadius * 0.9 - this.kikiScale * 0.75);
+      toward.normalize();
+      lunge
+        .copy(toward)
+        .multiplyScalar(pose.lunge < 0 ? pose.lunge * this.kikiScale * 2 : reach * pose.lunge);
+    } else if (refused) {
+      const away = this.v1.copy(refused.padHome).sub(this.kikiHome).setY(0).normalize();
+      lunge.copy(away).multiplyScalar(pose.lunge * this.kikiScale * 2.2);
+    } else {
+      lunge.multiplyScalar(Math.exp(-6 * dt));
+    }
+
+    let jaw = pose.jaw;
+    if (!chomping) {
+      if (facing && frame?.phase === 'ready' && !refusing) jaw = 0.5;
+      if (frame?.phase === 'stolen') jaw = 0.25;
+      kiki.jaw = approach(kiki.jaw, jaw, 10, dt);
+    } else {
+      kiki.jaw = approach(kiki.jaw, jaw, 60, dt);
+    }
+    kiki.cheeks = pose.cheeks;
+    kiki.gulp = pose.gulp;
+    kiki.content = approach(kiki.content, pose.content, pose.content > kiki.content ? 14 : 6, dt);
 
     // The head shake carries meaning, so calm motion keeps it.
-    const shake = refusing
-      ? Math.sin(wrongAge * 20) * 0.42 * (1 - smooth(wrongAge / WRONG_SECONDS))
-      : 0;
+    const shake = refusing ? refuseShake(wrongAge, WRONG_SECONDS) : 0;
     kiki.puzzled = approach(
       kiki.puzzled,
       refusing && wrongAge < WRONG_SECONDS - 0.25 ? 1 : 0,
@@ -790,22 +850,64 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     );
     const bob = calm ? 0 : Math.sin(t * 1.8) * 0.03 * this.kikiScale;
     const idleYaw = calm || facing ? 0 : Math.sin(t * 0.6) * 0.12;
-    const target = this.kikiHome.clone().add(this.kikiLunge);
-    kiki.root.position.x = target.x;
-    kiki.root.position.z = target.z;
-    kiki.root.position.y = bob + rise;
+    kiki.root.position.x = this.kikiHome.x + lunge.x;
+    kiki.root.position.z = this.kikiHome.z + lunge.z;
+    kiki.root.position.y = bob + pose.rise * this.kikiScale;
     kiki.body.rotation.y = this.kikiYaw + idleYaw + shake;
-    kiki.body.rotation.x =
-      rise > 0 ? -0.25 * (rise / (0.45 * this.kikiScale)) : -lungeAmount * 0.08;
+    kiki.body.rotation.x = -pose.pitch;
+    kiki.body.scale.set(widthOf(pose), pose.height, pose.length);
     const glowing = (frame?.combo ?? 1) >= 3;
     kiki.glow = approach(kiki.glow, glowing ? 1 : 0, 3, dt);
-    const look = refusing ? 0 : facing ? 0 : Math.sin(t * 0.5) * 0.6;
-    kiki.animate(t, dt, calm, lungeAmount, calm ? 0 : look);
+    const look = refusing || facing ? 0 : Math.sin(t * 0.5) * 0.6;
+    const swim = chomping && facing ? Math.min(1, Math.abs(pose.lunge) * 1.5) : 0;
+    kiki.animate(t, dt, calm, swim, calm ? 0 : look);
 
-    // A wake of ripples while she swims out and back.
-    if (lungeAmount > 0.2 && t > this.nextRipple - 0.8) {
-      this.ring(kiki.root.position.clone().setY(0.02), this.kikiScale * 0.5, 0.6, 0.3);
-      this.nextRipple = t + 0.3;
+    // The bite lands: a splash at her jaws and a burst of sparkles. The hop lands with a ring.
+    if (chomping && !this.landed) {
+      const at = facing ? SNAP : HOP_LANDS;
+      if (chompAge >= at) {
+        this.landed = true;
+        if (facing) {
+          const mouth = this.mouth();
+          this.fx.splash(mouth.setY(0.05), this.kikiScale * 0.5, 12, calm);
+          this.chompBurst(this.mouth(), this.kikiScale * 0.55);
+        } else {
+          this.fx.splash(
+            this.v1.copy(kiki.root.position).setY(0.05),
+            this.kikiScale * 0.7,
+            14,
+            calm,
+          );
+          this.sparkle(this.kikiHome, this.kikiScale * 1.2, 14);
+        }
+      }
+    }
+
+    // "Hmm, no thanks": a little snort of spray out of her nose as she pulls back.
+    if (refusing && !this.snorted && wrongAge > 0.14) {
+      this.snorted = true;
+      if (!calm) {
+        const nose = this.mouth();
+        nose.y += this.kikiScale * 0.08;
+        for (let i = 0; i < 5; i++) {
+          const spread = (i - 2) * 0.35;
+          this.fx.drop(
+            nose,
+            Math.sin(this.kikiYaw + spread) * this.kikiScale * 0.7,
+            this.kikiScale * (1.6 + (i % 2) * 0.4),
+            Math.cos(this.kikiYaw + spread) * this.kikiScale * 0.7,
+            this.kikiScale * 0.035,
+            0.6,
+          );
+        }
+      }
+    }
+
+    // A wake of ripples while she swims out and back, and a soft ring as she flinches back.
+    const moving = lunge.lengthSq() > (this.kikiScale * 0.15) ** 2;
+    if (moving && t > this.nextWake) {
+      this.fx.ring(this.v1.copy(kiki.root.position).setY(0.02), this.kikiScale * 0.55, 0.7, 0.35);
+      this.nextWake = t + 0.12;
     }
   }
 
@@ -819,7 +921,7 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     if (heron.state === 'flying' && (this.heronSnack !== frame.snack || !this.heron.root.visible)) {
       this.heronSnack = frame.snack;
       this.heronProgress = 0;
-      this.heron.root.position.copy(this.heronPoint(0, 0));
+      this.heronPoint(0, 0, this.heron.root.position);
       this.heronFrom.copy(this.heron.root.position);
     }
     if (heron.state === 'stole') {
@@ -836,24 +938,27 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
    * The heron's place on its loop round the pond (see `heronLoop`). It skims low over the water,
    * so where it crosses behind Kiki she hides it, and it sinks lower as time runs out.
    */
-  private heronPoint(progress: number, angle: number): Vector3 {
+  private heronPoint(progress: number, angle: number, out: Vector3): Vector3 {
     const anchors = this.anchors;
     const altitude = this.kikiScale * (1.1 - progress * 0.45);
-    if (!anchors) return this.ground(this.width * 1.4, this.height * 0.3, altitude);
-    const boxes = [anchors.left, anchors.center, anchors.right];
+    if (!anchors) return this.ground(this.width * 1.4, this.height * 0.3, altitude, out);
     const point = heronLoop(progress, angle, {
       width: this.width,
       height: this.height,
-      padsTop: Math.min(...boxes.map((box) => box.y)),
-      padsBottom: Math.max(...boxes.map((box) => box.y + box.h)),
+      padsTop: Math.min(anchors.left.y, anchors.center.y, anchors.right.y),
+      padsBottom: Math.max(
+        anchors.left.y + anchors.left.h,
+        anchors.center.y + anchors.center.h,
+        anchors.right.y + anchors.right.h,
+      ),
       floor: this.floor || this.height,
       reach: (this.heronScale * 1.3) / this.perPixel(this.viewCenter),
     });
-    return this.ground(point.x, point.y, altitude);
+    return this.ground(point.x, point.y, altitude, out);
   }
 
   private heronBeak(): Vector3 {
-    return this.heron.beak.clone().applyMatrix4(this.heron.root.matrixWorld);
+    return this.beakAt.copy(this.heron.beak).applyMatrix4(this.heron.root.matrixWorld);
   }
 
   private animateHeron(t: number, dt: number, frame: PondFrame | null) {
@@ -872,6 +977,9 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     root.visible = this.heronShadow.visible = true;
     this.lastHeron.copy(root.position);
     let beat = 0.6;
+    let fold = 0;
+    let reach = 0;
+    let bank = 0;
     if (heron.state === 'flying') {
       // Follows the page's own clock, not frame steps, which fall behind on a slow device; so
       // the heron really is over the middle of the pond when it swoops.
@@ -879,43 +987,85 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
         this.heronProgress = clamp01(1 - (heron.due - Date.now()) / heron.duration);
       const p = this.heronProgress;
       // Laps the whole pond, in and out of view, on a tighter, quicker loop as time runs out.
-      root.position.copy(this.heronPoint(p, heronLapAngle(p, heron.duration)));
+      this.heronPoint(p, heronLapAngle(p, heron.duration), root.position);
       root.scale.setScalar(this.heronScale * (1 + p * 0.25));
-      // Banks into the turn: the loop always bends to its left.
-      root.rotation.z = approach(root.rotation.z, -0.3, 4, dt);
-      beat = 0.35 + p * 0.5;
+      // Banks into the turn: the loop always bends to its left. It glides between bursts of
+      // flapping, like a big bird does.
+      bank = -0.3;
+      beat = (0.35 + p * 0.5) * (0.55 + 0.45 * Math.max(0, Math.sin(t * 1.3)));
     } else if (heron.state === 'stole') {
-      // Dives on the snack, then flaps away with it.
+      // Dives on the snack on a curve (wings swept back, legs reaching), flares to grab it, then
+      // labours up and away on another curve, heavy with the snack.
       const raft = this.carried;
       const prey = raft
-        ? raft.home.clone().setY(raft.home.y + 0.1)
-        : this.kikiHome.clone().setY(this.kikiScale * 0.6);
-      const dive = smooth(age / 0.4);
-      root.rotation.z = approach(root.rotation.z, 0, 6, dt);
-      const away = smooth((age - 0.4) / (STEAL_SECONDS - 0.4));
-      const offBeak = this.heron.beak.clone().multiplyScalar(root.scale.x);
-      const low = prey.clone().sub(offBeak.setY(offBeak.y * 0.6));
-      const exit = this.ground(-this.width * 0.3, -this.height * 0.3, 4);
-      root.position.lerpVectors(this.heronFrom, low, dive).lerp(exit, away);
-      beat = age < 0.4 ? 0.2 : 1;
+        ? this.v1.copy(raft.home).setY(raft.home.y + 0.1)
+        : this.v1.copy(this.kikiHome).setY(this.kikiScale * 0.6);
+      const offBeak = this.v2.copy(this.heron.beak).multiplyScalar(root.scale.x);
+      const low = prey.sub(offBeak.setY(offBeak.y * 0.6));
+      if (age < DIVE_SECONDS) {
+        const s = smooth(age / DIVE_SECONDS);
+        // The control point sits high above the middle of the dive, so it swoops down.
+        const lift = this.v3.addVectors(this.heronFrom, low).multiplyScalar(0.5);
+        lift.y = Math.max(this.heronFrom.y, low.y) + this.kikiScale * 0.9;
+        bezier(root.position, this.heronFrom, lift, low, s);
+        fold =
+          Math.sin(clamp01(age / (DIVE_SECONDS * 0.8)) * Math.PI * 0.5) *
+          (1 - smooth((age - DIVE_SECONDS * 0.7) / (DIVE_SECONDS * 0.3)));
+        reach = smooth((age - DIVE_SECONDS * 0.5) / (DIVE_SECONDS * 0.5));
+        beat = age > DIVE_SECONDS * 0.75 ? 1 : 0.1;
+      } else {
+        const s = (age - DIVE_SECONDS) / (STEAL_SECONDS - DIVE_SECONDS);
+        const exit = this.ground(-this.width * 0.3, -this.height * 0.3, 4, this.v2);
+        const climb = this.v3.copy(low).lerp(exit, 0.25);
+        climb.y = low.y + this.kikiScale * 0.8;
+        // Slow off the water with the weight, then faster and faster.
+        bezier(root.position, low, climb, exit, s * s);
+        reach = 1 - smooth(s * 2);
+        beat = 1;
+      }
     } else {
-      const exit = this.ground(this.width * 1.4, -this.height * 0.4, 5);
-      root.position.lerpVectors(this.heronFrom, exit, easeOut(age / SHOO_SECONDS) ** 1.4);
-      root.rotation.z = Math.sin(age * 20) * 0.3;
-      beat = 1;
+      // Shooed: a startled flinch up and back with the wings thrown open, then it flaps off on
+      // a rising curve, a little flustered.
+      const exit = this.ground(this.width * 1.4, -this.height * 0.4, 5, this.v2);
+      const flinch = 0.18;
+      if (age < flinch) {
+        const s = Math.sin((age / flinch) * Math.PI * 0.5);
+        root.position.copy(this.heronFrom).addScaledVector(UP, s * this.kikiScale * 0.35);
+        beat = 0.1;
+        fold = -0.6 * s;
+      } else {
+        const s = easeOut((age - flinch) / (SHOO_SECONDS - flinch)) ** 1.3;
+        const start = this.v1.copy(this.heronFrom).addScaledVector(UP, this.kikiScale * 0.35);
+        const control = this.v3.copy(start).lerp(exit, 0.3);
+        control.y = start.y + this.kikiScale * 1.2;
+        bezier(root.position, start, control, exit, s);
+        beat = 1;
+      }
+      bank = Math.sin(age * 16) * 0.25 * (1 - age / SHOO_SECONDS);
     }
-    const velocity = root.position.clone().sub(this.lastHeron);
+    root.rotation.z = approach(root.rotation.z, bank, 6, dt);
+    const velocity = this.v1.copy(root.position).sub(this.lastHeron);
     if (velocity.lengthSq() > 1e-6) {
       const yaw = Math.atan2(velocity.x, velocity.z);
       root.rotation.y = approach(root.rotation.y, nearAngle(root.rotation.y, yaw), 8, dt);
+      // Nose down in a dive and up in a climb.
+      const level = Math.hypot(velocity.x, velocity.z);
+      const pitch = Math.max(-0.6, Math.min(0.6, Math.atan2(velocity.y, level)));
+      root.rotation.x = approach(root.rotation.x, -pitch, 6, dt);
     }
-    this.heron.animate(t, this.calm ? Math.min(beat, 0.5) : beat);
+    const calm = this.calm;
+    this.heron.animate(t, calm ? Math.min(beat, 0.5) : beat, fold, reach);
     root.updateMatrixWorld();
     const height = Math.max(0.3, root.position.y);
     this.heronShadow.position.set(root.position.x, 0.03, root.position.z);
     // A soft spot under the wings' own shadow: small, since the heron skims low.
     this.heronShadow.scale.setScalar(root.scale.x * (0.7 - Math.min(1, height / 5) * 0.3));
     this.heronShadow.material.opacity = 0.2 - Math.min(0.12, height * 0.03);
+    // Its wingtips stir the water when it skims low or grabs.
+    if (height < this.kikiScale * 0.9 && t > this.nextRipple && !calm) {
+      this.fx.ring(this.v1.copy(root.position).setY(0.02), root.scale.x * 0.8, 0.8, 0.4);
+      this.nextRipple = t + 0.2;
+    }
   }
 
   // ---------------------------------------------------------------- water and pond life
@@ -932,63 +1082,47 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
     const sky = this.scene.background;
     if (sky instanceof Color) sky.copy(SKY).lerp(SUNSET_SKY, this.sunset);
     if (this.scene.fog) this.scene.fog.color.copy(SKY).lerp(SUNSET_SKY, this.sunset);
-    if (!calm) {
-      const position = this.water.geometry.attributes['position']!;
-      const array = position.array as Float32Array;
-      const base = this.waterBase;
-      const speed = frenzy ? 2 : 1;
-      for (let i = 0; i < array.length; i += 3) {
-        const x = base[i]!;
-        const z = base[i + 2]!;
-        array[i + 1] =
-          Math.sin(x * 0.8 + t * 1.1 * speed) * 0.05 +
-          Math.cos(z * 1.1 + t * 0.8 * speed + x * 0.3) * 0.045;
-      }
-      position.needsUpdate = true;
-      this.water.geometry.computeVertexNormals();
-      if (t > this.nextRipple) {
-        this.nextRipple = t + (frenzy ? 0.5 : 1.4);
-        const spot = this.viewCenter
-          .clone()
-          .add(
-            new Vector3(
-              (Math.random() - 0.5) * this.viewWidth * 0.9,
-              0.02,
-              (Math.random() - 0.3) * this.viewWidth * 0.7,
-            ),
-          );
-        this.ring(spot, this.viewWidth * 0.06, 2.4);
-      }
-      if (frenzy && t > this.nextSpark) {
-        this.nextSpark = t + 0.08;
-        const spot = this.viewCenter
-          .clone()
-          .add(
-            new Vector3(
-              (Math.random() - 0.5) * this.viewWidth,
-              0.1,
-              (Math.random() - 0.4) * this.viewWidth * 0.8,
-            ),
-          );
-        this.spark(
-          spot,
-          this.viewWidth * 0.03,
-          0.9,
-          FRENZY_SPARKS[Math.floor(Math.random() * FRENZY_SPARKS.length)],
-        );
-      }
+    if (calm) return;
+    const position = this.water.geometry.attributes['position']!;
+    const array = position.array as Float32Array;
+    const base = this.waterBase;
+    const speed = frenzy ? 2 : 1;
+    for (let i = 0; i < array.length; i += 3) {
+      const x = base[i]!;
+      const z = base[i + 2]!;
+      array[i + 1] =
+        Math.sin(x * 0.8 + t * 1.1 * speed) * 0.05 +
+        Math.cos(z * 1.1 + t * 0.8 * speed + x * 0.3) * 0.045;
+    }
+    position.needsUpdate = true;
+    if (frenzy && t > this.nextSpark) {
+      this.nextSpark = t + 0.08;
+      const spot = this.v1.set(
+        this.viewCenter.x + (Math.random() - 0.5) * this.viewWidth,
+        0.1,
+        this.viewCenter.z + (Math.random() - 0.4) * this.viewWidth * 0.8,
+      );
+      this.fx.spark(
+        spot,
+        this.viewWidth * 0.03,
+        0.9,
+        FRENZY_SPARKS[Math.floor(Math.random() * FRENZY_SPARKS.length)],
+      );
     }
   }
 
   private animateDecor(t: number, calm: boolean, frame: PondFrame | null) {
-    this.frog.animate(t, calm);
-    const sway = calm ? 0 : 1;
-    this.reeds.forEach(
-      (clump, index) => (clump.rotation.z = Math.sin(t * 1.2 + index) * 0.06 * sway),
-    );
-    this.decorPads.forEach(
-      (pad, index) => (pad.position.y = calm ? 0 : Math.sin(t * 1.3 + index * 1.7) * 0.02),
-    );
+    if (this.frog.animate(t, calm))
+      this.fx.ring(this.frog.root.position, this.frog.root.scale.x * 2.2, 0.9, 0.45);
+    this.reedBed.update(t, calm ? 0 : 1);
+    this.dragonfly.update(t, calm);
+    // The pads drift and turn a little on the swell.
+    this.decorPads.forEach((pad, index) => {
+      pad.position.y = calm ? 0 : Math.sin(t * 1.3 + index * 1.7) * 0.02;
+      const spin = (pad.userData['spin'] as number | undefined) ?? 0;
+      pad.rotation.y = calm ? spin : spin + Math.sin(t * 0.25 + index) * 0.12;
+      pad.rotation.x = calm ? 0 : Math.sin(t * 1.1 + index * 2.3) * 0.03;
+    });
     this.butterflies.forEach((butterfly, index) => {
       const time = calm ? index * 3 : t * 0.35 + index * 3;
       const spread = this.viewWidth * 0.36;
@@ -1014,6 +1148,14 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       );
       fish.rotation.y = Math.atan2(-Math.sin(time) * rx, Math.cos(time) * rz);
     });
+    if (!calm && t > this.nextBloop) {
+      // A fish nibbles at the surface: a little ring right above it, and a drop or two.
+      this.nextBloop = t + 2.2 + ((t * 3.1) % 2.4);
+      const fish = this.fish[Math.floor(t * 10) % this.fish.length]!;
+      const at = this.v1.copy(fish.position).setY(0.05);
+      this.fx.ring(at, fish.scale.x * 0.35, 1.4, 0.45);
+      this.fx.drop(at, 0, fish.scale.x * 0.8, 0, fish.scale.x * 0.025, 0.5);
+    }
 
     // The big fish leaps across the back of the pond on the last snack.
     const boss = frame?.kind === 'boss' && frame.phase !== 'stolen';
@@ -1032,56 +1174,33 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
       this.bigFish.rotation.set(0, Math.PI / 2, 0);
       this.bigFish.rotateX(-(leap - 0.5) * 1.8 * (calm ? 0 : 1));
       if (!calm && (Math.abs(leap - 0.06) < 0.01 || Math.abs(leap - 0.94) < 0.01))
-        this.ring(this.bigFish.position.clone().setY(0.02), this.bigFish.scale.x * 1.5, 0.8);
+        this.fx.splash(
+          this.v1.copy(this.bigFish.position).setY(0.02),
+          this.bigFish.scale.x * 1.1,
+          6,
+          calm,
+        );
     }
   }
 
-  // ---------------------------------------------------------------- splashes and sparkles
+  // ---------------------------------------------------------------- sparkles
 
-  private splash(at: Vector3, size: number, drops: number) {
-    this.ring(at.clone().setY(0.03), size * 1.4, 0.8);
-    if (this.calm) return;
-    for (let i = 0; i < drops; i++) {
-      const angle = (i / drops) * Math.PI * 2 + Math.random() * 0.4;
-      const mesh = new Mesh(this.dropGeometry, this.dropMaterial);
-      mesh.position.copy(at).setY(0.05);
-      const speed = size * (1.6 + Math.random());
-      this.addBurst(
-        mesh,
-        new Vector3(
-          Math.cos(angle) * speed,
-          size * (3 + Math.random() * 2),
-          Math.sin(angle) * speed,
+  /** The crunch of a bite: a star of bright sparks flying out from her jaws. */
+  private chompBurst(at: Vector3, radius: number) {
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      this.fx.spark(
+        this.v2.set(
+          at.x + Math.cos(angle) * radius,
+          at.y + radius * 0.5 + Math.sin(angle) * radius * 0.5,
+          at.z + Math.sin(angle) * radius * 0.6,
         ),
-        0.7,
-        size * 0.09,
-        'drop',
+        radius * 0.45,
+        0.45,
+        i % 2 ? '#ffffff' : '#fff1a8',
+        1.5,
       );
     }
-  }
-
-  private ring(at: Vector3, size: number, life: number, opacity = 0.6) {
-    const mesh = new Mesh(
-      this.ringGeometry,
-      new MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity, depthWrite: false }),
-    );
-    mesh.rotation.x = -Math.PI / 2;
-    mesh.position.copy(at).setY(Math.max(at.y, WAVE_TOP));
-    this.addBurst(mesh, new Vector3(), life, size, 'ring');
-  }
-
-  private spark(at: Vector3, size: number, life: number, color = '#ffe27a') {
-    const sprite = new Sprite(
-      new SpriteMaterial({
-        map: this.sparkTexture,
-        color,
-        blending: AdditiveBlending,
-        depthWrite: false,
-        transparent: true,
-      }),
-    );
-    sprite.position.copy(at);
-    this.addBurst(sprite, new Vector3(0, size * 0.8, 0), life, size, 'spark');
   }
 
   /**
@@ -1090,112 +1209,82 @@ export class PondWorld extends Stage implements StateWorld<PondFrame> {
    */
   private goldRush(chosen: Comparison) {
     const raft = this.raftFor(chosen);
-    const from = raft ? raft.padHome : this.kikiHome;
+    const from = this.v1.copy(raft ? raft.padHome : this.kikiHome).setY(0.15);
     const size = raft ? raft.padRadius : this.kikiScale;
     this.sparkle(this.kikiHome, this.kikiScale * 1.1, 16);
     if (this.calm) return;
     for (let i = 0; i < 9; i++) {
       const angle = (i / 9) * Math.PI * 2 + Math.random() * 0.5;
-      const coin = new Mesh(this.coinGeometry, this.coinMaterial);
-      coin.position.copy(from).setY(0.15);
-      coin.rotation.set(Math.random() * 3, Math.random() * 3, Math.PI / 2);
-      coin.castShadow = true;
       const speed = size * (0.9 + Math.random() * 0.8);
-      this.addBurst(
-        coin,
-        new Vector3(
-          Math.cos(angle) * speed,
-          size * (3.4 + Math.random() * 1.2),
-          Math.sin(angle) * speed,
-        ),
-        1.1,
+      this.fx.coin(
+        from,
+        Math.cos(angle) * speed,
+        size * (3.4 + Math.random() * 1.2),
+        Math.sin(angle) * speed,
         size * 0.1,
-        'coin',
       );
     }
   }
 
-  private sparkle(at: Vector3, radius: number, count: number) {
+  private sparkle(at: Vector3, radius: number, count: number, party = false) {
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
-      this.spark(
-        at
-          .clone()
-          .add(
-            new Vector3(
-              Math.cos(angle) * radius,
-              radius * (0.3 + Math.random() * 0.6),
-              Math.sin(angle) * radius * 0.6,
-            ),
-          ),
+      const color = party ? FRENZY_SPARKS[i % FRENZY_SPARKS.length] : undefined;
+      this.fx.spark(
+        this.v2.set(
+          at.x + Math.cos(angle) * radius,
+          at.y + radius * (0.3 + Math.random() * 0.6),
+          at.z + Math.sin(angle) * radius * 0.6,
+        ),
         radius * 0.22,
-        0.9,
+        party ? 1.2 : 0.9,
+        color,
       );
-    }
-  }
-
-  private addBurst(
-    mesh: Mesh | Sprite,
-    velocity: Vector3,
-    life: number,
-    size: number,
-    kind: Burst['kind'],
-  ) {
-    // Keep the pool small for tablets: drop the oldest when it is full.
-    if (this.bursts.length > 70) this.removeBurst(0);
-    mesh.scale.setScalar(size);
-    this.scene.add(mesh);
-    const opacity = (mesh.material as MeshBasicMaterial | SpriteMaterial).opacity;
-    this.bursts.push({ mesh, velocity, born: this.elapsed, life, size, opacity, kind });
-  }
-
-  private removeBurst(index: number) {
-    const [burst] = this.bursts.splice(index, 1);
-    if (!burst) return;
-    this.scene.remove(burst.mesh);
-    if (burst.kind !== 'drop' && burst.kind !== 'coin')
-      (burst.mesh.material as MeshBasicMaterial | SpriteMaterial).dispose();
-  }
-
-  private animateBursts(t: number, dt: number) {
-    for (let i = this.bursts.length - 1; i >= 0; i--) {
-      const burst = this.bursts[i]!;
-      const age = (t - burst.born) / burst.life;
-      if (age >= 1) {
-        this.removeBurst(i);
-        continue;
-      }
-      const material = burst.mesh.material as MeshBasicMaterial | SpriteMaterial;
-      if (burst.kind === 'ring') {
-        burst.mesh.scale.setScalar(burst.size * (0.3 + easeOut(age) * 1.2));
-        material.opacity = burst.opacity * (1 - age);
-      } else if (burst.kind === 'coin') {
-        burst.velocity.y -= 9.8 * burst.size * 5 * dt;
-        burst.mesh.position.addScaledVector(burst.velocity, dt);
-        burst.mesh.rotation.x += dt * 9;
-        burst.mesh.rotation.y += dt * 4;
-        if (age > 0.75) burst.mesh.scale.setScalar(burst.size * (1 - (age - 0.75) * 4));
-        if (burst.mesh.position.y < 0) burst.life = 0;
-      } else if (burst.kind === 'drop') {
-        burst.velocity.y -= 9.8 * burst.size * 12 * dt;
-        burst.mesh.position.addScaledVector(burst.velocity, dt);
-        if (burst.mesh.position.y < 0) burst.life = 0;
-      } else {
-        burst.mesh.position.addScaledVector(burst.velocity, dt);
-        burst.mesh.scale.setScalar(burst.size * Math.sin(age * Math.PI));
-        material.opacity = 1 - age;
-      }
     }
   }
 }
 
-/** Decorative lily pads round the edge of the pond: x, y as a share of the view, size, tone. */
+/** A point on the curve from `a` to `b` that bends toward `control`, at `t` from 0 to 1. */
+function bezier(out: Vector3, a: Vector3, control: Vector3, b: Vector3, t: number): Vector3 {
+  const u = 1 - t;
+  return out.set(
+    u * u * a.x + 2 * u * t * control.x + t * t * b.x,
+    u * u * a.y + 2 * u * t * control.y + t * t * b.y,
+    u * u * a.z + 2 * u * t * control.z + t * t * b.z,
+  );
+}
+
+/**
+ * Decorative lily pads round the edge of the pond: x as a share of the width; y as a share of
+ * the open water above the instruction bubble (above 1: of the strip below its top); size; tone.
+ */
 const DECOR_PADS: readonly [number, number, number, number][] = [
-  [0.1, 0.84, 1, 0],
-  [0.88, 0.86, 1.2, 1],
-  [0.94, 0.08, 0.8, 0],
-  [0.22, 0.04, 0.7, 1],
-  [0.6, 0.97, 0.7, 0],
+  [0.06, 0.9, 1, 0],
+  [0.9, 0.9, 1.2, 1],
+  [0.94, 0.06, 0.8, 0],
+  [0.2, 0.03, 0.7, 1],
+  [0.6, 1.6, 0.7, 0],
+];
+/** The pads with a water lily on them, and the frog's pad. */
+const LOTUS_PADS = [0, 3] as const;
+const FROG_PAD = 1;
+/** Reed clumps: x, y as a share of the view, size. */
+const REED_SPOTS: readonly [number, number, number][] = [
+  [0.04, 0.98, 1],
+  [0.12, 1.02, 0.8],
+  [0.96, 0.97, 1.1],
+  [0.02, 0.12, 0.8],
+  [0.99, 0.2, 0.7],
+];
+/**
+ * Where the dragonfly hovers: x as a share of the width, y of the open water; a high and a low
+ * spot on the left, then on the right.
+ */
+const DRAGON_SPOTS: readonly [number, number][] = [
+  [0.1, 0.24],
+  [0.12, 0.8],
+  [0.88, 0.2],
+  [0.88, 0.76],
 ];
 
 /** The nearest equivalent of `target` to `current`, so turning never spins the long way round. */

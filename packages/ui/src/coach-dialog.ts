@@ -1,21 +1,22 @@
 import { afterNextRender, Component, ElementRef, input, output, viewChild } from '@angular/core';
 
-let nextId = 0;
-
 /**
- * "How to play" over a game: a full-screen modal dialog with the game's demo film projected
- * into a card, a heading and one button. It opens itself when it appears and focuses the
- * button; the button and Escape both emit `done`, and the game removes it. The game pauses its
- * own clock while it shows.
+ * "How to play" over a game: a modal dialog with the game's demo film projected inside, a
+ * title and one big button. It opens itself when shown; Escape and the button both emit
+ * `done`, and the game removes it. Text arrives already translated.
+ *
+ *     <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeHelp()">
+ *       <app-market-demo [skill]="..." />
+ *     </ui-coach-dialog>
  */
 @Component({
   selector: 'ui-coach-dialog',
-  template: `<dialog #dialog [attr.aria-labelledby]="titleId" (cancel)="cancel($event)">
+  template: `<dialog #dialog aria-labelledby="ui-coach-title" (cancel)="cancel($event)">
     <div class="card">
-      <h2 [id]="titleId">{{ heading() }}</h2>
+      <h2 id="ui-coach-title">{{ heading() }}</h2>
       <ng-content />
       <button class="button primary" type="button" (click)="done.emit()">
-        {{ doneLabel() }}
+        {{ goLabel() }}
       </button>
     </div>
   </dialog>`,
@@ -71,10 +72,8 @@ let nextId = 0;
 })
 export class CoachDialog {
   readonly heading = input.required<string>();
-  /** The button's words, like "Got it!". */
-  readonly doneLabel = input.required<string>();
+  readonly goLabel = input.required<string>();
   readonly done = output<void>();
-  protected readonly titleId = `ui-coach-title-${++nextId}`;
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
   constructor() {
@@ -86,7 +85,7 @@ export class CoachDialog {
     });
   }
 
-  /** Escape closes it the same way the button does. */
+  /** Escape closes the coach the same way the button does. */
   protected cancel(event: Event) {
     event.preventDefault();
     this.done.emit();

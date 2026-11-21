@@ -4,21 +4,20 @@
   position: absolute;
   inset: 0;
 }
-.is-3d
-  :is(
-    .forest,
-    .scene-shade,
-    .fireflies,
-    .character,
-    .waiting-monster,
-    .projectile,
-    .damage-ripple,
-    .butterfly,
-    .sparkles,
-    .number-badge,
-    .burst,
-    .dust
-  ),
+/* Spelled out one by one: the style scoping turns ".is-3d :is(...)" into a grandchild match,
+   which misses the fairy, the waiting monster and the forest that sit right inside. */
+.is-3d .forest,
+.is-3d .scene-shade,
+.is-3d .fireflies,
+.is-3d .character,
+.is-3d .waiting-monster,
+.is-3d .projectile,
+.is-3d .damage-ripple,
+.is-3d .butterfly,
+.is-3d .sparkles,
+.is-3d .number-badge,
+.is-3d .burst,
+.is-3d .dust,
 .is-3d .monster-position::after {
   display: none;
 }
@@ -29,7 +28,8 @@
 }
 /* The step and shield counts stay for screen readers; the path stones and crystal rings show
    them in the picture. */
-.is-3d :is(.steps, .shield-layers) {
+.is-3d .steps,
+.is-3d .shield-layers {
   position: absolute;
   width: 1px;
   height: 1px;

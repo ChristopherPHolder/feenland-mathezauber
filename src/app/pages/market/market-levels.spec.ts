@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vite-plus/test';
 import {
   affordable,
   checkLeft,
+  changeDue,
+  checkChange,
   checkPay,
+  isFewestChange,
+  checkTotal,
   daylightSeconds,
   GOODS,
   isFewest,
@@ -26,16 +30,21 @@ const rounds = (stage: number, count = 200) =>
   Array.from({ length: count }, (_, seed) => marketStage(`market-${stage}`)!.round(seeded(seed)));
 
 describe('market levels', () => {
-  it('lists five levels with stable ids and a topic each', () => {
+  it('lists ten levels with stable ids and a topic each', () => {
     expect(marketLevels.map((level) => level.id)).toEqual([
       'market-1',
       'market-2',
       'market-3',
       'market-4',
       'market-5',
+      'market-6',
+      'market-7',
+      'market-8',
+      'market-9',
+      'market-10',
     ]);
     expect(marketLevels.every((level) => level.group)).toBe(true);
-    expect(marketStage('market-9')).toBeUndefined();
+    expect(marketStage('market-99')).toBeUndefined();
   });
 
   it('makes every turn of every level playable, with the right number of turns', () => {
@@ -50,9 +59,11 @@ describe('market levels', () => {
     for (const stage of marketStages)
       for (const round of rounds(stage.stage, 50))
         round.forEach((turn, index) => {
-          const good = GOODS.find((item) => item.id === turn.good)!;
-          expect(turn.price).toBeGreaterThanOrEqual(euros(good.from));
-          expect(turn.price).toBeLessThanOrEqual(euros(good.to));
+          for (const item of turn.items ?? [{ good: turn.good, price: turn.price }]) {
+            const good = GOODS.find((entry) => entry.id === item.good)!;
+            expect(item.price).toBeGreaterThanOrEqual(euros(good.from));
+            expect(item.price).toBeLessThanOrEqual(euros(good.to));
+          }
           if (index > 0 && stage.skill !== 'spree')
             expect(turn.good).not.toBe(round[index - 1].good);
         });
@@ -116,6 +127,114 @@ describe('market levels', () => {
       expect(big.price).toBeGreaterThan(euros(10));
     }
     expect(shortRounds).toBeGreaterThan(150);
+  });
+});
+
+describe('adding up', () => {
+  it('lists two different treats on level 6 whose prices make the price, up to 20 €', () => {
+    for (const turn of rounds(6).flat()) {
+      expect(turn.items).toHaveLength(2);
+      expect(turn.items![0].good).not.toBe(turn.items![1].good);
+      expect(turn.items!.reduce((sum, item) => sum + item.price, 0)).toBe(turn.price);
+      expect(turn.price).toBeLessThanOrEqual(euros(20));
+      expect(turn.steps).toEqual(['total', 'pay']);
+      expect(turn.good).toBe(turn.items![0].good);
+    }
+  });
+
+  it('lists three treats on level 7 from a 20 € purse, always with something left', () => {
+    for (const turn of rounds(7).flat()) {
+      expect(turn.items).toHaveLength(3);
+      expect(new Set(turn.items!.map((item) => item.good)).size).toBe(3);
+      expect(purseTotal(turn)).toBe(euros(20));
+      expect(leftAfter(turn)).toBeGreaterThan(0);
+      expect(turn.steps).toEqual(['total', 'left']);
+    }
+  });
+
+  it('tells one price and a forgotten treat apart from other wrong totals', () => {
+    const turn: MarketTurn = {
+      good: 'apple',
+      price: euros(10),
+      items: [
+        { good: 'apple', price: euros(2) },
+        { good: 'book', price: euros(5) },
+        { good: 'ribbon', price: euros(3) },
+      ],
+      purse: [1000, 1000],
+      steps: ['total', 'left'],
+      look: 'tag',
+    };
+    expect(checkTotal(turn, 10)).toBe('ok');
+    expect(checkTotal(turn, 5)).toBe('oneOnly');
+    expect(checkTotal(turn, 7)).toBe('missing');
+    expect(checkTotal(turn, 11)).toBe('off');
+  });
+
+  it('brings a missed shopping list back unchanged', () => {
+    const stage = marketStage('market-6')!;
+    const round = stage.round(seeded(9));
+    expect(replayMissed(stage, round, 0, seeded(1))[2]).toBe(round[0]);
+  });
+});
+
+describe('change', () => {
+  it('pays with a 10 € note on level 8 and a 20 € note on level 9, always with change', () => {
+    for (const turn of rounds(8).flat()) {
+      expect(turn.paid).toEqual([1000]);
+      expect(changeDue(turn)).toBeGreaterThan(0);
+    }
+    const nine = rounds(9).flat();
+    for (const turn of nine) {
+      expect(turn.paid).toEqual([2000]);
+      expect(changeDue(turn)).toBeGreaterThan(0);
+    }
+    // Most prices make the count up to 20 cross a ten.
+    const crossing = nine.filter((turn) => turn.price > 1000);
+    expect(crossing.length).toBeGreaterThan(nine.length * 0.4);
+  });
+
+  it('lets Lumi give every change from the till, to a customer, with the smallest note that pays', () => {
+    for (const round of rounds(10))
+      round.forEach((turn, index) => {
+        expect(turn.customer).toBeDefined();
+        expect(turn.steps).toEqual(['give']);
+        const note = turn.paid![0];
+        expect(note).toBeGreaterThan(turn.price);
+        const smallest = [500, 1000, 2000].find((value) => value > turn.price);
+        if (index < round.length - 1) expect(note).toBe(smallest);
+      });
+  });
+
+  it('gives the common change slips their own help', () => {
+    const turn: MarketTurn = {
+      good: 'honey',
+      price: euros(7),
+      paid: [1000],
+      purse: [1000],
+      steps: ['change'],
+      look: 'tag',
+    };
+    expect(checkChange(turn, 3)).toBe('ok');
+    expect(checkChange(turn, 17)).toBe('added');
+    expect(checkChange(turn, 7)).toBe('price');
+    expect(checkChange(turn, 10)).toBe('paid');
+    expect(checkChange(turn, 4)).toBe('off');
+  });
+
+  it('knows the fewest coins of change the till allows', () => {
+    const turn: MarketTurn = {
+      good: 'book',
+      price: euros(3),
+      paid: [1000],
+      till: [1000, 500, 200, 200, 100, 100, 100],
+      customer: 'fox',
+      purse: [],
+      steps: ['give'],
+      look: 'coins',
+    };
+    expect(isFewestChange(turn, [500, 200])).toBe(true);
+    expect(isFewestChange(turn, [200, 200, 100, 100, 100, 100])).toBe(false);
   });
 });
 

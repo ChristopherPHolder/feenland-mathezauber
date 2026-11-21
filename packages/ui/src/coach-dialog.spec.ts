@@ -4,11 +4,7 @@ import { CoachDialog } from './coach-dialog';
 
 @Component({
   imports: [CoachDialog],
-  template: `<ui-coach-dialog
-    heading="How to play"
-    doneLabel="Got it!"
-    (done)="closed = closed + 1"
-  >
+  template: `<ui-coach-dialog heading="How to play" goLabel="Got it!" (done)="closed = closed + 1">
     <p class="film">A film</p>
   </ui-coach-dialog>`,
 })
