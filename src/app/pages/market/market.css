@@ -456,7 +456,7 @@
   mask-position: top, bottom;
   mask-repeat: no-repeat, repeat-x;
 }
-.receipt h3 {
+.receipt h2 {
   margin: 0 0 6px;
   font-size: 15px;
   text-align: center;

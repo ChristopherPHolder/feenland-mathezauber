@@ -44,29 +44,8 @@ legend {
 .art {
   font-size: 1.5rem;
 }
-ul {
-  padding: 0;
-  list-style: none;
-  max-width: 32rem;
-}
-li {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.35rem 0;
-  border-bottom: 1px solid var(--sky-deep);
-}
-form {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  font-weight: bold;
-}
-#basket-answer {
-  width: 3.5em;
-  min-height: 44px;
-  font: inherit;
-  text-align: center;
+.goods input {
+  accent-color: var(--pink-deep);
 }
 .button {
   margin: 0.25rem;

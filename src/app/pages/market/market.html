@@ -1,6 +1,6 @@
 <section
   class="game"
-  [class.playing]="started() && round().phase !== 'complete'"
+  [class.playing]="(started() || freeTrip()) && (!started() || round().phase !== 'complete')"
   aria-labelledby="game-title"
 >
   <app-game-header
@@ -15,9 +15,7 @@
     (soundToggle)="sounds.toggle()"
   />
 
-  @if (freeTrip()) {
-    <app-market-basket class="panel" (leave)="leaveFreeTrip()" />
-  } @else if (!started()) {
+  @if (!started() && !freeTrip()) {
     <section class="panel intro" aria-labelledby="intro-title">
       <h2 id="intro-title" class="sr-only">{{ i.t(levelKey(stage().stage)) }}</h2>
       <nav class="level-strip" [attr.aria-label]="t('allLevels')">
@@ -111,7 +109,7 @@
         </ol>
       </section>
     </section>
-  } @else if (round().phase === 'complete') {
+  } @else if (started() && round().phase === 'complete') {
     <section
       #outcome
       class="panel outcome"
@@ -124,7 +122,7 @@
           <app-market-shop [frame]="outcomeFrame()" />
         </app-three-stage>
         <section class="receipt" aria-labelledby="receipt-title">
-          <h3 id="receipt-title">{{ t('receipt') }}</h3>
+          <h2 id="receipt-title">{{ t('receipt') }}</h2>
           @if (round().bought.length) {
             <ul>
               @for (item of round().bought; track $index) {
@@ -141,6 +139,9 @@
               <span>{{ t('receiptTotal') }}</span>
               <strong>{{ money(spent()) }}</strong>
             </p>
+            @if (freeTrip()) {
+              <p>{{ t('stillLeft', { amount: money(purseTotalLeft()) }) }}</p>
+            }
           } @else {
             <p>{{ t('receiptEmpty') }}</p>
           }
@@ -183,7 +184,14 @@
           <p class="save-note" role="alert">{{ t('save') }}</p>
         }
         <div class="outcome-actions">
-          @if (nextLink(); as next) {
+          @if (freeTrip()) {
+            <button class="button primary" type="button" (click)="started.set(false)">
+              {{ t('again') }}
+            </button>
+            <button class="button secondary" type="button" (click)="leaveFreeTrip()">
+              {{ t('backLevels') }}
+            </button>
+          } @else if (nextLink(); as next) {
             <a class="button primary" [routerLink]="next"
               >{{ t('nextLevel') }}<ui-icon kind="arrow"
             /></a>
@@ -195,74 +203,85 @@
               {{ t('celebrate') }}<ui-icon kind="arrow" />
             </button>
           }
-          <button class="button secondary" type="button" (click)="play()">{{ t('again') }}</button>
+          @if (!freeTrip()) {
+            <button class="button secondary" type="button" (click)="play()">
+              {{ t('again') }}
+            </button>
+          }
         </div>
       </div>
     </section>
   } @else {
-    <div class="hud">
-      <ol
-        class="turn-strip"
-        [attr.aria-label]="t('turnsHud', { n: round().log.length, total: turnsTotal() })"
-      >
-        @for (slot of turnSlots(); track slot) {
-          <li
-            class="turn-slot"
-            [class.done]="slot < round().log.length"
-            [class.first]="round().log[slot]"
-            [class.current]="slot === round().index"
-            [class.big]="slot === turnsTotal() - 1"
-            aria-hidden="true"
-          >
-            <svg viewBox="0 0 24 24">
-              <path class="handle" d="M7 9a5 5 0 0 1 10 0" />
-              <path class="bag" d="M4 9h16l-2 12H6z" />
-              @if (round().log[slot]) {
-                <path
-                  class="slot-star"
-                  d="m12 11 1.4 2.8 3 .4-2.2 2.1.5 3-2.7-1.4-2.7 1.4.5-3-2.2-2.1 3-.4z"
-                />
-              }
-            </svg>
-          </li>
-        }
-      </ol>
-      <button
-        type="button"
-        class="help"
-        [attr.aria-label]="t('help')"
-        [title]="t('help')"
-        (click)="openHelp()"
-      >
-        ?
-      </button>
-      <p class="points" [class.bump]="round().phase === 'solved'">
-        <span>{{ t('points') }}</span>
-        <strong>{{ i.format(round().score) }}</strong>
-      </p>
-      @if (round().golden) {
-        <p class="golden-chip">{{ t('goldenChip') }}</p>
-      }
-      @if (timed()) {
-        <p class="sun-chip" [class.set]="sunset() >= 1" [style.--sunset]="sunset()">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path class="hill" d="M1 22q11-9 22 0z" />
-            <circle class="sun" cx="12" [attr.cy]="6 + sunset() * 12" r="5" />
-          </svg>
-          <span>{{ t('sun') }}: {{ t(sunset() >= 1 ? 'sunDown' : 'sunUp') }}</span>
-          <span class="sun-meter" aria-hidden="true"><span></span></span>
+    @if (started()) {
+      <div class="hud">
+        <ol
+          class="turn-strip"
+          [attr.aria-label]="t('turnsHud', { n: round().log.length, total: turnsTotal() })"
+        >
+          @for (slot of turnSlots(); track slot) {
+            <li
+              class="turn-slot"
+              [class.done]="slot < round().log.length"
+              [class.first]="round().log[slot]"
+              [class.current]="slot === round().index"
+              [class.big]="slot === turnsTotal() - 1"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 24 24">
+                <path class="handle" d="M7 9a5 5 0 0 1 10 0" />
+                <path class="bag" d="M4 9h16l-2 12H6z" />
+                @if (round().log[slot]) {
+                  <path
+                    class="slot-star"
+                    d="m12 11 1.4 2.8 3 .4-2.2 2.1.5 3-2.7-1.4-2.7 1.4.5-3-2.2-2.1 3-.4z"
+                  />
+                }
+              </svg>
+            </li>
+          }
+        </ol>
+        <button
+          type="button"
+          class="help"
+          [attr.aria-label]="t('help')"
+          [title]="t('help')"
+          (click)="openHelp()"
+        >
+          ?
+        </button>
+        <p class="points" [class.bump]="round().phase === 'solved'">
+          <span>{{ t('points') }}</span>
+          <strong>{{ i.format(round().score) }}</strong>
         </p>
-      }
-    </div>
+        @if (round().golden) {
+          <p class="golden-chip">{{ t('goldenChip') }}</p>
+        }
+        @if (timed()) {
+          <p class="sun-chip" [class.set]="sunset() >= 1" [style.--sunset]="sunset()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path class="hill" d="M1 22q11-9 22 0z" />
+              <circle class="sun" cx="12" [attr.cy]="6 + sunset() * 12" r="5" />
+            </svg>
+            <span>{{ t('sun') }}: {{ t(sunset() >= 1 ? 'sunDown' : 'sunUp') }}</span>
+            <span class="sun-meter" aria-hidden="true"><span></span></span>
+          </p>
+        }
+      </div>
+    }
     <div class="play-area">
       <section class="board" [class.big]="big()" [attr.aria-label]="t('boardLabel')">
-        <app-three-stage #scene class="scene" [world]="loadWorld" [state]="frame()">
-          <app-market-shop [frame]="frame()" />
+        <app-three-stage
+          #scene
+          class="scene"
+          [world]="loadWorld"
+          [state]="started() ? frame() : introFrame()"
+        >
+          <app-market-shop [frame]="started() ? frame() : introFrame()" />
         </app-three-stage>
-        @if (big() && round().phase === 'shop') {
+        @if (started() && big() && round().phase === 'shop') {
           <p class="big-banner" aria-hidden="true">{{ t('bigBanner') }}</p>
         }
-        @if (reward(); as reward) {
+        @if (started() && reward(); as reward) {
           <ui-reward-burst
             class="reward"
             [kind]="reward.kind"
@@ -274,78 +293,46 @@
         }
       </section>
       <div class="controls">
-        <div class="question">
-          <p class="turn-name">
-            {{
-              big() ? t('bigTurn') : t('turnCount', { n: round().index + 1, total: turnsTotal() })
-            }}
-          </p>
-          @if (listItems().length) {
-            <ul class="list" [attr.aria-label]="t('listLabel')">
-              @for (item of listItems(); track $index) {
-                <li>
-                  <span class="good-emoji" aria-hidden="true">{{ emoji[item.good] }}</span>
-                  <span class="list-name">{{ item.name }}</span>
-                  <strong class="list-price">{{ item.priceText }}</strong>
-                </li>
-              }
-            </ul>
-          } @else {
-            <p class="price-line">
-              <span class="good-emoji" aria-hidden="true">{{ emoji[turn().good] }}</span>
-              <span>{{ question() }}</span>
+        @if (!started()) {
+          <app-market-basket (checkout)="checkout($event)" (leave)="leaveFreeTrip()" />
+        } @else {
+          <div class="question" #questionHeading tabindex="-1">
+            <p class="turn-name">
+              {{
+                big() ? t('bigTurn') : t('turnCount', { n: round().index + 1, total: turnsTotal() })
+              }}
             </p>
-          }
-          <p class="ask">{{ askText() }}</p>
-        </div>
-        <p class="status" role="status" aria-live="polite" aria-atomic="true">
-          {{ statusText() }}
-        </p>
-
-        @if (step() === 'give') {
-          <section class="purse till" [attr.aria-label]="t('tillLabel')">
-            <p class="purse-tag">
-              <svg viewBox="0 0 32 32" aria-hidden="true">
-                <path class="till-body" d="M3 14h26v14H3z" />
-                <path class="till-top" d="M7 6h18v8H7z" />
-              </svg>
-              <span>{{ t('tillLabel') }}</span>
-            </p>
-            <div class="coin-row" [class.is-guided]="guideNow()">
-              @for (coin of purseCoins(); track coin.index) {
-                <button
-                  type="button"
-                  class="coin-button"
-                  [disabled]="!shopping()"
-                  [attr.aria-label]="t('coinAdd', { value: moneyName(coin.value) })"
-                  (click)="addCoin(coin.index)"
-                >
-                  <app-market-money [value]="coin.value" />
-                </button>
-              }
-            </div>
-          </section>
-        }
-        @if (step() === 'change' || step() === 'give') {
-          <p class="paid-line">
-            <app-market-money [value]="turn().paid![0]" [scale]="0.8" />
-            <span>{{ paidText() }}</span>
-          </p>
-        }
-        <section class="purse" [class.hidden]="!showPurse()" [attr.aria-label]="t('purseLabel')">
-          <p class="purse-tag">
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path class="purse-body" d="M4 12h24l-2 16H6z" />
-              <path class="purse-clasp" d="M10 12a6 6 0 0 1 12 0" />
-            </svg>
-            @if (showCoins()) {
-              <span>{{ t('purseLabel') }}</span>
+            @if (listItems().length) {
+              <ul class="list" [attr.aria-label]="t('listLabel')">
+                @for (item of listItems(); track $index) {
+                  <li>
+                    <span class="good-emoji" aria-hidden="true">{{ emoji[item.good] }}</span>
+                    <span class="list-name">{{ item.name }}</span>
+                    <strong class="list-price">{{ item.priceText }}</strong>
+                  </li>
+                }
+              </ul>
             } @else {
-              <strong>{{ t('purseTag', { amount: purseText() }) }}</strong>
+              <p class="price-line">
+                <span class="good-emoji" aria-hidden="true">{{ emoji[turn().good] }}</span>
+                <span>{{ question() }}</span>
+              </p>
             }
+            <p class="ask">{{ askText() }}</p>
+          </div>
+          <p class="status" role="status" aria-live="polite" aria-atomic="true">
+            {{ statusText() }}
           </p>
-          @if (showCoins()) {
-            @if (step() === 'pay') {
+
+          @if (step() === 'give') {
+            <section class="purse till" [attr.aria-label]="t('tillLabel')">
+              <p class="purse-tag">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="till-body" d="M3 14h26v14H3z" />
+                  <path class="till-top" d="M7 6h18v8H7z" />
+                </svg>
+                <span>{{ t('tillLabel') }}</span>
+              </p>
               <div class="coin-row" [class.is-guided]="guideNow()">
                 @for (coin of purseCoins(); track coin.index) {
                   <button
@@ -359,83 +346,121 @@
                   </button>
                 }
               </div>
-            } @else {
-              <ul class="coin-row is-static">
-                @for (value of turn().purse; track $index) {
-                  <li>
-                    <app-market-money [value]="value" />
-                    <span class="sr-only">{{ moneyName(value) }}</span>
-                  </li>
-                }
-              </ul>
-            }
+            </section>
           }
-        </section>
-
-        @if (round().phase === 'solved') {
-          <button class="button primary next" type="button" (click)="advance()">
-            {{ t('next') }}<ui-icon kind="arrow" />
-          </button>
-        } @else if (counting()) {
-          <section class="tray" [attr.aria-label]="t('trayLabel')">
-            <div class="tray-coins">
-              @for (value of trayCoins(); track $index) {
-                <button
-                  type="button"
-                  class="coin-button on-tray"
-                  [attr.aria-label]="t('coinBack', { value: moneyName(value) })"
-                  (click)="takeBack($index)"
-                >
-                  <app-market-money [value]="value" [scale]="0.86" />
-                </button>
-              } @empty {
-                <p class="tray-empty">{{ t(step() === 'give' ? 'trayEmptyTill' : 'trayEmpty') }}</p>
-              }
-            </div>
-            <button
-              class="button primary pay"
-              type="button"
-              [class.is-guided]="guideNow() && trayCoins().length > 0"
-              [disabled]="!trayCoins().length"
-              (click)="pay()"
-            >
-              {{ t(step() === 'give' ? 'give' : 'pay') }}
-            </button>
-          </section>
-        } @else if (step() === 'enough') {
-          <div
-            class="judge"
-            role="group"
-            [attr.aria-label]="t('askEnough')"
-            [class.is-guided]="guideNow()"
-          >
-            <button type="button" class="judge-button yes" (click)="judge(true)">
-              <span aria-hidden="true">✓</span> {{ t('enoughYes') }}
-            </button>
-            <button type="button" class="judge-button no" (click)="judge(false)">
-              <span aria-hidden="true">✗</span> {{ t('enoughNo') }}
-            </button>
-          </div>
-        } @else {
-          <div class="left-zone">
-            <p class="typed" aria-hidden="true">
-              <span class="typed-value" [class.empty]="!round().typed">{{
-                round().typed || '?'
-              }}</span>
-              <span class="typed-unit">€</span>
+          @if (step() === 'change' || step() === 'give') {
+            <p class="paid-line">
+              <app-market-money [value]="turn().paid![0]" [scale]="0.8" />
+              <span>{{ paidText() }}</span>
             </p>
-            <ui-number-pad
+          }
+          <section class="purse" [class.hidden]="!showPurse()" [attr.aria-label]="t('purseLabel')">
+            <p class="purse-tag">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path class="purse-body" d="M4 12h24l-2 16H6z" />
+                <path class="purse-clasp" d="M10 12a6 6 0 0 1 12 0" />
+              </svg>
+              @if (showCoins()) {
+                <span>{{ t('purseLabel') }}</span>
+              } @else {
+                <strong>{{ t('purseTag', { amount: purseText() }) }}</strong>
+              }
+            </p>
+            @if (showCoins()) {
+              @if (step() === 'pay') {
+                <div class="coin-row" [class.is-guided]="guideNow()">
+                  @for (coin of purseCoins(); track coin.index) {
+                    <button
+                      type="button"
+                      class="coin-button"
+                      [disabled]="!shopping()"
+                      [attr.aria-label]="t('coinAdd', { value: moneyName(coin.value) })"
+                      (click)="addCoin(coin.index)"
+                    >
+                      <app-market-money [value]="coin.value" />
+                    </button>
+                  }
+                </div>
+              } @else {
+                <ul class="coin-row is-static">
+                  @for (value of turn().purse; track $index) {
+                    <li>
+                      <app-market-money [value]="value" />
+                      <span class="sr-only">{{ moneyName(value) }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            }
+          </section>
+
+          @if (round().phase === 'solved') {
+            <button class="button primary next" type="button" (click)="advance()">
+              {{ t('next') }}<ui-icon kind="arrow" />
+            </button>
+          } @else if (counting()) {
+            <section class="tray" [attr.aria-label]="t('trayLabel')">
+              <div class="tray-coins">
+                @for (value of trayCoins(); track $index) {
+                  <button
+                    type="button"
+                    class="coin-button on-tray"
+                    [attr.aria-label]="t('coinBack', { value: moneyName(value) })"
+                    (click)="takeBack($index)"
+                  >
+                    <app-market-money [value]="value" [scale]="0.86" />
+                  </button>
+                } @empty {
+                  <p class="tray-empty">
+                    {{ t(step() === 'give' ? 'trayEmptyTill' : 'trayEmpty') }}
+                  </p>
+                }
+              </div>
+              <button
+                class="button primary pay"
+                type="button"
+                [class.is-guided]="guideNow() && trayCoins().length > 0"
+                [disabled]="!trayCoins().length"
+                (click)="pay()"
+              >
+                {{ t(step() === 'give' ? 'give' : 'pay') }}
+              </button>
+            </section>
+          } @else if (step() === 'enough') {
+            <div
+              class="judge"
+              role="group"
+              [attr.aria-label]="t('askEnough')"
               [class.is-guided]="guideNow()"
-              [value]="round().typed"
-              [answerLabel]="t('answerLabel')"
-              [padLabel]="t('keypadLabel')"
-              [deleteLabel]="t('delete')"
-              [okLabel]="t('ok')"
-              (digit)="typeDigit($event)"
-              (erase)="eraseDigit()"
-              (submit)="submitTyped()"
-            />
-          </div>
+            >
+              <button type="button" class="judge-button yes" (click)="judge(true)">
+                <span aria-hidden="true">✓</span> {{ t('enoughYes') }}
+              </button>
+              <button type="button" class="judge-button no" (click)="judge(false)">
+                <span aria-hidden="true">✗</span> {{ t('enoughNo') }}
+              </button>
+            </div>
+          } @else {
+            <div class="left-zone">
+              <p class="typed" aria-hidden="true">
+                <span class="typed-value" [class.empty]="!round().typed">{{
+                  round().typed || '?'
+                }}</span>
+                <span class="typed-unit">€</span>
+              </p>
+              <ui-number-pad
+                [class.is-guided]="guideNow()"
+                [value]="round().typed"
+                [answerLabel]="t('answerLabel')"
+                [padLabel]="t('keypadLabel')"
+                [deleteLabel]="t('delete')"
+                [okLabel]="t('ok')"
+                (digit)="typeDigit($event)"
+                (erase)="eraseDigit()"
+                (submit)="submitTyped()"
+              />
+            </div>
+          }
         }
       </div>
     </div>
