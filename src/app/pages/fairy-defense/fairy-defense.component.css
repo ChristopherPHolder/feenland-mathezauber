@@ -28,6 +28,18 @@
   padding: 24px;
   z-index: 5;
 }
+/* The castle plays the win or the cracked heart first; the card follows. It takes focus at
+   once but no taps until it shows. */
+.outcome-curtain {
+  --reward-delay: 1.3s;
+  animation: curtain-in 0.3s ease-out 1.2s both;
+}
+@keyframes curtain-in {
+  from {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
 .story-panel {
   max-width: 530px;
   text-align: center;
@@ -88,7 +100,7 @@
   width: 40px;
   height: 40px;
   margin-bottom: 10px;
-  animation: outcome-pop 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation: outcome-pop 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) var(--reward-delay) both;
 }
 @keyframes outcome-pop {
   from {
