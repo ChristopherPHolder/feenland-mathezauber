@@ -210,6 +210,24 @@ export const curriculumEn = {
   starCatcher11Help: '500 is the middle of the big bridge, like 230 on a bridge to 1000.',
   starCatcher12: 'Mystery bridge',
   starCatcher12Help: 'The far end is hidden: count steps from 0, like 40 when one step is 10.',
+  // Fairy market
+  marketChapter: 'The Fairy Market',
+  marketChapterHelp:
+    'Lumi goes shopping at Olli the otter’s shop: pay with coins, check if there is enough, and work out what is left.',
+  marketPlay: 'Go shopping',
+  marketCoins: 'Coins and notes',
+  marketEnough: 'Enough money?',
+  marketLeft: 'What’s left?',
+  market1: 'Coin by coin',
+  market1Help: 'Pay exact prices up to 10 € with 1 € and 2 € coins.',
+  market2: 'Notes join in',
+  market2Help: 'Pay up to 20 € with coins and notes, with as few as you can.',
+  market3: 'Can Lumi buy it?',
+  market3Help: 'Look in the purse: is there enough money for the treat?',
+  market4: 'What’s left?',
+  market4Help: 'Lumi buys a treat. How much money is left in her purse?',
+  market5: 'Shopping spree',
+  market5Help: 'Spend 20 € treat by treat: enough? What’s left? Three stars to master it.',
 };
 export type CurriculumKey = keyof typeof curriculumEn;
 type CurriculumMessages = { readonly [K in CurriculumKey]: string };
@@ -418,6 +436,24 @@ export const curriculumDe: CurriculumMessages = {
   starCatcher11Help: '500 ist die Mitte der großen Brücke, wie 230 auf einer Brücke bis 1000.',
   starCatcher12: 'Geheimnisbrücke',
   starCatcher12Help: 'Das Ende ist versteckt: Zähl Schritte ab 0, wie 40, wenn ein Schritt 10 ist.',
+  // Feenmarkt
+  marketChapter: 'Der Feenmarkt',
+  marketChapterHelp:
+    'Lumi kauft bei Olli dem Otter ein: mit Münzen bezahlen, prüfen, ob das Geld reicht, und ausrechnen, was übrig bleibt.',
+  marketPlay: 'Einkaufen gehen',
+  marketCoins: 'Münzen und Scheine',
+  marketEnough: 'Reicht das Geld?',
+  marketLeft: 'Was bleibt übrig?',
+  market1: 'Münze für Münze',
+  market1Help: 'Genaue Preise bis 10 € mit 1-€- und 2-€-Münzen bezahlen.',
+  market2: 'Scheine kommen dazu',
+  market2Help: 'Bis 20 € mit Münzen und Scheinen bezahlen, mit möglichst wenigen.',
+  market3: 'Kann Lumi es kaufen?',
+  market3Help: 'Schau in den Geldbeutel: Reicht das Geld für den Schatz?',
+  market4: 'Was bleibt übrig?',
+  market4Help: 'Lumi kauft etwas. Wie viel Geld ist noch im Geldbeutel?',
+  market5: 'Großer Einkauf',
+  market5Help: '20 € Stück für Stück ausgeben: Reicht es? Was bleibt? Drei Sterne zum Meistern.',
 };
 
 export const curriculumEs: CurriculumMessages = {
@@ -625,6 +661,24 @@ export const curriculumEs: CurriculumMessages = {
   starCatcher12: 'Puente misterioso',
   starCatcher12Help:
     'El final está escondido: cuenta pasos desde el 0, como el 40 cuando un paso es 10.',
+  // Mercado de las hadas
+  marketChapter: 'El mercado de las hadas',
+  marketChapterHelp:
+    'Lumi va de compras a la tienda de Olli la nutria: paga con monedas, mira si le alcanza y calcula lo que le queda.',
+  marketPlay: 'Ir de compras',
+  marketCoins: 'Monedas y billetes',
+  marketEnough: '¿Alcanza el dinero?',
+  marketLeft: '¿Cuánto queda?',
+  market1: 'Moneda a moneda',
+  market1Help: 'Paga precios exactos hasta 10 € con monedas de 1 € y 2 €.',
+  market2: 'Llegan los billetes',
+  market2Help: 'Paga hasta 20 € con monedas y billetes, con los menos posibles.',
+  market3: '¿Puede comprarlo Lumi?',
+  market3Help: 'Mira el monedero: ¿hay dinero suficiente para el capricho?',
+  market4: '¿Cuánto queda?',
+  market4Help: 'Lumi compra algo. ¿Cuánto dinero le queda en el monedero?',
+  market5: 'Día de compras',
+  market5Help: 'Gasta 20 € cosa a cosa: ¿alcanza? ¿Cuánto queda? Tres estrellas para dominarlo.',
 };
 
 export const curriculumFr: CurriculumMessages = {
@@ -833,4 +887,23 @@ export const curriculumFr: CurriculumMessages = {
   starCatcher11Help: '500 est le milieu du grand pont, comme 230 sur un pont jusqu’à 1000.',
   starCatcher12: 'Pont mystère',
   starCatcher12Help: 'Le bout est caché : compte les pas depuis 0, comme 40 quand un pas vaut 10.',
+  // Marché des fées
+  marketChapter: 'Le marché des fées',
+  marketChapterHelp:
+    'Lumi fait ses courses chez Olli la loutre : payer avec des pièces, voir si l’argent suffit et calculer ce qui reste.',
+  marketPlay: 'Faire les courses',
+  marketCoins: 'Pièces et billets',
+  marketEnough: 'Assez d’argent ?',
+  marketLeft: 'Combien reste-t-il ?',
+  market1: 'Pièce par pièce',
+  market1Help: 'Payer des prix exacts jusqu’à 10 € avec des pièces de 1 € et 2 €.',
+  market2: 'Les billets arrivent',
+  market2Help: 'Payer jusqu’à 20 € avec pièces et billets, avec le moins possible.',
+  market3: 'Lumi peut-elle l’acheter ?',
+  market3Help: 'Regarde dans le porte-monnaie : y a-t-il assez d’argent pour la gourmandise ?',
+  market4: 'Combien reste-t-il ?',
+  market4Help: 'Lumi achète quelque chose. Combien d’argent reste-t-il dans son porte-monnaie ?',
+  market5: 'Grandes courses',
+  market5Help:
+    'Dépenser 20 € achat par achat : assez ? Combien reste-t-il ? Trois étoiles pour maîtriser.',
 };

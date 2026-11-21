@@ -1,0 +1,187 @@
+import { describe, expect, it } from 'vite-plus/test';
+import {
+  affordable,
+  checkLeft,
+  checkPay,
+  daylightSeconds,
+  GOODS,
+  isFewest,
+  isPlayable,
+  leftAfter,
+  marketLevels,
+  marketStage,
+  marketStages,
+  MarketTurn,
+  pickGood,
+  purseTotal,
+  replayMissed,
+  roundStars,
+  seeded,
+  turnPoints,
+} from './market-levels';
+import { EURO } from './market-money';
+
+const euros = (n: number) => n * EURO;
+const rounds = (stage: number, count = 200) =>
+  Array.from({ length: count }, (_, seed) => marketStage(`market-${stage}`)!.round(seeded(seed)));
+
+describe('market levels', () => {
+  it('lists five levels with stable ids and a topic each', () => {
+    expect(marketLevels.map((level) => level.id)).toEqual([
+      'market-1',
+      'market-2',
+      'market-3',
+      'market-4',
+      'market-5',
+    ]);
+    expect(marketLevels.every((level) => level.group)).toBe(true);
+    expect(marketStage('market-9')).toBeUndefined();
+  });
+
+  it('makes every turn of every level playable, with the right number of turns', () => {
+    for (const stage of marketStages)
+      for (const round of rounds(stage.stage)) {
+        expect(round).toHaveLength(stage.turns);
+        for (const turn of round) expect(isPlayable(turn)).toBe(true);
+      }
+  });
+
+  it('prices every treat inside its own price range, never the same treat twice in a row', () => {
+    for (const stage of marketStages)
+      for (const round of rounds(stage.stage, 50))
+        round.forEach((turn, index) => {
+          const good = GOODS.find((item) => item.id === turn.good)!;
+          expect(turn.price).toBeGreaterThanOrEqual(euros(good.from));
+          expect(turn.price).toBeLessThanOrEqual(euros(good.to));
+          if (index > 0 && stage.skill !== 'spree')
+            expect(turn.good).not.toBe(round[index - 1].good);
+        });
+  });
+
+  it('keeps level 1 to 1 € and 2 € coins and prices up to 10 € (12 € for the big buy)', () => {
+    for (const round of rounds(1))
+      round.forEach((turn, index) => {
+        expect(turn.purse.every((coin) => coin === 100 || coin === 200)).toBe(true);
+        expect(turn.price).toBeLessThanOrEqual(index === round.length - 1 ? euros(12) : euros(10));
+        expect(purseTotal(turn)).toBeGreaterThan(turn.price);
+      });
+  });
+
+  it('always lets level 2 be paid with the fewest coins and notes', () => {
+    for (const round of rounds(2))
+      for (const turn of round) {
+        expect(turn.price).toBeLessThanOrEqual(euros(20));
+        expect(turn.purse.some((coin) => coin >= 500)).toBe(true);
+      }
+  });
+
+  it('asks "enough?" on level 3 with both answers and some just-enough purses', () => {
+    const turns = rounds(3).flat();
+    const yes = turns.filter(affordable);
+    expect(yes.length).toBeGreaterThan(turns.length * 0.35);
+    expect(turns.length - yes.length).toBeGreaterThan(turns.length * 0.25);
+    expect(turns.some((turn) => turn.price === purseTotal(turn))).toBe(true);
+    // The purse shows its coins on the first three, then only its tag.
+    for (const round of rounds(3, 20)) {
+      expect(round.slice(0, 3).every((turn) => turn.look === 'coins')).toBe(true);
+      expect(round.slice(3).every((turn) => turn.look === 'tag')).toBe(true);
+    }
+  });
+
+  it('keeps "what is left" on level 4 within 10 € and never zero or below', () => {
+    for (const turn of rounds(4).flat()) {
+      expect(purseTotal(turn)).toBeLessThanOrEqual(euros(10));
+      expect(leftAfter(turn)).toBeGreaterThan(0);
+    }
+  });
+
+  it('carries the purse through the shopping spree and refills it after "not enough"', () => {
+    let shortRounds = 0;
+    for (const round of rounds(5)) {
+      expect(round[0].purse.reduce((a, b) => a + b, 0)).toBe(euros(20));
+      let short = false;
+      for (let index = 1; index < round.length - 1; index++) {
+        const before = round[index - 1];
+        const turn = round[index];
+        if (!turn.refill) expect(purseTotal(turn)).toBe(leftAfter(before));
+        if (!affordable(before)) {
+          expect(turn.refill).toBe(true);
+          short = true;
+        }
+        expect(turn.steps).toEqual(affordable(turn) ? ['enough', 'left'] : ['enough']);
+      }
+      if (short || !affordable(round.at(-2)!)) shortRounds++;
+      const big = round.at(-1)!;
+      expect(purseTotal(big)).toBe(euros(20));
+      expect(big.price).toBeGreaterThan(euros(10));
+    }
+    expect(shortRounds).toBeGreaterThan(150);
+  });
+});
+
+describe('market checks', () => {
+  const turn: MarketTurn = {
+    good: 'honey',
+    price: euros(6),
+    purse: [500, 200, 100, 100],
+    steps: ['pay'],
+    look: 'coins',
+  };
+
+  it('tells short, over and exact payments apart', () => {
+    expect(checkPay([500], euros(6))).toBe('short');
+    expect(checkPay([500, 200], euros(6))).toBe('over');
+    expect(checkPay([500, 100], euros(6))).toBe('ok');
+  });
+
+  it('knows the fewest coins the purse allows', () => {
+    expect(isFewest(turn, [500, 100])).toBe(true);
+    expect(isFewest(turn, [200, 100, 100, 100])).toBe(false);
+  });
+
+  it('gives the common "what is left" slips their own help', () => {
+    const left = { ...turn, steps: ['left'] as const };
+    expect(checkLeft(left, 3)).toBe('ok');
+    expect(checkLeft(left, 15)).toBe('added');
+    expect(checkLeft(left, 6)).toBe('price');
+    expect(checkLeft(left, 9)).toBe('purse');
+    expect(checkLeft(left, 4)).toBe('off');
+  });
+
+  it('brings a missed turn back two turns later, never as the big buy', () => {
+    const stage = marketStage('market-4')!;
+    const round = stage.round(seeded(3));
+    const again = replayMissed(stage, round, 1, seeded(4));
+    expect(again[3].price).toBe(round[1].price);
+    expect(again[3].purse).toEqual(round[1].purse);
+    expect(replayMissed(stage, round, round.length - 2, seeded(4))).toEqual(round);
+    const spree = marketStage('market-5')!;
+    const spreeRound = spree.round(seeded(3));
+    expect(replayMissed(spree, spreeRound, 0, seeded(4))).toEqual(spreeRound);
+  });
+
+  it('picks a treat that may cost the price', () => {
+    expect(pickGood(seeded(1), euros(20))).toMatch(/kite|dragon/);
+    expect(pickGood(seeded(1), euros(1), 'apple')).not.toBe('apple');
+  });
+});
+
+describe('market scoring', () => {
+  it('doubles for Lucky Shopper and the big buy, and adds the sunset bonus on top', () => {
+    const plain = { firstTry: false, fewest: false, golden: false, big: false, sunset: false };
+    expect(turnPoints(plain)).toBe(10);
+    expect(turnPoints({ ...plain, firstTry: true })).toBe(20);
+    expect(turnPoints({ ...plain, firstTry: true, fewest: true, golden: true })).toBe(50);
+    expect(turnPoints({ ...plain, firstTry: true, golden: true, big: true, sunset: true })).toBe(
+      85,
+    );
+  });
+
+  it('gives stars from first tries and lets the sun set over the round', () => {
+    expect(roundStars(6, 7)).toBe(3);
+    expect(roundStars(4, 7)).toBe(2);
+    expect(roundStars(2, 7)).toBe(1);
+    expect(daylightSeconds('off', marketStages[0])).toBe(0);
+    expect(daylightSeconds('normal', marketStages[0])).toBe(22 * 7);
+  });
+});
