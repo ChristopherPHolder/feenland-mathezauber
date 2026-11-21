@@ -1,7 +1,9 @@
 import { booleanAttribute, Component, computed, input } from '@angular/core';
 import type { RacerId } from './race';
 import type { Outfit } from './race-store';
-import { COATS, hasHorn, hasWings, Horse, LUMI, MANES } from './horse';
+import { COATS, hasHorn, hasWings, Horse, HORNS, LUMI, MANES, spotColour } from './horse';
+/** Each pony draws its socks with its own gradients, so every instance needs unique ids. */
+let nextSockId = 0;
 /**
  * One side-view pony, facing the finish, with the same outline as the ponies on the track:
  * the body, neck, head and legs are that model seen from the side. Each racer is the same
@@ -17,6 +19,18 @@ import { COATS, hasHorn, hasWings, Horse, LUMI, MANES } from './horse';
     aria-hidden="true"
     focusable="false"
   >
+    @if (marking() === 'socks') {
+      <defs>
+        <linearGradient [attr.id]="sockId + '-near'" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0.67" style="stop-color: var(--coat)" />
+          <stop offset="0.67" style="stop-color: var(--mark)" />
+        </linearGradient>
+        <linearGradient [attr.id]="sockId + '-far'" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0.67" style="stop-color: var(--shade)" />
+          <stop offset="0.67" style="stop-color: var(--mark)" />
+        </linearGradient>
+      </defs>
+    }
     <g class="tail">
       <path
         class="mane-1"
@@ -170,6 +184,25 @@ import { COATS, hasHorn, hasWings, Horse, LUMI, MANES } from './horse';
       <circle class="crown" cx="88" cy="60" r="4.2" />
       <rect class="crown" x="86.5" y="63" width="3" height="11" rx="1.2" />
     }
+    @switch (marking()) {
+      @case ('star') {
+        <path class="mark" d="m139.4 24.4 1.9 3.4-1.9 3.4-1.9-3.4z" />
+      }
+      @case ('blaze') {
+        <path class="blaze" d="M138.4 25.4 148 39.4" />
+      }
+      @case ('spots') {
+        <g class="spots">
+          <circle cx="58" cy="55" r="2.6" />
+          <circle cx="65.5" cy="51.5" r="2.2" />
+          <circle cx="64" cy="61.5" r="3" />
+          <circle cx="72.5" cy="56.5" r="2.4" />
+          <circle cx="56.5" cy="64.5" r="2" />
+          <circle cx="71" cy="66" r="2.2" />
+          <circle cx="79" cy="51.5" r="1.8" />
+        </g>
+      }
+    }
     <ellipse class="eye" cx="134.9" cy="28.6" rx="2" ry="2.4" />
     <circle class="shine" cx="135.6" cy="27.7" r=".75" />
     <g class="legs">
@@ -205,6 +238,12 @@ import { COATS, hasHorn, hasWings, Horse, LUMI, MANES } from './horse';
     '[style.--mane-1]': 'paint()?.mane?.[0]',
     '[style.--mane-2]': 'paint()?.mane?.[1]',
     '[style.--mane-3]': 'paint()?.mane?.[2]',
+    '[style.--mark]': 'paint()?.mark',
+    '[style.--spot]': 'paint()?.spot',
+    '[style.--horn]': 'paint()?.horn?.[0]',
+    '[style.--groove]': 'paint()?.horn?.[1]',
+    '[style.--sock-near]': 'marking() === "socks" ? "url(#" + sockId + "-near)" : null',
+    '[style.--sock-far]': 'marking() === "socks" ? "url(#" + sockId + "-far)" : null',
   },
   styles: `
     :host {
@@ -296,11 +335,29 @@ import { COATS, hasHorn, hasWings, Horse, LUMI, MANES } from './horse';
       opacity: 0.7;
     }
     .horn {
-      fill: #ffd54a;
+      fill: var(--horn, #ffd54a);
+    }
+    .mark {
+      fill: var(--mark);
+    }
+    .spots {
+      fill: var(--spot);
+    }
+    .blaze {
+      fill: none;
+      stroke: var(--mark);
+      stroke-width: 2.8;
+      stroke-linecap: round;
+    }
+    .legs .leg path:not(.hoof) {
+      fill: var(--sock-near, var(--coat));
+    }
+    .far .leg path:not(.hoof) {
+      fill: var(--sock-far, var(--shade));
     }
     .horn-stripe {
       fill: none;
-      stroke: #e2a400;
+      stroke: var(--groove, #e2a400);
       stroke-width: 1.1;
       stroke-linecap: round;
     }
@@ -445,8 +502,18 @@ export class RacerArt {
   protected readonly paint = computed(() => {
     if (this.kind() !== 'player') return null;
     const horse = this.horse();
-    return { ...COATS[horse.coat], mane: MANES[horse.mane] };
+    return {
+      ...COATS[horse.coat],
+      spot: spotColour(horse.coat),
+      mane: MANES[horse.mane],
+      horn: HORNS[horse.horn],
+    };
   });
+  /** Markings are the player's own; the shadow is a plain ghost. */
+  protected readonly marking = computed(() =>
+    this.kind() === 'player' ? this.horse().marking : 'none',
+  );
+  protected readonly sockId = `racer-sock-${nextSockId++}`;
   protected horn() {
     return this.mine() ? hasHorn(this.horse().kind) : this.kind() === 'mint';
   }
