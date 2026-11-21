@@ -1,0 +1,257 @@
+<section class="game" [class.playing]="phase() !== 'intro'" aria-labelledby="game-title">
+  <app-game-header
+    [title]="t('title')"
+    [detail]="t('level', { n: sprite().stage, total: total }) + ' · ' + spriteName()"
+    [anchor]="levelId()"
+    [sound]="sounds.enabled"
+    (soundToggle)="sounds.toggle()"
+  />
+
+  @if (phase() === 'intro') {
+    <section class="panel intro" aria-labelledby="intro-title">
+      <nav class="level-strip" [attr.aria-label]="t('allLevels')">
+        @for (link of levelLinks; track link.stage) {
+          <a
+            class="level-pill"
+            [routerLink]="link.route"
+            [attr.aria-current]="link.stage === sprite().stage ? 'page' : null"
+            [attr.aria-label]="
+              t('level', { n: link.stage, total: total }) + ' · ' + spriteName(link.stage)
+            "
+            >{{ link.stage }}</a
+          >
+        }
+      </nav>
+      <div class="intro-grid">
+        <div class="intro-demo"><app-duel-demo /></div>
+        <div class="intro-copy">
+          <h2 id="intro-title">{{ spriteName() }}</h2>
+          <p class="goal-short">{{ t('goalShort') }}</p>
+          <div class="foe-card">
+            <strong class="example">{{ sprite().example }}</strong>
+            <span class="weak-chip" [style.--element]="elementColor(sprite().weakTo)">
+              <span class="weak-dot" aria-hidden="true"></span>
+              {{ t('weakSpot', { element: elementWord(sprite().weakTo) }) }}
+            </span>
+            <span class="foe-help">{{ spriteHelp() }}</span>
+          </div>
+          <fieldset class="team">
+            <legend>{{ t('chooseDragon') }}</legend>
+            @if (guest()) {
+              <p class="guest">{{ t('guest', { name: dragonName() }) }}</p>
+            }
+            <div class="team-row">
+              @for (member of team(); track member.id) {
+                <button
+                  type="button"
+                  class="team-pick"
+                  [class.is-weak]="member.element === sprite().weakTo"
+                  [attr.aria-pressed]="member.id === dragon().id"
+                  [attr.aria-label]="t('pickDragon', { name: dragonName(member) })"
+                  [title]="dragonName(member)"
+                  [style.--tint]="member.shell"
+                  (click)="pick(member)"
+                >
+                  @if (portraits.pictures()[member.id]; as picture) {
+                    <img [src]="picture" width="256" height="256" alt="" />
+                  } @else {
+                    <ui-dragon-face [colors]="member" [form]="hatchery.stage(member)" />
+                  }
+                  @if (member.element === sprite().weakTo) {
+                    <span class="weak-mark" aria-hidden="true"></span>
+                  }
+                </button>
+              }
+            </div>
+            <p class="team-name" aria-hidden="true">{{ dragonName() }}</p>
+          </fieldset>
+          <fieldset class="pace" aria-describedby="pace-help">
+            <legend>{{ t('paceTitle') }}</legend>
+            <p id="pace-help" class="pace-help">{{ t('paceHelp') }}</p>
+            <div class="pace-options">
+              @for (option of paces; track option) {
+                <label class="pace-choice" [class.selected]="pace() === option">
+                  <input
+                    type="radio"
+                    name="duel-pace"
+                    [value]="option"
+                    [checked]="pace() === option"
+                    (change)="selectPace(option)"
+                  />
+                  <svg class="pace-picture" viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="bolt" d="M13 2 5 13h6l-2 9 9-12h-6z" />
+                    @if (option === 'off') {
+                      <path class="cross" d="M3 3l18 18" />
+                    } @else if (option === 'fast') {
+                      <path class="lines" d="M1 9h3M1 13h2M1 17h3" />
+                    }
+                  </svg>
+                  <strong>{{ paceLabel(option) }}</strong>
+                  @if (paceSeconds(option); as seconds) {
+                    <span>{{ t('paceSeconds', { n: seconds }) }}</span>
+                  }
+                </label>
+              }
+            </div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="start-dock">
+        <button class="button primary" type="button" (click)="start()">
+          {{ t('start') }}<ui-icon kind="arrow" />
+        </button>
+      </div>
+    </section>
+  } @else {
+    <div class="play-area">
+      <section class="board" [attr.data-sky]="frame().sky" [attr.aria-label]="t('arenaLabel')">
+        <app-three-stage class="scene" [world]="loadWorld" [state]="frame()">
+          <app-duel-arena [frame]="frame()" [picture]="portraits.pictures()[dragon().id]" />
+        </app-three-stage>
+        <div class="hud">
+          <div
+            class="hud-side is-dragon"
+            role="img"
+            [attr.aria-label]="
+              t('hearts', { name: dragonName(), n: duel().hearts, total: heartSlots.length })
+            "
+          >
+            <span class="hud-name">{{ dragonName() }}</span>
+            <span class="hearts">
+              @for (heart of heartSlots; track heart) {
+                <svg viewBox="0 0 32 30" [class.is-empty]="heart > duel().hearts">
+                  <path d="M16 27S2 19 2 10a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 9-14 17-14 17Z" />
+                </svg>
+              }
+            </span>
+          </div>
+          <div
+            class="hud-side is-sprite"
+            role="img"
+            [attr.aria-label]="
+              t('energy', { name: spriteName(), n: duel().energy, total: sprite().energy })
+            "
+          >
+            <span class="hud-name">{{ spriteName() }}</span>
+            <span class="bar energy" [class.is-low]="energyShare() <= 0.3">
+              <span class="bar-fill" [style.inline-size.%]="energyShare() * 100"></span>
+            </span>
+            @if (timed()) {
+              <span class="bar charge" [class.is-high]="duel().charge > 0.7">
+                <span class="bar-fill" [style.inline-size.%]="duel().charge * 100"></span>
+                <svg class="bolt" viewBox="0 0 24 24"><path d="M13 2 5 13h6l-2 9 9-12h-6z" /></svg>
+              </span>
+            }
+          </div>
+        </div>
+        @if (callout(); as shout) {
+          @for (id of shout.kind === 'gone' ? [] : [shout.id]; track id) {
+            <p class="callout" [attr.data-kind]="shout.kind" aria-hidden="true">
+              {{ shout.text }}
+            </p>
+          }
+        }
+        @if (showTip()) {
+          <p class="tip">
+            <strong>{{ t('tipLead') }}</strong> {{ tip() }}
+          </p>
+        }
+        @if (reward(); as reward) {
+          <ui-reward-burst
+            [kind]="reward.kind"
+            [cheer]="reward.cheer"
+            [points]="reward.points"
+            [badges]="reward.badges"
+            [wait]="0.9"
+          />
+        }
+      </section>
+
+      <div class="controls" [class.guide]="guideOn()">
+        @if (phase() === 'fighting') {
+          <div class="question-row">
+            <p class="sum" [class.is-done]="!!answered()">
+              <span class="sr-only">{{ spoken() }}</span>
+              <span aria-hidden="true">{{ sum() }}</span>
+            </p>
+            <button
+              type="button"
+              class="help"
+              [attr.aria-label]="t('help')"
+              [title]="t('help')"
+              (click)="openCoach()"
+            >
+              ?
+            </button>
+          </div>
+          <fieldset class="answers" [attr.aria-busy]="!!answered() || !fighting()">
+            <legend class="sr-only">{{ t('answersLabel') }}</legend>
+            @for (choice of question().choices; track $index) {
+              <button
+                type="button"
+                class="answer"
+                [class.is-right]="answered()?.value === choice"
+                [class.is-struck]="!answered() && duel().struck.includes(choice)"
+                [disabled]="!answered() && duel().struck.includes(choice)"
+                [attr.aria-disabled]="!!answered() || !fighting()"
+                (click)="choose(choice)"
+              >
+                {{ i.format(choice) }}
+              </button>
+            }
+          </fieldset>
+        } @else {
+          <section #outcome class="outcome" tabindex="-1" aria-labelledby="outcome-title">
+            @if (duel().phase === 'won') {
+              <h2 id="outcome-title">{{ t(stars() === 3 ? 'perfectTitle' : 'wonTitle') }}</h2>
+              <ui-star-rating [stars]="stars()" [label]="t('starsLabel', { n: stars() })" />
+              <p>{{ t('wonText', { sprite: spriteName() }) }}</p>
+              <p class="outcome-help">
+                {{ t(stars() === 3 ? 'threeStars' : stars() === 2 ? 'twoStars' : 'oneStar') }}
+              </p>
+              @if (saveFailed()) {
+                <p class="save-note" role="alert">{{ t('save') }}</p>
+              }
+              <div class="outcome-actions">
+                @if (nextLink(); as next) {
+                  <a class="button primary" [routerLink]="next"
+                    >{{ t('nextDuel') }}<ui-icon kind="arrow"
+                  /></a>
+                  <button class="button secondary" type="button" (click)="celebrate()">
+                    {{ t('celebrate') }}
+                  </button>
+                } @else {
+                  <button class="button primary" type="button" (click)="celebrate()">
+                    {{ t('celebrate') }}<ui-icon kind="arrow" />
+                  </button>
+                }
+                <button class="button secondary" type="button" (click)="start()">
+                  {{ t('again') }}
+                </button>
+              </div>
+            } @else {
+              <h2 id="outcome-title">{{ t('napTitle', { name: dragonName() }) }}</h2>
+              <p>{{ t('napText') }}</p>
+              <div class="outcome-actions">
+                <button class="button primary" type="button" (click)="start()">
+                  {{ t('tryAgain') }}
+                </button>
+                <button class="button secondary" type="button" (click)="backToIntro()">
+                  {{ t('backToDuel') }}
+                </button>
+              </div>
+            }
+          </section>
+        }
+        <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {{ callout()?.text }}
+        </p>
+      </div>
+    </div>
+    @if (coachOpen()) {
+      <ui-coach-dialog [heading]="t('demoTitle')" [goLabel]="t('coachGo')" (done)="closeCoach()">
+        <app-duel-demo [alternate]="question().text === '4 + 3'" />
+      </ui-coach-dialog>
+    }
+  }
+</section>

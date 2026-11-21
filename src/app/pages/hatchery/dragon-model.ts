@@ -15,6 +15,8 @@ export class DragonModel {
   readonly root = new Group();
   private readonly rig: DragonRig;
   private readonly sparkles: Mesh[] = [];
+  /** A sleeping dragon keeps its eyes shut, for a nap after a lost duel. */
+  sleeping = false;
   private cheerAt = -10;
   private blinkAt = 1.5;
   private readonly phase = Math.random() * 10;
@@ -84,7 +86,7 @@ export class DragonModel {
     head.rotation.x = Math.sin(t * 0.7) * 0.04 * idle - (since < 0.9 ? 0.15 : 0);
     // Blink every few seconds.
     if (t > this.blinkAt + 0.14) this.blinkAt = t + 2.5 + ((t * 7.3) % 2.5);
-    const closed = blink && t > this.blinkAt && t < this.blinkAt + 0.14;
+    const closed = this.sleeping || (blink && t > this.blinkAt && t < this.blinkAt + 0.14);
     for (const eye of eyes) eye.scale.y = (closed ? 0.12 : 1) * eye.scale.x;
     for (const [index, flame] of flames.entries())
       flame.scale.setScalar(1 + Math.sin(t * 9 + index) * 0.12);

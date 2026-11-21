@@ -38,6 +38,7 @@ import { scalesStage } from '../scales/scales-levels';
 import { ScalesScores } from '../scales/scales-scores';
 import { marketStage } from '../market/market-levels';
 import { MarketScores } from '../market/market-scores';
+import { duelSprite } from '../dragon-duel/duel';
 import {
   levelPosition,
   levels as wallLevels,
@@ -316,6 +317,8 @@ export class Games {
     if (scales) return scales;
     const market = marketStage(level.id)?.example;
     if (market) return market;
+    const duel = duelSprite(level.id)?.example;
+    if (duel) return duel;
     return lockStage(level.id)?.example ?? '';
   }
   private wallTitle(level: WallLevel): MessageKey {

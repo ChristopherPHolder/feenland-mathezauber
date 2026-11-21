@@ -51,9 +51,9 @@ new code should not add more, and the next refactors remove them:
 Each new game has copied the same building blocks from the last one. They are candidates for
 `@feenland/ui` (presentation) and `core` (logic):
 
-| Piece                                | Copies                                                                               | Destination                                                                |
-| ------------------------------------ | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `*-guide.ts` "tap here next" counter | bakery, drums, fireworks, gondola, potions, star-catcher (identical but for the key) | `core/guide-counter.ts` exists (market, scales use it); move the rest over |
-| `*-coach.ts` demo-film dialog        | bakery, crocodile, fireworks, gondola, potions                                       | `ui-coach-dialog` exists (market, scales use it); move the rest over       |
-| `*-reward.ts` / `.css` burst card    | bakery, fireworks, gondola, lock, potions, star-catcher (~160 lines of CSS each)     | `ui-reward-burst` exists (market, scales use it); move the rest over       |
-| local `.sr-only` rules               | about 20 stylesheets                                                                 | the global `.sr-only` in `base.css`                                        |
+| Piece                                | Copies                                                                               | Destination                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `*-guide.ts` "tap here next" counter | bakery, drums, fireworks, gondola, potions, star-catcher (identical but for the key) | `core/guide-counter.ts` exists (market, scales use it); move the rest over  |
+| `*-coach.ts` demo-film dialog        | bakery, crocodile, fireworks, gondola, potions                                       | `ui-coach-dialog` exists (market, dragon duels, scales); move the rest over |
+| `*-reward.ts` / `.css` burst card    | bakery, fireworks, gondola, lock, potions, star-catcher (~160 lines of CSS each)     | `ui-reward-burst` exists (market, scales use it); move the rest over        |
+| local `.sr-only` rules               | about 20 stylesheets                                                                 | the global `.sr-only` in `base.css`                                         |

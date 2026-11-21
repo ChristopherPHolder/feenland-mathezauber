@@ -10,6 +10,7 @@ import { starLevels } from '../pages/star-catcher/star-levels';
 import { fireworkCatalogLevels } from '../pages/fireworks/firework-levels';
 import { gondolaLevels } from '../pages/gondola/gondola-levels';
 import { scalesLevels } from '../pages/scales/scales-levels';
+import { duelLevels } from '../pages/dragon-duel/duel';
 import { marketLevels } from '../pages/market/market-levels';
 import { MessageKey } from './messages';
 export interface Level {
@@ -169,6 +170,13 @@ export const worlds: readonly World[] = [
         description: 'marketChapterHelp',
         emblem: '🛍️',
         levels: marketLevels,
+      },
+      {
+        id: 'dragon-duel',
+        title: 'duelChapter',
+        description: 'duelChapterHelp',
+        emblem: '🐉',
+        levels: duelLevels,
       },
     ],
   },
