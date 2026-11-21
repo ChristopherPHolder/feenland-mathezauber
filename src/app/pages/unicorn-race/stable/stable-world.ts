@@ -2,6 +2,7 @@ import {
   CircleGeometry,
   CylinderGeometry,
   Group,
+  InstancedMesh,
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
@@ -123,6 +124,10 @@ export class StableWorld extends Stage implements StateWorld<StableState> {
     if (this.pony) {
       this.stand.remove(this.pony.root);
       disposeTree(this.pony.root);
+      // The hair's instanced meshes hold per-lock buffers of their own.
+      this.pony.root.traverse((part) => {
+        if (part instanceof InstancedMesh) part.dispose();
+      });
     }
     this.pony = new Pony('player', state.outfit, state.horse);
     this.stand.add(this.pony.root);
@@ -140,10 +145,10 @@ export class StableWorld extends Stage implements StateWorld<StableState> {
       speed: 0,
       moving: false,
       waiting: false,
-      stumbling: false,
       celebrating: false,
       cheering: !calm && t < this.hopUntil,
       wingLift: 0.5,
+      calm,
     });
   }
 }

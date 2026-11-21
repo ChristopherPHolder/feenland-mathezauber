@@ -177,10 +177,11 @@ export class RaceLoaderWorld extends Stage implements StateWorld<null> {
     this.pony.update({
       now,
       dt,
-      speed: GALLOP,
+      speed: GROUND_SPEED,
       moving: true,
       waiting: false,
-      stumbling: false,
+      // She gallops on the spot while the ground slides by, so the wind is what moves her hair.
+      air: GROUND_SPEED,
       celebrating: false,
       cheering: false,
     });
