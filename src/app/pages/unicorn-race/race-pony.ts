@@ -9,6 +9,7 @@ import {
   Material,
   Mesh,
   MeshBasicMaterial,
+  MeshPhysicalMaterial,
   MeshStandardMaterial,
   SphereGeometry,
   TorusGeometry,
@@ -19,6 +20,7 @@ import type { RacerId } from './race';
 import { HairChain, HairStrands, HairTube } from './race-hair';
 import type { Outfit } from './race-store';
 import {
+  CoatPaint,
   COATS,
   hasHorn,
   hasWings,
@@ -28,6 +30,7 @@ import {
   LUMI,
   MANES,
   Marking,
+  SHINY_MANES,
   spotColour,
 } from './horse';
 interface Look {
@@ -42,6 +45,9 @@ interface Look {
   /** The colour of the markings, and of spots, which are dark on a pale coat. */
   readonly mark: string;
   readonly spot: string;
+  /** A sparkle coat's finish, and whether the mane shines like metal. */
+  readonly finish?: 'metal' | 'pearl' | 'stars';
+  readonly shinyMane?: boolean;
   /** The flight feathers; the coverts above them take the coat's shade. */
   readonly feather: string;
   readonly bow: boolean;
@@ -131,6 +137,8 @@ function lookFor(id: RacerId, horse: Horse): Look {
     wings: hasWings(horse.kind),
     marking: ghost ? 'none' : horse.marking,
     spot: ghost ? GHOST.mark : spotColour(horse.coat),
+    finish: ghost ? undefined : (COATS[horse.coat] as CoatPaint).finish,
+    shinyMane: !ghost && SHINY_MANES.has(horse.mane),
     // Pale feathers on any coat: a lighter take on the coat, so a dark horse has dusky wings.
     feather: new Color(paint.coat).lerp(new Color('#ffffff'), 0.7).getStyle(),
     bow: false,
@@ -492,11 +500,32 @@ export class Pony {
         transparent: this.ghost,
         opacity: look.opacity,
       });
-    const coat = skin(look.coat);
+    const coat =
+      look.finish === 'metal'
+        ? // A gentle metal with a warm glow: the scene has no reflections for full metal.
+          new MeshStandardMaterial({
+            color: look.coat,
+            roughness: 0.32,
+            metalness: 0.3,
+            emissive: new Color(look.coat).multiplyScalar(0.18),
+          })
+        : look.finish === 'pearl'
+          ? new MeshPhysicalMaterial({
+              color: look.coat,
+              roughness: 0.35,
+              iridescence: 1,
+              iridescenceIOR: 1.35,
+              iridescenceThicknessRange: [200, 600],
+            })
+          : skin(look.coat);
     const shade = skin(look.shade);
     const hoof = skin(new Color(look.shade).multiplyScalar(0.55).getStyle(), 0.4);
     const mark = skin(look.mark);
-    const hair = look.mane.map((color) => skin(color, 0.48));
+    const hair = look.mane.map((color) =>
+      look.shinyMane
+        ? new MeshStandardMaterial({ color, roughness: 0.28, metalness: 0.6 })
+        : skin(color, 0.48),
+    );
     const ink = skin(INK, 0.3);
     this.hair = new HairStrands(LOCK, hair);
     // Everything hangs off a frame that rocks around the hips.
@@ -527,6 +556,7 @@ export class Pony {
         this.legs.push(leg);
       }
     if (look.marking === 'spots') addSpots(body, skin(look.spot));
+    if (look.finish === 'stars') addStars(body);
     if (look.wings) {
       const feather = skin(look.feather, 0.7);
       for (const side of [-1, 1]) this.addWing(body, side, feather, shade);
@@ -1160,4 +1190,31 @@ function addSpots(body: Group, mark: Material) {
       );
       body.add(spot);
     }
+}
+/** Tiny glowing stars scattered all round a galaxy coat's body. */
+function addStars(body: Group) {
+  const star = new MeshBasicMaterial({ color: '#fff6d8' });
+  // A fixed scatter, so a galaxy horse looks the same in every race.
+  let seed = 7;
+  const next = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  for (let index = 0; index < 46; index++) {
+    // The middle rings only, where the barrel is round and a star sits flush on it.
+    const ring = BODY[2 + Math.floor(next() * (BODY.length - 5))];
+    const angle = next() * Math.PI * 2;
+    const size = 0.012 + next() * 0.014;
+    body.add(
+      blob(
+        size,
+        size,
+        size,
+        star,
+        Math.cos(angle) * ring.rx * 1.005,
+        ring.y + Math.sin(angle) * ring.ry * 1.005,
+        ring.z + (next() - 0.5) * 0.12,
+      ),
+    );
+  }
 }
