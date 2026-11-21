@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vite-plus/test';
-import { UnicornRace } from './unicorn-race';
+import { FINISH_HOLD_MS, UnicornRace } from './unicorn-race';
 import { RaceSounds } from './race-sounds';
 import { LocaleService } from '../../core/locale';
 import { ProgressService } from '../../core/progress';
@@ -147,11 +147,8 @@ describe('Unicorn race game', () => {
     expect(cards[21].getAttribute('href')).toBe('/adventure/unicorn-race-15');
     expect(cards[5].getAttribute('href')).toBe('/adventure/unicorn-race-20');
     expect(element.textContent).toContain('0 of 5 cups complete');
-    // Keepsakes stay locked until a whole cup is finished.
-    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(5);
-    expect(element.querySelector('.wardrobe .chip[aria-pressed="true"]')?.textContent).toContain(
-      'Just Lumi',
-    );
+    // The keepsakes moved into the Stable, so the intro no longer lists them.
+    expect(element.querySelector('.wardrobe')).toBeNull();
   });
   it('hands out the cup keepsake once three races of a cup are finished and lets Lumi wear it', () => {
     const { element, component, wait, answerRight, start, click, fixture } = setup(
@@ -166,17 +163,22 @@ describe('Unicorn race game', () => {
       answerRight();
       wait(400);
     }
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     expect(element.querySelector('.summary .new-outfit')?.textContent).toContain('Flower wreath');
     expect(store.save().outfit).toBe('wreath');
     expect(store.completedCups()).toBe(1);
     click('Choose a race');
     expect(element.textContent).toContain('1 of 5 cups complete');
-    expect(element.querySelectorAll('.wardrobe .chip.locked')).toHaveLength(4);
     expect(element.querySelector('.lineup app-racer .wreath')).toBeTruthy();
-    click('Just Lumi');
+    // In the Stable's dress-up tab the earned wreath is on, the other four are still locked.
+    click('Change Lumi');
+    click('👑');
+    expect(element.querySelectorAll('.dress.locked')).toHaveLength(4);
+    expect(element.querySelector('.dress:has(:checked)')?.textContent).toContain('Flower wreath');
+    element.querySelector<HTMLInputElement>('input[name="horse-outfit"]')!.click();
     fixture.detectChanges();
     expect(store.save().outfit).toBeNull();
+    click('✓ Done');
     expect(element.querySelector('.lineup app-racer .wreath')).toBeNull();
     expect(
       [...element.querySelectorAll('.level-card')][3].querySelectorAll('.level-stars .earned'),
@@ -246,7 +248,7 @@ describe('Unicorn race game', () => {
       answerRight();
       wait(1200);
     }
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     const line = () => element.querySelector('.summary-line')?.textContent?.trim() ?? '';
     expect(line()).toContain('1 stumble ·');
     expect(line()).toMatch(/\d+ right · 1 stumble · \d+ seconds/);
@@ -268,7 +270,7 @@ describe('Unicorn race game', () => {
     expect(component.race().done).toBe(true);
     expect(element.querySelector('.countdown')?.textContent).toContain('Finish!');
     expect(element.querySelector('.summary')).toBeNull();
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     const summary = element.querySelector('.summary');
     expect(summary).toBeTruthy();
     expect(summary?.querySelector('h2')?.textContent).toContain('Lumi wins the race!');
@@ -294,7 +296,7 @@ describe('Unicorn race game', () => {
       wait(400);
     }
     expect(component.race().done).toBe(true);
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     click('Race again');
     wait(4 * 800 + 300);
     answerRight();
@@ -311,7 +313,7 @@ describe('Unicorn race game', () => {
     document.dispatchEvent(new Event('visibilitychange'));
     wait(300);
     document.dispatchEvent(new Event('visibilitychange'));
-    wait(1500);
+    wait(FINISH_HOLD_MS);
     fixture.detectChanges();
     expect(TestBed.inject(RaceStore).save().sparkles).toBe(sparkles);
     expect(sounds.play.mock.calls.filter(([kind]) => kind === 'win')).toHaveLength(1);
@@ -357,7 +359,7 @@ describe('Unicorn race game', () => {
       wait(400);
     }
     expect(component.race().done).toBe(true);
-    wait(1400);
+    wait(FINISH_HOLD_MS + 100);
     expect(element.querySelector('.summary h2')?.textContent).toContain('got the key back');
     expect(TestBed.inject(RaceStore).record(2, 2)?.cup).toBe('gold');
     expect(TestBed.inject(RaceStore).record(2, 1)).toBeUndefined();
@@ -466,11 +468,20 @@ describe('Unicorn race game', () => {
       kind: 'unicorn',
       coat: 'mint',
       mane: 'rainbow',
+      marking: 'none',
+      horn: 'gold',
     });
     expect(element.querySelector('.lineup .is-lumi .lineup-name')?.textContent?.trim()).toBe(
       'Lumi',
     );
-    store.setHorse({ name: '  Blitz   der   Wind  ', kind: 'pony', coat: 'cocoa', mane: 'night' });
+    store.setHorse({
+      name: '  Blitz   der   Wind  ',
+      kind: 'pony',
+      coat: 'cocoa',
+      mane: 'night',
+      marking: 'socks',
+      horn: 'silver',
+    });
     const saved = JSON.parse(localStorage.getItem('feenland.unicorn-race.v1')!);
     expect(saved.version).toBe(2);
     expect(saved.sparkles).toBe(5);
@@ -479,6 +490,8 @@ describe('Unicorn race game', () => {
       kind: 'pony',
       coat: 'cocoa',
       mane: 'night',
+      marking: 'socks',
+      horn: 'silver',
     });
   });
   it('speaks German on the intro and during the race', () => {

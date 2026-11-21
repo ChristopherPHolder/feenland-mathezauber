@@ -74,14 +74,15 @@ import { gameText, GameMessageKey } from './game-messages';
       translate: 0 -50%;
     }
     @media (prefers-reduced-motion: no-preference) {
+      /* --reward-delay: how long the card waits before it shows. */
       svg {
-        animation: land 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+        animation: land 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) var(--reward-delay, 0s) both;
       }
       svg:nth-child(2) {
-        animation-delay: 0.35s;
+        animation-delay: calc(var(--reward-delay, 0s) + 0.35s);
       }
       svg:nth-child(3) {
-        animation-delay: 0.7s;
+        animation-delay: calc(var(--reward-delay, 0s) + 0.7s);
       }
     }
     @keyframes land {
